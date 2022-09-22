@@ -17,15 +17,21 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface ScreenshotMapper {
 
-    @Select("SELECT ID, CONTENT FROM screenshot WHERE id = #{id}")
+    @Select("SELECT id, image FROM screenshot WHERE id = #{id}")
     BlobContent selectScreenshotByPK(Long id);
 
-    @Insert("INSERT INTO screenshot (ID, CONTENT) VALUES(#{id}, #{content})")
+    @Insert("INSERT INTO screenshot (id, image) VALUES(#{id}, #{image})")
     void insert(BlobContent blobContent);
 
-    static class BlobContent {
+    public static class BlobContent {
+
         private Long id;
-        private InputStream content;
+        private InputStream image;
+
+        public BlobContent(final Long id, final InputStream image) {
+            this.id = id;
+            this.image = image;
+        }
 
         public Long getId() {
             return this.id;
@@ -35,13 +41,14 @@ public interface ScreenshotMapper {
             this.id = id;
         }
 
-        public InputStream getContent() {
-            return this.content;
+        public InputStream getImage() {
+            return this.image;
         }
 
-        public void setContent(final InputStream content) {
-            this.content = content;
+        public void setImage(final InputStream image) {
+            this.image = image;
         }
+
     }
 
 }

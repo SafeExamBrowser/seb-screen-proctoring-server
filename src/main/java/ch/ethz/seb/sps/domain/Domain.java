@@ -35,7 +35,6 @@ public interface Domain {
 
     interface SCREENSHOT_DATA {
         String ATTR_ID = "id";
-        String ATTR_SCREENSHOT_ID = "screenshotId";
         String ATTR_GROUP_ID = "groupId";
         String ATTR_SESSION_ID = "sessionId";
         String ATTR_TIMESTAMP = "timestamp";

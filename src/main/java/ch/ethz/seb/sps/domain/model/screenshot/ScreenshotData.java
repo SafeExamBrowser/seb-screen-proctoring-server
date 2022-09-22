@@ -28,14 +28,11 @@ public class ScreenshotData implements Entity {
     @JsonProperty(SCREENSHOT_DATA.ATTR_ID)
     public final Long id;
 
-    @JsonProperty(SCREENSHOT_DATA.ATTR_SCREENSHOT_ID)
-    public final Long screenshotId;
+    @JsonProperty(SCREENSHOT_DATA.ATTR_GROUP_ID)
+    public final Long groupId;
 
     @JsonProperty(SCREENSHOT_DATA.ATTR_SESSION_ID)
     public final String sessionId;
-
-    @JsonProperty(SCREENSHOT_DATA.ATTR_GROUP_ID)
-    public final Long groupId;
 
     @JsonProperty(SCREENSHOT_DATA.ATTR_TIMESTAMP)
     public final Long timestamp;
@@ -52,16 +49,14 @@ public class ScreenshotData implements Entity {
     @JsonCreator
     public ScreenshotData(
             @JsonProperty(SCREENSHOT_DATA.ATTR_ID) final Long id,
-            @JsonProperty(SCREENSHOT_DATA.ATTR_SCREENSHOT_ID) final Long screenshotId,
-            @JsonProperty(SCREENSHOT_DATA.ATTR_SESSION_ID) final String sessionId,
             @JsonProperty(SCREENSHOT_DATA.ATTR_GROUP_ID) final Long groupId,
+            @JsonProperty(SCREENSHOT_DATA.ATTR_SESSION_ID) final String sessionId,
             @JsonProperty(SCREENSHOT_DATA.ATTR_TIMESTAMP) final Long timestamp,
             @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_URL) final String imageURL,
             @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_FORMAT) final String imageFormat,
             @JsonProperty(SCREENSHOT_DATA.ATTR_META_DATA) final String metaData) {
 
         this.id = id;
-        this.screenshotId = screenshotId;
         this.sessionId = sessionId;
         this.groupId = groupId;
         this.timestamp = timestamp;
@@ -89,10 +84,6 @@ public class ScreenshotData implements Entity {
 
     public Long getId() {
         return this.id;
-    }
-
-    public Long getScreenshotId() {
-        return this.screenshotId;
     }
 
     public String getSessionId() {
@@ -143,8 +134,6 @@ public class ScreenshotData implements Entity {
         builder.append(this.entityType);
         builder.append(", id=");
         builder.append(this.id);
-        builder.append(", screenshotId=");
-        builder.append(this.screenshotId);
         builder.append(", sessionId=");
         builder.append(this.sessionId);
         builder.append(", groupId=");

@@ -66,18 +66,17 @@ CREATE TABLE IF NOT EXISTS `group` (
 DROP TABLE IF EXISTS `screenshot_data` ;
 
 CREATE TABLE IF NOT EXISTS `screenshot_data` (
-  `id` BIGINT UNSIGNED NOT NULL,
-  `screenshot_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `group_id` BIGINT UNSIGNED NOT NULL,
   `session_id` VARCHAR(45) NOT NULL,
-  `groupId` BIGINT UNSIGNED NOT NULL,
   `timestamp` BIGINT UNSIGNED NOT NULL,
   `image_url` VARCHAR(255) NULL,
   `image_format` VARCHAR(45) NULL,
   `meta_data` VARCHAR(8000) NULL,
   PRIMARY KEY (`id`),
-  INDEX `group_ref_idx` (`groupId` ASC),
+  INDEX `group_ref_idx` (`group_id` ASC),
   CONSTRAINT `group_ref`
-    FOREIGN KEY (`groupId`)
+    FOREIGN KEY (`group_id`)
     REFERENCES `group` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)

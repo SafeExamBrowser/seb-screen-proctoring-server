@@ -32,7 +32,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
  *
  * The Datasource is auto-configured by Spring and depends on the Spring property configuration so far */
 @Configuration
-@MapperScan(basePackages = "ch.ethz.seb.sps.datalayer.batis")
+@MapperScan(basePackages = "ch.ethz.seb.sps.server.datalayer.batis")
 @Import(DataSourceAutoConfiguration.class)
 public class BatisConfig {
 
