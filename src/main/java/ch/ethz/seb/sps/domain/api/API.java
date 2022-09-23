@@ -16,6 +16,10 @@ public final class API {
         SEBCLIENT
     }
 
+    public static final String OAUTH_ENDPOINT = "/oauth";
+    public static final String OAUTH_TOKEN_ENDPOINT = OAUTH_ENDPOINT + "/token";
+    public static final String OAUTH_REVOKE_TOKEN_ENDPOINT = OAUTH_ENDPOINT + "/revoke-token";
+
     public static final String PARAM_MODEL_ID = "modelId";
     public static final String PARAM_ENTITY_TYPE = "entityType";
 

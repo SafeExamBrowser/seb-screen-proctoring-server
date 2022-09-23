@@ -8,19 +8,13 @@
 
 package ch.ethz.seb.sps.server.servicelayer.dao;
 
-import java.util.Collection;
-
-import ch.ethz.seb.sps.domain.model.screenshot.ScreenshotData;
+import ch.ethz.seb.sps.domain.model.screenshot.Session;
 import ch.ethz.seb.sps.utils.Result;
 
-public interface ScreenshotDataDAO {
+public interface SessionDAO {
 
-    Result<ScreenshotData> byPK(Long id);
+    Result<Session> byPK(Long id);
 
-    Result<Collection<ScreenshotData>> allOfSession(String sessionUUID);
-
-    Result<Collection<ScreenshotData>> allLatestOfSessions(String sessionUUID);
-
-    Result<Long> save(ScreenshotData data);
+    Result<Long> save(Session data);
 
 }

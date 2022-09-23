@@ -14,33 +14,38 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import ch.ethz.seb.sps.domain.Domain.GROUP;
+import ch.ethz.seb.sps.domain.Domain.SESSION;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Group implements Entity {
+public class Session implements Entity {
 
     @JsonProperty(API.PARAM_ENTITY_TYPE)
-    public final EntityType entityType = EntityType.GROUP;
+    public final EntityType entityType = EntityType.SESSION;
 
-    @JsonProperty(GROUP.ATTR_ID)
+    @JsonProperty(SESSION.ATTR_ID)
     public final Long id;
 
-    @JsonProperty(GROUP.ATTR_UUID)
+    @JsonProperty(SESSION.ATTR_GROUP_ID)
+    public final Long groupId;
+
+    @JsonProperty(SESSION.ATTR_UUID)
     public final String uuid;
 
-    @JsonProperty(GROUP.ATTR_NAME)
+    @JsonProperty(SESSION.ATTR_NAME)
     public final String name;
 
     @JsonCreator
-    public Group(
-            @JsonProperty(GROUP.ATTR_ID) final Long id,
-            @JsonProperty(GROUP.ATTR_UUID) final String uuid,
-            @JsonProperty(GROUP.ATTR_NAME) final String name) {
+    public Session(
+            @JsonProperty(SESSION.ATTR_ID) final Long id,
+            @JsonProperty(SESSION.ATTR_GROUP_ID) final Long groupId,
+            @JsonProperty(SESSION.ATTR_UUID) final String uuid,
+            @JsonProperty(SESSION.ATTR_NAME) final String name) {
 
         this.id = id;
+        this.groupId = groupId;
         this.uuid = uuid;
         this.name = name;
     }
@@ -57,8 +62,16 @@ public class Group implements Entity {
         return this.entityType;
     }
 
+    public EntityType getEntityType() {
+        return this.entityType;
+    }
+
     public Long getId() {
         return this.id;
+    }
+
+    public Long getGroupId() {
+        return this.groupId;
     }
 
     public String getUuid() {
@@ -83,17 +96,19 @@ public class Group implements Entity {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        final Group other = (Group) obj;
+        final Session other = (Session) obj;
         return this.entityType == other.entityType && Objects.equals(this.id, other.id);
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("Group [entityType=");
+        builder.append("Session [entityType=");
         builder.append(this.entityType);
         builder.append(", id=");
         builder.append(this.id);
+        builder.append(", groupId=");
+        builder.append(this.groupId);
         builder.append(", uuid=");
         builder.append(this.uuid);
         builder.append(", name=");

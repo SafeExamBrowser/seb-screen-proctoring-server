@@ -52,6 +52,12 @@
     </build>
 
     <dependencies>
+
+        <dependency>
+          <groupId>org.glassfish.jaxb</groupId>
+          <artifactId>jaxb-runtime</artifactId>
+        </dependency>
+
         <!-- Data Base -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>

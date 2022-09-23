@@ -42,9 +42,9 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<ScreenshotData>> allOfSession(final String sessionId) {
+    public Result<Collection<ScreenshotData>> allOfSession(final String sessionUUID) {
         return Result.tryCatch(() -> this.screenshotDataRecordMapper.selectByExample()
-                .where(ScreenshotDataRecordDynamicSqlSupport.sessionId, SqlBuilder.isEqualTo(sessionId))
+                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                 .build()
                 .execute()
                 .stream()
@@ -65,8 +65,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
         return Result.tryCatch(() -> {
             final ScreenshotDataRecord screenshotData = new ScreenshotDataRecord(
                     null,
-                    data.groupId,
-                    data.sessionId,
+                    data.sessionUUID,
                     data.timestamp,
                     data.imageURL,
                     data.imageFormat,
@@ -79,8 +78,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     private ScreenshotData toDomainModel(final ScreenshotDataRecord record) {
         return new ScreenshotData(
                 record.getId(),
-                record.getGroupId(),
-                record.getSessionId(),
+                record.getSessionUuid(),
                 record.getTimestamp(),
                 record.getImageUrl(),
                 record.getImageFormat(),

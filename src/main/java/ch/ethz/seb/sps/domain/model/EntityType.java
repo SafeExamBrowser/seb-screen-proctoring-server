@@ -10,7 +10,9 @@ package ch.ethz.seb.sps.domain.model;
 
 public enum EntityType {
     USER,
+    CLIENT_ACCESS,
     GROUP,
+    SESSION,
     SCREENSHOT_DATA,
     SCREENSHOT
 }

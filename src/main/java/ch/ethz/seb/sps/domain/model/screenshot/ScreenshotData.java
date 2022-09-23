@@ -28,11 +28,8 @@ public class ScreenshotData implements Entity {
     @JsonProperty(SCREENSHOT_DATA.ATTR_ID)
     public final Long id;
 
-    @JsonProperty(SCREENSHOT_DATA.ATTR_GROUP_ID)
-    public final Long groupId;
-
-    @JsonProperty(SCREENSHOT_DATA.ATTR_SESSION_ID)
-    public final String sessionId;
+    @JsonProperty(SCREENSHOT_DATA.ATTR_SESSION_UUID)
+    public final String sessionUUID;
 
     @JsonProperty(SCREENSHOT_DATA.ATTR_TIMESTAMP)
     public final Long timestamp;
@@ -49,16 +46,14 @@ public class ScreenshotData implements Entity {
     @JsonCreator
     public ScreenshotData(
             @JsonProperty(SCREENSHOT_DATA.ATTR_ID) final Long id,
-            @JsonProperty(SCREENSHOT_DATA.ATTR_GROUP_ID) final Long groupId,
-            @JsonProperty(SCREENSHOT_DATA.ATTR_SESSION_ID) final String sessionId,
+            @JsonProperty(SCREENSHOT_DATA.ATTR_SESSION_UUID) final String sessionUUID,
             @JsonProperty(SCREENSHOT_DATA.ATTR_TIMESTAMP) final Long timestamp,
             @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_URL) final String imageURL,
             @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_FORMAT) final String imageFormat,
             @JsonProperty(SCREENSHOT_DATA.ATTR_META_DATA) final String metaData) {
 
         this.id = id;
-        this.sessionId = sessionId;
-        this.groupId = groupId;
+        this.sessionUUID = sessionUUID;
         this.timestamp = timestamp;
         this.imageURL = imageURL;
         this.imageFormat = imageFormat;
@@ -86,12 +81,8 @@ public class ScreenshotData implements Entity {
         return this.id;
     }
 
-    public String getSessionId() {
-        return this.sessionId;
-    }
-
-    public Long getGroupId() {
-        return this.groupId;
+    public String getSessionUUID() {
+        return this.sessionUUID;
     }
 
     public Long getTimestamp() {
@@ -134,10 +125,8 @@ public class ScreenshotData implements Entity {
         builder.append(this.entityType);
         builder.append(", id=");
         builder.append(this.id);
-        builder.append(", sessionId=");
-        builder.append(this.sessionId);
-        builder.append(", groupId=");
-        builder.append(this.groupId);
+        builder.append(", sessionUUID=");
+        builder.append(this.sessionUUID);
         builder.append(", timestamp=");
         builder.append(this.timestamp);
         builder.append(", imageURL=");

@@ -3,69 +3,60 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import javax.annotation.Generated;
 
 public class ScreenshotDataRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.800+02:00", comments="Source field: SCREENSHOT_DATA.ID")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.ID")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.800+02:00", comments="Source field: SCREENSHOT_DATA.GROUP_ID")
-    private Long groupId;
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.SESSION_UUID")
+    private String sessionUuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.800+02:00", comments="Source field: SCREENSHOT_DATA.SESSION_ID")
-    private String sessionId;
-
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.800+02:00", comments="Source field: SCREENSHOT_DATA.TIMESTAMP")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.TIMESTAMP")
     private Long timestamp;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.801+02:00", comments="Source field: SCREENSHOT_DATA.IMAGE_URL")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.IMAGE_URL")
     private String imageUrl;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.801+02:00", comments="Source field: SCREENSHOT_DATA.IMAGE_FORMAT")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.IMAGE_FORMAT")
     private String imageFormat;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.801+02:00", comments="Source field: SCREENSHOT_DATA.META_DATA")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.598+02:00", comments="Source field: SCREENSHOT_DATA.META_DATA")
     private String metaData;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.800+02:00", comments="Source Table: SCREENSHOT_DATA")
-    public ScreenshotDataRecord(Long id, Long groupId, String sessionId, Long timestamp, String imageUrl, String imageFormat, String metaData) {
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source Table: SCREENSHOT_DATA")
+    public ScreenshotDataRecord(Long id, String sessionUuid, Long timestamp, String imageUrl, String imageFormat, String metaData) {
         this.id = id;
-        this.groupId = groupId;
-        this.sessionId = sessionId;
+        this.sessionUuid = sessionUuid;
         this.timestamp = timestamp;
         this.imageUrl = imageUrl;
         this.imageFormat = imageFormat;
         this.metaData = metaData;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.800+02:00", comments="Source field: SCREENSHOT_DATA.ID")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.ID")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.800+02:00", comments="Source field: SCREENSHOT_DATA.GROUP_ID")
-    public Long getGroupId() {
-        return groupId;
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.SESSION_UUID")
+    public String getSessionUuid() {
+        return sessionUuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.800+02:00", comments="Source field: SCREENSHOT_DATA.SESSION_ID")
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.800+02:00", comments="Source field: SCREENSHOT_DATA.TIMESTAMP")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.TIMESTAMP")
     public Long getTimestamp() {
         return timestamp;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.801+02:00", comments="Source field: SCREENSHOT_DATA.IMAGE_URL")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.IMAGE_URL")
     public String getImageUrl() {
         return imageUrl;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.801+02:00", comments="Source field: SCREENSHOT_DATA.IMAGE_FORMAT")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.597+02:00", comments="Source field: SCREENSHOT_DATA.IMAGE_FORMAT")
     public String getImageFormat() {
         return imageFormat;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.801+02:00", comments="Source field: SCREENSHOT_DATA.META_DATA")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.598+02:00", comments="Source field: SCREENSHOT_DATA.META_DATA")
     public String getMetaData() {
         return metaData;
     }
@@ -74,7 +65,7 @@ public class ScreenshotDataRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table SCREENSHOT_DATA
      *
-     * @mbg.generated Thu Sep 22 17:16:53 CEST 2022
+     * @mbg.generated Fri Sep 23 10:10:02 CEST 2022
      */
     @Override
     public String toString() {
@@ -83,8 +74,7 @@ public class ScreenshotDataRecord {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", groupId=").append(groupId);
-        sb.append(", sessionId=").append(sessionId);
+        sb.append(", sessionUuid=").append(sessionUuid);
         sb.append(", timestamp=").append(timestamp);
         sb.append(", imageUrl=").append(imageUrl);
         sb.append(", imageFormat=").append(imageFormat);
@@ -97,7 +87,7 @@ public class ScreenshotDataRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table SCREENSHOT_DATA
      *
-     * @mbg.generated Thu Sep 22 17:16:53 CEST 2022
+     * @mbg.generated Fri Sep 23 10:10:02 CEST 2022
      */
     @Override
     public boolean equals(Object that) {
@@ -112,8 +102,7 @@ public class ScreenshotDataRecord {
         }
         ScreenshotDataRecord other = (ScreenshotDataRecord) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getGroupId() == null ? other.getGroupId() == null : this.getGroupId().equals(other.getGroupId()))
-            && (this.getSessionId() == null ? other.getSessionId() == null : this.getSessionId().equals(other.getSessionId()))
+            && (this.getSessionUuid() == null ? other.getSessionUuid() == null : this.getSessionUuid().equals(other.getSessionUuid()))
             && (this.getTimestamp() == null ? other.getTimestamp() == null : this.getTimestamp().equals(other.getTimestamp()))
             && (this.getImageUrl() == null ? other.getImageUrl() == null : this.getImageUrl().equals(other.getImageUrl()))
             && (this.getImageFormat() == null ? other.getImageFormat() == null : this.getImageFormat().equals(other.getImageFormat()))
@@ -124,15 +113,14 @@ public class ScreenshotDataRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table SCREENSHOT_DATA
      *
-     * @mbg.generated Thu Sep 22 17:16:53 CEST 2022
+     * @mbg.generated Fri Sep 23 10:10:02 CEST 2022
      */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getGroupId() == null) ? 0 : getGroupId().hashCode());
-        result = prime * result + ((getSessionId() == null) ? 0 : getSessionId().hashCode());
+        result = prime * result + ((getSessionUuid() == null) ? 0 : getSessionUuid().hashCode());
         result = prime * result + ((getTimestamp() == null) ? 0 : getTimestamp().hashCode());
         result = prime * result + ((getImageUrl() == null) ? 0 : getImageUrl().hashCode());
         result = prime * result + ((getImageFormat() == null) ? 0 : getImageFormat().hashCode());

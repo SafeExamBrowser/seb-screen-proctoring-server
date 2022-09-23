@@ -6,16 +6,16 @@ import org.mybatis.dynamic.sql.SqlColumn;
 import org.mybatis.dynamic.sql.SqlTable;
 
 public final class ScreenshotRecordDynamicSqlSupport {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.806+02:00", comments="Source Table: SCREENSHOT")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.601+02:00", comments="Source Table: SCREENSHOT")
     public static final ScreenshotRecord screenshotRecord = new ScreenshotRecord();
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.806+02:00", comments="Source field: SCREENSHOT.ID")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.601+02:00", comments="Source field: SCREENSHOT.ID")
     public static final SqlColumn<Long> id = screenshotRecord.id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.807+02:00", comments="Source field: SCREENSHOT.IMAGE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.602+02:00", comments="Source field: SCREENSHOT.IMAGE")
     public static final SqlColumn<byte[]> image = screenshotRecord.image;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-22T17:16:53.806+02:00", comments="Source Table: SCREENSHOT")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.601+02:00", comments="Source Table: SCREENSHOT")
     public static final class ScreenshotRecord extends SqlTable {
         public final SqlColumn<Long> id = column("ID", JDBCType.BIGINT);
 

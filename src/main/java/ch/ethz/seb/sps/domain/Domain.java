@@ -27,8 +27,23 @@ public interface Domain {
         String ATTR_ROLES = "roles";
     }
 
+    interface CLIENT_ACCESS {
+        String ATTR_ID = "id";
+        String ATTR_CLIENT_ID = "clientId";
+        String ATTR_CLIENT_SECRET = "clientSecret";
+        String ATTR_CREATION_DATE = "creationDate";
+        String ATTR_ACTIVE = "active";
+    }
+
     interface GROUP {
         String ATTR_ID = "id";
+        String ATTR_UUID = "uuid";
+        String ATTR_NAME = "name";
+    }
+
+    interface SESSION {
+        String ATTR_ID = "id";
+        String ATTR_GROUP_ID = "groupId";
         String ATTR_UUID = "uuid";
         String ATTR_NAME = "name";
     }
@@ -36,7 +51,7 @@ public interface Domain {
     interface SCREENSHOT_DATA {
         String ATTR_ID = "id";
         String ATTR_GROUP_ID = "groupId";
-        String ATTR_SESSION_ID = "sessionId";
+        String ATTR_SESSION_UUID = "sessionUUID";
         String ATTR_TIMESTAMP = "timestamp";
         String ATTR_IMAGE_URL = "imageURL";
         String ATTR_IMAGE_FORMAT = "imageFormat";

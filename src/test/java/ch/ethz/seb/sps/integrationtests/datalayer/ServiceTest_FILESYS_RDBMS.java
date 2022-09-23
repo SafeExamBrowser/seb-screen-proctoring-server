@@ -23,6 +23,6 @@ import ch.ethz.seb.sps.server.ScreenProctoringServer;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Sql(scripts = { "classpath:schema-test.sql" })
-public class ServiceTest_FILESYS_RDBMS {
+public abstract class ServiceTest_FILESYS_RDBMS {
 
 }
