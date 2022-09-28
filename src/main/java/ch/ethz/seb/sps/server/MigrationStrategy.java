@@ -19,15 +19,15 @@ import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SEBServerMigrationStrategy implements FlywayMigrationStrategy {
+public class MigrationStrategy implements FlywayMigrationStrategy {
 
-    private static final Logger log = LoggerFactory.getLogger(SEBServerMigrationStrategy.class);
+    private static final Logger log = LoggerFactory.getLogger(MigrationStrategy.class);
 
     private final boolean cleanDBOnStartup;
     private final ServiceInfo serviceInfo;
     private Flyway flyway;
 
-    public SEBServerMigrationStrategy(
+    public MigrationStrategy(
             final ServiceInfo serviceInfo,
             @Value("${seb.sps.clean-db-on-startup:false}") final boolean cleanDBOnStartup) {
 

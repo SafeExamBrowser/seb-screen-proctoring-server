@@ -38,11 +38,11 @@ public class ScreenshotDAOFileTest extends ServiceTest_FILESYS_RDBMS {
     @Test
     @Order(2)
     public void test02StoreImage() throws Exception {
+        final String sessionId = "session1";
         final Result<Long> storeImage = this.screenshotDAOFile
                 .storeImage(
                         1L,
-                        "group1",
-                        "session1",
+                        sessionId,
                         new ByteArrayInputStream("TEST_STRING".getBytes()));
 
         if (storeImage.hasError()) {
@@ -55,8 +55,9 @@ public class ScreenshotDAOFileTest extends ServiceTest_FILESYS_RDBMS {
     @Test
     @Order(2)
     public void test03GetStoredImage() throws Exception {
+        final String sessionId = "session1";
         final Result<InputStream> getImage = this.screenshotDAOFile
-                .getImage(1L, "group1", "session1");
+                .getImage(1L, sessionId);
 
         if (getImage.hasError()) {
             getImage.getError().printStackTrace();

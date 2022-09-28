@@ -4,43 +4,43 @@ import javax.annotation.Generated;
 import org.joda.time.DateTime;
 
 public class UserRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.553+02:00", comments="Source field: USER.ID")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.429+02:00", comments="Source field: user.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.553+02:00", comments="Source field: USER.UUID")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.431+02:00", comments="Source field: user.uuid")
     private String uuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.553+02:00", comments="Source field: USER.CREATION_DATE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.431+02:00", comments="Source field: user.creation_date")
     private DateTime creationDate;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.NAME")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.431+02:00", comments="Source field: user.name")
     private String name;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.SURNAME")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.431+02:00", comments="Source field: user.surname")
     private String surname;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.USERNAME")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.432+02:00", comments="Source field: user.username")
     private String username;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.PASSWORD")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.432+02:00", comments="Source field: user.password")
     private String password;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.EMAIL")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.432+02:00", comments="Source field: user.email")
     private String email;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.LANGUAGE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.433+02:00", comments="Source field: user.language")
     private String language;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.TIMEZONE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.433+02:00", comments="Source field: user.timeZone")
     private String timezone;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.ACTIVE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.433+02:00", comments="Source field: user.active")
     private Integer active;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.555+02:00", comments="Source field: USER.ROLES")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.433+02:00", comments="Source field: user.roles")
     private String roles;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.543+02:00", comments="Source Table: USER")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.415+02:00", comments="Source Table: user")
     public UserRecord(Long id, String uuid, DateTime creationDate, String name, String surname, String username, String password, String email, String language, String timezone, Integer active, String roles) {
         this.id = id;
         this.uuid = uuid;
@@ -56,71 +56,71 @@ public class UserRecord {
         this.roles = roles;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.553+02:00", comments="Source field: USER.ID")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.431+02:00", comments="Source field: user.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.553+02:00", comments="Source field: USER.UUID")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.431+02:00", comments="Source field: user.uuid")
     public String getUuid() {
         return uuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.CREATION_DATE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.431+02:00", comments="Source field: user.creation_date")
     public DateTime getCreationDate() {
         return creationDate;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.NAME")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.431+02:00", comments="Source field: user.name")
     public String getName() {
         return name;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.SURNAME")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.432+02:00", comments="Source field: user.surname")
     public String getSurname() {
         return surname;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.USERNAME")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.432+02:00", comments="Source field: user.username")
     public String getUsername() {
         return username;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.PASSWORD")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.432+02:00", comments="Source field: user.password")
     public String getPassword() {
         return password;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.EMAIL")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.432+02:00", comments="Source field: user.email")
     public String getEmail() {
         return email;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.LANGUAGE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.433+02:00", comments="Source field: user.language")
     public String getLanguage() {
         return language;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.TIMEZONE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.433+02:00", comments="Source field: user.timeZone")
     public String getTimezone() {
         return timezone;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.554+02:00", comments="Source field: USER.ACTIVE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.433+02:00", comments="Source field: user.active")
     public Integer getActive() {
         return active;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.555+02:00", comments="Source field: USER.ROLES")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.433+02:00", comments="Source field: user.roles")
     public String getRoles() {
         return roles;
     }
 
     /**
      * This method was generated by MyBatis Generator.
-     * This method corresponds to the database table USER
+     * This method corresponds to the database table user
      *
-     * @mbg.generated Fri Sep 23 10:10:02 CEST 2022
+     * @mbg.generated Tue Sep 27 17:51:00 CEST 2022
      */
     @Override
     public String toString() {
@@ -146,9 +146,9 @@ public class UserRecord {
 
     /**
      * This method was generated by MyBatis Generator.
-     * This method corresponds to the database table USER
+     * This method corresponds to the database table user
      *
-     * @mbg.generated Fri Sep 23 10:10:02 CEST 2022
+     * @mbg.generated Tue Sep 27 17:51:00 CEST 2022
      */
     @Override
     public boolean equals(Object that) {
@@ -178,9 +178,9 @@ public class UserRecord {
 
     /**
      * This method was generated by MyBatis Generator.
-     * This method corresponds to the database table USER
+     * This method corresponds to the database table user
      *
-     * @mbg.generated Fri Sep 23 10:10:02 CEST 2022
+     * @mbg.generated Tue Sep 27 17:51:00 CEST 2022
      */
     @Override
     public int hashCode() {

@@ -23,4 +23,6 @@ public interface ScreenshotDataDAO {
 
     Result<Long> save(ScreenshotData data);
 
+    Result<Long> getLatestScreenshotId(String sessionId);
+
 }

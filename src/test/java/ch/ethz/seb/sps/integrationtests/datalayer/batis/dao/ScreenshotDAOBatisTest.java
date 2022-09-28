@@ -38,8 +38,9 @@ public class ScreenshotDAOBatisTest extends ServiceTest_FULL_RDBMS {
     @Test
     @Order(2)
     public void test02StoreImage() throws Exception {
+        final String sessionId = "test";
         final Result<Long> storeImage = this.screenshotDAOBatis
-                .storeImage(1L, new ByteArrayInputStream("TEST_STRING".getBytes()));
+                .storeImage(1L, sessionId, new ByteArrayInputStream("TEST_STRING".getBytes()));
 
         if (storeImage.hasError()) {
             storeImage.getError().printStackTrace();
@@ -51,8 +52,9 @@ public class ScreenshotDAOBatisTest extends ServiceTest_FULL_RDBMS {
     @Test
     @Order(3)
     public void test03StoreAndGetImage() throws Exception {
+        final String sessionId = "test";
         final Result<Long> storeImage = this.screenshotDAOBatis
-                .storeImage(1L, new ByteArrayInputStream("TEST_STRING".getBytes()));
+                .storeImage(1L, sessionId, new ByteArrayInputStream("TEST_STRING".getBytes()));
 
         if (storeImage.hasError()) {
             storeImage.getError().printStackTrace();
@@ -61,7 +63,7 @@ public class ScreenshotDAOBatisTest extends ServiceTest_FULL_RDBMS {
         final Long newId = storeImage.get();
         assertEquals("1", String.valueOf(newId));
 
-        final Result<InputStream> image = this.screenshotDAOBatis.getImage(newId);
+        final Result<InputStream> image = this.screenshotDAOBatis.getImage(newId, sessionId);
 
         if (image.hasError()) {
             image.getError().printStackTrace();
@@ -73,8 +75,9 @@ public class ScreenshotDAOBatisTest extends ServiceTest_FULL_RDBMS {
     @Test
     @Order(4)
     public void test04StoreTwoImages() throws Exception {
+        final String sessionId = "test";
         final Result<Long> storeImage1 = this.screenshotDAOBatis
-                .storeImage(1L, new ByteArrayInputStream("TEST_STRING".getBytes()));
+                .storeImage(1L, sessionId, new ByteArrayInputStream("TEST_STRING".getBytes()));
 
         if (storeImage1.hasError()) {
             storeImage1.getError().printStackTrace();
@@ -84,7 +87,7 @@ public class ScreenshotDAOBatisTest extends ServiceTest_FULL_RDBMS {
         assertEquals("1", String.valueOf(newId));
 
         final Result<Long> storeImage2 = this.screenshotDAOBatis
-                .storeImage(2L, new ByteArrayInputStream("TEST_STRING123".getBytes()));
+                .storeImage(2L, sessionId, new ByteArrayInputStream("TEST_STRING123".getBytes()));
 
         if (storeImage2.hasError()) {
             storeImage2.getError().printStackTrace();
@@ -93,7 +96,7 @@ public class ScreenshotDAOBatisTest extends ServiceTest_FULL_RDBMS {
         final Long newId2 = storeImage2.get();
         assertEquals("2", String.valueOf(newId2));
 
-        final Result<InputStream> image = this.screenshotDAOBatis.getImage(newId2);
+        final Result<InputStream> image = this.screenshotDAOBatis.getImage(newId2, sessionId);
 
         if (image.hasError()) {
             image.getError().printStackTrace();
@@ -106,7 +109,7 @@ public class ScreenshotDAOBatisTest extends ServiceTest_FULL_RDBMS {
     @Order(5)
     public void test05FailToStoreImageTwice_SamePK() throws Exception {
         final Result<Long> storeImage1 = this.screenshotDAOBatis
-                .storeImage(1L, new ByteArrayInputStream("TEST_STRING".getBytes()));
+                .storeImage(1L, "test", new ByteArrayInputStream("TEST_STRING".getBytes()));
 
         if (storeImage1.hasError()) {
             storeImage1.getError().printStackTrace();
@@ -116,7 +119,7 @@ public class ScreenshotDAOBatisTest extends ServiceTest_FULL_RDBMS {
         assertEquals("1", String.valueOf(newId));
 
         final Result<Long> storeImage2 = this.screenshotDAOBatis
-                .storeImage(1L, new ByteArrayInputStream("TEST_STRING123".getBytes()));
+                .storeImage(1L, "test", new ByteArrayInputStream("TEST_STRING123".getBytes()));
 
         assertTrue(storeImage2.hasError());
         assertTrue(storeImage2.getError().getMessage().contains("JdbcSQLIntegrityConstraintViolationException"));

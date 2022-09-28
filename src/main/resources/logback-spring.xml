@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="false">
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+        <pattern>%d{HH:mm:ss.SSS} %-5level [%thread]:[%logger] %msg%n</pattern>
+      </encoder>
+    </appender>
+    
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+      <file>log/sebserver.log</file>
+      <append>true</append>
+      <encoder>
+         <pattern>%d{HH:mm:ss.SSS} %-5level [%thread]:[%logger] %msg%n</pattern>
+      </encoder>
+   </appender>
+
+  <springProfile name="dev">
+
+    <root level="DEBUG" additivity="true">
+      <appender-ref ref="STDOUT" />
+    </root>
+    <Logger name="*" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </Logger>
+    <Logger name="SERVICE_INIT" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </Logger>
+
+  </springProfile>
+  
+  <springProfile name="test">
+
+    <root level="WARN" additivity="true">
+      <appender-ref ref="STDOUT" />
+    </root>
+  </springProfile>
+  
+  <springProfile name="demo">
+
+    <root level="INFO" additivity="true">
+      <appender-ref ref="STDOUT" />
+      <appender-ref ref="FILE" />
+    </root>
+    <Logger name="SERVICE_INIT" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </Logger>
+    
+  </springProfile>
+  
+  <springProfile name="prod">
+    <Logger name="ch.ethz.seb" level="WARN" additivity="true">
+        <appender-ref ref="STDOUT" />
+    </Logger>
+    <Logger name="SERVICE_INIT" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </Logger>
+    
+  </springProfile>
+  
+</configuration>

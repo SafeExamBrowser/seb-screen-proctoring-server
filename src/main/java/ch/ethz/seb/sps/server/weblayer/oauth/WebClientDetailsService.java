@@ -64,17 +64,17 @@ public class WebClientDetailsService implements ClientDetailsService {
             return this.adminClientDetails;
         }
 
-        return getForExamClientAPI(clientId)
+        return getForClientAPI(clientId)
                 .get(t -> {
                     if (log.isDebugEnabled()) {
-                        log.warn("Active ClientConfig not found: {} cause: {}", clientId, t.getMessage());
+                        log.warn("Active client not found: {} cause: {}", clientId, t.getMessage());
                     }
                     throw new UsernameNotFoundException(t.getMessage());
                 });
     }
 
-    protected Result<ClientDetails> getForExamClientAPI(final String clientId) {
-        return this.clientAccessService.getClientConfigDetails(clientId);
+    protected Result<ClientDetails> getForClientAPI(final String clientId) {
+        return this.clientAccessService.getClientDetails(clientId);
     }
 
 }

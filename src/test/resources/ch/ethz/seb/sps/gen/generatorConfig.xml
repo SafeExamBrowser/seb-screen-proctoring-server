@@ -12,7 +12,7 @@
         <plugin type="org.mybatis.generator.plugins.VirtualPrimaryKeyPlugin"/>
         <plugin type="org.mybatis.generator.plugins.ToStringPlugin"/>
         <plugin type="org.mybatis.generator.plugins.EqualsHashCodePlugin"/>
-        <plugin type="ch.ethz.seb.sps.datalayer.batis.generator.AdditionalMapperMethodsPlugin"/>
+        <plugin type="ch.ethz.seb.sps.generator.AdditionalMapperMethodsPlugin"/>
 
         <commentGenerator>
             <property name="addRemarkComments" value="false"/>
@@ -36,7 +36,8 @@
             <property name="enableSubPackages" value="false"/>
         </javaClientGenerator>
         
-        <table tableName="user" domainObjectName="UserRecord">
+
+        <table tableName="user" domainObjectName="UserRecord" >
             <property name="immutable" value="true"/>
             <generatedKey column="id" sqlStatement="MySql" identity="true"/>
             <columnOverride column="creation_date" javaType="org.joda.time.DateTime" typeHandler="ch.ethz.seb.sps.server.datalayer.batis.JodaTimeTypeResolver" />
@@ -46,7 +47,7 @@
             <generatedKey column="id" sqlStatement="MySql" identity="true"/>
             <columnOverride column="creation_date" javaType="org.joda.time.DateTime" typeHandler="ch.ethz.seb.sps.server.datalayer.batis.JodaTimeTypeResolver" />
         </table>
-        <table tableName="group" domainObjectName="GroupRecord">
+        <table tableName="seb_group" domainObjectName="GroupRecord">
             <property name="immutable" value="true"/>
             <generatedKey column="id" sqlStatement="MySql" identity="true"/>
         </table>

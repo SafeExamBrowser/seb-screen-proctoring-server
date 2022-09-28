@@ -25,13 +25,13 @@ import org.springframework.stereotype.Component;
 @Import(DataSourceAutoConfiguration.class)
 public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
 
-    public static final Logger INIT_LOGGER = LoggerFactory.getLogger("ch.ethz.seb.SERVICE_INIT");
+    public static final Logger INIT_LOGGER = LoggerFactory.getLogger("SERVICE_INIT");
 
     private final ApplicationContext applicationContext;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final Environment environment;
     private final ServiceInfo serviceInfo;
-    private final SEBServerMigrationStrategy sebServerMigrationStrategy;
+    private final MigrationStrategy sebServerMigrationStrategy;
     private final AdminUserInitializer adminUserInitializer;
     private final boolean initialized = false;
 
@@ -39,7 +39,7 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
             final ApplicationContext applicationContext,
             final ApplicationEventPublisher applicationEventPublisher,
             final ServiceInfo serviceInfo,
-            final SEBServerMigrationStrategy sebServerMigrationStrategy,
+            final MigrationStrategy sebServerMigrationStrategy,
             final AdminUserInitializer adminUserInitializer) {
 
         this.applicationContext = applicationContext;
@@ -61,30 +61,21 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
             return;
         }
 
-        INIT_LOGGER.info(
-                "---->       _______. _______ .______           _______. _______ .______     ____    ____  _______ .______                                                                         \r\n");
-        INIT_LOGGER.info(
-                "---->      /       ||   ____||   _  \\         /       ||   ____||   _  \\    \\   \\  /   / |   ____||   _  \\                                                                        \r\n");
-        INIT_LOGGER.info(
-                "---->     |   (----`|  |__   |  |_)  |       |   (----`|  |__   |  |_)  |    \\   \\/   /  |  |__   |  |_)  |                                                                       \r\n");
-        INIT_LOGGER.info(
-                "---->      \\   \\    |   __|  |   _  <         \\   \\    |   __|  |      /      \\      /   |   __|  |      /                                                                        \r\n");
-        INIT_LOGGER.info(
-                "---->  .----)   |   |  |____ |  |_)  |    .----)   |   |  |____ |  |\\  \\----.  \\    /    |  |____ |  |\\  \\----.                                                                   \r\n");
-        INIT_LOGGER.info(
-                "---->  |___________.|_______|.______/     |_______/ ________.__|| __.`.__.______\\__._____________|______.__________ .___________.  ______   .______       __  .__   __.   _______ \r\n");
-        INIT_LOGGER.info(
-                "---->      /       | /      ||   _  \\     |   ____||   ____||  \\ |  |    |   _  \\  |   _  \\      /  __  \\   /      ||           | /  __  \\  |   _  \\     |  | |  \\ |  |  /  _____|\r\n");
-        INIT_LOGGER.info(
-                "---->     |   (----`|  ,----'|  |_)  |    |  |__   |  |__   |   \\|  |    |  |_)  | |  |_)  |    |  |  |  | |  ,----'`---|  |----`|  |  |  | |  |_)  |    |  | |   \\|  | |  |  __  \r\n");
-        INIT_LOGGER.info(
-                "---->      \\   \\    |  |     |      /     |   __|  |   __|  |  . `  |    |   ___/  |      /     |  |  |  | |  |         |  |     |  |  |  | |      /     |  | |  . `  | |  | |_ | \r\n");
-        INIT_LOGGER.info(
-                "---->  .----)   |   |  `----.|  |\\  \\----.|  |____ |  |____ |  |\\   |    |  |      |  |\\  \\----.|  `--'  | |  `----.    |  |     |  `--'  | |  |\\  \\----.|  | |  |\\   | |  |__| | \r\n");
-        INIT_LOGGER.info(
-                "---->  |_______/     \\______|| _| `._____||_______||_______||__| \\__|    | _|      | _| `._____| \\______/   \\______|    |__|      \\______/  | _| `._____||__| |__| \\__|  \\______| \r\n");
-        INIT_LOGGER.info(
-                "---->                                                                                                                                                                             ");
+        // @formatter:off
+        INIT_LOGGER.info(" _______ _______ _______      _______ _______ ______   __   __ ___ _______ _______                                                   ");
+        INIT_LOGGER.info("|       |       |  _    |    |       |       |    _ | |  | |  |   |       |       |                                                  ");
+        INIT_LOGGER.info("|  _____|    ___| |_|   |    |  _____|    ___|   | || |  |_|  |   |       |    ___|                                                  ");
+        INIT_LOGGER.info("| |_____|   |___|       |    | |_____|   |___|   |_||_|       |   |       |   |___                                                   ");
+        INIT_LOGGER.info("|_____  |    ___|  _   |     |_____  |    ___|    __  |       |   |      _|    ___|                                                  ");
+        INIT_LOGGER.info(" _____| |   |___| |_|   |     _____| |   |___|   |  | ||     ||   |     |_|   |___                                                   ");
+        INIT_LOGGER.info("|_______|_______|_______| ___|_______|_______|___|  |_|_|___|_|___|_______|_______|____ _______ _______ ______   ___ __    _ _______ ");
+        INIT_LOGGER.info("|       |       |    _ | |       |       |  |  | |    |       |    _ | |       |       |       |       |    _ | |   |  |  | |       |");
+        INIT_LOGGER.info("|  _____|       |   | || |    ___|    ___|   |_| |    |    _  |   | || |   _   |       |_     _|   _   |   | || |   |   |_| |    ___|");
+        INIT_LOGGER.info("| |_____|       |   |_||_|   |___|   |___|       |    |   |_| |   |_||_|  | |  |       | |   | |  | |  |   |_||_|   |       |   | __ ");
+        INIT_LOGGER.info("|_____  |      _|    __  |    ___|    ___|  _    |    |    ___|    __  |  |_|  |      _| |   | |  |_|  |    __  |   |  _    |   ||  |");
+        INIT_LOGGER.info(" _____| |     |_|   |  | |   |___|   |___| | |   |    |   |   |   |  | |       |     |_  |   | |       |   |  | |   | | |   |   |_| |");
+        INIT_LOGGER.info("|_______|_______|___|  |_|_______|_______|_|  |__|    |___|   |___|  |_|_______|_______| |___| |_______|___|  |_|___|_|  |__|_______|");
+        // @formatter:on
         INIT_LOGGER.info("---->");
         INIT_LOGGER.info("---->");
         INIT_LOGGER.info("----> Version: {}", this.serviceInfo.getVersion());

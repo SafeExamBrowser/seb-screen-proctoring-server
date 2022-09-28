@@ -7,38 +7,38 @@ import org.mybatis.dynamic.sql.SqlColumn;
 import org.mybatis.dynamic.sql.SqlTable;
 
 public final class ClientAccessRecordDynamicSqlSupport {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.586+02:00", comments="Source Table: CLIENT_ACCESS")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.498+02:00", comments="Source Table: client_access")
     public static final ClientAccessRecord clientAccessRecord = new ClientAccessRecord();
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.586+02:00", comments="Source field: CLIENT_ACCESS.ID")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.498+02:00", comments="Source field: client_access.id")
     public static final SqlColumn<Long> id = clientAccessRecord.id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.586+02:00", comments="Source field: CLIENT_ACCESS.CLIENT_NAME")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.498+02:00", comments="Source field: client_access.client_name")
     public static final SqlColumn<String> clientName = clientAccessRecord.clientName;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.586+02:00", comments="Source field: CLIENT_ACCESS.CLIENT_SECRET")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.499+02:00", comments="Source field: client_access.client_secret")
     public static final SqlColumn<String> clientSecret = clientAccessRecord.clientSecret;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.586+02:00", comments="Source field: CLIENT_ACCESS.CREATION_DATE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.499+02:00", comments="Source field: client_access.creation_date")
     public static final SqlColumn<DateTime> creationDate = clientAccessRecord.creationDate;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.587+02:00", comments="Source field: CLIENT_ACCESS.ACTIVE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.499+02:00", comments="Source field: client_access.active")
     public static final SqlColumn<Integer> active = clientAccessRecord.active;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.586+02:00", comments="Source Table: CLIENT_ACCESS")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.498+02:00", comments="Source Table: client_access")
     public static final class ClientAccessRecord extends SqlTable {
-        public final SqlColumn<Long> id = column("ID", JDBCType.BIGINT);
+        public final SqlColumn<Long> id = column("id", JDBCType.BIGINT);
 
-        public final SqlColumn<String> clientName = column("CLIENT_NAME", JDBCType.VARCHAR);
+        public final SqlColumn<String> clientName = column("client_name", JDBCType.VARCHAR);
 
-        public final SqlColumn<String> clientSecret = column("CLIENT_SECRET", JDBCType.VARCHAR);
+        public final SqlColumn<String> clientSecret = column("client_secret", JDBCType.VARCHAR);
 
-        public final SqlColumn<DateTime> creationDate = column("CREATION_DATE", JDBCType.TIMESTAMP, "ch.ethz.seb.sps.server.datalayer.batis.JodaTimeTypeResolver");
+        public final SqlColumn<DateTime> creationDate = column("creation_date", JDBCType.TIMESTAMP, "ch.ethz.seb.sps.server.datalayer.batis.JodaTimeTypeResolver");
 
-        public final SqlColumn<Integer> active = column("ACTIVE", JDBCType.INTEGER);
+        public final SqlColumn<Integer> active = column("active", JDBCType.INTEGER);
 
         public ClientAccessRecord() {
-            super("CLIENT_ACCESS");
+            super("client_access");
         }
     }
 }

@@ -33,7 +33,6 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
     @Transactional(readOnly = true)
     public Result<InputStream> getImage(
             final Long pk,
-            final String groupId,
             final String sessionId) {
 
         return Result.tryCatch(() -> {
@@ -47,7 +46,6 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
     @Transactional(readOnly = false)
     public Result<Long> storeImage(
             final Long pk,
-            final String groupId,
             final String sessionId,
             final InputStream in) {
 

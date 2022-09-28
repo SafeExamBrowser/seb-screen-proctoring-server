@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.server.datalayer.batis.dao;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.mybatis.dynamic.sql.SqlBuilder;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.seb.sps.domain.model.screenshot.ScreenshotData;
+import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotDataMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
@@ -28,9 +30,14 @@ import ch.ethz.seb.sps.utils.Result;
 public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
+    private final ScreenshotDataMapper screenshotDataMapper;
 
-    public ScreenshotDataDAOBatis(final ScreenshotDataRecordMapper screenshotDataRecordMapper) {
+    public ScreenshotDataDAOBatis(
+            final ScreenshotDataRecordMapper screenshotDataRecordMapper,
+            final ScreenshotDataMapper screenshotDataMapper) {
+
         this.screenshotDataRecordMapper = screenshotDataRecordMapper;
+        this.screenshotDataMapper = screenshotDataMapper;
     }
 
     @Override
@@ -50,6 +57,20 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                 .stream()
                 .map(this::toDomainModel)
                 .collect(Collectors.toList()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Long> getLatestScreenshotId(final String sessionId) {
+        return Result.tryCatch(() -> {
+
+            final List<Long> execute = this.screenshotDataMapper.selectLatestIdByExample()
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionId))
+                    .build()
+                    .execute();
+
+            return execute.get(0);
+        });
     }
 
     @Override

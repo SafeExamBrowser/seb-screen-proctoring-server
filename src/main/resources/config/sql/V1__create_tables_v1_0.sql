@@ -74,14 +74,16 @@ CREATE TABLE IF NOT EXISTS `screenshot` (
 
 
 -- -----------------------------------------------------
--- Table `group`
+-- Table `seb_group`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `group` ;
+DROP TABLE IF EXISTS `seb_group` ;
 
-CREATE TABLE IF NOT EXISTS `group` (
+CREATE TABLE IF NOT EXISTS `seb_group` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `uuid` VARCHAR(45) NOT NULL,
   `name` VARCHAR(255) NULL,
+  `creation_time` BIGINT NOT NULL,
+  `termination_time` BIGINT NULL,
   PRIMARY KEY (`id`));
 
 
@@ -94,12 +96,14 @@ CREATE TABLE IF NOT EXISTS `session` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `group_id` BIGINT UNSIGNED NOT NULL,
   `uuid` VARCHAR(45) NOT NULL,
-  `name` VARCHAR(45) NOT NULL,
+  `name` VARCHAR(255) NULL,
+  `creation_time` BIGINT NOT NULL,
+  `termination_time` BIGINT NULL,
   PRIMARY KEY (`id`),
   INDEX `group_ref_idx` (`group_id` ASC),
   CONSTRAINT `group_ref`
     FOREIGN KEY (`group_id`)
-    REFERENCES `group` (`id`)
+    REFERENCES `seb_group` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 

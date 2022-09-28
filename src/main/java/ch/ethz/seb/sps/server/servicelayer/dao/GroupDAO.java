@@ -15,6 +15,12 @@ public interface GroupDAO {
 
     Result<Group> byPK(Long id);
 
-    Result<Long> save(Group data);
+    boolean existsByUUID(String groupUUID);
+
+    Result<Long> getGroupIdByUUID(String groupUUID);
+
+    Result<Group> createNew(String groupUUID, String groupUUID2);
+
+    Result<Group> save(Group data);
 
 }

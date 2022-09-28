@@ -6,23 +6,23 @@ import org.mybatis.dynamic.sql.SqlColumn;
 import org.mybatis.dynamic.sql.SqlTable;
 
 public final class ScreenshotRecordDynamicSqlSupport {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.601+02:00", comments="Source Table: SCREENSHOT")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.533+02:00", comments="Source Table: screenshot")
     public static final ScreenshotRecord screenshotRecord = new ScreenshotRecord();
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.601+02:00", comments="Source field: SCREENSHOT.ID")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.533+02:00", comments="Source field: screenshot.id")
     public static final SqlColumn<Long> id = screenshotRecord.id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.602+02:00", comments="Source field: SCREENSHOT.IMAGE")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.533+02:00", comments="Source field: screenshot.image")
     public static final SqlColumn<byte[]> image = screenshotRecord.image;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-23T10:10:02.601+02:00", comments="Source Table: SCREENSHOT")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.533+02:00", comments="Source Table: screenshot")
     public static final class ScreenshotRecord extends SqlTable {
-        public final SqlColumn<Long> id = column("ID", JDBCType.BIGINT);
+        public final SqlColumn<Long> id = column("id", JDBCType.BIGINT);
 
-        public final SqlColumn<byte[]> image = column("IMAGE", JDBCType.BLOB);
+        public final SqlColumn<byte[]> image = column("image", JDBCType.BLOB);
 
         public ScreenshotRecord() {
-            super("SCREENSHOT");
+            super("screenshot");
         }
     }
 }

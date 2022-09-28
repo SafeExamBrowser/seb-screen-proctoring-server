@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package ch.ethz.seb.sps.datalayer.batis.generator;
+package ch.ethz.seb.sps.generator;
 
 import java.util.List;
 
@@ -69,7 +69,7 @@ public class AdditionalMapperMethodsPlugin extends PluginAdapter {
 
         final Method selectIds = new Method("selectIds");
         selectIds.addAnnotation(
-                "@Generated(value=\"org.mybatis.generator.api.MyBatisGenerator\",comments=\"Source Table: exam\")");
+                "@Generated(value=\"org.mybatis.generator.api.MyBatisGenerator\")");
         selectIds.addAnnotation("@SelectProvider(type=SqlProviderAdapter.class, method=\"select\")");
         selectIds.addAnnotation(
                 "@ConstructorArgs({@Arg(column=\"id\", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true)})");

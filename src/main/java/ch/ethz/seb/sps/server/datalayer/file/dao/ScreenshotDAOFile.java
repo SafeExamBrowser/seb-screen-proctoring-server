@@ -28,12 +28,11 @@ public class ScreenshotDAOFile implements ScreenshotDAO {
     @Override
     public Result<InputStream> getImage(
             final Long pk,
-            final String groupId,
             final String sessionId) {
 
         return Result.tryCatch(() -> {
 
-            final String dir = this.rootDir + groupId + "/" + sessionId + "/";
+            final String dir = this.rootDir + sessionId + "/";
             final String fileName = "screen" + pk;
 
             final FileSystemResource fileResource = new FileSystemResource(dir + fileName);
@@ -44,13 +43,12 @@ public class ScreenshotDAOFile implements ScreenshotDAO {
     @Override
     public Result<Long> storeImage(
             final Long pk,
-            final String groupId,
             final String sessionId,
             final InputStream in) {
 
         return Result.tryCatch(() -> {
 
-            final String dir = this.rootDir + groupId + "/" + sessionId + "/";
+            final String dir = this.rootDir + sessionId + "/";
             final String fileName = "screen" + pk;
 
             final FileSystemResource fileSystemResource = new FileSystemResource(dir);

@@ -46,21 +46,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 
 import ch.ethz.seb.sps.server.ServiceConfig;
 
-/** This is the main web-security Spring configuration for SEB-Server webservice API
- *
- * Currently two separated Rest API's are implemented, one for administration and maintenance
- * of the SEB-Server (AdminAPI) and one for SEB-Client connection on running exams and eventually
- * also for LMS communication), if needed (ExamAPI). The AdministrationAPI uses OAuth 2 password
- * grant with refresh-token, same as in the prototype and the ExamAPI uses the client_credential grant.
- *
- * There is a Spring Authorization-Server defining this two clients (AdminAPIClient and ExamAPIClient) as well as
- * two Spring Resource-Server for the separation of the different API's
- *
- * The endpoint of the AdministrationAPI can be configured within the key; sebserver.webservice.api.admin.endpoint
- * and is by default set to "/admin-api/**"
- *
- * The endpoint of the ExamAPI can be configured within the key; sebserver.webservice.api.exam.endpoint
- * and is by default set to "/exam-api/**" */
 @Configuration
 @EnableWebSecurity
 @Order(6)
@@ -84,8 +69,8 @@ public class WebServiceSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Value("${sps.api.admin.endpoint}")
     private String adminAPIEndpoint;
-    @Value("${sps.api.exam.endpoint}")
-    private String examAPIEndpoint;
+    @Value("${sps.api.session.endpoint}")
+    private String sessionAPIEndpoint;
     @Value("${sps.http.redirect}")
     private String unauthorizedRedirect;
 
@@ -93,8 +78,8 @@ public class WebServiceSecurityConfig extends WebSecurityConfigurerAdapter {
     private Integer adminAccessTokenValSec;
     @Value("${sps.api.admin.refreshTokenValiditySeconds:-1}")
     private Integer adminRefreshTokenValSec;
-    @Value("${sps.api.exam.accessTokenValiditySeconds:43200}")
-    private Integer examAccessTokenValSec;
+    @Value("${sps.api.session.accessTokenValiditySeconds:43200}")
+    private Integer sessionAccessTokenValSec;
 
     @Lazy
     @Bean
@@ -172,8 +157,8 @@ public class WebServiceSecurityConfig extends WebSecurityConfigurerAdapter {
                 this.tokenStore,
                 this.webServiceClientDetails,
                 authenticationManagerBean(),
-                this.examAPIEndpoint,
-                this.examAccessTokenValSec);
+                this.sessionAPIEndpoint,
+                this.sessionAccessTokenValSec);
     }
 
     // NOTE: We need two different class types here to support Spring configuration for different
@@ -225,7 +210,7 @@ public class WebServiceSecurityConfig extends WebSecurityConfigurerAdapter {
                         log.info("Redirect to login after unauthorized request");
                         response.getOutputStream().println("{ \"error\": \"" + exception.getMessage() + "\" }");
                     },
-                    EXAM_API_RESOURCE_ID,
+                    SESSION_API_RESOURCE_ID,
                     apiEndpoint,
                     true,
                     3,

@@ -22,5 +22,12 @@ public final class API {
 
     public static final String PARAM_MODEL_ID = "modelId";
     public static final String PARAM_ENTITY_TYPE = "entityType";
+    public static final String PARAM_MODEL_PATH_SEGMENT = "/{modelId}";
+
+    public static final String SESSION_HEADER_UUID = "SEB_SESSION_UUID";
+
+    public static final String SESSION_HANDSHAKE_ENDPOINT = "/handshake";
+    public static final String SESSION_SCREENSHOT_ENDPOINT = "/screenshot";
+    public static final String SESSION_SCREENSHOT_LATEST_ENDPOINT = "/latest";
 
 }

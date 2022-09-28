@@ -14,16 +14,13 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface ScreenshotDAO {
 
-    Result<InputStream> getImage(Long pk, final String groupId, final String sessionId);
+    Result<InputStream> getImage(
+            Long pk,
+            final String sessionId);
 
-    default Result<InputStream> getImage(final Long pk) {
-        return getImage(pk, null, null);
-    }
-
-    Result<Long> storeImage(Long pk, String groupId, String sessionId, InputStream in);
-
-    default Result<Long> storeImage(final Long pk, final InputStream in) {
-        return storeImage(pk, null, null, in);
-    }
+    Result<Long> storeImage(
+            Long pk,
+            String sessionId,
+            InputStream in);
 
 }

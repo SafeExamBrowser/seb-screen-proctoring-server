@@ -22,7 +22,7 @@ import ch.ethz.seb.sps.server.ScreenProctoringServer;
         classes = { ScreenProctoringServer.class },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@Sql(scripts = { "classpath:schema-test.sql" })
+@Sql(scripts = { "classpath:schema-test.sql", "classpath:test-data.sql" })
 public abstract class ServiceTest_FILESYS_RDBMS {
 
 }

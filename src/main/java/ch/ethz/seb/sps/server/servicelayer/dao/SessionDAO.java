@@ -15,6 +15,8 @@ public interface SessionDAO {
 
     Result<Session> byPK(Long id);
 
-    Result<Long> save(Session data);
+    Result<Session> save(Session data);
+
+    Result<Session> createNew(Long groupId, String uuid, String name);
 
 }

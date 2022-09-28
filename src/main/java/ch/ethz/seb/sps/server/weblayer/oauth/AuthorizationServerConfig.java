@@ -33,12 +33,6 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.utils.Constants;
 
-/** This is the main Spring configuration of OAuth2 Authorization Server.
- *
- * Currently supporting two client types for the two different API's on
- * SEB Server webservice;
- * - Administration API for administrative purpose using password grant type with refresh token
- * - Exam API for SEB-Client connections on running exams using client_credential grant type */
 @Configuration
 @EnableAuthorizationServer
 @Order(100)
@@ -60,9 +54,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Autowired
     @Qualifier(WebServiceSecurityConfig.AUTHENTICATION_MANAGER)
     private AuthenticationManager authenticationManager;
-    @Value("${sebserver.webservice.api.admin.accessTokenValiditySeconds:3600}")
+    @Value("${sps.api.admin.accessTokenValiditySeconds:3600}")
     private Integer adminAccessTokenValSec;
-    @Value("${sebserver.webservice.api.admin.refreshTokenValiditySeconds:-1}")
+    @Value("${sps.api.admin.refreshTokenValiditySeconds:-1}")
     private Integer adminRefreshTokenValSec;
 
     @Override

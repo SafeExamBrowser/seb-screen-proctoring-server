@@ -30,6 +30,6 @@ public interface ClientAccessService {
             cacheNames = EXAM_CLIENT_DETAILS_CACHE,
             key = "#clientName",
             unless = "#result.hasError()")
-    Result<ClientDetails> getClientConfigDetails(String clientName);
+    Result<ClientDetails> getClientDetails(String clientName);
 
 }

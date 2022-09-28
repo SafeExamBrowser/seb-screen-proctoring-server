@@ -37,17 +37,27 @@ public class Session implements Entity {
     @JsonProperty(SESSION.ATTR_NAME)
     public final String name;
 
+    @JsonProperty(SESSION.ATTR_CREATION_TIME)
+    public final Long creationTime;
+
+    @JsonProperty(SESSION.ATTR_TERMINATION_TIME)
+    public final Long terminationTime;
+
     @JsonCreator
     public Session(
             @JsonProperty(SESSION.ATTR_ID) final Long id,
             @JsonProperty(SESSION.ATTR_GROUP_ID) final Long groupId,
             @JsonProperty(SESSION.ATTR_UUID) final String uuid,
-            @JsonProperty(SESSION.ATTR_NAME) final String name) {
+            @JsonProperty(SESSION.ATTR_NAME) final String name,
+            @JsonProperty(SESSION.ATTR_CREATION_TIME) final Long creationTime,
+            @JsonProperty(SESSION.ATTR_TERMINATION_TIME) final Long terminationTime) {
 
         this.id = id;
         this.groupId = groupId;
         this.uuid = uuid;
         this.name = name;
+        this.creationTime = creationTime;
+        this.terminationTime = terminationTime;
     }
 
     @Override
@@ -83,6 +93,14 @@ public class Session implements Entity {
         return this.name;
     }
 
+    public Long getCreationTime() {
+        return this.creationTime;
+    }
+
+    public Long getTerminationTime() {
+        return this.terminationTime;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(this.entityType, this.id);
@@ -113,6 +131,10 @@ public class Session implements Entity {
         builder.append(this.uuid);
         builder.append(", name=");
         builder.append(this.name);
+        builder.append(", creationTime=");
+        builder.append(this.creationTime);
+        builder.append(", terminationTime=");
+        builder.append(this.terminationTime);
         builder.append("]");
         return builder.toString();
     }

@@ -39,6 +39,8 @@ public interface Domain {
         String ATTR_ID = "id";
         String ATTR_UUID = "uuid";
         String ATTR_NAME = "name";
+        String ATTR_CREATION_TIME = "creationTime";
+        String ATTR_TERMINATION_TIME = "terminationTime";
     }
 
     interface SESSION {
@@ -46,6 +48,8 @@ public interface Domain {
         String ATTR_GROUP_ID = "groupId";
         String ATTR_UUID = "uuid";
         String ATTR_NAME = "name";
+        String ATTR_CREATION_TIME = "creationTime";
+        String ATTR_TERMINATION_TIME = "terminationTime";
     }
 
     interface SCREENSHOT_DATA {

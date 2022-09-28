@@ -34,15 +34,25 @@ public class Group implements Entity {
     @JsonProperty(GROUP.ATTR_NAME)
     public final String name;
 
+    @JsonProperty(GROUP.ATTR_CREATION_TIME)
+    public final Long creationTime;
+
+    @JsonProperty(GROUP.ATTR_TERMINATION_TIME)
+    public final Long terminationTime;
+
     @JsonCreator
     public Group(
             @JsonProperty(GROUP.ATTR_ID) final Long id,
             @JsonProperty(GROUP.ATTR_UUID) final String uuid,
-            @JsonProperty(GROUP.ATTR_NAME) final String name) {
+            @JsonProperty(GROUP.ATTR_NAME) final String name,
+            @JsonProperty(GROUP.ATTR_CREATION_TIME) final Long creationTime,
+            @JsonProperty(GROUP.ATTR_TERMINATION_TIME) final Long terminationTime) {
 
         this.id = id;
         this.uuid = uuid;
         this.name = name;
+        this.creationTime = creationTime;
+        this.terminationTime = terminationTime;
     }
 
     @Override
@@ -68,6 +78,14 @@ public class Group implements Entity {
     @Override
     public String getName() {
         return this.name;
+    }
+
+    public Long getCreationTime() {
+        return this.creationTime;
+    }
+
+    public Long getTerminationTime() {
+        return this.terminationTime;
     }
 
     @Override
@@ -98,6 +116,10 @@ public class Group implements Entity {
         builder.append(this.uuid);
         builder.append(", name=");
         builder.append(this.name);
+        builder.append(", creationTime=");
+        builder.append(this.creationTime);
+        builder.append(", terminationTime=");
+        builder.append(this.terminationTime);
         builder.append("]");
         return builder.toString();
     }

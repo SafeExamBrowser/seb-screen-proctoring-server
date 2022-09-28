@@ -8,18 +8,26 @@
 
 package ch.ethz.seb.sps.server;
 
+import java.util.concurrent.Executor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
+@EnableAsync
 public class ServiceConfig {
 
     /** Spring bean name of user password encoder */
     public static final String USER_PASSWORD_ENCODER_BEAN_NAME = "userPasswordEncoder";
     /** Spring bean name of client (application) password encoder */
     public static final String CLIENT_PASSWORD_ENCODER_BEAN_NAME = "clientPasswordEncoder";
+
+    public static final String SCREENSHOT_UPLOAD_API_EXECUTOR = "SCREENSHOT_UPLOAD_API_EXECUTOR";
+    public static final String SCREENSHOT_DOWNLOAD_API_EXECUTOR = "SCREENSHOT_DOWNLOAD_API_EXECUTOR";
 
     /** Password encoder used for user passwords (stronger protection) */
     @Bean(USER_PASSWORD_ENCODER_BEAN_NAME)
@@ -31,6 +39,32 @@ public class ServiceConfig {
     @Bean(CLIENT_PASSWORD_ENCODER_BEAN_NAME)
     public PasswordEncoder clientPasswordEncoder() {
         return new BCryptPasswordEncoder(4);
+    }
+
+    @Bean(name = SCREENSHOT_UPLOAD_API_EXECUTOR)
+    public Executor screenhortUploadThreadPoolTaskExecutor() {
+        final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(200);
+        executor.setMaxPoolSize(2000);
+        executor.setQueueCapacity(2000);
+        executor.setThreadPriority(Thread.MAX_PRIORITY);
+        executor.setThreadNamePrefix("upload-");
+        executor.initialize();
+        executor.setWaitForTasksToCompleteOnShutdown(false);
+        return executor;
+    }
+
+    @Bean(name = SCREENSHOT_DOWNLOAD_API_EXECUTOR)
+    public Executor screenhortDownloadThreadPoolTaskExecutor() {
+        final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(20);
+        executor.setMaxPoolSize(100);
+        executor.setQueueCapacity(500);
+        executor.setThreadPriority(Thread.NORM_PRIORITY);
+        executor.setThreadNamePrefix("download-");
+        executor.initialize();
+        executor.setWaitForTasksToCompleteOnShutdown(false);
+        return executor;
     }
 
 }

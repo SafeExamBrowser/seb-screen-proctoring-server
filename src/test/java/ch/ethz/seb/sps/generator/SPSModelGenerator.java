@@ -1,4 +1,4 @@
-package ch.ethz.seb.sps.datalayer.batis.generator;
+package ch.ethz.seb.sps.generator;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class SPSModelGenerator {
         final String url = SCHEMA_URL_PREFIX + "version_" + getenv.replace(".", "_") + "/" + SCHEMA_FILE_NAME + "'";
         final String INIT_SCRIPT = ";runscript from " + url;
         final String INIT = ";INIT=create schema if not exists " + SCHEMA_NAME + "\\" + INIT_SCRIPT;
-        final String MODE = ";MODE=MySQL";
+        final String MODE = ";MODE=MySQL;DATABASE_TO_UPPER=false";
 
         final JdbcDataSource ds = new JdbcDataSource();
         ds.setURL(DB_URL + INIT + MODE);
