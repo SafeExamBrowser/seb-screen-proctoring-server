@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package ch.ethz.seb.sps.server.weblayer.oauth;
+package ch.ethz.seb.sps.server.weblayer;
 
 import java.io.IOException;
 
@@ -45,14 +45,18 @@ import org.springframework.security.oauth2.provider.token.UserAuthenticationConv
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 import ch.ethz.seb.sps.server.ServiceConfig;
+import ch.ethz.seb.sps.server.weblayer.oauth.CachableJdbcTokenStore;
+import ch.ethz.seb.sps.server.weblayer.oauth.WebClientDetailsService;
+import ch.ethz.seb.sps.server.weblayer.oauth.WebServiceUserDetails;
+import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
 
 @Configuration
 @EnableWebSecurity
 @Order(6)
 @Import(DataSourceAutoConfiguration.class)
-public class WebServiceSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebServiceConfig extends WebSecurityConfigurerAdapter {
 
-    private static final Logger log = LoggerFactory.getLogger(WebServiceSecurityConfig.class);
+    private static final Logger log = LoggerFactory.getLogger(WebServiceConfig.class);
 
     /** Spring bean name of single AuthenticationManager bean */
     public static final String AUTHENTICATION_MANAGER = "AUTHENTICATION_MANAGER";

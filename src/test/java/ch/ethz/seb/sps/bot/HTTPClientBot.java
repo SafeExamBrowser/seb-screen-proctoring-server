@@ -247,8 +247,6 @@ public class HTTPClientBot {
         String accessTokenEndpoint = "/oauth/token";
         @JsonProperty("apiPath")
         String apiPath = "/session-api/v1";
-        @JsonProperty("apiVersion")
-        String apiVersion = "v1";
 
         @JsonProperty("groupId")
         String groupId = "test-group";

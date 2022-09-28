@@ -31,6 +31,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 import ch.ethz.seb.sps.server.ServiceConfig;
+import ch.ethz.seb.sps.server.weblayer.WebServiceConfig;
 import ch.ethz.seb.sps.utils.Constants;
 
 @Configuration
@@ -52,7 +53,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Qualifier(ServiceConfig.CLIENT_PASSWORD_ENCODER_BEAN_NAME)
     private PasswordEncoder clientPasswordEncoder;
     @Autowired
-    @Qualifier(WebServiceSecurityConfig.AUTHENTICATION_MANAGER)
+    @Qualifier(WebServiceConfig.AUTHENTICATION_MANAGER)
     private AuthenticationManager authenticationManager;
     @Value("${sps.api.admin.accessTokenValiditySeconds:3600}")
     private Integer adminAccessTokenValSec;

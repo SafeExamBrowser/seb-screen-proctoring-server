@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,11 @@ import ch.ethz.seb.sps.utils.Result;
 @ConditionalOnExpression("'${sps.data.store.adapter}'.equals('FILESYS_RDBMS')")
 public class ScreenshotDAOFile implements ScreenshotDAO {
 
-    private final String rootDir = "/screenshots/";
+    private final String rootDir;
+
+    public ScreenshotDAOFile(@Value("${sps.data.store.file.dir:/screenshots/}") final String rootDir) {
+        this.rootDir = rootDir;
+    }
 
     @Override
     public Result<InputStream> getImage(
@@ -49,7 +54,7 @@ public class ScreenshotDAOFile implements ScreenshotDAO {
         return Result.tryCatch(() -> {
 
             final String dir = this.rootDir + sessionId + "/";
-            final String fileName = "screen" + pk;
+            final String fileName = "screen_" + pk;
 
             final FileSystemResource fileSystemResource = new FileSystemResource(dir);
             if (!fileSystemResource.exists()) {

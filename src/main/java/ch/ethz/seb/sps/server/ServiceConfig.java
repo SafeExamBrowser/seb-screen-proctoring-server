@@ -46,7 +46,7 @@ public class ServiceConfig {
         final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(200);
         executor.setMaxPoolSize(2000);
-        executor.setQueueCapacity(2000);
+        executor.setQueueCapacity(200);
         executor.setThreadPriority(Thread.MAX_PRIORITY);
         executor.setThreadNamePrefix("upload-");
         executor.initialize();
