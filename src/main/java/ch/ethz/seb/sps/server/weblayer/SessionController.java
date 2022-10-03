@@ -46,19 +46,19 @@ public class SessionController {
     }
 
     @RequestMapping(
-            path = API.PARAM_MODEL_PATH_SEGMENT + API.SESSION_HANDSHAKE_ENDPOINT,
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public void createNewSession(
-            @PathVariable(name = API.PARAM_MODEL_ID, required = true) final String modelId,
-            final HttpServletResponse response) {
+            path = API.PARAM_MODEL_PATH_SEGMENT,
+            method = RequestMethod.GET,
+            produces = {
+                    MediaType.IMAGE_PNG_VALUE,
+                    MediaType.IMAGE_JPEG_VALUE,
+                    MediaType.IMAGE_GIF_VALUE,
+                    MediaType.APPLICATION_OCTET_STREAM_VALUE })
+    public String getActiveSessions(
+            @PathVariable(name = API.PARAM_MODEL_ID) final String groupUUID) {
 
-        final String sessionUUID = this.sessionService
-                .createNewSession(modelId)
+        return this.sessionService
+                .getActiveSessions(groupUUID)
                 .getOrThrow();
-
-        response.setHeader(API.SESSION_HEADER_UUID, sessionUUID);
-        response.setStatus(HttpStatus.OK.value());
     }
 
     @RequestMapping(
@@ -70,12 +70,12 @@ public class SessionController {
                     MediaType.IMAGE_GIF_VALUE,
                     MediaType.APPLICATION_OCTET_STREAM_VALUE })
     public void getLatestScreenshot(
-            @PathVariable final String modelId,
+            @PathVariable(name = API.PARAM_MODEL_ID) final String sessionId,
             final HttpServletResponse response) {
 
         try {
 
-            this.screenshotService.streamLatestScreenshot(modelId, response.getOutputStream());
+            this.screenshotService.streamLatestScreenshot(sessionId, response.getOutputStream());
             response.setStatus(HttpStatus.OK.value());
 
         } catch (final Exception e) {
@@ -85,11 +85,27 @@ public class SessionController {
     }
 
     @RequestMapping(
-            path = API.PARAM_MODEL_PATH_SEGMENT + API.SESSION_SCREENSHOT_ENDPOINT,
+            path = API.SESSION_ENDPOINT,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public void createNewSession(
+            @RequestHeader(name = API.GROUP_HEADER_UUID, required = true) final String groupUUID,
+            final HttpServletResponse response) {
+
+        final String sessionUUID = this.sessionService
+                .createNewSession(groupUUID)
+                .getOrThrow();
+
+        response.setHeader(API.SESSION_HEADER_UUID, sessionUUID);
+        response.setStatus(HttpStatus.OK.value());
+    }
+
+    @RequestMapping(
+            path = API.SESSION_SCREENSHOT_ENDPOINT + API.PARAM_MODEL_PATH_SEGMENT,
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public CompletableFuture<Void> postScreenshot(
-            @PathVariable final String modelId,
+            @PathVariable(name = API.PARAM_MODEL_ID, required = true) final String sessionUUID,
             @RequestHeader(name = Domain.SCREENSHOT_DATA.ATTR_TIMESTAMP) final Long timestamp,
             @RequestHeader(name = Domain.SCREENSHOT_DATA.ATTR_IMAGE_FORMAT, required = false) final String format,
             @RequestHeader(name = Domain.SCREENSHOT_DATA.ATTR_META_DATA, required = false) final String metadata,
@@ -101,7 +117,7 @@ public class SessionController {
         try {
 
             this.screenshotService.storeScreenshot(
-                    modelId,
+                    sessionUUID,
                     timestamp,
                     format,
                     metadata,
@@ -115,6 +131,14 @@ public class SessionController {
         }
 
         return completableFuture;
+    }
+
+    @RequestMapping(
+            path = API.SESSION_ENDPOINT + API.PARAM_MODEL_PATH_SEGMENT,
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public void postScreenshot(@PathVariable(name = API.PARAM_MODEL_ID, required = true) final String sessionUUID) {
+        this.sessionService.closeSession(sessionUUID);
     }
 
 }

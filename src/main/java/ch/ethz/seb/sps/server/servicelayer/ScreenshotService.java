@@ -20,7 +20,7 @@ public interface ScreenshotService {
 
     @Async(value = ServiceConfig.SCREENSHOT_UPLOAD_API_EXECUTOR)
     public void storeScreenshot(
-            final String sessionId,
+            final String sessionUUID,
             final Long timestamp,
             final String format,
             final String metadata,

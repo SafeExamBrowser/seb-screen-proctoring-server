@@ -102,15 +102,19 @@ public class HTTPClientBot {
         private final String name;
         private final OAuth2RestTemplate restTemplate;
 
-        private final String handshakeURI = HTTPClientBot.this.profile.webserviceAddress +
+        private final String createSessionURL = HTTPClientBot.this.profile.webserviceAddress +
                 HTTPClientBot.this.profile.apiPath +
-                API.PARAM_MODEL_PATH_SEGMENT +
-                API.SESSION_HANDSHAKE_ENDPOINT;
+                API.SESSION_ENDPOINT;
+
+        private final String closeSessionURL = HTTPClientBot.this.profile.webserviceAddress +
+                HTTPClientBot.this.profile.apiPath +
+                API.SESSION_ENDPOINT +
+                API.PARAM_MODEL_PATH_SEGMENT;
 
         private final String imageUploadURI = HTTPClientBot.this.profile.webserviceAddress +
                 HTTPClientBot.this.profile.apiPath +
-                API.PARAM_MODEL_PATH_SEGMENT +
-                API.SESSION_SCREENSHOT_ENDPOINT;
+                API.SESSION_SCREENSHOT_ENDPOINT +
+                API.PARAM_MODEL_PATH_SEGMENT;
 
         public ConnectionBot(final String name) {
             this.name = name;
@@ -157,6 +161,8 @@ public class HTTPClientBot {
                     }
                     currentTime = System.currentTimeMillis();
                 }
+
+                closeSession(sessionUUID);
             }
         }
 
@@ -192,12 +198,15 @@ public class HTTPClientBot {
         private String createSession() {
             log.info("ConnectionBot {} : init connection", this.name);
 
+            final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+            headers.set(API.GROUP_HEADER_UUID, HTTPClientBot.this.profile.groupId);
+
             final ResponseEntity<Void> exchange = this.restTemplate.exchange(
-                    this.handshakeURI,
+                    this.createSessionURL,
                     HttpMethod.POST,
-                    HttpEntity.EMPTY,
-                    Void.class,
-                    HTTPClientBot.this.profile.groupId);
+                    new HttpEntity<>(headers),
+                    Void.class);
 
             if (exchange.getStatusCode() != HttpStatus.OK) {
                 log.error("Handshake failed: {}", exchange.getStatusCode());
@@ -205,6 +214,21 @@ public class HTTPClientBot {
             }
 
             return exchange.getHeaders().getFirst(API.SESSION_HEADER_UUID);
+        }
+
+        private void closeSession(final String sessionUUID) {
+            log.info("ConnectionBot {} : close session {}", this.name, sessionUUID);
+
+            final ResponseEntity<Void> exchange = this.restTemplate.exchange(
+                    this.closeSessionURL,
+                    HttpMethod.DELETE,
+                    HttpEntity.EMPTY,
+                    Void.class,
+                    sessionUUID);
+
+            if (exchange.getStatusCode() != HttpStatus.OK) {
+                log.error("Handshake failed: {}", exchange.getStatusCode());
+            }
         }
     }
 

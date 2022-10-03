@@ -19,6 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
@@ -29,8 +31,10 @@ import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.screenshot.ScreenshotData;
 import ch.ethz.seb.sps.server.servicelayer.ScreenshotService;
+import ch.ethz.seb.sps.server.servicelayer.SessionOnClosingEvent;
 import ch.ethz.seb.sps.utils.Utils;
 
+@Lazy
 @Component
 public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
 
@@ -39,7 +43,7 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
     private final ScreenshotService screenshotService;
     private final JSONMapper jsonMapper;
 
-    private final Map<String, ScreenshotMessageAdapter> sessions = new ConcurrentHashMap<>();
+    private final Map<String, ScreenshotSession> sessions = new ConcurrentHashMap<>();
 
     public WebsocketScreenshotMessageHandler(
             final ScreenshotService screenshotService,
@@ -54,6 +58,15 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
         return true;
     }
 
+    @EventListener
+    public void sessionOnClose(final SessionOnClosingEvent event) {
+        this.sessions.values().stream().filter(session -> event.sessionUUID.equals(session.sessionUUID)).findFirst()
+                .ifPresent(session -> {
+                    this.sessions.remove(session.getWebsocketSessionId());
+                    session.closeWebSocketSession();
+                });
+    }
+
     @Override
     public void afterConnectionEstablished(final WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
@@ -66,7 +79,7 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
             return;
         }
 
-        this.sessions.put(session.getId(), new ScreenshotMessageAdapter(sessionUUID));
+        this.sessions.put(session.getId(), new ScreenshotSession(sessionUUID, session));
 
         if (log.isDebugEnabled()) {
             log.debug("New websocket connection established for session: {}", sessionUUID);
@@ -88,18 +101,18 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
     @Override
     public void handleBinaryMessage(final WebSocketSession session, final BinaryMessage message) {
 
-        final String sessionId = session.getId();
+        final String websocketSessionId = session.getId();
 
         if (log.isDebugEnabled()) {
-            log.debug("Binary message for websocket session: {} received. Message length: {}, is last: {}",
-                    sessionId,
+            log.debug("Binary message for web-socket session: {} received. Message length: {}, is last: {}",
+                    websocketSessionId,
                     message.getPayloadLength(),
                     message.isLast());
         }
 
-        final ScreenshotMessageAdapter screenshotMessageAdapter = this.sessions.get(sessionId);
-        if (screenshotMessageAdapter == null) {
-            log.error("Failed to find ScreenshotMessageAdapter for wesocket session: {} with sessionUUID: {}",
+        final ScreenshotSession screenshotSession = this.sessions.get(websocketSessionId);
+        if (screenshotSession == null) {
+            log.error("Failed to find ScreenshotSession for web-socket session: {} with sessionUUID: {}",
                     session.getId(),
                     session.getHandshakeHeaders().getFirst(API.SESSION_HEADER_UUID));
 
@@ -111,22 +124,28 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("ScreenshotMessageAdapter for websocket session: {} found.", screenshotMessageAdapter.sessionId);
+            log.debug("ScreenshotSession for session: {} found.", screenshotSession.sessionUUID);
         }
 
-        screenshotMessageAdapter.notifyMessage(message);
+        screenshotSession.notifyMessage(message);
     }
 
-    private class ScreenshotMessageAdapter {
+    private class ScreenshotSession {
 
-        final String sessionId;
+        final String sessionUUID;
 
+        private final WebSocketSession webSocketSession;
         private CompletableFuture<Void> future = null;
         private PipedOutputStream out = null;
         private ScreenshotData screenshotData;
 
-        public ScreenshotMessageAdapter(final String sessionId) {
-            this.sessionId = sessionId;
+        public ScreenshotSession(final String sessionUUID, final WebSocketSession webSocketSession) {
+            this.sessionUUID = sessionUUID;
+            this.webSocketSession = webSocketSession;
+        }
+
+        public Object getWebsocketSessionId() {
+            return this.webSocketSession.getId();
         }
 
         void notifyMessage(final BinaryMessage message) {
@@ -154,9 +173,17 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
             }
         }
 
+        void closeWebSocketSession() {
+            try {
+                this.webSocketSession.close();
+            } catch (final IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         private void startTransaction(final BinaryMessage message) {
 
-            log.debug(" *** start screenshot transaction for session: {}", this.sessionId);
+            log.debug(" *** start screenshot transaction for session: {}", this.sessionUUID);
 
             this.future = new CompletableFuture<>();
             this.out = new PipedOutputStream();
@@ -167,7 +194,7 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
                 this.screenshotData = getMetaData(message);
 
                 WebsocketScreenshotMessageHandler.this.screenshotService.storeScreenshot(
-                        this.sessionId,
+                        this.sessionUUID,
                         this.screenshotData.timestamp,
                         this.screenshotData.imageFormat,
                         this.screenshotData.metaData,
@@ -194,7 +221,7 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
 
         private void closeTransaction() {
 
-            log.debug(" *** close screenshot transaction for session: {}", this.sessionId);
+            log.debug(" *** close screenshot transaction for session: {}", this.sessionUUID);
 
             try {
                 this.out.close();

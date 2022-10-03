@@ -16,6 +16,11 @@ public interface SessionService {
         return createNewSession(groupUUID, false);
     }
 
+    // TODO caching
+    Result<String> getActiveSessions(String groupUUID);
+
     Result<String> createNewSession(String groupUUID, boolean createGroup);
+
+    Result<String> closeSession(String sessionUUID);
 
 }

@@ -8,6 +8,8 @@
 
 package ch.ethz.seb.sps.server.servicelayer.dao;
 
+import java.util.Collection;
+
 import ch.ethz.seb.sps.domain.model.screenshot.Session;
 import ch.ethz.seb.sps.utils.Result;
 
@@ -18,5 +20,9 @@ public interface SessionDAO {
     Result<Session> save(Session data);
 
     Result<Session> createNew(Long groupId, String uuid, String name);
+
+    Result<Collection<String>> allActiveSessionIds(Long groupId);
+
+    Result<String> closeSession(String sessionUUID);
 
 }

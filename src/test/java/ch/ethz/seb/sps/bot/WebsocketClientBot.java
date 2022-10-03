@@ -36,6 +36,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -43,6 +44,8 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorHandler;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
@@ -110,10 +113,14 @@ public class WebsocketClientBot {
         private final OAuth2RestTemplate restTemplate;
         private final JSONMapper jsonMapper = new JSONMapper();
 
-        private final String handshakeURI = WebsocketClientBot.this.profile.webserviceAddress +
+        private final String createSessionURL = WebsocketClientBot.this.profile.webserviceAddress +
                 WebsocketClientBot.this.profile.apiPath +
-                API.PARAM_MODEL_PATH_SEGMENT +
-                API.SESSION_HANDSHAKE_ENDPOINT;
+                API.SESSION_ENDPOINT;
+
+        private final String closeSessionURL = WebsocketClientBot.this.profile.webserviceAddress +
+                WebsocketClientBot.this.profile.apiPath +
+                API.SESSION_ENDPOINT +
+                API.PARAM_MODEL_PATH_SEGMENT;
 
         private final String imageDataURI = WebsocketClientBot.this.profile.websocketAddress +
         //"/socket";
@@ -173,6 +180,8 @@ public class WebsocketClientBot {
                     }
                     currentTime = System.currentTimeMillis();
                 }
+
+                closeSession(sessionUUID, screenshotDataSession);
             }
         }
 
@@ -208,12 +217,15 @@ public class WebsocketClientBot {
         private String createSession() {
             log.info("ConnectionBot {} : init connection", this.name);
 
+            final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+            headers.set(API.GROUP_HEADER_UUID, WebsocketClientBot.this.profile.groupId);
+
             final ResponseEntity<Void> exchange = this.restTemplate.exchange(
-                    this.handshakeURI,
+                    this.createSessionURL,
                     HttpMethod.POST,
-                    HttpEntity.EMPTY,
-                    Void.class,
-                    WebsocketClientBot.this.profile.groupId);
+                    new HttpEntity<>(headers),
+                    Void.class);
 
             if (exchange.getStatusCode() != HttpStatus.OK) {
                 log.error("Handshake failed: {}", exchange.getStatusCode());
@@ -221,6 +233,27 @@ public class WebsocketClientBot {
             }
 
             return exchange.getHeaders().getFirst(API.SESSION_HEADER_UUID);
+        }
+
+        private void closeSession(final String sessionUUID, final WebSocketSession screenshotDataSession) {
+            log.info("ConnectionBot {} : close session {}", this.name, sessionUUID);
+
+            try {
+                screenshotDataSession.close();
+            } catch (final IOException e) {
+                log.error("Failed to close web-socket connection: ", e);
+            }
+
+            final ResponseEntity<Void> exchange = this.restTemplate.exchange(
+                    this.closeSessionURL,
+                    HttpMethod.DELETE,
+                    HttpEntity.EMPTY,
+                    Void.class,
+                    sessionUUID);
+
+            if (exchange.getStatusCode() != HttpStatus.OK) {
+                log.error("Handshake failed: {}", exchange.getStatusCode());
+            }
         }
 
         private WebSocketSession createScreenshotDataSession(final String accessToken, final String sessionId) {
