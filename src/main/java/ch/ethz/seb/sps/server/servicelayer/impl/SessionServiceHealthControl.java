@@ -53,7 +53,9 @@ public class SessionServiceHealthControl {
             fixedDelay = 5000,
             initialDelay = 5000)
     public void checkQueueLoad() {
-        log.info("Session processing queue load: {}", getProcssingQueueLoad());
+        if (log.isTraceEnabled()) {
+            log.debug("Session processing queue load: {}", getProcssingQueueLoad());
+        }
     }
 
 }

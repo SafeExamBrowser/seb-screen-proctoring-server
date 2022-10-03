@@ -20,6 +20,8 @@ public final class API {
     public static final String OAUTH_TOKEN_ENDPOINT = OAUTH_ENDPOINT + "/token";
     public static final String OAUTH_REVOKE_TOKEN_ENDPOINT = OAUTH_ENDPOINT + "/revoke-token";
 
+    public static final String WEBSOCKET_SESSION_ENDPOINT = "/wsock";
+
     public static final String PARAM_MODEL_ID = "modelId";
     public static final String PARAM_ENTITY_TYPE = "entityType";
     public static final String PARAM_MODEL_PATH_SEGMENT = "/{modelId}";

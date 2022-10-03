@@ -14,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Properties;
@@ -35,7 +36,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -43,26 +43,33 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorHandler;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.JSONMapper;
+import ch.ethz.seb.sps.domain.model.screenshot.ScreenshotData;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Utils;
 
-public class HTTPClientBot {
+public class WebsocketClientBot {
 
-    private static final Logger log = LoggerFactory.getLogger(HTTPClientBot.class);
+    private static final Logger log = LoggerFactory.getLogger(WebsocketClientBot.class);
 
     private final Random random = new Random();
     private final ExecutorService executorService;
     private Profile profile;
     private final ObjectMapper jsonMapper = new ObjectMapper();
 
-    public HTTPClientBot(final Properties properties) throws Exception {
+    public WebsocketClientBot(final Properties properties) throws Exception {
 
         final String profileName = properties.getProperty("profile");
         if (StringUtils.isNotBlank(profileName)) {
@@ -101,16 +108,19 @@ public class HTTPClientBot {
 
         private final String name;
         private final OAuth2RestTemplate restTemplate;
+        private final JSONMapper jsonMapper = new JSONMapper();
 
-        private final String handshakeURI = HTTPClientBot.this.profile.webserviceAddress +
-                HTTPClientBot.this.profile.apiPath +
+        private final String handshakeURI = WebsocketClientBot.this.profile.webserviceAddress +
+                WebsocketClientBot.this.profile.apiPath +
                 API.PARAM_MODEL_PATH_SEGMENT +
                 API.SESSION_HANDSHAKE_ENDPOINT;
 
-        private final String imageUploadURI = HTTPClientBot.this.profile.webserviceAddress +
-                HTTPClientBot.this.profile.apiPath +
-                API.PARAM_MODEL_PATH_SEGMENT +
-                API.SESSION_SCREENSHOT_ENDPOINT;
+        private final String imageDataURI = WebsocketClientBot.this.profile.websocketAddress +
+        //"/socket";
+                WebsocketClientBot.this.profile.apiPath + "/wsock";
+
+//        private final String imageUploadURI = WebsocketClientBot.this.profile.websocketAddress +
+//                WebsocketClientBot.this.profile.apiPath + "/wsock/screenshot";
 
         public ConnectionBot(final String name) {
             this.name = name;
@@ -119,13 +129,14 @@ public class HTTPClientBot {
 
         @Override
         public void run() {
-            log.info("ConnectionBot {} : SEB-Connection-Bot started: {}", HTTPClientBot.this.profile);
+            log.info("ConnectionBot {} : SEB-Connection-Bot started: {}", WebsocketClientBot.this.profile);
 
             String sessionUUID = null;
+            OAuth2AccessToken accessToken = null;
 
             try {
 
-                final OAuth2AccessToken accessToken = this.restTemplate.getAccessToken();
+                accessToken = this.restTemplate.getAccessToken();
                 log.info("ConnectionBot {} : Got access token: {}", this.name, accessToken);
                 sessionUUID = createSession();
 
@@ -139,15 +150,20 @@ public class HTTPClientBot {
                 log.error("ConnectionBot {} : Failed : ", this.name, e);
             }
 
-            if (sessionUUID != null) {
+            final WebSocketSession screenshotDataSession = createScreenshotDataSession(
+                    accessToken.getValue(),
+                    sessionUUID);
+
+            if (sessionUUID != null && accessToken != null && screenshotDataSession != null) {
+
                 final long startTime = System.currentTimeMillis();
-                final long endTime = startTime + HTTPClientBot.this.profile.runtime;
+                final long endTime = startTime + WebsocketClientBot.this.profile.runtime;
                 long currentTime = startTime;
                 long lastScreenshotTime = startTime;
 
                 while (currentTime < endTime) {
-                    if (currentTime - lastScreenshotTime >= HTTPClientBot.this.profile.screenshotInterval) {
-                        screenshot(sessionUUID);
+                    if (currentTime - lastScreenshotTime >= WebsocketClientBot.this.profile.screenshotInterval) {
+                        screenshot(sessionUUID, screenshotDataSession);
                         lastScreenshotTime = currentTime;
                     }
 
@@ -160,33 +176,33 @@ public class HTTPClientBot {
             }
         }
 
-        private void screenshot(final String sessionUUID) {
+        private void screenshot(final String sessionUUID, final WebSocketSession screenshotDataSession) {
 
-            log.info("ConnectionBot {} : take screenshot...", this.name);
+            try {
+                final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
+                takeScreenshot(byteArrayOutputStream);
 
-            final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            takeScreenshot(byteArrayOutputStream);
+                // first send the metadata
+                final ScreenshotData screenshotData = new ScreenshotData(
+                        null,
+                        sessionUUID,
+                        Utils.getMillisecondsNow(),
+                        null,
+                        "jpg",
+                        "some meta data");
 
-            final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-            headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-            headers.set(Domain.SCREENSHOT_DATA.ATTR_TIMESTAMP, String.valueOf(Utils.getMillisecondsNow()));
-            headers.set(Domain.SCREENSHOT_DATA.ATTR_IMAGE_FORMAT, "jpg");
-            headers.set(Domain.SCREENSHOT_DATA.ATTR_META_DATA, "some metadata " + sessionUUID);
+                final String screenshotDataJSON = this.jsonMapper.writeValueAsString(screenshotData);
+                screenshotDataSession.sendMessage(new BinaryMessage(screenshotDataJSON.getBytes("UTF8")));
 
-            final HttpEntity<byte[]> entity = new HttpEntity<>(byteArrayOutputStream.toByteArray(), headers);
+                // then send the screenshot
+                screenshotDataSession.sendMessage(new BinaryMessage(byteArrayOutputStream.toByteArray()));
+                //ByteArrayInputStream in = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
 
-            log.info("ConnectionBot {} : send screenshot...", this.name);
-
-            final ResponseEntity<Void> exchange = this.restTemplate.exchange(
-                    this.imageUploadURI,
-                    HttpMethod.POST,
-                    entity,
-                    Void.class,
-                    sessionUUID);
-
-            if (exchange.getStatusCode() != HttpStatus.OK) {
-                log.error("Failed to send screenshot: {}", exchange.getStatusCode());
+            } catch (final Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
+
         }
 
         private String createSession() {
@@ -197,7 +213,7 @@ public class HTTPClientBot {
                     HttpMethod.POST,
                     HttpEntity.EMPTY,
                     Void.class,
-                    HTTPClientBot.this.profile.groupId);
+                    WebsocketClientBot.this.profile.groupId);
 
             if (exchange.getStatusCode() != HttpStatus.OK) {
                 log.error("Handshake failed: {}", exchange.getStatusCode());
@@ -205,6 +221,62 @@ public class HTTPClientBot {
             }
 
             return exchange.getHeaders().getFirst(API.SESSION_HEADER_UUID);
+        }
+
+        private WebSocketSession createScreenshotDataSession(final String accessToken, final String sessionId) {
+            try {
+                return createSession(this.imageDataURI, accessToken, sessionId);
+            } catch (final Exception e) {
+                log.error("Failed to create session: ", e);
+                return null;
+            }
+        }
+
+        private WebSocketSession createSession(
+                final String uri,
+                final String accessToken,
+                final String sessionId) throws Exception {
+
+            log.info("Try connect to: {}", uri);
+
+            final WebSocketClient client = new StandardWebSocketClient();
+            final WebSocketHttpHeaders webSocketHttpHeaders = new WebSocketHttpHeaders();
+            webSocketHttpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+            webSocketHttpHeaders.set(API.SESSION_HEADER_UUID, sessionId);
+            return client.doHandshake(
+                    new WebSocketHandler() {
+
+                        @Override
+                        public void handleTransportError(final WebSocketSession session, final Throwable exception)
+                                throws Exception {
+                            log.error("error: ", exception);
+                        }
+
+                        @Override
+                        public void handleMessage(final WebSocketSession session, final WebSocketMessage<?> message)
+                                throws Exception {
+                            log.info("Message: {}", message.getPayload());
+                        }
+
+                        @Override
+                        public void afterConnectionEstablished(final WebSocketSession session) throws Exception {
+                            log.info("  !!!! Connection established !!!! ");
+                        }
+
+                        @Override
+                        public void afterConnectionClosed(final WebSocketSession session, final CloseStatus closeStatus)
+                                throws Exception {
+                            log.info("  !!!! Connection closed !!!! status: {}", closeStatus);
+                            Thread.dumpStack();
+                        }
+
+                        @Override
+                        public boolean supportsPartialMessages() {
+                            return true;
+                        }
+                    },
+                    webSocketHttpHeaders,
+                    URI.create(uri)).get();
         }
     }
 
@@ -220,18 +292,6 @@ public class HTTPClientBot {
             e.printStackTrace();
             IOUtils.closeQuietly(out);
         }
-    }
-
-    public static void main(final String[] args) throws Exception {
-        new HTTPClientBot(System.getProperties());
-    }
-
-    private String getRandomName() {
-        final StringBuilder sb = new StringBuilder(String.valueOf(this.random.nextInt(100)));
-        while (sb.length() < 3) {
-            sb.insert(0, "0");
-        }
-        return sb.toString();
     }
 
     private OAuth2RestTemplate createRestTemplate(final String scopes) {
@@ -265,6 +325,18 @@ public class HTTPClientBot {
                 .getMessageConverters()
                 .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
         return restTemplate;
+    }
+
+    private String getRandomName() {
+        final StringBuilder sb = new StringBuilder(String.valueOf(this.random.nextInt(100)));
+        while (sb.length() < 3) {
+            sb.insert(0, "0");
+        }
+        return sb.toString();
+    }
+
+    public static void main(final String[] args) throws Exception {
+        new WebsocketClientBot(System.getProperties());
     }
 
 }

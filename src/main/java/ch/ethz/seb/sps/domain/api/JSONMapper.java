@@ -8,15 +8,10 @@
 
 package ch.ethz.seb.sps.domain.api;
 
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
-@Lazy
-@Component
 public class JSONMapper extends ObjectMapper {
 
     private static final long serialVersionUID = 2883304481547670626L;

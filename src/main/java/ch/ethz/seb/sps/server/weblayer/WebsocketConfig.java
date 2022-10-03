@@ -8,10 +8,46 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
-import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
+import org.springframework.web.socket.server.standard.TomcatRequestUpgradeStrategy;
+import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
-//@Configuration
-//@EnableWebSocket
-public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
+import ch.ethz.seb.sps.domain.api.API;
+
+@Configuration
+@EnableWebSocket
+public class WebsocketConfig implements WebSocketConfigurer {
+
+    @Value("${sps.api.session.endpoint.v1}")
+    private String sessionAPIEndpoint;
+    @Autowired
+    private WebsocketScreenshotMessageHandler websocketScreenshotMessageHandler;
+
+    @Bean
+    public ServletServerContainerFactoryBean createWebSocketContainer() {
+        final ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+        container.setMaxBinaryMessageBufferSize(200000);
+        return container;
+    }
+
+    @Override
+    public void registerWebSocketHandlers(final WebSocketHandlerRegistry registry) {
+        final String dataURL = this.sessionAPIEndpoint + API.WEBSOCKET_SESSION_ENDPOINT;
+
+        final DefaultHandshakeHandler defaultHandshakeHandler =
+                new DefaultHandshakeHandler(new TomcatRequestUpgradeStrategy());
+
+        registry
+                .addHandler(this.websocketScreenshotMessageHandler, dataURL)
+                .setHandshakeHandler(defaultHandshakeHandler)
+                .setAllowedOrigins("*");
+    }
 
 }

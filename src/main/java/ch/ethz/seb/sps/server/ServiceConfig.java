@@ -12,10 +12,15 @@ import java.util.concurrent.Executor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import ch.ethz.seb.sps.domain.api.JSONMapper;
 
 @Configuration
 @EnableAsync
@@ -28,6 +33,12 @@ public class ServiceConfig {
 
     public static final String SCREENSHOT_UPLOAD_API_EXECUTOR = "SCREENSHOT_UPLOAD_API_EXECUTOR";
     public static final String SCREENSHOT_DOWNLOAD_API_EXECUTOR = "SCREENSHOT_DOWNLOAD_API_EXECUTOR";
+
+    @Lazy
+    @Bean
+    public JSONMapper jsonMapper() {
+        return new JSONMapper();
+    }
 
     /** Password encoder used for user passwords (stronger protection) */
     @Bean(USER_PASSWORD_ENCODER_BEAN_NAME)
@@ -65,6 +76,17 @@ public class ServiceConfig {
         executor.initialize();
         executor.setWaitForTasksToCompleteOnShutdown(false);
         return executor;
+    }
+
+    @Bean
+    public TaskScheduler taskScheduler() {
+        final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+
+        scheduler.setPoolSize(2);
+        scheduler.setThreadNamePrefix("scheduled-task-");
+        scheduler.setDaemon(true);
+
+        return scheduler;
     }
 
 }
