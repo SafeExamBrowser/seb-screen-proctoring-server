@@ -6,7 +6,7 @@ ENV JAVA_HEAP_MIN=
 ENV JAVA_HEAP_MAX=
 
 #just try wihtout user to check if we habe a permission problem
-RUN groupadd --system spring && useradd --system --gid spring spring && mkdir /sebserver && chown spring:spring /sebserver
+RUN groupadd --system spring && useradd --system --gid spring spring && mkdir /sebsps && chown spring:spring /sebsps
 USER spring:spring
 
 WORKDIR /sebsps
@@ -17,7 +17,7 @@ CMD if [ "x${JMX_PORT}" = "x" ] ; \
         -Xmx${JAVA_HEAP_MAX} \
         -jar "seb-sps.jar" \
         --spring.config.location=file:/sebsps/config/spring/,classpath:/config/; \
-    else echo "admin ${SEBSERVER_SECRET}" > jmxremote.password && chown spring:spring /sebserver/jmxremote.password && chmod 400 /sebserver/jmxremote.password && exec java \
+    else echo "admin ${JMX_SECRET}" > jmxremote.password && chown spring:spring /sebsps/jmxremote.password && chmod 400 /sebsps/jmxremote.password && exec java \
         -Xms${JAVA_HEAP_MIN} \
         -Xmx${JAVA_HEAP_MAX} \
         -Dcom.sun.management.jmxremote \
@@ -27,9 +27,9 @@ CMD if [ "x${JMX_PORT}" = "x" ] ; \
         -Dcom.sun.management.jmxremote.local.only=false \
         -Dcom.sun.management.jmxremote.ssl=false \
         -Dcom.sun.management.jmxremote.authenticate=true \
-        -Dcom.sun.management.jmxremote.password.file=/sebserver/jmxremote.password \
-        -Dcom.sun.management.jmxremote.access.file=/sebserver/config/jmx/jmxremote.access \
-        -jar "seb-server.jar" \
+        -Dcom.sun.management.jmxremote.password.file=/sebsps/jmxremote.password \
+        -Dcom.sun.management.jmxremote.access.file=/sebsps/config/jmx/jmxremote.access \
+        -jar "seb-sps.jar" \
         --spring.config.location=file:/sebsps/config/spring/,classpath:/config/; \
 fi
 

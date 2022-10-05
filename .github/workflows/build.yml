@@ -58,7 +58,7 @@ jobs:
          seb-sps-version: ${{ env.TAG_NAME }}-${{ env.SHA }}
     -
       name: Simplify package name
-      run: mv target/seb-screen-proctoring-server-${{ env.TAG_NAME }}-${{ env.SHA }}.jar target/seb-sps.jar
+      run: mv target/seb-screen-proctoring-service-${{ env.TAG_NAME }}-${{ env.SHA }}.jar target/seb-sps.jar
     -
       uses: actions/upload-artifact@v2
       with:
