@@ -58,7 +58,10 @@ public class SimpleScreenshotServiceImpl implements ScreenshotService {
     }
 
     @Override
-    public void streamLatestScreenshot(final String sessionId, final OutputStream out) {
+    public void streamLatestScreenshot(
+            final String sessionId,
+            final OutputStream out,
+            final CompletableFuture<Void> completableFuture) {
         try {
 
             final InputStream screenshotIn = this.screenshotDataDAO.getLatestScreenshotId(sessionId)
@@ -69,6 +72,8 @@ public class SimpleScreenshotServiceImpl implements ScreenshotService {
 
         } catch (final Exception e) {
             log.error("Failed to get latest screenshot image: ", e);
+        } finally {
+            completableFuture.complete(null);
         }
     }
 

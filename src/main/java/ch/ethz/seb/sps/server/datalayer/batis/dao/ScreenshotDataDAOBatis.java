@@ -8,6 +8,8 @@
 
 package ch.ethz.seb.sps.server.datalayer.batis.dao;
 
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.timestamp;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,10 +66,17 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<Long> getLatestScreenshotId(final String sessionId) {
         return Result.tryCatch(() -> {
 
-            final List<Long> execute = this.screenshotDataMapper.selectLatestIdByExample()
+            final List<Long> execute = this.screenshotDataRecordMapper.selectIdsByExample()
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionId))
+                    .orderBy(timestamp.descending())
                     .build()
                     .execute();
+
+//            final List<Long> execute = this.screenshotDataMapper.selectLatestIdByExample()
+//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionId))
+//                    .orderBy(timestamp)
+//                    .build()
+//                    .execute();
 
             return execute.get(0);
         });

@@ -113,8 +113,9 @@ public class HTTPClientBot {
 
         private final String imageUploadURI = HTTPClientBot.this.profile.webserviceAddress +
                 HTTPClientBot.this.profile.apiPath +
-                API.SESSION_SCREENSHOT_ENDPOINT +
-                API.PARAM_MODEL_PATH_SEGMENT;
+                API.SESSION_ENDPOINT +
+                API.PARAM_MODEL_PATH_SEGMENT +
+                API.SESSION_SCREENSHOT_ENDPOINT;
 
         public ConnectionBot(final String name) {
             this.name = name;

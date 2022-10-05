@@ -29,7 +29,7 @@ import ch.ethz.seb.sps.server.servicelayer.ScreenshotService;
 import ch.ethz.seb.sps.server.servicelayer.SessionService;
 
 @RestController
-@RequestMapping("${sps.api.session.endpoint.v1}")
+@RequestMapping("${sps.api.session.endpoint.v1}" + API.SESSION_ENDPOINT)
 public class SessionController {
 
     private static final Logger log = LoggerFactory.getLogger(SessionController.class);
@@ -46,22 +46,6 @@ public class SessionController {
     }
 
     @RequestMapping(
-            path = API.PARAM_MODEL_PATH_SEGMENT,
-            method = RequestMethod.GET,
-            produces = {
-                    MediaType.IMAGE_PNG_VALUE,
-                    MediaType.IMAGE_JPEG_VALUE,
-                    MediaType.IMAGE_GIF_VALUE,
-                    MediaType.APPLICATION_OCTET_STREAM_VALUE })
-    public String getActiveSessions(
-            @PathVariable(name = API.PARAM_MODEL_ID) final String groupUUID) {
-
-        return this.sessionService
-                .getActiveSessions(groupUUID)
-                .getOrThrow();
-    }
-
-    @RequestMapping(
             path = API.PARAM_MODEL_PATH_SEGMENT + API.SESSION_SCREENSHOT_LATEST_ENDPOINT,
             method = RequestMethod.GET,
             produces = {
@@ -69,23 +53,30 @@ public class SessionController {
                     MediaType.IMAGE_JPEG_VALUE,
                     MediaType.IMAGE_GIF_VALUE,
                     MediaType.APPLICATION_OCTET_STREAM_VALUE })
-    public void getLatestScreenshot(
+    public CompletableFuture<Void> getLatestScreenshot(
             @PathVariable(name = API.PARAM_MODEL_ID) final String sessionId,
             final HttpServletResponse response) {
 
+        final CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+
         try {
 
-            this.screenshotService.streamLatestScreenshot(sessionId, response.getOutputStream());
+            this.screenshotService.streamLatestScreenshot(
+                    sessionId,
+                    response.getOutputStream(),
+                    completableFuture);
+
             response.setStatus(HttpStatus.OK.value());
 
         } catch (final Exception e) {
             log.error("Failed to stream image file: ", e);
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
+
+        return completableFuture;
     }
 
     @RequestMapping(
-            path = API.SESSION_ENDPOINT,
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public void createNewSession(
@@ -101,7 +92,7 @@ public class SessionController {
     }
 
     @RequestMapping(
-            path = API.SESSION_SCREENSHOT_ENDPOINT + API.PARAM_MODEL_PATH_SEGMENT,
+            path = API.PARAM_MODEL_PATH_SEGMENT + API.SESSION_SCREENSHOT_ENDPOINT,
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public CompletableFuture<Void> postScreenshot(
@@ -134,10 +125,10 @@ public class SessionController {
     }
 
     @RequestMapping(
-            path = API.SESSION_ENDPOINT + API.PARAM_MODEL_PATH_SEGMENT,
+            path = API.PARAM_MODEL_PATH_SEGMENT,
             method = RequestMethod.DELETE,
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public void postScreenshot(@PathVariable(name = API.PARAM_MODEL_ID, required = true) final String sessionUUID) {
+    public void closeSession(@PathVariable(name = API.PARAM_MODEL_ID, required = true) final String sessionUUID) {
         this.sessionService.closeSession(sessionUUID);
     }
 

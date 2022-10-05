@@ -123,11 +123,7 @@ public class WebsocketClientBot {
                 API.PARAM_MODEL_PATH_SEGMENT;
 
         private final String imageDataURI = WebsocketClientBot.this.profile.websocketAddress +
-        //"/socket";
                 WebsocketClientBot.this.profile.apiPath + "/wsock";
-
-//        private final String imageUploadURI = WebsocketClientBot.this.profile.websocketAddress +
-//                WebsocketClientBot.this.profile.apiPath + "/wsock/screenshot";
 
         public ConnectionBot(final String name) {
             this.name = name;

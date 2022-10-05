@@ -102,6 +102,16 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
         INIT_LOGGER.info("----> *********************************************************");
         INIT_LOGGER.info("---->");
 
+        INIT_LOGGER.info("----> ");
+        INIT_LOGGER.info("----> Server address: {}", this.environment.getProperty("server.address"));
+        INIT_LOGGER.info("----> Server port: {}", this.environment.getProperty("server.port"));
+        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> Local-Host address: {}", this.serviceInfo.getLocalHostAddress());
+        INIT_LOGGER.info("----> Local-Host name: {}", this.serviceInfo.getLocalHostName());
+        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> Remote-Host address: {}", this.serviceInfo.getLoopbackHostAddress());
+        INIT_LOGGER.info("----> Remote-Host name: {}", this.serviceInfo.getLoopbackHostName());
+
         INIT_LOGGER.info("----> JDBC connection pool max size: {}",
                 this.environment.getProperty("spring.datasource.hikari.maximumPoolSize"));
 

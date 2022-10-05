@@ -8,17 +8,25 @@
 
 package ch.ethz.seb.sps.server;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import ch.ethz.seb.sps.utils.Constants;
+
 @Lazy
 @Service
 public class ServiceInfo {
+
+    private static final Logger log = LoggerFactory.getLogger(ServiceInfo.class);
 
     private static final String VERSION_KEY = "seb.sps.version";
 
@@ -36,6 +44,32 @@ public class ServiceInfo {
 
     public boolean hasProfile(final String profile) {
         return this.activeProfiles.contains(profile);
+    }
+
+    public String getLocalHostName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (final UnknownHostException e) {
+            log.error("Failed to get local host name: {}", e.getMessage());
+            return Constants.EMPTY_NOTE;
+        }
+    }
+
+    public String getLocalHostAddress() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (final UnknownHostException e) {
+            log.error("Failed to get local host address: {}", e.getMessage());
+            return Constants.EMPTY_NOTE;
+        }
+    }
+
+    public String getLoopbackHostName() {
+        return InetAddress.getLoopbackAddress().getHostName();
+    }
+
+    public String getLoopbackHostAddress() {
+        return InetAddress.getLoopbackAddress().getHostAddress();
     }
 
 }

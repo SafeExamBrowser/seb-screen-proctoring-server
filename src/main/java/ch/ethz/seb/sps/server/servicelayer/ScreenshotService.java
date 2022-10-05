@@ -20,16 +20,17 @@ public interface ScreenshotService {
 
     @Async(value = ServiceConfig.SCREENSHOT_UPLOAD_API_EXECUTOR)
     public void storeScreenshot(
-            final String sessionUUID,
-            final Long timestamp,
-            final String format,
-            final String metadata,
-            final InputStream in,
+            String sessionUUID,
+            Long timestamp,
+            String format,
+            String metadata,
+            InputStream in,
             CompletableFuture<Void> completableFuture);
 
     @Async(value = ServiceConfig.SCREENSHOT_DOWNLOAD_API_EXECUTOR)
     public void streamLatestScreenshot(
-            final String sessionId,
-            OutputStream out);
+            String sessionId,
+            OutputStream out,
+            CompletableFuture<Void> completableFuture);
 
 }

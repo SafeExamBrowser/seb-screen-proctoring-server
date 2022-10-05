@@ -29,8 +29,9 @@ public final class API {
     public static final String GROUP_HEADER_UUID = "SEB_GROUP_UUID";
     public static final String SESSION_HEADER_UUID = "SEB_SESSION_UUID";
 
+    public static final String GROUP_ENDPOINT = "/group";
     public static final String SESSION_ENDPOINT = "/session";
-    public static final String SESSION_SCREENSHOT_ENDPOINT = SESSION_ENDPOINT + "/screenshot";
+    public static final String SESSION_SCREENSHOT_ENDPOINT = "/screenshot";
     public static final String SESSION_SCREENSHOT_LATEST_ENDPOINT = "/latest";
 
 }

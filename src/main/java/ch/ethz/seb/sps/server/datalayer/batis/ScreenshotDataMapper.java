@@ -32,7 +32,7 @@ public interface ScreenshotDataMapper {
     List<Long> selectIds(SelectStatementProvider select);
 
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>> selectLatestIdByExample() {
-        return SelectDSL.selectDistinctWithMapper(this::selectIds, id, SqlBuilder.max(timestamp))
+        return SelectDSL.selectWithMapper(this::selectIds, id, SqlBuilder.max(timestamp))
                 .from(screenshotDataRecord);
     }
 

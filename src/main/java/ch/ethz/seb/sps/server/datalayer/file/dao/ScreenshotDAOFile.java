@@ -38,7 +38,7 @@ public class ScreenshotDAOFile implements ScreenshotDAO {
         return Result.tryCatch(() -> {
 
             final String dir = this.rootDir + sessionId + "/";
-            final String fileName = "screen" + pk;
+            final String fileName = "screen" + "_" + pk;
 
             final FileSystemResource fileResource = new FileSystemResource(dir + fileName);
             return fileResource.getInputStream();

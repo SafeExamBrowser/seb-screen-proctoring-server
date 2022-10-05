@@ -33,9 +33,9 @@ public final class Profile {
     String clientSecret = "test";
 
     @JsonProperty("runtime")
-    int runtime = 6000;
+    int runtime = 20000;
     @JsonProperty("numberOfConnections")
-    int numberOfConnections = 1;
+    int numberOfConnections = 2;
     @JsonProperty("spawnDelay")
     long spawnDelay = 200;
     @JsonProperty("screenshotIntervall")
