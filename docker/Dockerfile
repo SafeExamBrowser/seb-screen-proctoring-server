@@ -9,7 +9,7 @@ ENV JAVA_HEAP_MAX=
 RUN groupadd --system spring && useradd --system --gid spring spring && mkdir /sebsps && chown spring:spring /sebsps
 USER spring:spring
 
-COPY seb-sps.jar /sebserver/
+COPY seb-sps.jar /sebsps/
 
 WORKDIR /sebsps
 
