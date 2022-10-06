@@ -9,6 +9,8 @@ ENV JAVA_HEAP_MAX=
 RUN groupadd --system spring && useradd --system --gid spring spring && mkdir /sebsps && chown spring:spring /sebsps
 USER spring:spring
 
+COPY seb-sps.jar /sebserver/
+
 WORKDIR /sebsps
 
 CMD if [ "x${JMX_PORT}" = "x" ] ; \
