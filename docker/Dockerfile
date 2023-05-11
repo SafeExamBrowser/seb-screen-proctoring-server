@@ -1,4 +1,4 @@
-FROM openjdk:11-jre-stretch
+FROM openjdk:17-jre-stretch
 
 ENV SERVER_PORT="8090"
 ENV JMX_PORT=
