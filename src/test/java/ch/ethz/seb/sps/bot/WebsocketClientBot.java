@@ -296,7 +296,6 @@ public class WebsocketClientBot {
                         public void afterConnectionClosed(final WebSocketSession session, final CloseStatus closeStatus)
                                 throws Exception {
                             log.info("  !!!! Connection closed !!!! status: {}", closeStatus);
-                            Thread.dumpStack();
                         }
 
                         @Override

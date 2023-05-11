@@ -77,8 +77,7 @@ public class SessionController {
     }
 
     @RequestMapping(
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            method = RequestMethod.POST)
     public void createNewSession(
             @RequestHeader(name = API.GROUP_HEADER_UUID, required = true) final String groupUUID,
             final HttpServletResponse response) {

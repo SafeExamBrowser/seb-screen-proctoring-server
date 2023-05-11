@@ -202,7 +202,7 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
                         this.future);
 
             } catch (final Exception e) {
-                log.error("Failed to start creenshot upstream websocket transaction:", e);
+                log.error("Failed to start screenshot upstream websocket transaction:", e);
                 IOUtils.closeQuietly(this.out);
                 this.out = null;
                 this.future = null;
