@@ -12,7 +12,6 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 
 import org.apache.catalina.filters.RemoteIpFilter;
 import org.slf4j.Logger;
@@ -24,7 +23,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -32,7 +30,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,7 +42,6 @@ import org.springframework.security.oauth2.provider.token.UserAuthenticationConv
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 import ch.ethz.seb.sps.server.ServiceConfig;
-import ch.ethz.seb.sps.server.weblayer.oauth.CachableJdbcTokenStore;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebClientDetailsService;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebServiceUserDetails;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
@@ -54,7 +50,9 @@ import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
 @EnableWebSecurity
 @Order(6)
 @Import(DataSourceAutoConfiguration.class)
-public class WebServiceConfig extends WebSecurityConfigurerAdapter {
+@SuppressWarnings("deprecation")
+public class WebServiceConfig
+        extends org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(WebServiceConfig.class);
 
@@ -84,12 +82,6 @@ public class WebServiceConfig extends WebSecurityConfigurerAdapter {
     private Integer adminRefreshTokenValSec;
     @Value("${sps.api.session.accessTokenValiditySeconds:43200}")
     private Integer sessionAccessTokenValSec;
-
-    @Lazy
-    @Bean
-    public TokenStore tokenStore(final DataSource dataSource) {
-        return new CachableJdbcTokenStore(dataSource);
-    }
 
     /** Used to get real remote IP address by using "X-Forwarded-For" and "X-Forwarded-Proto" header.
      * https://tomcat.apache.org/tomcat-7.0-doc/api/org/apache/catalina/filters/RemoteIpFilter.html

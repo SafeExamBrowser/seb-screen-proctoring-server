@@ -10,6 +10,8 @@ package ch.ethz.seb.sps.server;
 
 import java.util.concurrent.Executor;
 
+import javax.sql.DataSource;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -19,8 +21,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 
 import ch.ethz.seb.sps.domain.api.JSONMapper;
+import ch.ethz.seb.sps.server.weblayer.oauth.CachableJdbcTokenStore;
 
 @Configuration
 @EnableAsync
@@ -38,6 +42,11 @@ public class ServiceConfig {
     @Bean
     public JSONMapper jsonMapper() {
         return new JSONMapper();
+    }
+
+    @Bean
+    public TokenStore tokenStore(final DataSource dataSource) {
+        return new CachableJdbcTokenStore(dataSource);
     }
 
     /** Password encoder used for user passwords (stronger protection) */
