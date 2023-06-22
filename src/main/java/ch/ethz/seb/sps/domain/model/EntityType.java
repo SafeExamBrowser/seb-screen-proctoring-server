@@ -1,18 +1,17 @@
-/*
- * Copyright (c) 2022 ETH Zürich, Educational Development and Technology (LET)
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-
 package ch.ethz.seb.sps.domain.model;
 
+import javax.annotation.Generated;
+
+@Generated(value="org.mybatis.generator.api.MyBatisGenerator",comments="ch.ethz.seb.sps.generator.DomainModelNameReferencePlugin",date="2023-06-22T17:01:10.148+02:00")
 public enum EntityType {
     USER,
     CLIENT_ACCESS,
-    GROUP,
+    SEB_GROUP,
     SESSION,
     SCREENSHOT_DATA,
-    SCREENSHOT
+    SCREENSHOT,
+    ENTITY_PRIVILEGE,
+    ADDITIONAL_ATTRIBUTE,
+    WEBSERVICE_SERVER_INFO,
+    AUDIT_LOG;
 }

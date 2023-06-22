@@ -8,18 +8,18 @@
 
 package ch.ethz.seb.sps.domain.model.user;
 
-import java.io.Serializable;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -30,9 +30,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.seb.sps.domain.Domain.USER;
+import ch.ethz.seb.sps.domain.api.API.UserRole;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityName;
 import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.utils.Utils;
 
 /** The user info domain model contains primary user information
@@ -42,9 +44,7 @@ import ch.ethz.seb.sps.utils.Utils;
  *
  * This domain model is immutable and thread-save */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class UserInfo implements UserAccount, Serializable {
-
-    private static final long serialVersionUID = 2526446136264377808L;
+public final class UserInfo implements UserAccount, WithLifeCycle {
 
     public static final String FILTER_ATTR_SURNAME = "surname";
     public static final String FILTER_ATTR_USER_NAME = "username";
@@ -54,9 +54,6 @@ public final class UserInfo implements UserAccount, Serializable {
     /** The user's UUID */
     @JsonProperty(USER.ATTR_UUID)
     public final String uuid;
-
-    @JsonProperty(USER.ATTR_CREATION_DATE)
-    public final DateTime creationDate;
 
     /** First name of the user */
     @NotNull(message = "user:name:notNull")
@@ -81,11 +78,6 @@ public final class UserInfo implements UserAccount, Serializable {
     @JsonProperty(USER.ATTR_EMAIL)
     public final String email;
 
-    /** Indicates whether this user is still active or not */
-    @NotNull
-    @JsonProperty(USER.ATTR_ACTIVE)
-    public final Boolean active;
-
     /** The users locale */
     @NotNull(message = "user:language:notNull")
     @JsonProperty(USER.ATTR_LANGUAGE)
@@ -102,29 +94,46 @@ public final class UserInfo implements UserAccount, Serializable {
     @JsonProperty(USER.ATTR_ROLES)
     public final Set<String> roles;
 
+    @JsonProperty(USER.ATTR_CREATION_TIME)
+    public final Long creationTime;
+
+    @JsonProperty(USER.ATTR_LAST_UPDATE_TIME)
+    public final Long lastUpdateTime;
+
+    @JsonProperty(USER.ATTR_TERMINATION_TIME)
+    public final Long terminationTime;
+
     @JsonCreator
     public UserInfo(
             @JsonProperty(USER.ATTR_UUID) final String uuid,
-            @JsonProperty(USER.ATTR_CREATION_DATE) final DateTime creationDate,
             @JsonProperty(USER.ATTR_NAME) final String name,
             @JsonProperty(USER.ATTR_SURNAME) final String surname,
             @JsonProperty(USER.ATTR_USERNAME) final String username,
             @JsonProperty(USER.ATTR_EMAIL) final String email,
-            @JsonProperty(USER.ATTR_ACTIVE) final Boolean active,
             @JsonProperty(USER.ATTR_LANGUAGE) final Locale language,
             @JsonProperty(USER.ATTR_TIMEZONE) final DateTimeZone timeZone,
-            @JsonProperty(USER.ATTR_ROLES) final Set<String> roles) {
+            @JsonProperty(USER.ATTR_ROLES) final Set<String> roles,
+            @JsonProperty(USER.ATTR_CREATION_TIME) final Long creationTime,
+            @JsonProperty(USER.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
+            @JsonProperty(USER.ATTR_TERMINATION_TIME) final Long terminationTime) {
 
         this.uuid = uuid;
-        this.creationDate = creationDate;
         this.name = name;
         this.surname = surname;
         this.username = username;
         this.email = email;
-        this.active = BooleanUtils.isTrue(active);
         this.language = language;
         this.timeZone = timeZone;
         this.roles = Utils.immutableSetOf(roles);
+        this.creationTime = creationTime;
+        this.lastUpdateTime = lastUpdateTime;
+        this.terminationTime = terminationTime;
+    }
+
+    @JsonIgnore
+    @Override
+    public DateTime getCreationDate() {
+        return Utils.toDateTimeUTC(this.creationTime);
     }
 
     @Override
@@ -139,11 +148,6 @@ public final class UserInfo implements UserAccount, Serializable {
 
     public String getUuid() {
         return this.uuid;
-    }
-
-    @Override
-    public DateTime getCreationDate() {
-        return this.creationDate;
     }
 
     @Override
@@ -166,14 +170,10 @@ public final class UserInfo implements UserAccount, Serializable {
         return this.email;
     }
 
-    @Override
-    public Boolean getActive() {
-        return this.active;
-    }
-
+    @JsonIgnore
     @Override
     public boolean isActive() {
-        return this.active;
+        return this.terminationTime == null;
     }
 
     @Override
@@ -189,6 +189,30 @@ public final class UserInfo implements UserAccount, Serializable {
     @Override
     public Set<String> getRoles() {
         return this.roles;
+    }
+
+    @Override
+    @JsonIgnore
+    public Set<UserRole> getUserRoles() {
+        return EnumSet.copyOf(
+                getRoles().stream()
+                        .map(UserRole::valueOf)
+                        .collect(Collectors.toList()));
+    }
+
+    @Override
+    public Long getCreationTime() {
+        return this.creationTime;
+    }
+
+    @Override
+    public Long getLastUpdateTime() {
+        return this.lastUpdateTime;
+    }
+
+    @Override
+    public Long getTerminationTime() {
+        return this.terminationTime;
     }
 
     @JsonIgnore
@@ -238,8 +262,6 @@ public final class UserInfo implements UserAccount, Serializable {
         final StringBuilder builder = new StringBuilder();
         builder.append("UserInfo [uuid=");
         builder.append(this.uuid);
-        builder.append(", creationDate=");
-        builder.append(this.creationDate);
         builder.append(", name=");
         builder.append(this.name);
         builder.append(", surname=");
@@ -248,12 +270,18 @@ public final class UserInfo implements UserAccount, Serializable {
         builder.append(this.username);
         builder.append(", email=");
         builder.append(this.email);
-        builder.append(", active=");
-        builder.append(this.active);
         builder.append(", language=");
         builder.append(this.language);
         builder.append(", timeZone=");
         builder.append(this.timeZone);
+        builder.append(", roles=");
+        builder.append(this.roles);
+        builder.append(", creationTime=");
+        builder.append(this.creationTime);
+        builder.append(", lastUpdateTime=");
+        builder.append(this.lastUpdateTime);
+        builder.append(", terminationTime=");
+        builder.append(this.terminationTime);
         builder.append("]");
         return builder.toString();
     }
@@ -264,16 +292,17 @@ public final class UserInfo implements UserAccount, Serializable {
      * @return copied UserInfo instance */
     public static UserInfo of(final UserInfo userInfo) {
         return new UserInfo(
-                userInfo.getUuid(),
-                userInfo.creationDate,
-                userInfo.getName(),
-                userInfo.getUsername(),
-                userInfo.getSurname(),
-                userInfo.getEmail(),
-                userInfo.getActive(),
-                userInfo.getLanguage(),
-                userInfo.getTimeZone(),
-                userInfo.roles);
+                userInfo.uuid,
+                userInfo.name,
+                userInfo.username,
+                userInfo.surname,
+                userInfo.email,
+                userInfo.language,
+                userInfo.timeZone,
+                userInfo.roles,
+                userInfo.creationTime,
+                userInfo.lastUpdateTime,
+                userInfo.terminationTime);
     }
 
     /** Use this to create a copy of a given UserInfo by overriding available arguments.
@@ -299,15 +328,16 @@ public final class UserInfo implements UserAccount, Serializable {
 
         return new UserInfo(
                 userInfo.getUuid(),
-                userInfo.creationDate,
                 (name != null) ? name : userInfo.getName(),
                 (surname != null) ? surname : userInfo.getSurname(),
                 (username != null) ? username : userInfo.getUsername(),
                 (email != null) ? email : userInfo.getEmail(),
-                userInfo.getActive(),
                 (language != null) ? language : userInfo.getLanguage(),
                 (timeZone != null) ? timeZone : userInfo.getTimeZone(),
-                new HashSet<>(Arrays.asList(roles)));
+                new HashSet<>(Arrays.asList(roles)),
+                userInfo.creationTime,
+                userInfo.lastUpdateTime,
+                userInfo.terminationTime);
     }
 
     public static UserInfo withEMail(final UserInfo userInfo, final String email) {

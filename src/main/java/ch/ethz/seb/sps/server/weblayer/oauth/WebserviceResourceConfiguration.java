@@ -33,7 +33,7 @@ public abstract class WebserviceResourceConfiguration extends ResourceServerConf
 
     public WebserviceResourceConfiguration(
             final TokenStore tokenStore,
-            final WebClientDetailsService webServiceClientDetails,
+            final SEBClientDetailsService webServiceClientDetails,
             final AuthenticationManager authenticationManager,
             final AuthenticationEntryPoint authenticationEntryPoint,
             final String resourceId,
@@ -93,7 +93,7 @@ public abstract class WebserviceResourceConfiguration extends ResourceServerConf
 
         public final WebserviceResourceConfiguration webserviceResourceConfiguration;
         public final TokenStore tokenStore;
-        public final WebClientDetailsService webServiceClientDetails;
+        public final SEBClientDetailsService webServiceClientDetails;
         public final AuthenticationManager authenticationManager;
         public final AuthenticationEntryPoint authenticationEntryPoint;
         public final String resourceId;
@@ -105,7 +105,7 @@ public abstract class WebserviceResourceConfiguration extends ResourceServerConf
         public ConfigurerAdapter(
                 final WebserviceResourceConfiguration webserviceResourceConfiguration,
                 final TokenStore tokenStore,
-                final WebClientDetailsService webServiceClientDetails,
+                final SEBClientDetailsService webServiceClientDetails,
                 final AuthenticationManager authenticationManager,
                 final AuthenticationEntryPoint authenticationEntryPoint,
                 final String resourceId,

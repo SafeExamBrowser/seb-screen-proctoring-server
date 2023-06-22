@@ -3,60 +3,51 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import javax.annotation.Generated;
 
 public class ScreenshotDataRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.520+02:00", comments="Source field: screenshot_data.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.524+02:00", comments="Source field: screenshot_data.session_uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.session_uuid")
     private String sessionUuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.525+02:00", comments="Source field: screenshot_data.timestamp")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.timestamp")
     private Long timestamp;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.525+02:00", comments="Source field: screenshot_data.image_url")
-    private String imageUrl;
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.image_format")
+    private Integer imageFormat;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.525+02:00", comments="Source field: screenshot_data.image_format")
-    private String imageFormat;
-
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.525+02:00", comments="Source field: screenshot_data.meta_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.meta_data")
     private String metaData;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.520+02:00", comments="Source Table: screenshot_data")
-    public ScreenshotDataRecord(Long id, String sessionUuid, Long timestamp, String imageUrl, String imageFormat, String metaData) {
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source Table: screenshot_data")
+    public ScreenshotDataRecord(Long id, String sessionUuid, Long timestamp, Integer imageFormat, String metaData) {
         this.id = id;
         this.sessionUuid = sessionUuid;
         this.timestamp = timestamp;
-        this.imageUrl = imageUrl;
         this.imageFormat = imageFormat;
         this.metaData = metaData;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.520+02:00", comments="Source field: screenshot_data.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.524+02:00", comments="Source field: screenshot_data.session_uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.session_uuid")
     public String getSessionUuid() {
         return sessionUuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.525+02:00", comments="Source field: screenshot_data.timestamp")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.timestamp")
     public Long getTimestamp() {
         return timestamp;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.525+02:00", comments="Source field: screenshot_data.image_url")
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.525+02:00", comments="Source field: screenshot_data.image_format")
-    public String getImageFormat() {
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.image_format")
+    public Integer getImageFormat() {
         return imageFormat;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.525+02:00", comments="Source field: screenshot_data.meta_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.205+02:00", comments="Source field: screenshot_data.meta_data")
     public String getMetaData() {
         return metaData;
     }
@@ -65,7 +56,7 @@ public class ScreenshotDataRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table screenshot_data
      *
-     * @mbg.generated Tue Sep 27 17:51:00 CEST 2022
+     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
      */
     @Override
     public String toString() {
@@ -76,7 +67,6 @@ public class ScreenshotDataRecord {
         sb.append(", id=").append(id);
         sb.append(", sessionUuid=").append(sessionUuid);
         sb.append(", timestamp=").append(timestamp);
-        sb.append(", imageUrl=").append(imageUrl);
         sb.append(", imageFormat=").append(imageFormat);
         sb.append(", metaData=").append(metaData);
         sb.append("]");
@@ -87,7 +77,7 @@ public class ScreenshotDataRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table screenshot_data
      *
-     * @mbg.generated Tue Sep 27 17:51:00 CEST 2022
+     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
      */
     @Override
     public boolean equals(Object that) {
@@ -104,7 +94,6 @@ public class ScreenshotDataRecord {
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
             && (this.getSessionUuid() == null ? other.getSessionUuid() == null : this.getSessionUuid().equals(other.getSessionUuid()))
             && (this.getTimestamp() == null ? other.getTimestamp() == null : this.getTimestamp().equals(other.getTimestamp()))
-            && (this.getImageUrl() == null ? other.getImageUrl() == null : this.getImageUrl().equals(other.getImageUrl()))
             && (this.getImageFormat() == null ? other.getImageFormat() == null : this.getImageFormat().equals(other.getImageFormat()))
             && (this.getMetaData() == null ? other.getMetaData() == null : this.getMetaData().equals(other.getMetaData()));
     }
@@ -113,7 +102,7 @@ public class ScreenshotDataRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table screenshot_data
      *
-     * @mbg.generated Tue Sep 27 17:51:00 CEST 2022
+     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
      */
     @Override
     public int hashCode() {
@@ -122,7 +111,6 @@ public class ScreenshotDataRecord {
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
         result = prime * result + ((getSessionUuid() == null) ? 0 : getSessionUuid().hashCode());
         result = prime * result + ((getTimestamp() == null) ? 0 : getTimestamp().hashCode());
-        result = prime * result + ((getImageUrl() == null) ? 0 : getImageUrl().hashCode());
         result = prime * result + ((getImageFormat() == null) ? 0 : getImageFormat().hashCode());
         result = prime * result + ((getMetaData() == null) ? 0 : getMetaData().hashCode());
         return result;

@@ -3,7 +3,6 @@ package ch.ethz.seb.sps.server.datalayer.batis.mapper;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
-import ch.ethz.seb.sps.server.datalayer.batis.JodaTimeTypeResolver;
 import ch.ethz.seb.sps.server.datalayer.batis.model.UserRecord;
 import java.util.List;
 import javax.annotation.Generated;
@@ -12,11 +11,10 @@ import org.apache.ibatis.annotations.ConstructorArgs;
 import org.apache.ibatis.annotations.DeleteProvider;
 import org.apache.ibatis.annotations.InsertProvider;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.SelectKey;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
 import org.apache.ibatis.type.JdbcType;
-import org.joda.time.DateTime;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.delete.DeleteDSL;
 import org.mybatis.dynamic.sql.delete.MyBatis3DeleteModelAdapter;
@@ -34,25 +32,24 @@ import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
 @Mapper
 public interface UserRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.465+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.035+02:00", comments="Source Table: user")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.468+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.037+02:00", comments="Source Table: user")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.469+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.039+02:00", comments="Source Table: user")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
-    @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="record.id", before=false, resultType=Long.class)
+    @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<UserRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.472+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.040+02:00", comments="Source Table: user")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
         @Arg(column="uuid", javaType=String.class, jdbcType=JdbcType.VARCHAR),
-        @Arg(column="creation_date", javaType=DateTime.class, typeHandler=JodaTimeTypeResolver.class, jdbcType=JdbcType.TIMESTAMP),
         @Arg(column="name", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="surname", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="username", javaType=String.class, jdbcType=JdbcType.VARCHAR),
@@ -60,17 +57,18 @@ public interface UserRecordMapper {
         @Arg(column="email", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="language", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="timeZone", javaType=String.class, jdbcType=JdbcType.VARCHAR),
-        @Arg(column="active", javaType=Integer.class, jdbcType=JdbcType.INTEGER),
-        @Arg(column="roles", javaType=String.class, jdbcType=JdbcType.VARCHAR)
+        @Arg(column="roles", javaType=String.class, jdbcType=JdbcType.VARCHAR),
+        @Arg(column="creation_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
+        @Arg(column="last_update_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
+        @Arg(column="termination_time", javaType=Long.class, jdbcType=JdbcType.BIGINT)
     })
     UserRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.474+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.041+02:00", comments="Source Table: user")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
         @Arg(column="uuid", javaType=String.class, jdbcType=JdbcType.VARCHAR),
-        @Arg(column="creation_date", javaType=DateTime.class, typeHandler=JodaTimeTypeResolver.class, jdbcType=JdbcType.TIMESTAMP),
         @Arg(column="name", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="surname", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="username", javaType=String.class, jdbcType=JdbcType.VARCHAR),
@@ -78,27 +76,29 @@ public interface UserRecordMapper {
         @Arg(column="email", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="language", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="timeZone", javaType=String.class, jdbcType=JdbcType.VARCHAR),
-        @Arg(column="active", javaType=Integer.class, jdbcType=JdbcType.INTEGER),
-        @Arg(column="roles", javaType=String.class, jdbcType=JdbcType.VARCHAR)
+        @Arg(column="roles", javaType=String.class, jdbcType=JdbcType.VARCHAR),
+        @Arg(column="creation_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
+        @Arg(column="last_update_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
+        @Arg(column="termination_time", javaType=Long.class, jdbcType=JdbcType.BIGINT)
     })
     List<UserRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.476+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.042+02:00", comments="Source Table: user")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.477+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.043+02:00", comments="Source Table: user")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(userRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.478+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.044+02:00", comments="Source Table: user")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, userRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.480+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.045+02:00", comments="Source Table: user")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, userRecord)
                 .where(id, isEqualTo(id_))
@@ -106,12 +106,11 @@ public interface UserRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.481+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.046+02:00", comments="Source Table: user")
     default int insert(UserRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(userRecord)
                 .map(uuid).toProperty("uuid")
-                .map(creationDate).toProperty("creationDate")
                 .map(name).toProperty("name")
                 .map(surname).toProperty("surname")
                 .map(username).toProperty("username")
@@ -119,18 +118,19 @@ public interface UserRecordMapper {
                 .map(email).toProperty("email")
                 .map(language).toProperty("language")
                 .map(timezone).toProperty("timezone")
-                .map(active).toProperty("active")
                 .map(roles).toProperty("roles")
+                .map(creationTime).toProperty("creationTime")
+                .map(lastUpdateTime).toProperty("lastUpdateTime")
+                .map(terminationTime).toProperty("terminationTime")
                 .build()
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.482+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.047+02:00", comments="Source Table: user")
     default int insertSelective(UserRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(userRecord)
                 .map(uuid).toPropertyWhenPresent("uuid", record::getUuid)
-                .map(creationDate).toPropertyWhenPresent("creationDate", record::getCreationDate)
                 .map(name).toPropertyWhenPresent("name", record::getName)
                 .map(surname).toPropertyWhenPresent("surname", record::getSurname)
                 .map(username).toPropertyWhenPresent("username", record::getUsername)
@@ -138,38 +138,39 @@ public interface UserRecordMapper {
                 .map(email).toPropertyWhenPresent("email", record::getEmail)
                 .map(language).toPropertyWhenPresent("language", record::getLanguage)
                 .map(timezone).toPropertyWhenPresent("timezone", record::getTimezone)
-                .map(active).toPropertyWhenPresent("active", record::getActive)
                 .map(roles).toPropertyWhenPresent("roles", record::getRoles)
+                .map(creationTime).toPropertyWhenPresent("creationTime", record::getCreationTime)
+                .map(lastUpdateTime).toPropertyWhenPresent("lastUpdateTime", record::getLastUpdateTime)
+                .map(terminationTime).toPropertyWhenPresent("terminationTime", record::getTerminationTime)
                 .build()
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.483+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.048+02:00", comments="Source Table: user")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<UserRecord>>> selectByExample() {
-        return SelectDSL.selectWithMapper(this::selectMany, id, uuid, creationDate, name, surname, username, password, email, language, timezone, active, roles)
+        return SelectDSL.selectWithMapper(this::selectMany, id, uuid, name, surname, username, password, email, language, timezone, roles, creationTime, lastUpdateTime, terminationTime)
                 .from(userRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.484+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.049+02:00", comments="Source Table: user")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<UserRecord>>> selectDistinctByExample() {
-        return SelectDSL.selectDistinctWithMapper(this::selectMany, id, uuid, creationDate, name, surname, username, password, email, language, timezone, active, roles)
+        return SelectDSL.selectDistinctWithMapper(this::selectMany, id, uuid, name, surname, username, password, email, language, timezone, roles, creationTime, lastUpdateTime, terminationTime)
                 .from(userRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.485+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.050+02:00", comments="Source Table: user")
     default UserRecord selectByPrimaryKey(Long id_) {
-        return SelectDSL.selectWithMapper(this::selectOne, id, uuid, creationDate, name, surname, username, password, email, language, timezone, active, roles)
+        return SelectDSL.selectWithMapper(this::selectOne, id, uuid, name, surname, username, password, email, language, timezone, roles, creationTime, lastUpdateTime, terminationTime)
                 .from(userRecord)
                 .where(id, isEqualTo(id_))
                 .build()
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.486+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.051+02:00", comments="Source Table: user")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(UserRecord record) {
         return UpdateDSL.updateWithMapper(this::update, userRecord)
                 .set(uuid).equalTo(record::getUuid)
-                .set(creationDate).equalTo(record::getCreationDate)
                 .set(name).equalTo(record::getName)
                 .set(surname).equalTo(record::getSurname)
                 .set(username).equalTo(record::getUsername)
@@ -177,15 +178,16 @@ public interface UserRecordMapper {
                 .set(email).equalTo(record::getEmail)
                 .set(language).equalTo(record::getLanguage)
                 .set(timezone).equalTo(record::getTimezone)
-                .set(active).equalTo(record::getActive)
-                .set(roles).equalTo(record::getRoles);
+                .set(roles).equalTo(record::getRoles)
+                .set(creationTime).equalTo(record::getCreationTime)
+                .set(lastUpdateTime).equalTo(record::getLastUpdateTime)
+                .set(terminationTime).equalTo(record::getTerminationTime);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.488+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.052+02:00", comments="Source Table: user")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(UserRecord record) {
         return UpdateDSL.updateWithMapper(this::update, userRecord)
                 .set(uuid).equalToWhenPresent(record::getUuid)
-                .set(creationDate).equalToWhenPresent(record::getCreationDate)
                 .set(name).equalToWhenPresent(record::getName)
                 .set(surname).equalToWhenPresent(record::getSurname)
                 .set(username).equalToWhenPresent(record::getUsername)
@@ -193,15 +195,16 @@ public interface UserRecordMapper {
                 .set(email).equalToWhenPresent(record::getEmail)
                 .set(language).equalToWhenPresent(record::getLanguage)
                 .set(timezone).equalToWhenPresent(record::getTimezone)
-                .set(active).equalToWhenPresent(record::getActive)
-                .set(roles).equalToWhenPresent(record::getRoles);
+                .set(roles).equalToWhenPresent(record::getRoles)
+                .set(creationTime).equalToWhenPresent(record::getCreationTime)
+                .set(lastUpdateTime).equalToWhenPresent(record::getLastUpdateTime)
+                .set(terminationTime).equalToWhenPresent(record::getTerminationTime);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.489+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.053+02:00", comments="Source Table: user")
     default int updateByPrimaryKey(UserRecord record) {
         return UpdateDSL.updateWithMapper(this::update, userRecord)
                 .set(uuid).equalTo(record::getUuid)
-                .set(creationDate).equalTo(record::getCreationDate)
                 .set(name).equalTo(record::getName)
                 .set(surname).equalTo(record::getSurname)
                 .set(username).equalTo(record::getUsername)
@@ -209,18 +212,19 @@ public interface UserRecordMapper {
                 .set(email).equalTo(record::getEmail)
                 .set(language).equalTo(record::getLanguage)
                 .set(timezone).equalTo(record::getTimezone)
-                .set(active).equalTo(record::getActive)
                 .set(roles).equalTo(record::getRoles)
+                .set(creationTime).equalTo(record::getCreationTime)
+                .set(lastUpdateTime).equalTo(record::getLastUpdateTime)
+                .set(terminationTime).equalTo(record::getTerminationTime)
                 .where(id, isEqualTo(record::getId))
                 .build()
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.491+02:00", comments="Source Table: user")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.054+02:00", comments="Source Table: user")
     default int updateByPrimaryKeySelective(UserRecord record) {
         return UpdateDSL.updateWithMapper(this::update, userRecord)
                 .set(uuid).equalToWhenPresent(record::getUuid)
-                .set(creationDate).equalToWhenPresent(record::getCreationDate)
                 .set(name).equalToWhenPresent(record::getName)
                 .set(surname).equalToWhenPresent(record::getSurname)
                 .set(username).equalToWhenPresent(record::getUsername)
@@ -228,8 +232,10 @@ public interface UserRecordMapper {
                 .set(email).equalToWhenPresent(record::getEmail)
                 .set(language).equalToWhenPresent(record::getLanguage)
                 .set(timezone).equalToWhenPresent(record::getTimezone)
-                .set(active).equalToWhenPresent(record::getActive)
                 .set(roles).equalToWhenPresent(record::getRoles)
+                .set(creationTime).equalToWhenPresent(record::getCreationTime)
+                .set(lastUpdateTime).equalToWhenPresent(record::getLastUpdateTime)
+                .set(terminationTime).equalToWhenPresent(record::getTerminationTime)
                 .where(id, isEqualTo(record::getId))
                 .build()
                 .execute();

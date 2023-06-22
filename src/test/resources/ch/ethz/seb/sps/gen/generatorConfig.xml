@@ -13,6 +13,7 @@
         <plugin type="org.mybatis.generator.plugins.ToStringPlugin"/>
         <plugin type="org.mybatis.generator.plugins.EqualsHashCodePlugin"/>
         <plugin type="ch.ethz.seb.sps.generator.AdditionalMapperMethodsPlugin"/>
+        <plugin type="ch.ethz.seb.sps.generator.DomainModelNameReferencePlugin"/>
 
         <commentGenerator>
             <property name="addRemarkComments" value="false"/>
@@ -39,29 +40,45 @@
 
         <table tableName="user" domainObjectName="UserRecord" >
             <property name="immutable" value="true"/>
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
             <columnOverride column="creation_date" javaType="org.joda.time.DateTime" typeHandler="ch.ethz.seb.sps.server.datalayer.batis.JodaTimeTypeResolver" />
         </table>
         <table tableName="client_access" domainObjectName="ClientAccessRecord">
             <property name="immutable" value="true"/>
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
             <columnOverride column="creation_date" javaType="org.joda.time.DateTime" typeHandler="ch.ethz.seb.sps.server.datalayer.batis.JodaTimeTypeResolver" />
         </table>
         <table tableName="seb_group" domainObjectName="GroupRecord">
             <property name="immutable" value="true"/>
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
         <table tableName="session" domainObjectName="SessionRecord">
             <property name="immutable" value="true"/>
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
         <table tableName="screenshot_data" domainObjectName="ScreenshotDataRecord">
             <property name="immutable" value="true"/>
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
         <table tableName="screenshot" domainObjectName="ScreenshotRecord">
             <property name="immutable" value="true"/>
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
+        <table tableName="entity_privilege" domainObjectName="EntityPrivilegeRecord">
+            <property name="immutable" value="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
+        <table tableName="additional_attribute" domainObjectName="AdditionalAttributeRecord">
+            <property name="immutable" value="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
+        <table tableName="webservice_server_info" domainObjectName="WebserviceInfoRecord">
+            <property name="immutable" value="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
+        <table tableName="audit_log" domainObjectName="AuditLogRecord">
+            <property name="immutable" value="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
         
     </context>

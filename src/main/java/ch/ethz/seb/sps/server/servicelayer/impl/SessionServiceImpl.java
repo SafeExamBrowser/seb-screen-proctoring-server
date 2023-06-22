@@ -14,11 +14,14 @@ import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.screenshot.Session;
+import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
+import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.SessionOnClosingEvent;
 import ch.ethz.seb.sps.server.servicelayer.SessionService;
-import ch.ethz.seb.sps.server.servicelayer.dao.GroupDAO;
-import ch.ethz.seb.sps.server.servicelayer.dao.SessionDAO;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 
@@ -48,14 +51,27 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public Result<String> createNewSession(final String groupUUID, final boolean createGroup) {
+    public Result<Session> createNewSession(
+            final String groupUUID,
+            final String userSessionName,
+            final String clientIP,
+            final String clientMachineName,
+            final String clientOSName,
+            final String clientVersion,
+            final ImageFormat imageFormat,
+            final boolean createGroup) {
 
         return Result.tryCatch(() -> {
+            if (groupUUID == null) {
+                throw APIErrorException.ofMissingAttribute(Domain.SEB_GROUP.ATTR_UUID, "createNewSession");
+            }
+
             final String newSessionId = UUID.randomUUID().toString();
 
             // check if group exists
             if (!this.groupDAO.existsByUUID(groupUUID)) {
-                this.groupDAO.createNew(groupUUID, groupUUID)
+                this.groupDAO
+                        .createNew(groupUUID)
                         .getOrThrow();
             }
 
@@ -64,17 +80,58 @@ public class SessionServiceImpl implements SessionService {
                     .getOrThrow();
 
             final Session session = this.sessionDAO
-                    .createNew(groupId, newSessionId, newSessionId)
+                    .createNew(
+                            groupId,
+                            newSessionId,
+                            userSessionName,
+                            clientIP,
+                            clientMachineName,
+                            clientOSName,
+                            clientVersion,
+                            imageFormat)
                     .getOrThrow();
 
-            return session.uuid;
+            return session;
         });
+    }
+
+    @Override
+    public Result<Session> updateSessionData(
+            final String sessionUUID,
+            final String userSessionName,
+            final String clientIP,
+            final String clientMachineName,
+            final String clientOSName,
+            final String clientVersion) {
+
+        return this.sessionDAO
+                .byUUID(sessionUUID)
+                .map(this::checkUpdateIntegrity)
+                .flatMap(session -> this.sessionDAO.save(new Session(
+                        session.id,
+                        null, null,
+                        userSessionName,
+                        clientIP,
+                        clientMachineName,
+                        clientOSName,
+                        clientVersion,
+                        null, null, null, null)));
     }
 
     @Override
     public Result<String> closeSession(final String sessionUUID) {
         this.applicationEventPublisher.publishEvent(new SessionOnClosingEvent(sessionUUID));
         return this.sessionDAO.closeSession(sessionUUID);
+    }
+
+    private Session checkUpdateIntegrity(final Session session) {
+        if (session.terminationTime != null) {
+            throw APIErrorException.ofIllegalState(
+                    "updateSessionData",
+                    "Session is already closed",
+                    session);
+        }
+        return session;
     }
 
 }

@@ -15,15 +15,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.seb.sps.domain.Domain.SCREENSHOT_DATA;
-import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ScreenshotData implements Entity {
 
-    @JsonProperty(API.PARAM_ENTITY_TYPE)
-    public final EntityType entityType = EntityType.SCREENSHOT_DATA;
+    public static final String SCREEN_PREFIX = "screen_";
 
     @JsonProperty(SCREENSHOT_DATA.ATTR_ID)
     public final Long id;
@@ -34,12 +33,10 @@ public class ScreenshotData implements Entity {
     @JsonProperty(SCREENSHOT_DATA.ATTR_TIMESTAMP)
     public final Long timestamp;
 
-    @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_URL)
-    public final String imageURL;
-
     @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_FORMAT)
-    public final String imageFormat;
+    public final ImageFormat imageFormat;
 
+    // TODO make this string
     @JsonProperty(SCREENSHOT_DATA.ATTR_META_DATA)
     public final String metaData;
 
@@ -48,14 +45,12 @@ public class ScreenshotData implements Entity {
             @JsonProperty(SCREENSHOT_DATA.ATTR_ID) final Long id,
             @JsonProperty(SCREENSHOT_DATA.ATTR_SESSION_UUID) final String sessionUUID,
             @JsonProperty(SCREENSHOT_DATA.ATTR_TIMESTAMP) final Long timestamp,
-            @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_URL) final String imageURL,
-            @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_FORMAT) final String imageFormat,
+            @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_FORMAT) final ImageFormat imageFormat,
             @JsonProperty(SCREENSHOT_DATA.ATTR_META_DATA) final String metaData) {
 
         this.id = id;
         this.sessionUUID = sessionUUID;
         this.timestamp = timestamp;
-        this.imageURL = imageURL;
         this.imageFormat = imageFormat;
         this.metaData = metaData;
     }
@@ -69,12 +64,12 @@ public class ScreenshotData implements Entity {
 
     @Override
     public EntityType entityType() {
-        return this.entityType;
+        return EntityType.SCREENSHOT_DATA;
     }
 
     @Override
     public String getName() {
-        return this.imageURL;
+        return SCREEN_PREFIX + this.id;
     }
 
     public Long getId() {
@@ -89,11 +84,7 @@ public class ScreenshotData implements Entity {
         return this.timestamp;
     }
 
-    public String getImageURL() {
-        return this.imageURL;
-    }
-
-    public String getImageFormat() {
+    public ImageFormat getImageFormat() {
         return this.imageFormat;
     }
 
@@ -103,7 +94,7 @@ public class ScreenshotData implements Entity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.entityType, this.id);
+        return Objects.hash(EntityType.SCREENSHOT_DATA, this.id);
     }
 
     @Override
@@ -115,22 +106,18 @@ public class ScreenshotData implements Entity {
         if (getClass() != obj.getClass())
             return false;
         final ScreenshotData other = (ScreenshotData) obj;
-        return this.entityType == other.entityType && Objects.equals(this.id, other.id);
+        return Objects.equals(this.id, other.id);
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("ScreenshotData [entityType=");
-        builder.append(this.entityType);
-        builder.append(", id=");
+        builder.append("ScreenshotData [id=");
         builder.append(this.id);
         builder.append(", sessionUUID=");
         builder.append(this.sessionUUID);
         builder.append(", timestamp=");
         builder.append(this.timestamp);
-        builder.append(", imageURL=");
-        builder.append(this.imageURL);
         builder.append(", imageFormat=");
         builder.append(this.imageFormat);
         builder.append(", metaData=");

@@ -21,9 +21,9 @@ import org.springframework.stereotype.Component;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserMod;
-import ch.ethz.seb.sps.server.servicelayer.dao.UserDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
+import ch.ethz.seb.sps.server.servicelayer.impl.ClientCredentialServiceImpl;
 import ch.ethz.seb.sps.utils.Result;
-import ch.ethz.seb.sps.utils.client.ClientCredentialServiceImpl;
 
 @Component
 class AdminUserInitializer {
@@ -56,7 +56,7 @@ class AdminUserInitializer {
         try {
 
             log.debug("Create initial admin account is switched on. Check database if exists...");
-            final Result<ServerUser> byUsername = this.userDAO.sebServerAdminByUsername(this.adminName);
+            final Result<ServerUser> byUsername = this.userDAO.byUsername(this.adminName);
             if (byUsername.hasValue()) {
 
                 log.debug("Initial admin account already exists. Check if the password must be reset...");
@@ -87,7 +87,7 @@ class AdminUserInitializer {
                         null,
                         null,
                         null,
-                        new HashSet<>(Arrays.asList(API.UserRoles.ADMIN.name()))))
+                        new HashSet<>(Arrays.asList(API.UserRole.ADMIN.name()))))
                         .getOrThrow();
             }
         } catch (final Exception e) {

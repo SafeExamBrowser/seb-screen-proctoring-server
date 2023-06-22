@@ -10,6 +10,8 @@ package ch.ethz.seb.sps.domain.model.user;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
@@ -17,6 +19,9 @@ import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.CollectionUtils;
+
+import ch.ethz.seb.sps.domain.api.API.UserRole;
 
 /** SEBServerUser defines web-service internal user-account based authentication principal
  *
@@ -30,6 +35,7 @@ public final class ServerUser implements UserDetails, CredentialsContainer, Auth
     private final UserInfo userInfo;
     private String password;
     private final Collection<GrantedAuthority> authorities;
+    private final EnumSet<UserRole> userRoles;
 
     public ServerUser(final Long id, final UserInfo userInfo, final String password) {
         this.id = id;
@@ -40,6 +46,15 @@ public final class ServerUser implements UserDetails, CredentialsContainer, Auth
                         .stream()
                         .map(role -> new SimpleGrantedAuthority(role))
                         .collect(Collectors.toList()));
+
+        if (CollectionUtils.isEmpty(userInfo.roles)) {
+            this.userRoles = EnumSet.noneOf(UserRole.class);
+        } else {
+            this.userRoles = EnumSet.copyOf(userInfo.roles
+                    .stream()
+                    .map(UserRole::valueOf)
+                    .collect(Collectors.toSet()));
+        }
     }
 
     @Override
@@ -63,12 +78,12 @@ public final class ServerUser implements UserDetails, CredentialsContainer, Auth
 
     @Override
     public boolean isAccountNonExpired() {
-        return this.userInfo.active;
+        return this.userInfo.isActive();
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return this.userInfo.active;
+        return this.userInfo.isActive();
     }
 
     @Override
@@ -78,7 +93,7 @@ public final class ServerUser implements UserDetails, CredentialsContainer, Auth
 
     @Override
     public boolean isEnabled() {
-        return this.userInfo.active;
+        return this.userInfo.isActive();
     }
 
     public UserInfo getUserInfo() {
@@ -92,6 +107,10 @@ public final class ServerUser implements UserDetails, CredentialsContainer, Auth
     @Override
     public void eraseCredentials() {
         this.password = null;
+    }
+
+    public Set<UserRole> getUserRoles() {
+        return this.userRoles;
     }
 
     @Override

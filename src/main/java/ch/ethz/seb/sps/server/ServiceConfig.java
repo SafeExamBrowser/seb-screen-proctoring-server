@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,6 +29,7 @@ import ch.ethz.seb.sps.server.weblayer.oauth.CachableJdbcTokenStore;
 
 @Configuration
 @EnableAsync
+@EnableScheduling
 public class ServiceConfig {
 
     /** Spring bean name of user password encoder */
@@ -37,6 +39,7 @@ public class ServiceConfig {
 
     public static final String SCREENSHOT_UPLOAD_API_EXECUTOR = "SCREENSHOT_UPLOAD_API_EXECUTOR";
     public static final String SCREENSHOT_DOWNLOAD_API_EXECUTOR = "SCREENSHOT_DOWNLOAD_API_EXECUTOR";
+    public static final String SCREENSHOT_STORE_API_EXECUTOR = "SCREENSHOT_STORE_API_EXECUTOR";
 
     @Lazy
     @Bean
@@ -64,13 +67,13 @@ public class ServiceConfig {
     @Bean(name = SCREENSHOT_UPLOAD_API_EXECUTOR)
     public Executor screenhortUploadThreadPoolTaskExecutor() {
         final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(200);
-        executor.setMaxPoolSize(2000);
-        executor.setQueueCapacity(200);
+        executor.setCorePoolSize(100);
+        executor.setMaxPoolSize(200);
+        executor.setQueueCapacity(0);
         executor.setThreadPriority(Thread.MAX_PRIORITY);
         executor.setThreadNamePrefix("upload-");
         executor.initialize();
-        executor.setWaitForTasksToCompleteOnShutdown(false);
+        executor.setWaitForTasksToCompleteOnShutdown(true);
         return executor;
     }
 
@@ -78,21 +81,38 @@ public class ServiceConfig {
     public Executor screenhortDownloadThreadPoolTaskExecutor() {
         final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(20);
-        executor.setMaxPoolSize(100);
-        executor.setQueueCapacity(500);
+        executor.setMaxPoolSize(50);
+        executor.setQueueCapacity(0);
         executor.setThreadPriority(Thread.NORM_PRIORITY);
         executor.setThreadNamePrefix("download-");
         executor.initialize();
-        executor.setWaitForTasksToCompleteOnShutdown(false);
+        executor.setWaitForTasksToCompleteOnShutdown(true);
         return executor;
     }
 
-    @Bean
-    public TaskScheduler taskScheduler() {
+//    @Bean(name = SCREENSHOT_STORE_API_EXECUTOR)
+//    public ConcurrentTaskExecutor screenhortStoreThreadPoolTaskExecutor() {
+//        final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+//        executor.setCorePoolSize(4);
+//        executor.setMaxPoolSize(10);
+//        executor.setQueueCapacity(0);
+//        executor.setThreadPriority(Thread.NORM_PRIORITY);
+//        executor.setThreadNamePrefix("store-");
+//        executor.initialize();
+//        executor.setWaitForTasksToCompleteOnShutdown(false);
+//
+//        final ConcurrentTaskExecutor taskExecutor = new ConcurrentTaskExecutor();
+//        taskExecutor.setConcurrentExecutor(executor);
+//        return taskExecutor;
+//    }
+
+    @Bean(name = SCREENSHOT_STORE_API_EXECUTOR)
+    public TaskScheduler batchStoreScreenShotcheduler() {
         final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 
-        scheduler.setPoolSize(2);
-        scheduler.setThreadNamePrefix("scheduled-task-");
+        scheduler.setPoolSize(4);
+        scheduler.setThreadNamePrefix("store-");
+        scheduler.setThreadPriority(Thread.NORM_PRIORITY);
         scheduler.setDaemon(true);
 
         return scheduler;

@@ -146,4 +146,6 @@ public final class Constants {
 
     public static final Collator DEFAULT_ENGLISH_COLLATOR = Collator.getInstance(Locale.ENGLISH);
 
+    public static final String MIME_TYPE_IMAGE_WEBP = "image/webp";
+
 }

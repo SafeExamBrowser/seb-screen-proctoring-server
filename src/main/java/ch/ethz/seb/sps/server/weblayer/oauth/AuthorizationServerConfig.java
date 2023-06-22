@@ -48,7 +48,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Autowired
     private WebServiceUserDetails webServiceUserDetails;
     @Autowired
-    private WebClientDetailsService webServiceClientDetails;
+    private SEBClientDetailsService sebClientDetailsService;
     @Autowired
     @Qualifier(ServiceConfig.CLIENT_PASSWORD_ENCODER_BEAN_NAME)
     private PasswordEncoder clientPasswordEncoder;
@@ -78,7 +78,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.withClientDetails(this.webServiceClientDetails);
+        clients.withClientDetails(this.sebClientDetailsService);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         defaultTokenServices.setTokenEnhancer(jwtAccessTokenConverter);
         defaultTokenServices.setAccessTokenValiditySeconds(this.adminAccessTokenValSec);
         defaultTokenServices.setRefreshTokenValiditySeconds(this.adminRefreshTokenValSec);
-        defaultTokenServices.setClientDetailsService(this.webServiceClientDetails);
+        defaultTokenServices.setClientDetailsService(this.sebClientDetailsService);
 
         endpoints
                 .tokenStore(this.tokenStore)

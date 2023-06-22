@@ -1,0 +1,52 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.ehcache.org/v3"
+    xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
+    xsi:schemaLocation="
+            http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.0.xsd
+            http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.0.xsd">
+
+    <cache alias="CONNECTION_TOKENS_CACHE">
+        <key-type>java.lang.Long</key-type>
+        <value-type>ch.ethz.seb.sebserver.gbl.util.Result</value-type>
+        <expiry>
+            <ttl unit="hours">24</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100</heap>
+        </resources>
+    </cache>
+    
+    <cache alias="ACCESS_TOKEN_CACHE">
+        <key-type>java.lang.String</key-type>
+        <value-type>org.springframework.security.oauth2.common.OAuth2AccessToken</value-type>
+        <expiry>
+            <ttl unit="hours">1</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100</heap>
+        </resources>
+    </cache>
+    
+    <cache alias="AUTHENTICATION_TOKEN_CACHE">
+        <key-type>org.springframework.security.oauth2.common.OAuth2AccessToken</key-type>
+        <value-type>org.springframework.security.oauth2.provider.OAuth2Authentication</value-type>
+        <expiry>
+            <ttl unit="hours">1</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100</heap>
+        </resources>
+    </cache>
+    
+   <cache alias="SEB_CLIENT_DETAILS_CACHE">
+        <key-type>java.lang.String</key-type>
+        <value-type>ch.ethz.seb.sebserver.gbl.util.Result</value-type>
+        <expiry>
+            <ttl unit="hours">24</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100</heap>
+        </resources>
+    </cache>
+    
+</config>

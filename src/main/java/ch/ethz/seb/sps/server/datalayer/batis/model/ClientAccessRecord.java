@@ -1,63 +1,98 @@
 package ch.ethz.seb.sps.server.datalayer.batis.model;
 
 import javax.annotation.Generated;
-import org.joda.time.DateTime;
 
 public class ClientAccessRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.497+02:00", comments="Source field: client_access.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source field: client_access.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.497+02:00", comments="Source field: client_access.client_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source field: client_access.name")
+    private String name;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source field: client_access.description")
+    private String description;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source field: client_access.client_name")
     private String clientName;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.497+02:00", comments="Source field: client_access.client_secret")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source field: client_access.client_secret")
     private String clientSecret;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.497+02:00", comments="Source field: client_access.creation_date")
-    private DateTime creationDate;
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.179+02:00", comments="Source field: client_access.owner")
+    private String owner;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.498+02:00", comments="Source field: client_access.active")
-    private Integer active;
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.179+02:00", comments="Source field: client_access.creation_time")
+    private Long creationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.497+02:00", comments="Source Table: client_access")
-    public ClientAccessRecord(Long id, String clientName, String clientSecret, DateTime creationDate, Integer active) {
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.179+02:00", comments="Source field: client_access.last_update_time")
+    private Long lastUpdateTime;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.179+02:00", comments="Source field: client_access.termination_time")
+    private Long terminationTime;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source Table: client_access")
+    public ClientAccessRecord(Long id, String name, String description, String clientName, String clientSecret, String owner, Long creationTime, Long lastUpdateTime, Long terminationTime) {
         this.id = id;
+        this.name = name;
+        this.description = description;
         this.clientName = clientName;
         this.clientSecret = clientSecret;
-        this.creationDate = creationDate;
-        this.active = active;
+        this.owner = owner;
+        this.creationTime = creationTime;
+        this.lastUpdateTime = lastUpdateTime;
+        this.terminationTime = terminationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.497+02:00", comments="Source field: client_access.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source field: client_access.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.497+02:00", comments="Source field: client_access.client_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source field: client_access.name")
+    public String getName() {
+        return name;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source field: client_access.description")
+    public String getDescription() {
+        return description;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.178+02:00", comments="Source field: client_access.client_name")
     public String getClientName() {
         return clientName;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.497+02:00", comments="Source field: client_access.client_secret")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.179+02:00", comments="Source field: client_access.client_secret")
     public String getClientSecret() {
         return clientSecret;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.498+02:00", comments="Source field: client_access.creation_date")
-    public DateTime getCreationDate() {
-        return creationDate;
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.179+02:00", comments="Source field: client_access.owner")
+    public String getOwner() {
+        return owner;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2022-09-27T17:51:00.498+02:00", comments="Source field: client_access.active")
-    public Integer getActive() {
-        return active;
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.179+02:00", comments="Source field: client_access.creation_time")
+    public Long getCreationTime() {
+        return creationTime;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.179+02:00", comments="Source field: client_access.last_update_time")
+    public Long getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.179+02:00", comments="Source field: client_access.termination_time")
+    public Long getTerminationTime() {
+        return terminationTime;
     }
 
     /**
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table client_access
      *
-     * @mbg.generated Tue Sep 27 17:51:00 CEST 2022
+     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
      */
     @Override
     public String toString() {
@@ -66,10 +101,14 @@ public class ClientAccessRecord {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
+        sb.append(", name=").append(name);
+        sb.append(", description=").append(description);
         sb.append(", clientName=").append(clientName);
         sb.append(", clientSecret=").append(clientSecret);
-        sb.append(", creationDate=").append(creationDate);
-        sb.append(", active=").append(active);
+        sb.append(", owner=").append(owner);
+        sb.append(", creationTime=").append(creationTime);
+        sb.append(", lastUpdateTime=").append(lastUpdateTime);
+        sb.append(", terminationTime=").append(terminationTime);
         sb.append("]");
         return sb.toString();
     }
@@ -78,7 +117,7 @@ public class ClientAccessRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table client_access
      *
-     * @mbg.generated Tue Sep 27 17:51:00 CEST 2022
+     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
      */
     @Override
     public boolean equals(Object that) {
@@ -93,27 +132,35 @@ public class ClientAccessRecord {
         }
         ClientAccessRecord other = (ClientAccessRecord) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
+            && (this.getName() == null ? other.getName() == null : this.getName().equals(other.getName()))
+            && (this.getDescription() == null ? other.getDescription() == null : this.getDescription().equals(other.getDescription()))
             && (this.getClientName() == null ? other.getClientName() == null : this.getClientName().equals(other.getClientName()))
             && (this.getClientSecret() == null ? other.getClientSecret() == null : this.getClientSecret().equals(other.getClientSecret()))
-            && (this.getCreationDate() == null ? other.getCreationDate() == null : this.getCreationDate().equals(other.getCreationDate()))
-            && (this.getActive() == null ? other.getActive() == null : this.getActive().equals(other.getActive()));
+            && (this.getOwner() == null ? other.getOwner() == null : this.getOwner().equals(other.getOwner()))
+            && (this.getCreationTime() == null ? other.getCreationTime() == null : this.getCreationTime().equals(other.getCreationTime()))
+            && (this.getLastUpdateTime() == null ? other.getLastUpdateTime() == null : this.getLastUpdateTime().equals(other.getLastUpdateTime()))
+            && (this.getTerminationTime() == null ? other.getTerminationTime() == null : this.getTerminationTime().equals(other.getTerminationTime()));
     }
 
     /**
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table client_access
      *
-     * @mbg.generated Tue Sep 27 17:51:00 CEST 2022
+     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
      */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
+        result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
+        result = prime * result + ((getDescription() == null) ? 0 : getDescription().hashCode());
         result = prime * result + ((getClientName() == null) ? 0 : getClientName().hashCode());
         result = prime * result + ((getClientSecret() == null) ? 0 : getClientSecret().hashCode());
-        result = prime * result + ((getCreationDate() == null) ? 0 : getCreationDate().hashCode());
-        result = prime * result + ((getActive() == null) ? 0 : getActive().hashCode());
+        result = prime * result + ((getOwner() == null) ? 0 : getOwner().hashCode());
+        result = prime * result + ((getCreationTime() == null) ? 0 : getCreationTime().hashCode());
+        result = prime * result + ((getLastUpdateTime() == null) ? 0 : getLastUpdateTime().hashCode());
+        result = prime * result + ((getTerminationTime() == null) ? 0 : getTerminationTime().hashCode());
         return result;
     }
 }

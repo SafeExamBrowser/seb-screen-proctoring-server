@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import ch.ethz.seb.sps.server.servicelayer.dao.UserDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 
 @Lazy
 @Component
@@ -28,7 +28,7 @@ public class WebServiceUserDetails implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-        return this.userDAO.sebServerAdminByUsername(username)
+        return this.userDAO.byUsername(username)
                 .get(error -> {
                     throw new UsernameNotFoundException("No User with name: " + username + " found", error);
                 });

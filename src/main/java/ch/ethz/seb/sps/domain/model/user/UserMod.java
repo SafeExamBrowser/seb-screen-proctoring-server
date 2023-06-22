@@ -9,9 +9,11 @@
 package ch.ethz.seb.sps.domain.model.user;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -28,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.seb.sps.domain.Domain.USER;
+import ch.ethz.seb.sps.domain.api.API.UserRole;
 import ch.ethz.seb.sps.domain.api.POSTMapper;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
@@ -193,13 +196,17 @@ public final class UserMod implements UserAccount {
     }
 
     @Override
-    public Boolean getActive() {
+    public boolean isActive() {
         return false;
     }
 
     @Override
-    public boolean isActive() {
-        return false;
+    @JsonIgnore
+    public EnumSet<UserRole> getUserRoles() {
+        return EnumSet.copyOf(
+                getRoles().stream()
+                        .map(UserRole::valueOf)
+                        .collect(Collectors.toList()));
     }
 
     @JsonIgnore

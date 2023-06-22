@@ -8,9 +8,11 @@
 
 package ch.ethz.seb.sps.domain.model.user;
 
+import java.util.Collection;
 import java.util.Objects;
 
-import org.joda.time.DateTime;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -19,10 +21,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import ch.ethz.seb.sps.domain.Domain.CLIENT_ACCESS;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.Entity;
+import ch.ethz.seb.sps.domain.model.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.OwnedEntity;
+import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
+import ch.ethz.seb.sps.domain.model.WithLifeCycle;
+import ch.ethz.seb.sps.domain.model.WithNameDescription;
+import ch.ethz.seb.sps.utils.Utils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ClientAccess implements Entity {
+public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
 
     @JsonProperty(API.PARAM_ENTITY_TYPE)
     public final EntityType entityType = EntityType.CLIENT_ACCESS;
@@ -30,31 +38,59 @@ public class ClientAccess implements Entity {
     @JsonProperty(CLIENT_ACCESS.ATTR_ID)
     public final Long id;
 
-    @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_ID)
+    @JsonProperty(CLIENT_ACCESS.ATTR_NAME)
+    @NotNull(message = "clientaccess:name:notNull")
+    @Size(min = 3, max = 255, message = "clientconfig:name:size:{min}:{max}:${validatedValue}")
+    public final String name;
+
+    @JsonProperty(CLIENT_ACCESS.ATTR_DESCRIPTION)
+    @Size(max = 4000, message = "clientaccess:description:size:{max}:${validatedValue}")
+    public final String description;
+
+    @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_NAME)
     public final String clientId;
 
     @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_SECRET)
     public final String clientSecret;
 
-    @JsonProperty(CLIENT_ACCESS.ATTR_CREATION_DATE)
-    public final DateTime creationDate;
+    @JsonProperty(CLIENT_ACCESS.ATTR_OWNER)
+    public final String owner;
 
-    @JsonProperty(CLIENT_ACCESS.ATTR_ACTIVE)
-    public final Boolean active;
+    @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES)
+    public final Collection<EntityPrivilege> entityPrivileges;
+
+    @JsonProperty(CLIENT_ACCESS.ATTR_CREATION_TIME)
+    public final Long creationTime;
+
+    @JsonProperty(CLIENT_ACCESS.ATTR_LAST_UPDATE_TIME)
+    public final Long lastUpdateTime;
+
+    @JsonProperty(CLIENT_ACCESS.ATTR_TERMINATION_TIME)
+    public final Long terminationTime;
 
     @JsonCreator
     public ClientAccess(
             @JsonProperty(CLIENT_ACCESS.ATTR_ID) final Long id,
-            @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_ID) final String clientId,
+            @JsonProperty(CLIENT_ACCESS.ATTR_NAME) final String name,
+            @JsonProperty(CLIENT_ACCESS.ATTR_DESCRIPTION) final String description,
+            @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_NAME) final String clientId,
             @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_SECRET) final String clientSecret,
-            @JsonProperty(CLIENT_ACCESS.ATTR_CREATION_DATE) final DateTime creationDate,
-            @JsonProperty(CLIENT_ACCESS.ATTR_ACTIVE) final Boolean active) {
+            @JsonProperty(CLIENT_ACCESS.ATTR_OWNER) final String owner,
+            @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES) final Collection<EntityPrivilege> entityPrivileges,
+            @JsonProperty(CLIENT_ACCESS.ATTR_CREATION_TIME) final Long creationTime,
+            @JsonProperty(CLIENT_ACCESS.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
+            @JsonProperty(CLIENT_ACCESS.ATTR_TERMINATION_TIME) final Long terminationTime) {
 
         this.id = id;
+        this.name = name;
+        this.description = description;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
-        this.creationDate = creationDate;
-        this.active = active;
+        this.owner = owner;
+        this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
+        this.creationTime = creationTime;
+        this.lastUpdateTime = lastUpdateTime;
+        this.terminationTime = terminationTime;
     }
 
     @Override
@@ -71,7 +107,12 @@ public class ClientAccess implements Entity {
 
     @Override
     public String getName() {
-        return this.clientId;
+        return this.name;
+    }
+
+    @Override
+    public String getDescription() {
+        return this.description;
     }
 
     public Long getId() {
@@ -86,12 +127,29 @@ public class ClientAccess implements Entity {
         return this.clientSecret;
     }
 
-    public DateTime getCreationDate() {
-        return this.creationDate;
+    @Override
+    public String getOwner() {
+        return this.owner;
     }
 
-    public Boolean getActive() {
-        return this.active;
+    @Override
+    public Collection<EntityPrivilege> getEntityPrivileges() {
+        return this.entityPrivileges;
+    }
+
+    @Override
+    public Long getCreationTime() {
+        return this.creationTime;
+    }
+
+    @Override
+    public Long getLastUpdateTime() {
+        return this.lastUpdateTime;
+    }
+
+    @Override
+    public Long getTerminationTime() {
+        return this.terminationTime;
     }
 
     @Override
@@ -118,12 +176,22 @@ public class ClientAccess implements Entity {
         builder.append(this.entityType);
         builder.append(", id=");
         builder.append(this.id);
+        builder.append(", name=");
+        builder.append(this.name);
+        builder.append(", description=");
+        builder.append(this.description);
         builder.append(", clientId=");
         builder.append(this.clientId);
-        builder.append(", creationDate=");
-        builder.append(this.creationDate);
-        builder.append(", active=");
-        builder.append(this.active);
+        builder.append(", owner=");
+        builder.append(this.owner);
+        builder.append(", entityPrivileges=");
+        builder.append(this.entityPrivileges);
+        builder.append(", creationTime=");
+        builder.append(this.creationTime);
+        builder.append(", lastUpdateTime=");
+        builder.append(this.lastUpdateTime);
+        builder.append(", terminationTime=");
+        builder.append(this.terminationTime);
         builder.append("]");
         return builder.toString();
     }

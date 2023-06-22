@@ -15,8 +15,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -57,9 +60,10 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ch.ethz.seb.sps.domain.Domain.SCREENSHOT_DATA;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
-import ch.ethz.seb.sps.domain.model.screenshot.ScreenshotData;
+import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Utils;
 
@@ -112,6 +116,7 @@ public class WebsocketClientBot {
         private final String name;
         private final OAuth2RestTemplate restTemplate;
         private final JSONMapper jsonMapper = new JSONMapper();
+        private final Map<String, String> metaData = new HashMap<>();
 
         private final String createSessionURL = WebsocketClientBot.this.profile.webserviceAddress +
                 WebsocketClientBot.this.profile.apiPath +
@@ -184,27 +189,30 @@ public class WebsocketClientBot {
         private void screenshot(final String sessionUUID, final WebSocketSession screenshotDataSession) {
 
             try {
-                final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
+                final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(10 * 1024);
+
+                this.metaData.clear();
+                this.metaData.put(SCREENSHOT_DATA.ATTR_TIMESTAMP, String.valueOf(Utils.getMillisecondsNow()));
+                this.metaData.put(SCREENSHOT_DATA.ATTR_IMAGE_FORMAT, ImageFormat.PNG.formatName);
+                this.metaData.put("mouseX", "345");
+                this.metaData.put("mouseY", "674");
+
+                final String screenshotDataJSON = this.jsonMapper.writeValueAsString(this.metaData);
+                final byte[] metaDataBytes = screenshotDataJSON.getBytes("UTF8");
+                final int length = metaDataBytes.length;
+
+                System.out.println("************ metaLength: " + length);
+
+                // write the two byte long integer length
+                byteArrayOutputStream.write(ByteBuffer.allocate(2).putShort((short) length).array());
+                // then write the metadata
+                byteArrayOutputStream.write(metaDataBytes);
+                // and finally the screenshot data
                 takeScreenshot(byteArrayOutputStream);
-
-                // first send the metadata
-                final ScreenshotData screenshotData = new ScreenshotData(
-                        null,
-                        sessionUUID,
-                        Utils.getMillisecondsNow(),
-                        null,
-                        "jpg",
-                        "some meta data");
-
-                final String screenshotDataJSON = this.jsonMapper.writeValueAsString(screenshotData);
-                screenshotDataSession.sendMessage(new BinaryMessage(screenshotDataJSON.getBytes("UTF8")));
-
-                // then send the screenshot
+                // and send the data in a binary message
                 screenshotDataSession.sendMessage(new BinaryMessage(byteArrayOutputStream.toByteArray()));
-                //ByteArrayInputStream in = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
 
             } catch (final Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 

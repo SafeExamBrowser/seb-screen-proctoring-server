@@ -20,7 +20,7 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ch.ethz.seb.sps.integrationtests.ServiceTest_FULL_RDBMS;
-import ch.ethz.seb.sps.server.datalayer.batis.dao.ScreenshotDAOBatis;
+import ch.ethz.seb.sps.server.datalayer.dao.impl.ScreenshotDAOBatis;
 import ch.ethz.seb.sps.utils.Result;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

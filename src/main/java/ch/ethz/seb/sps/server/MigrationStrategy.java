@@ -69,6 +69,14 @@ public class MigrationStrategy implements FlywayMigrationStrategy {
                 ServiceInit.INIT_LOGGER.info("----> No pending migrations found. Last migration --> {} --> {}",
                         info.current().getVersion(),
                         info.current().getDescription());
+
+                // TODO add this also for SEB Server
+                final ValidateResult validateWithResult = this.flyway.validateWithResult();
+                if (!validateWithResult.validationSuccessful) {
+                    ServiceInit.INIT_LOGGER.warn("----> ");
+                    ServiceInit.INIT_LOGGER.warn("----> VALIDATION OF DB MIGRATION SCHEMA FAILED:  \n\n" +
+                            validateWithResult.getAllErrorMessages() + "\n\n");
+                }
             }
 
             ServiceInit.INIT_LOGGER.info("----> ** Migration check END **");

@@ -14,16 +14,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import ch.ethz.seb.sps.server.datalayer.dao.ClientAccessDAO;
 import ch.ethz.seb.sps.server.servicelayer.ClientAccessService;
-import ch.ethz.seb.sps.server.servicelayer.dao.ClientAccessDAO;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
-@Component
+@Service
 public class ClientAccessServiceImpl implements ClientAccessService {
 
     private final int sessionAccessTokenValSec;
@@ -39,22 +39,25 @@ public class ClientAccessServiceImpl implements ClientAccessService {
 
     @Override
     public Result<ClientDetails> getClientDetails(final String clientName) {
-        return Result.tryCatch(() -> {
+        return this.clientAccessDAO
+                .getEncodedClientPWD(clientName)
+                .map(encodedSecret -> getClientDetails(clientName, encodedSecret));
+    }
 
-            final BaseClientDetails clientDetails = new BaseClientDetails(
-                    Utils.toString(clientName),
-                    WebserviceResourceConfiguration.SESSION_API_RESOURCE_ID,
-                    null,
-                    Constants.OAUTH2_GRANT_TYPE_CLIENT_CREDENTIALS,
-                    StringUtils.EMPTY);
+    private ClientDetails getClientDetails(final String clientName, final CharSequence encodedSecret) {
+        final BaseClientDetails clientDetails = new BaseClientDetails(
+                Utils.toString(clientName),
+                WebserviceResourceConfiguration.SESSION_API_RESOURCE_ID,
+                null,
+                Constants.OAUTH2_GRANT_TYPE_CLIENT_CREDENTIALS,
+                StringUtils.EMPTY);
 
-            clientDetails.setScope(Collections.emptySet());
-            clientDetails.setClientSecret(Utils.toString(this.clientAccessDAO.getEncodedClientPWD(clientName)));
-            clientDetails.setAccessTokenValiditySeconds(this.sessionAccessTokenValSec);
-            clientDetails.setRefreshTokenValiditySeconds(-1); // not used, not expiring
+        clientDetails.setScope(Collections.emptySet());
+        clientDetails.setClientSecret(Utils.toString(encodedSecret));
+        clientDetails.setAccessTokenValiditySeconds(this.sessionAccessTokenValSec);
+        clientDetails.setRefreshTokenValiditySeconds(-1); // not used, not expiring
 
-            return clientDetails;
-        });
+        return clientDetails;
     }
 
 }

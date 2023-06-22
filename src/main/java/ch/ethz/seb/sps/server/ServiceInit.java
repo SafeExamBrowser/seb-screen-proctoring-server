@@ -10,6 +10,8 @@ package ch.ethz.seb.sps.server;
 
 import java.util.Arrays;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -33,6 +35,7 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
     private final ServiceInfo serviceInfo;
     private final MigrationStrategy sebServerMigrationStrategy;
     private final AdminUserInitializer adminUserInitializer;
+
     private final boolean initialized = false;
 
     public ServiceInit(
@@ -85,6 +88,30 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
         INIT_LOGGER.info("----> Context Path: {}", this.environment.getProperty("server.servlet.context-path"));
         INIT_LOGGER.info("---->");
 
+        INIT_LOGGER.info("----> *********************************************************");
+        INIT_LOGGER.info("----> *** Webservice starting up...                         ***");
+        INIT_LOGGER.info("----> *********************************************************");
+        INIT_LOGGER.info("----> ");
+        INIT_LOGGER.info("----> Register Webservice: {}", this.serviceInfo.getWebserviceUUID());
+
+        if (this.serviceInfo.isWebserviceInitialized()) {
+            this.registerWebservice();
+
+            // Apply migration if needed and possible
+            INIT_LOGGER.info("----> ");
+            this.sebServerMigrationStrategy.applyMigration();
+            INIT_LOGGER.info("----> ");
+
+        } else {
+
+            // Apply migration if needed and possible
+            INIT_LOGGER.info("----> ");
+            this.sebServerMigrationStrategy.applyMigration();
+            INIT_LOGGER.info("----> ");
+
+            this.registerWebservice();
+        }
+
         // do migration
         this.sebServerMigrationStrategy.applyMigration();
 
@@ -93,6 +120,8 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
         INIT_LOGGER.info("----> ");
 
         this.applicationEventPublisher.publishEvent(new ServiceInitEvent(this));
+
+        INIT_LOGGER.info("----> ");
 
         // Create an initial admin account if requested and not already in the data-base
         this.adminUserInitializer.initAdminAccount();
@@ -115,6 +144,35 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
         INIT_LOGGER.info("----> JDBC connection pool max size: {}",
                 this.environment.getProperty("spring.datasource.hikari.maximumPoolSize"));
 
+    }
+
+    private boolean registerWebservice() {
+        boolean registered = false;
+        try {
+            registered = this.serviceInfo.registerWebservice();
+            if (registered) {
+                INIT_LOGGER.info("----> Successfully register Webservice instance. uuid: {}, address: {}",
+                        this.serviceInfo.getWebserviceUUID(),
+                        this.serviceInfo.getLocalHostAddress());
+            }
+        } catch (final Exception e) {
+            INIT_LOGGER.error("----> Failed to register webservice: ", e);
+        }
+        return registered;
+    }
+
+    @PreDestroy
+    public void gracefulShutdown() {
+        INIT_LOGGER.info("*********************************************************");
+        INIT_LOGGER.info("**** Gracefully Shutdown of SEB Server instance {}",
+                this.serviceInfo.getHostAddress());
+        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> Unregister Webservice: {}", this.serviceInfo.getWebserviceUUID());
+
+        this.serviceInfo.unregister();
+
+        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> Webservice down");
     }
 
 }

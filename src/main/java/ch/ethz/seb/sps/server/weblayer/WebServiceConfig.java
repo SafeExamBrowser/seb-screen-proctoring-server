@@ -42,7 +42,7 @@ import org.springframework.security.oauth2.provider.token.UserAuthenticationConv
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 import ch.ethz.seb.sps.server.ServiceConfig;
-import ch.ethz.seb.sps.server.weblayer.oauth.WebClientDetailsService;
+import ch.ethz.seb.sps.server.weblayer.oauth.SEBClientDetailsService;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebServiceUserDetails;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
 
@@ -67,7 +67,7 @@ public class WebServiceConfig
     @Autowired
     private TokenStore tokenStore;
     @Autowired
-    private WebClientDetailsService webServiceClientDetails;
+    private SEBClientDetailsService webServiceClientDetails;
 
     @Value("${sps.api.admin.endpoint}")
     private String adminAPIEndpoint;
@@ -163,7 +163,7 @@ public class WebServiceConfig
 
         public AdminAPIResourceServerConfiguration(
                 final TokenStore tokenStore,
-                final WebClientDetailsService webServiceClientDetails,
+                final SEBClientDetailsService webServiceClientDetails,
                 final AuthenticationManager authenticationManager,
                 final String apiEndpoint,
                 final String redirect,
@@ -190,7 +190,7 @@ public class WebServiceConfig
 
         public ExamAPIClientResourceServerConfiguration(
                 final TokenStore tokenStore,
-                final WebClientDetailsService webServiceClientDetails,
+                final SEBClientDetailsService webServiceClientDetails,
                 final AuthenticationManager authenticationManager,
                 final String apiEndpoint,
                 final int adminAccessTokenValSec) {

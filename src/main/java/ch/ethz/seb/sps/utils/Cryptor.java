@@ -18,14 +18,11 @@ import org.bouncycastle.jcajce.provider.keystore.pkcs12.PKCS12KeyStoreSpi;
 import org.bouncycastle.jcajce.provider.keystore.pkcs12.PKCS12KeyStoreSpi.BCPKCS12KeyStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.stereotype.Service;
 
 /** Cryptor dealing with internal encryption and decryption. */
-@Lazy
 @Service
 public class Cryptor {
 
@@ -33,8 +30,8 @@ public class Cryptor {
 
     private final CharSequence internalPWD;
 
-    public Cryptor(final Environment environment) {
-        this.internalPWD = environment.getProperty("sebserver.webservice.internalSecret");
+    public Cryptor(final CharSequence internalPWD) {
+        this.internalPWD = internalPWD;
     }
 
     /** Use this to encrypt a text with the internal password

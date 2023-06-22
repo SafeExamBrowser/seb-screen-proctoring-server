@@ -14,6 +14,7 @@ import java.util.Set;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import ch.ethz.seb.sps.domain.api.API.UserRole;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 
@@ -41,9 +42,6 @@ public interface UserAccount extends Entity {
     String getEmail();
 
     /** Indicates whether the User-Account is active or not */
-    Boolean getActive();
-
-    /** Indicates whether the User-Account is active or not */
     boolean isActive();
 
     /** The language of the User-Account */
@@ -58,5 +56,7 @@ public interface UserAccount extends Entity {
     /** The EntityKey (ModelId plus EntityType) of the User-Account */
     @Override
     EntityKey getEntityKey();
+
+    Set<UserRole> getUserRoles();
 
 }

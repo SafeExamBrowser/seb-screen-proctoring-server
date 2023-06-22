@@ -1,0 +1,44 @@
+/*
+ * Copyright (c) 2023 ETH Zürich, Educational Development and Technology (LET)
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+package ch.ethz.seb.sps.server.weblayer;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
+
+@RestController
+public class HealthController {
+
+    private final SessionServiceHealthControl sessionServiceHealthControl;
+
+    public HealthController(final SessionServiceHealthControl sessionServiceHealthControl) {
+        this.sessionServiceHealthControl = sessionServiceHealthControl;
+    }
+
+    @RequestMapping(
+            path = API.HEALTH_ENDPOINT,
+            method = RequestMethod.GET)
+    public void getServerHealth(final HttpServletResponse response) {
+
+        response.setStatus(HttpStatus.OK.value());
+        response.setHeader(
+                API.SPS_SERVER_HEALTH,
+                String.valueOf(this.sessionServiceHealthControl.getOverallLoadIndicator()));
+        response.setHeader(HttpHeaders.CONNECTION, "close");
+
+    }
+
+}

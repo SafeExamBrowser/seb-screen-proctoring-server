@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,14 +23,15 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
 import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.domain.api.JSONMapper;
-import ch.ethz.seb.sps.domain.model.screenshot.ScreenshotData;
-import ch.ethz.seb.sps.server.servicelayer.ScreenshotService;
+import ch.ethz.seb.sps.server.servicelayer.ScreenshotStoreService;
 import ch.ethz.seb.sps.server.servicelayer.SessionOnClosingEvent;
+import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
+import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Utils;
 
 @Lazy
@@ -40,17 +40,17 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
 
     private static final Logger log = LoggerFactory.getLogger(WebsocketScreenshotMessageHandler.class);
 
-    private final ScreenshotService screenshotService;
-    private final JSONMapper jsonMapper;
+    private final ScreenshotStoreService screenshotStoreService;
+    private final SessionServiceHealthControl sessionServiceHealthControl;
 
     private final Map<String, ScreenshotSession> sessions = new ConcurrentHashMap<>();
 
     public WebsocketScreenshotMessageHandler(
-            final ScreenshotService screenshotService,
-            final JSONMapper jsonMapper) {
+            final ScreenshotStoreService screenshotStoreService,
+            final SessionServiceHealthControl sessionServiceHealthControl) {
 
-        this.screenshotService = screenshotService;
-        this.jsonMapper = jsonMapper;
+        this.screenshotStoreService = screenshotStoreService;
+        this.sessionServiceHealthControl = sessionServiceHealthControl;
     }
 
     @Override
@@ -112,6 +112,7 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
 
         final ScreenshotSession screenshotSession = this.sessions.get(websocketSessionId);
         if (screenshotSession == null) {
+
             log.error("Failed to find ScreenshotSession for web-socket session: {} with sessionUUID: {}",
                     session.getId(),
                     session.getHandshakeHeaders().getFirst(API.SESSION_HEADER_UUID));
@@ -128,6 +129,7 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
         }
 
         screenshotSession.notifyMessage(message);
+        pushServerHealth(session);
     }
 
     private class ScreenshotSession {
@@ -135,9 +137,8 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
         final String sessionUUID;
 
         private final WebSocketSession webSocketSession;
-        private CompletableFuture<Void> future = null;
         private PipedOutputStream out = null;
-        private ScreenshotData screenshotData;
+        private boolean runningTransaction = false;
 
         public ScreenshotSession(final String sessionUUID, final WebSocketSession webSocketSession) {
             this.sessionUUID = sessionUUID;
@@ -149,28 +150,18 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
         }
 
         void notifyMessage(final BinaryMessage message) {
-            if (message.isLast()) {
-                if (this.future == null) {
-                    startTransaction(message);
-                } else {
-                    try {
-                        this.out.write(Utils.toByteArray(message.getPayload()));
-                    } catch (final IOException e) {
-                        e.printStackTrace();
-                    }
-                    closeTransaction();
-                }
+
+            System.out.println("************* notifyMessage: " + message);
+
+            if (!this.runningTransaction) {
+                startTransaction(message);
             } else {
-                if (this.future == null || this.out == null) {
-                    log.error("Expected to be in streaming state but not!");
-                } else {
-                    try {
-                        this.out.write(Utils.toByteArray(message.getPayload()));
-                    } catch (final IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+                streamImageData(message);
             }
+            if (message.isLast()) {
+                closeTransaction();
+            }
+
         }
 
         void closeWebSocketSession() {
@@ -183,55 +174,66 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
 
         private void startTransaction(final BinaryMessage message) {
 
-            log.debug(" *** start screenshot transaction for session: {}", this.sessionUUID);
+            if (log.isDebugEnabled()) {
+                log.debug(" *** start screenshot transaction for session: {}", this.sessionUUID);
+            }
 
-            this.future = new CompletableFuture<>();
+            this.runningTransaction = true;
             this.out = new PipedOutputStream();
 
             try {
+
                 final PipedInputStream in = new PipedInputStream(this.out, 51200);
+                WebsocketScreenshotMessageHandler.this.screenshotStoreService
+                        .storeScreenshot(this.sessionUUID, in);
 
-                this.screenshotData = getMetaData(message);
-
-                WebsocketScreenshotMessageHandler.this.screenshotService.storeScreenshot(
-                        this.sessionUUID,
-                        this.screenshotData.timestamp,
-                        this.screenshotData.imageFormat,
-                        this.screenshotData.metaData,
-                        in,
-                        this.future);
+                streamImageData(message);
 
             } catch (final Exception e) {
                 log.error("Failed to start screenshot upstream websocket transaction:", e);
-                IOUtils.closeQuietly(this.out);
-                this.out = null;
-                this.future = null;
+                log.info("Close open screenshot transaction...");
+                closeTransaction();
             }
         }
 
-        private ScreenshotData getMetaData(final BinaryMessage message) {
+        private void streamImageData(final BinaryMessage message) {
             try {
-                final String metaDataJson = Utils.toString(message.getPayload());
-                return WebsocketScreenshotMessageHandler.this.jsonMapper.readValue(metaDataJson, ScreenshotData.class);
-            } catch (final Exception e) {
-                log.error("Failed to read screenshot meta-data");
-                throw new RuntimeException("Failed to read screenshot meta-data:", e);
+                this.out.write(Utils.toByteArray(message.getPayload()));
+            } catch (final IOException e) {
+                log.error("Failed to stream data to open transaction: ", e);
+                log.info("Close open screenshot transaction...");
+                closeTransaction();
             }
         }
 
         private void closeTransaction() {
 
-            log.debug(" *** close screenshot transaction for session: {}", this.sessionUUID);
+            if (log.isDebugEnabled()) {
+                log.debug(" *** close screenshot transaction for session: {}", this.sessionUUID);
+            }
 
             try {
                 this.out.close();
-                this.future.get();
             } catch (final Exception e) {
                 log.error("Failed to close screenshot upstream websocket transaction:", e);
             } finally {
                 IOUtils.closeQuietly(this.out);
                 this.out = null;
-                this.future = null;
+                this.runningTransaction = false;
+            }
+        }
+    }
+
+    private void pushServerHealth(final WebSocketSession session) {
+        final int overalLoadIndicator = this.sessionServiceHealthControl.getOverallLoadIndicator();
+        if (overalLoadIndicator > 0) {
+            try {
+                session.sendMessage(
+                        new TextMessage(API.SPS_SERVER_HEALTH + Constants.EQUALITY_SIGN + overalLoadIndicator));
+            } catch (final IOException e) {
+                log.error("Failed to send server health indicator message to client for session: {}",
+                        session.getId(),
+                        e);
             }
         }
     }
