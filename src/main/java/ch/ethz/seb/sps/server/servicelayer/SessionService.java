@@ -8,8 +8,8 @@
 
 package ch.ethz.seb.sps.server.servicelayer;
 
-import ch.ethz.seb.sps.domain.model.screenshot.Session;
-import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
+import ch.ethz.seb.sps.domain.model.service.Session;
+import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Result;
 
 public interface SessionService {
@@ -51,13 +51,6 @@ public interface SessionService {
             String clientMachineName,
             String clientOSName,
             String clientVersion);
-
-    /** Get comma separated String of all active session UUIDs
-     *
-     * @param groupUUID The group id
-     * @return Result refer to the result or to an error if happened */
-    // TODO caching
-    Result<String> getActiveSessions(String groupUUID);
 
     Result<String> closeSession(String sessionUUID);
 

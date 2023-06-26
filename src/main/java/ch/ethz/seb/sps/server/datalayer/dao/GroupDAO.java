@@ -8,7 +8,7 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao;
 
-import ch.ethz.seb.sps.domain.model.screenshot.Group;
+import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.utils.Result;
 
 public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
@@ -17,6 +17,6 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Long> getGroupIdByUUID(String groupUUID);
 
-    Result<Group> createNew(String groupUUID);
+    Result<Group> createNew(String name);
 
 }

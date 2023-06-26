@@ -54,9 +54,12 @@ public final class API {
     public static final String WEBSOCKET_SESSION_ENDPOINT = "/wsock";
 
     public static final String PARAM_MODEL_ID = "modelId";
+
     public static final String PARAM_MODEL_ID_LIST = "modelIds";
     public static final String PARAM_ENTITY_TYPE = "entityType";
     public static final String PARAM_MODEL_PATH_SEGMENT = "/{modelId}";
+    public static final String PARAM_TIMESTAMP = "timestamp";
+    public static final String PARAM_TIMESTAMP_PATH_SEGMENT = "/{timestamp}";
 
     public static final String NAMES_PATH_SEGMENT = "/names";
     public static final String LIST_PATH_SEGMENT = "/list";
@@ -90,7 +93,11 @@ public final class API {
 
     public static final String GROUP_ENDPOINT = "/group";
     public static final String SESSION_ENDPOINT = "/session";
-    public static final String SESSION_SCREENSHOT_ENDPOINT = "/screenshot";
-    public static final String SESSION_SCREENSHOT_LATEST_ENDPOINT = "/latest";
+    public static final String PROCTORING_ENDPOINT = "/proctoring";
+    public static final String PARAM_SCREENSHOT_ID = "screenshotId";
+    public static final String SCREENSHOT_ID_PATH_SEGMENT = "/{screenshotId}";
+    public static final String SCREENSHOT_ENDPOINT = "/screenshot";
+//    public static final String SCREENSHOT_AT_ENDPOINT = SCREENSHOT_ENDPOINT + "/at" + PARAM_TIMESTAMP_PATH_SEGMENT;
+//    public static final String SCREENSHOT_LATEST_ENDPOINT = SCREENSHOT_ENDPOINT + "/latest";
 
 }

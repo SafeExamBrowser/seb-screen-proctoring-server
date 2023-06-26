@@ -18,7 +18,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 
-import ch.ethz.seb.sps.domain.model.screenshot.ScreenshotData;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
 import ch.ethz.seb.sps.server.ServiceInit;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;

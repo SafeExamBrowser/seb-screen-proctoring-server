@@ -3,7 +3,7 @@ INSERT IGNORE INTO `user` VALUES
 ;
 
 INSERT IGNORE INTO `client_access` VALUES
-    (1, 'test', 'test description', 'test', '$2a$04$9JXeMn4nIHtHUSujpgTiqe11Y./qM/LdiMeaSDbTTWBI/zkHWAfEi', '2019-01-01', 1)
+    (1, 'test', 'test-description','test', '$2a$04$9JXeMn4nIHtHUSujpgTiqe11Y./qM/LdiMeaSDbTTWBI/zkHWAfEi', 'super-admin', 0, 0, null)
 ;
 
 INSERT IGNORE INTO `seb_group` VALUES
@@ -11,6 +11,6 @@ INSERT IGNORE INTO `seb_group` VALUES
 ;
 
 INSERT IGNORE INTO `session` VALUES
-    (1, 1, 'session_uuid', 0, null, 0, null, 'student1', '111.111.111.111', 'mst1', 'Win', '3.5.0')
+    (1, 1, 'session_uuid', 0, 'student1', '111.111.111.111', 'mst1', 'Win', '3.5.0', 0, 0, null)
 ;
 

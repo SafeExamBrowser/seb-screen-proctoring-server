@@ -32,7 +32,7 @@ import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
-import ch.ethz.seb.sps.domain.model.screenshot.Group;
+import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.GroupRecord;
@@ -73,6 +73,16 @@ public class GroupDAOBatis implements GroupDAO {
         return Result.tryCatch(() -> this.groupRecordMapper
                 .selectByPrimaryKey(id))
                 .map(this::toDomainModel);
+    }
+
+    @Override
+    public Result<Group> byModelId(final String id) {
+        try {
+            return this.byPK(Long.parseLong(id));
+        } catch (final Exception e) {
+            return getGroupIdByUUID(id)
+                    .flatMap(this::byPK);
+        }
     }
 
     @Override

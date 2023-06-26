@@ -75,6 +75,7 @@ public final class Constants {
     public static final String URL_ADDRESS_SEPARATOR = COLON.toString() + SLASH.toString() + SLASH.toString();
     public static final String URL_PATH_SEPARATOR = SLASH.toString();
     public static final String HASH_TAG_STRING = HASH_TAG.toString();
+    public static final String UNDERLINE_STRING = UNDERLINE.toString();
 
     public static final String DYN_HTML_ATTR_OPEN = "%%_";
     public static final String DYN_HTML_ATTR_CLOSE = "_%%";

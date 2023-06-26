@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.domain.model.screenshot.Session;
-import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
+import ch.ethz.seb.sps.domain.model.service.Session;
+import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.servicelayer.ScreenshotStoreService;
 import ch.ethz.seb.sps.server.servicelayer.SessionService;
@@ -258,7 +258,7 @@ public class SEBSessionController {
                             required = false)
             })
     @RequestMapping(
-            path = API.PARAM_MODEL_PATH_SEGMENT + API.SESSION_SCREENSHOT_ENDPOINT,
+            path = API.PARAM_MODEL_PATH_SEGMENT + API.SCREENSHOT_ENDPOINT,
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public CompletableFuture<Void> postScreenshot(

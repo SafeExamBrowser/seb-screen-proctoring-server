@@ -12,8 +12,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.seb.sps.domain.model.screenshot.ScreenshotData;
-import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
+import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Result;
 
 public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotData> {

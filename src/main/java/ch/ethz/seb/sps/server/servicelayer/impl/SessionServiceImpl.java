@@ -10,19 +10,17 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.util.UUID;
 
-import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
-import ch.ethz.seb.sps.domain.model.screenshot.Session;
-import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
+import ch.ethz.seb.sps.domain.model.service.Session;
+import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.SessionOnClosingEvent;
 import ch.ethz.seb.sps.server.servicelayer.SessionService;
-import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 
 @Service
@@ -40,14 +38,6 @@ public class SessionServiceImpl implements SessionService {
         this.groupDAO = groupDAO;
         this.sessionDAO = sessionDAO;
         this.applicationEventPublisher = applicationEventPublisher;
-    }
-
-    @Override
-    public Result<String> getActiveSessions(final String groupUUID) {
-        return this.groupDAO.getGroupIdByUUID(groupUUID)
-                .map(groupId -> StringUtils.join(
-                        this.sessionDAO.allActiveSessionIds(groupId).getOrThrow(),
-                        Constants.LIST_SEPARATOR_CHAR));
     }
 
     @Override

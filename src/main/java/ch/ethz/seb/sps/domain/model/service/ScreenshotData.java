@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package ch.ethz.seb.sps.domain.model.screenshot;
+package ch.ethz.seb.sps.domain.model.service;
 
 import java.util.Objects;
 
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import ch.ethz.seb.sps.domain.Domain.SCREENSHOT_DATA;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
-import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
+import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ScreenshotData implements Entity {

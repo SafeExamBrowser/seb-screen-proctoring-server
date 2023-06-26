@@ -33,8 +33,9 @@ import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
-import ch.ethz.seb.sps.domain.model.screenshot.Session;
-import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
+import ch.ethz.seb.sps.domain.model.service.Session;
+import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
@@ -67,6 +68,15 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
+    public Result<Session> byModelId(final String id) {
+        try {
+            return this.byPK(Long.parseLong(id));
+        } catch (final Exception e) {
+            return byUUID(id);
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Result<Collection<Session>> allOf(final Set<Long> pks) {
         return Result.tryCatch(() -> {
@@ -88,10 +98,12 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<String>> allActiveSessionIds(final Long groupId) {
+    public Result<Collection<String>> allActiveSessionIds(final String groupUUID) {
         return Result.tryCatch(() -> {
             return this.sessionRecordMapper.selectByExample()
-                    .where(SessionRecordDynamicSqlSupport.groupId, SqlBuilder.isEqualTo(groupId))
+                    .leftJoin(GroupRecordDynamicSqlSupport.groupRecord)
+                    .on(GroupRecordDynamicSqlSupport.id, SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.groupId))
+                    .where(GroupRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(groupUUID))
                     .and(SessionRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                     .build()
                     .execute()

@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package ch.ethz.seb.sps.domain.model.screenshot;
+package ch.ethz.seb.sps.domain.model.service;
 
 import java.util.Collection;
 import java.util.Objects;

@@ -63,7 +63,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ch.ethz.seb.sps.domain.Domain.SCREENSHOT_DATA;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
-import ch.ethz.seb.sps.domain.model.screenshot.Session.ImageFormat;
+import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Utils;
 

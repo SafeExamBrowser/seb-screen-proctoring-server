@@ -115,7 +115,7 @@ public class HTTPClientBot {
                 HTTPClientBot.this.profile.apiPath +
                 API.SESSION_ENDPOINT +
                 API.PARAM_MODEL_PATH_SEGMENT +
-                API.SESSION_SCREENSHOT_ENDPOINT;
+                API.SCREENSHOT_ENDPOINT;
 
         public ConnectionBot(final String name) {
             this.name = name;
