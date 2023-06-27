@@ -181,7 +181,11 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
         INIT_LOGGER.info("---->");
         INIT_LOGGER.info("----> Unregister Webservice: {}", this.serviceInfo.getWebserviceUUID());
 
-        this.serviceInfo.unregister();
+        try {
+            this.serviceInfo.unregister();
+        } catch (final Exception e) {
+            INIT_LOGGER.error("Failed to unregister webservice: ", e);
+        }
 
         INIT_LOGGER.info("---->");
         INIT_LOGGER.info("----> Webservice down");
