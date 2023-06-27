@@ -100,8 +100,6 @@ public class ServiceInfo {
                     + "is set to localhost. This is only for local development setups.");
         }
 
-        System.out.println("************************** ");
-
         final UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
                 .scheme(this.httpScheme)
                 .host((StringUtils.isNotBlank(this.webserverName))
@@ -119,8 +117,6 @@ public class ServiceInfo {
                 + Constants.UNDERLINE
                 + this.version;
 
-        System.out.println("************************** ");
-
         this.isDistributed = BooleanUtils.toBoolean(environment.getProperty(
                 "sps.webservice.distributed",
                 Constants.FALSE_STRING));
@@ -129,8 +125,6 @@ public class ServiceInfo {
                 "sps.webservice.distributed.updateInterval",
                 Long.class,
                 2000L);
-
-        System.out.println("************************** ");
     }
 
     public boolean isMaster() {

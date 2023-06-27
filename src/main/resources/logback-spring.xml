@@ -49,7 +49,10 @@
   </springProfile>
   
   <springProfile name="prod">
-    <Logger name="ch.ethz.seb" level="WARN" additivity="true">
+    <root level="DEBUG" additivity="true">
+      <appender-ref ref="STDOUT" />
+    </root>
+    <Logger name="*" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
     </Logger>
     <Logger name="SERVICE_INIT" level="INFO" additivity="false">

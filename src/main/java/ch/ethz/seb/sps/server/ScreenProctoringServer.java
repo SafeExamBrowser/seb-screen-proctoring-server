@@ -24,8 +24,12 @@ import ch.ethz.seb.sps.server.datalayer.batis.BatisConfig;
 public class ScreenProctoringServer {
 
     public static void main(final String[] args) {
-        org.apache.ibatis.logging.LogFactory.useSlf4jLogging();
-        SpringApplication.run(ScreenProctoringServer.class, args);
+        try {
+            org.apache.ibatis.logging.LogFactory.useSlf4jLogging();
+            SpringApplication.run(ScreenProctoringServer.class, args);
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
