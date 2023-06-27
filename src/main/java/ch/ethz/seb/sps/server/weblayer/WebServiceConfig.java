@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -45,6 +44,13 @@ import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.weblayer.oauth.SEBClientDetailsService;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebServiceUserDetails;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.OAuthFlow;
+import io.swagger.v3.oas.models.security.OAuthFlows;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.security.SecurityScheme.In;
+import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 
 @Configuration
 @EnableWebSecurity
@@ -90,6 +96,23 @@ public class WebServiceConfig
     @Bean
     public RemoteIpFilter remoteIpFilter() {
         return new RemoteIpFilter();
+    }
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+
+        final OAuthFlow oAuthFlow = new OAuthFlow();
+        oAuthFlow.tokenUrl("/oauth/token");
+
+        return new OpenAPI()
+                .components(new Components()
+                        .addSecuritySchemes("AdminOAuth", new SecurityScheme()
+                                .type(Type.OAUTH2)
+                                .scheme("bearer")
+                                .in(In.HEADER)
+                                .bearerFormat("jwt")
+                                .flows(new OAuthFlows().password(oAuthFlow))));
+
     }
 
     @Bean
@@ -229,11 +252,10 @@ public class WebServiceConfig
                 final HttpServletResponse response,
                 final AuthenticationException authenticationException) throws IOException {
 
-            log.warn("Unauthorized Request: {} : Redirect to login after unauthorized request",
-                    request.getRequestURI());
+            log.warn("Unauthorized Request on: {}", request.getRequestURI());
 
-            response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
-            response.setHeader(HttpHeaders.LOCATION, this.redirect);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            //response.setHeader(HttpHeaders.LOCATION, this.redirect);
             response.flushBuffer();
         }
     }

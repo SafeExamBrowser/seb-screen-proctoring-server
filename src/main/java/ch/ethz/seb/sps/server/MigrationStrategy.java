@@ -48,7 +48,8 @@ public class MigrationStrategy implements FlywayMigrationStrategy {
 
         try {
 
-            ServiceInit.INIT_LOGGER.info("----> ** Migration check START **");
+            ServiceInit.INIT_LOGGER.info("----> **** Migration check START ******************************");
+            ServiceInit.INIT_LOGGER.info("---->");
             ServiceInit.INIT_LOGGER.info("----> Check database status");
 
             final MigrationInfoService info = this.flyway.info();
@@ -79,7 +80,8 @@ public class MigrationStrategy implements FlywayMigrationStrategy {
                 }
             }
 
-            ServiceInit.INIT_LOGGER.info("----> ** Migration check END **");
+            ServiceInit.INIT_LOGGER.info("---->");
+            ServiceInit.INIT_LOGGER.info("----> **** Migration check END ********************************");
         } catch (final Exception e) {
             log.error("Failed to apply migration task: ", e);
         }

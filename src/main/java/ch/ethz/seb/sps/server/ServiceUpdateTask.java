@@ -10,28 +10,35 @@ package ch.ethz.seb.sps.server;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
+
+@Lazy
+@Component
 public class ServiceUpdateTask implements DisposableBean {
 
     private final ServiceInfo serviceInfo;
+    private final SessionServiceHealthControl sessionServiceHealthControl;
     private final long updateInteval;
 
     public ServiceUpdateTask(
             final ServiceInfo serviceInfo,
+            final SessionServiceHealthControl sessionServiceHealthControl,
             @Value("${sps.webservice.distributed.update:15000}") final long updateInteval) {
+
         this.serviceInfo = serviceInfo;
+        this.sessionServiceHealthControl = sessionServiceHealthControl;
         this.updateInteval = updateInteval;
     }
 
     @EventListener(ServiceInitEvent.class)
     private void init() {
-        ServiceInit.INIT_LOGGER.info("------>");
         ServiceInit.INIT_LOGGER.info("------> Activate background update task");
-        ServiceInit.INIT_LOGGER.info("--------> Task runs on an update interval of {}", this.updateInteval);
+        ServiceInit.INIT_LOGGER.info("------> Task runs on an update interval of {}", this.updateInteval);
 
         this.serviceInfo.updateMaster();
 
@@ -49,6 +56,9 @@ public class ServiceUpdateTask implements DisposableBean {
     private void examSessionUpdateTask() {
 
         this.serviceInfo.updateMaster();
+
+        ServiceInit.INIT_LOGGER.info("--------> Service Health: {}",
+                this.sessionServiceHealthControl.getOverallLoadIndicator());
 
     }
 

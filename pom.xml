@@ -162,7 +162,13 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.7.0</version>
+            <version>1.5.10</version>
+        </dependency>
+         <!-- https://stackoverflow.com/questions/72397763/error-starting-springboot-when-update-version-to-2-7-0-an-attempt-was-made-to-c -->
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.8.139</version>
         </dependency>
 
         <!-- Flyway -->

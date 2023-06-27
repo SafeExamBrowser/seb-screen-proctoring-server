@@ -33,9 +33,11 @@ import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.PROCTORING_ENDPOINT)
+@SecurityRequirement(name = "AdminOAuth")
 public class AdminProctorController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminProctorController.class);

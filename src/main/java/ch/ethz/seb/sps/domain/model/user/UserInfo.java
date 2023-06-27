@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.domain.model.user;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -44,7 +45,9 @@ import ch.ethz.seb.sps.utils.Utils;
  *
  * This domain model is immutable and thread-save */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class UserInfo implements UserAccount, WithLifeCycle {
+public final class UserInfo implements UserAccount, WithLifeCycle, Serializable {
+
+    private static final long serialVersionUID = 4517645738787224836L;
 
     public static final String FILTER_ATTR_SURNAME = "surname";
     public static final String FILTER_ATTR_USER_NAME = "username";

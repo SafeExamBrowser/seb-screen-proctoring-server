@@ -151,8 +151,6 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
 
         void notifyMessage(final BinaryMessage message) {
 
-            System.out.println("************* notifyMessage: " + message);
-
             if (!this.runningTransaction) {
                 startTransaction(message);
             } else {

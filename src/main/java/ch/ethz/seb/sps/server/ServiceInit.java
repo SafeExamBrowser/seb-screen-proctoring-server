@@ -112,15 +112,14 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
             this.registerWebservice();
         }
 
-        // do migration
-        this.sebServerMigrationStrategy.applyMigration();
-
         INIT_LOGGER.info("----> ");
-        INIT_LOGGER.info("----> Initialize Services...");
+        INIT_LOGGER.info("----> **** Initialize Services... *****************************");
         INIT_LOGGER.info("----> ");
 
         this.applicationEventPublisher.publishEvent(new ServiceInitEvent(this));
 
+        INIT_LOGGER.info("----> ");
+        INIT_LOGGER.info("----> **** Services initialized *******************************");
         INIT_LOGGER.info("----> ");
 
         // Create an initial admin account if requested and not already in the data-base
@@ -130,19 +129,32 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
         INIT_LOGGER.info("----> *** Webservice Info:                                  ***");
         INIT_LOGGER.info("----> *********************************************************");
         INIT_LOGGER.info("---->");
-
+        INIT_LOGGER.info("----> JDBC connection pool max size: {}",
+                this.environment.getProperty("spring.datasource.hikari.maximumPoolSize"));
+        INIT_LOGGER.info("----> Admin access token validity seconds: {}", this.serviceInfo.getAdminAccessTokenValSec());
+        INIT_LOGGER.info("----> Admin refresh token validity seconds: {}",
+                this.serviceInfo.getAdminRefreshTokenValSec());
+        INIT_LOGGER.info("----> SEB session access token validity seconds: {}",
+                this.serviceInfo.getSessionAPITokenValiditySeconds());
         INIT_LOGGER.info("----> ");
-        INIT_LOGGER.info("----> Server address: {}", this.environment.getProperty("server.address"));
-        INIT_LOGGER.info("----> Server port: {}", this.environment.getProperty("server.port"));
+        INIT_LOGGER.info("----> Webservice context path: {}", this.serviceInfo.getContextPath());
+        INIT_LOGGER.info("----> ");
+        INIT_LOGGER.info("----> Internal Server address: {}", this.environment.getProperty("server.address"));
+        INIT_LOGGER.info("----> Internal Server port: {}", this.environment.getProperty("server.port"));
         INIT_LOGGER.info("---->");
         INIT_LOGGER.info("----> Local-Host address: {}", this.serviceInfo.getLocalHostAddress());
         INIT_LOGGER.info("----> Local-Host name: {}", this.serviceInfo.getLocalHostName());
         INIT_LOGGER.info("---->");
         INIT_LOGGER.info("----> Remote-Host address: {}", this.serviceInfo.getLoopbackHostAddress());
         INIT_LOGGER.info("----> Remote-Host name: {}", this.serviceInfo.getLoopbackHostName());
+        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> External service URI: {}", this.serviceInfo.getExternalServiceURI());
+        INIT_LOGGER.info("----> Remote-Host name: {}", this.serviceInfo.getLoopbackHostName());
 
-        INIT_LOGGER.info("----> JDBC connection pool max size: {}",
-                this.environment.getProperty("spring.datasource.hikari.maximumPoolSize"));
+        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> *********************************************************");
+        INIT_LOGGER.info("----> *** Webservice successfully started up!               ***");
+        INIT_LOGGER.info("----> *********************************************************");
 
     }
 

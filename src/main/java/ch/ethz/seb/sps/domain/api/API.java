@@ -79,7 +79,7 @@ public final class API {
 
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 
-    public static final String ADMIN_SESSION_ENDPOINT = "adminsession";
+    public static final String ADMIN_SESSION_ENDPOINT = "/session";
 
     public static final String GROUP_HEADER_UUID = "SEB_GROUP_UUID";
     public static final String SESSION_HEADER_UUID = "SEB_SESSION_UUID";

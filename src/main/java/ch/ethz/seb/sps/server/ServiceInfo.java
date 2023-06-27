@@ -16,12 +16,14 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import ch.ethz.seb.sps.server.datalayer.dao.WebserviceInfoDAO;
 import ch.ethz.seb.sps.utils.Constants;
@@ -34,6 +36,12 @@ public class ServiceInfo {
 
     private static final String WEB_SERVICE_HOST_ADDRESS_KEY = "server.address";
     private static final String WEB_SERVICE_SERVER_PORT_KEY = "server.port";
+
+    private static final String WEB_SERVICE_SERVER_NAME_KEY = "sps.webservice.http.external.servername";
+    private static final String WEB_SERVICE_HTTP_SCHEME_KEY = "sps.webservice.http.external.scheme";
+    private static final String WEB_SERVICE_HTTP_PORT = "sps.webservice.http.external.port";
+    private static final String WEB_SERVICE_CONTEXT_PATH = "server.servlet.context-path";
+
     public static final String VERSION_KEY = "seb.sps.version";
     public static final String STORE_ADAPTER_KEY = "sps.data.store.adapter";
     public static final String STORE_STRATEGY_KEY = "sps.data.store.strategy";
@@ -47,6 +55,7 @@ public class ServiceInfo {
 
     private final String hostAddress; // internal
     private final String serverPort; // internal
+    private final String contextPath;
 
     @Value("${sps.api.admin.accessTokenValiditySeconds:3600}")
     private int adminAccessTokenValSec;
@@ -62,6 +71,11 @@ public class ServiceInfo {
     private final String webserviceUUID;
     private boolean isMaster = false;
 
+    private final String httpScheme; // external
+    private final String webserverName; // external
+    private final String webserverPort; // external
+    private final String externalServiceURI;
+
     public ServiceInfo(final Environment environment, final WebserviceInfoDAO webserviceInfoDAO) {
         this.version = environment.getRequiredProperty(VERSION_KEY);
         this.activeProfiles = new HashSet<>(Arrays.asList(environment.getActiveProfiles()));
@@ -69,8 +83,34 @@ public class ServiceInfo {
         this.storeStrategy = environment.getRequiredProperty(STORE_STRATEGY_KEY);
         this.webserviceInfoDAO = webserviceInfoDAO;
 
+        // internal
         this.hostAddress = environment.getRequiredProperty(WEB_SERVICE_HOST_ADDRESS_KEY);
         this.serverPort = environment.getRequiredProperty(WEB_SERVICE_SERVER_PORT_KEY);
+        this.contextPath = environment.getProperty(WEB_SERVICE_CONTEXT_PATH, "");
+        // external
+        this.httpScheme = environment.getRequiredProperty(WEB_SERVICE_HTTP_SCHEME_KEY);
+        this.webserverPort = environment.getProperty(WEB_SERVICE_HTTP_PORT);
+        this.webserverName = environment.getProperty(WEB_SERVICE_SERVER_NAME_KEY, "");
+        if (StringUtils.isEmpty(this.webserverName)) {
+            log.error("NOTE: External server name, property : 'sps.webservice.http.external.servername' is not set!");
+            throw new IllegalArgumentException(
+                    "External server name, property : 'sps.webservice.http.external.servername' is not set!");
+        } else if (this.webserverName.contains("localhost")) {
+            log.warn("NOTE: External server name, property : 'sps.webservice.http.external.servername' "
+                    + "is set to localhost. This is only for local development setups.");
+        }
+        final UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
+                .scheme(this.httpScheme)
+                .host((StringUtils.isNotBlank(this.webserverName))
+                        ? this.webserverName
+                        : this.hostAddress);
+        if (StringUtils.isNotBlank(this.webserverPort)) {
+            builder.port(this.webserverPort);
+        }
+        if (StringUtils.isNotBlank(this.contextPath) && !this.contextPath.equals("/")) {
+            builder.path(this.contextPath);
+        }
+        this.externalServiceURI = builder.toUriString();
 
         this.webserviceUUID = UUID.randomUUID().toString()
                 + Constants.UNDERLINE
@@ -84,6 +124,7 @@ public class ServiceInfo {
                 "sebserver.webservice.distributed.updateInterval",
                 Long.class,
                 2000L);
+
     }
 
     public boolean isMaster() {
@@ -124,6 +165,42 @@ public class ServiceInfo {
 
     public boolean hasProfile(final String profile) {
         return this.activeProfiles.contains(profile);
+    }
+
+    public int getAdminAccessTokenValSec() {
+        return this.adminAccessTokenValSec;
+    }
+
+    public int getAdminRefreshTokenValSec() {
+        return this.adminRefreshTokenValSec;
+    }
+
+    public int getSessionAPITokenValiditySeconds() {
+        return this.sessionAPITokenValiditySeconds;
+    }
+
+    public String getContextPath() {
+        return this.contextPath;
+    }
+
+    public String getHttpScheme() {
+        return this.httpScheme;
+    }
+
+    public String getWebserverName() {
+        return this.webserverName;
+    }
+
+    public String getWebserverPort() {
+        return this.webserverPort;
+    }
+
+    public String getExternalServiceURI() {
+        return this.externalServiceURI;
+    }
+
+    public void setMaster(final boolean isMaster) {
+        this.isMaster = isMaster;
     }
 
     public String getLocalHostName() {
