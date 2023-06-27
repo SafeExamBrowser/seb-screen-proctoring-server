@@ -23,8 +23,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import ch.ethz.seb.sps.server.datalayer.batis.BatisConfig;
+
 @Component
-@Import(DataSourceAutoConfiguration.class)
+@Import({ DataSourceAutoConfiguration.class, BatisConfig.class })
 public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
 
     public static final Logger INIT_LOGGER = LoggerFactory.getLogger("SERVICE_INIT");
