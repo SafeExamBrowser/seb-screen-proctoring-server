@@ -18,6 +18,7 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.joda.time.DateTime;
@@ -28,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
@@ -44,7 +44,6 @@ import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.ServiceInit;
-import ch.ethz.seb.sps.server.datalayer.batis.BatisConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper.BlobContent;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
@@ -54,7 +53,6 @@ import ch.ethz.seb.sps.utils.Utils;
 
 @Lazy
 @Component
-@Import(BatisConfig.class)
 @ConditionalOnExpression("'${sps.data.store.strategy}'.equals('BATCH_STORE') and '${sps.data.store.adapter}'.equals('FULL_RDBMS')")
 public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
 
@@ -87,6 +85,16 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
         this.batchInterval = batchInterval;
 
         this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
+
+        final MapperRegistry mapperRegistry = this.sqlSessionTemplate.getConfiguration().getMapperRegistry();
+        final Collection<Class<?>> mappers = mapperRegistry.getMappers();
+        if (!mappers.contains(ScreenshotMapper.class)) {
+            mapperRegistry.addMapper(ScreenshotMapper.class);
+        }
+        if (!mappers.contains(ScreenshotDataRecordMapper.class)) {
+            mapperRegistry.addMapper(ScreenshotDataRecordMapper.class);
+        }
+
         this.screenshotMapper = this.sqlSessionTemplate.getMapper(ScreenshotMapper.class);
         this.screenshotDataRecordMapper = this.sqlSessionTemplate.getMapper(ScreenshotDataRecordMapper.class);
 
