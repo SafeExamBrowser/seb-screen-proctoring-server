@@ -33,7 +33,7 @@ public class ProctoringCacheService {
     public static final String ACTIVE_GROUP_CACHE = "ACTIVE_GROUP_CACHE";
 
     /** Active session token cache. Tokens per active group */
-    public static final String SESSION_TOKEN_CACHE = "SESSION_TOKEN_CACHE";
+    public static final String SESSION_TOKENS_CACHE = "SESSION_TOKENS_CACHE";
 
     /** Active session cache. */
     public static final String ACTIVE_SESSION_CACHE = "ACTIVE_SESSION_CACHE";
@@ -69,7 +69,7 @@ public class ProctoringCacheService {
     }
 
     @CacheEvict(
-            cacheNames = { ACTIVE_GROUP_CACHE, SESSION_TOKEN_CACHE },
+            cacheNames = { ACTIVE_GROUP_CACHE, SESSION_TOKENS_CACHE },
             key = "#groupUUID")
     public void evictGroup(final String groupUUID) {
         if (log.isTraceEnabled()) {
@@ -78,7 +78,7 @@ public class ProctoringCacheService {
     }
 
     @Cacheable(
-            cacheNames = SESSION_TOKEN_CACHE,
+            cacheNames = SESSION_TOKENS_CACHE,
             key = "#groupUUID",
             unless = "#result == null")
     public Collection<String> getSessionTokens(final String groupUUID) {
@@ -92,7 +92,7 @@ public class ProctoringCacheService {
     }
 
     @CacheEvict(
-            cacheNames = SESSION_TOKEN_CACHE,
+            cacheNames = SESSION_TOKENS_CACHE,
             key = "#groupUUID")
     public void evictSessionTokens(final String groupUUID) {
         if (log.isTraceEnabled()) {

@@ -29,15 +29,18 @@ public class SessionServiceImpl implements SessionService {
     private final GroupDAO groupDAO;
     private final SessionDAO sessionDAO;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final ProctoringCacheService proctoringCacheService;
 
     public SessionServiceImpl(
             final GroupDAO groupDAO,
             final SessionDAO sessionDAO,
-            final ApplicationEventPublisher applicationEventPublisher) {
+            final ApplicationEventPublisher applicationEventPublisher,
+            final ProctoringCacheService proctoringCacheService) {
 
         this.groupDAO = groupDAO;
         this.sessionDAO = sessionDAO;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.proctoringCacheService = proctoringCacheService;
     }
 
     @Override
@@ -81,6 +84,9 @@ public class SessionServiceImpl implements SessionService {
                             imageFormat)
                     .getOrThrow();
 
+            // caching update
+            this.proctoringCacheService.evictSessionTokens(groupUUID);
+
             return session;
         });
     }
@@ -97,21 +103,32 @@ public class SessionServiceImpl implements SessionService {
         return this.sessionDAO
                 .byUUID(sessionUUID)
                 .map(this::checkUpdateIntegrity)
-                .flatMap(session -> this.sessionDAO.save(new Session(
-                        session.id,
-                        null, null,
+                .flatMap(session -> saveSession(
+                        sessionUUID,
                         userSessionName,
                         clientIP,
                         clientMachineName,
                         clientOSName,
                         clientVersion,
-                        null, null, null, null)));
+                        session));
     }
 
     @Override
     public Result<String> closeSession(final String sessionUUID) {
-        this.applicationEventPublisher.publishEvent(new SessionOnClosingEvent(sessionUUID));
-        return this.sessionDAO.closeSession(sessionUUID);
+        return this.sessionDAO.byModelId(sessionUUID)
+                .map(session -> {
+                    this.applicationEventPublisher.publishEvent(new SessionOnClosingEvent(sessionUUID));
+                    final Result<String> result = this.sessionDAO.closeSession(sessionUUID);
+                    if (!result.hasError()) {
+                        // caching update
+                        final String groupUUID = this.groupDAO.byPK(session.groupId).getOrThrow().uuid;
+                        this.proctoringCacheService.evictSession(sessionUUID);
+                        this.proctoringCacheService.evictSessionTokens(groupUUID);
+                    } else {
+                        result.getOrThrow();
+                    }
+                    return sessionUUID;
+                });
     }
 
     private Session checkUpdateIntegrity(final Session session) {
@@ -122,6 +139,31 @@ public class SessionServiceImpl implements SessionService {
                     session);
         }
         return session;
+    }
+
+    private Result<Session> saveSession(
+            final String sessionUUID,
+            final String userSessionName,
+            final String clientIP,
+            final String clientMachineName,
+            final String clientOSName,
+            final String clientVersion,
+            final Session session) {
+
+        final Result<Session> result = this.sessionDAO.save(new Session(
+                session.id,
+                null, null,
+                userSessionName,
+                clientIP,
+                clientMachineName,
+                clientOSName,
+                clientVersion,
+                null, null, null, null));
+
+        // caching update
+        this.proctoringCacheService.evictSession(sessionUUID);
+
+        return result;
     }
 
 }

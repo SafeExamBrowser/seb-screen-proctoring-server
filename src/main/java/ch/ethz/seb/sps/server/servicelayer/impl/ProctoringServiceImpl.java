@@ -150,6 +150,16 @@ public class ProctoringServiceImpl implements ProctoringService {
         }
     }
 
+    public void clearGroupCache(final String groupUUID, final boolean fully) {
+        if (fully) {
+            this.proctoringCacheService
+                    .getSessionTokens(groupUUID)
+                    .stream()
+                    .forEach(this.proctoringCacheService::evictSession);
+        }
+        this.proctoringCacheService.evictGroup(groupUUID);
+    }
+
     private ScreenshotViewData createScreenshotViewData(
             final String sessionUUID,
             final ScreenshotDataRecord data) {
