@@ -8,12 +8,9 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -37,17 +34,12 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import ch.ethz.seb.sps.domain.Domain;
-import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.ServiceInit;
 import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper.BlobContent;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
-import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.servicelayer.ScreenshotStoreService;
 import ch.ethz.seb.sps.utils.Utils;
 
@@ -60,44 +52,29 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
 
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
-    private final JSONMapper jsonMapper;
+    private final WebsocketDataExtractor websocketDataExtractor;
     private final TaskScheduler taskScheduler;
     private final long batchInterval;
 
-    private final SqlSessionTemplate sqlSessionTemplate;
-    private final ScreenshotMapper screenshotMapper;
-    private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
+    private SqlSessionTemplate sqlSessionTemplate;
+    private ScreenshotMapper screenshotMapper;
+    private ScreenshotDataRecordMapper screenshotDataRecordMapper;
 
-    private final BlockingDeque<ScreenshotData> screenshotDataQueue = new LinkedBlockingDeque<>();
+    private final BlockingDeque<ScreenshotQueueData> screenshotDataQueue = new LinkedBlockingDeque<>();
 
     public ScreenshotBatchStore_FullRDBMS(
             final SqlSessionFactory sqlSessionFactory,
             final PlatformTransactionManager transactionManager,
-            final JSONMapper jsonMapper,
+            final WebsocketDataExtractor websocketDataExtractor,
             @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler,
-            @Value("${sps.data.store..batch.interval:1000}") final long batchInterval) {
+            @Value("${sps.data.store.batch.interval:1000}") final long batchInterval) {
 
         this.sqlSessionFactory = sqlSessionFactory;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        this.jsonMapper = jsonMapper;
+        this.websocketDataExtractor = websocketDataExtractor;
         this.taskScheduler = taskScheduler;
         this.batchInterval = batchInterval;
-
-        this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
-
-        final MapperRegistry mapperRegistry = this.sqlSessionTemplate.getConfiguration().getMapperRegistry();
-        final Collection<Class<?>> mappers = mapperRegistry.getMappers();
-        if (!mappers.contains(ScreenshotMapper.class)) {
-            mapperRegistry.addMapper(ScreenshotMapper.class);
-        }
-        if (!mappers.contains(ScreenshotDataRecordMapper.class)) {
-            mapperRegistry.addMapper(ScreenshotDataRecordMapper.class);
-        }
-
-        this.screenshotMapper = this.sqlSessionTemplate.getMapper(ScreenshotMapper.class);
-        this.screenshotDataRecordMapper = this.sqlSessionTemplate.getMapper(ScreenshotDataRecordMapper.class);
-
     }
 
     @Override
@@ -105,13 +82,27 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
 
         try {
 
-            final Collection<ScreenshotData> data1 = new ArrayList<>();
+            this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
+
+            final MapperRegistry mapperRegistry = this.sqlSessionTemplate.getConfiguration().getMapperRegistry();
+            final Collection<Class<?>> mappers = mapperRegistry.getMappers();
+            if (!mappers.contains(ScreenshotMapper.class)) {
+                mapperRegistry.addMapper(ScreenshotMapper.class);
+            }
+            if (!mappers.contains(ScreenshotDataRecordMapper.class)) {
+                mapperRegistry.addMapper(ScreenshotDataRecordMapper.class);
+            }
+
+            this.screenshotMapper = this.sqlSessionTemplate.getMapper(ScreenshotMapper.class);
+            this.screenshotDataRecordMapper = this.sqlSessionTemplate.getMapper(ScreenshotDataRecordMapper.class);
+
+            final Collection<ScreenshotQueueData> data1 = new ArrayList<>();
             this.taskScheduler.scheduleWithFixedDelay(
                     () -> processBatchStore(data1),
                     DateTime.now(DateTimeZone.UTC).toDate(),
                     this.batchInterval);
 
-            final Collection<ScreenshotData> data2 = new ArrayList<>();
+            final Collection<ScreenshotQueueData> data2 = new ArrayList<>();
             this.taskScheduler.scheduleWithFixedDelay(
                     () -> processBatchStore(data2),
                     DateTime.now(DateTimeZone.UTC).plus(500).toDate(),
@@ -147,7 +138,7 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
             final InputStream in) {
 
         try {
-            this.screenshotDataQueue.add(new ScreenshotData(
+            this.screenshotDataQueue.add(new ScreenshotQueueData(
                     sessionUUID,
                     timestamp,
                     imageFormat,
@@ -160,34 +151,10 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
 
     @Override
     public void storeScreenshot(final String sessionUUID, final InputStream in) {
-        try {
-
-            // get fist two bytes with meta date length
-            final byte[] lBytes = new byte[2];
-            in.read(lBytes);
-            final short metaLengh = ByteBuffer.wrap(lBytes).getShort(); // big-endian by default
-
-            // now get the meta data
-            final byte[] meta = new byte[metaLengh];
-            in.read(meta);
-            final String metaDataJson = Utils.toString(meta);
-
-            final HashMap<String, String> metaDataMap = this.jsonMapper.readValue(
-                    metaDataJson,
-                    new TypeReference<HashMap<String, String>>() {
-                    });
-
-            final Long timestamp = Long.valueOf(metaDataMap.remove(Domain.SCREENSHOT_DATA.ATTR_TIMESTAMP));
-            final ImageFormat format = ImageFormat.byName(metaDataMap.remove(Domain.SCREENSHOT_DATA.ATTR_IMAGE_FORMAT));
-
-            storeScreenshot(sessionUUID, timestamp, format, this.jsonMapper.writeValueAsString(metaDataMap), in);
-
-        } catch (final Exception e) {
-            log.error("Failed to store screenshot: ", e);
-        }
+        this.websocketDataExtractor.storeScreenshot(sessionUUID, in, this);
     }
 
-    private void processBatchStore(final Collection<ScreenshotData> batch) {
+    private void processBatchStore(final Collection<ScreenshotQueueData> batch) {
 
         long start = 0L;
         if (log.isDebugEnabled()) {
@@ -195,8 +162,8 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
         }
 
         final int size = this.screenshotDataQueue.size();
-        if (size > 1000) {
-            log.warn("-----> There are more then 1000 screenshots in the waiting queue: {}, worker: {}",
+        if (size > 500) {
+            log.warn("-----> There are more then 500 screenshots in the waiting queue: {}, worker: {}",
                     size,
                     Thread.currentThread().getName());
         }
@@ -214,15 +181,7 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
                 return;
             }
 
-            storeScreenshotsInDB(batch);
-
-//            if (this.serviceInfo.isFileStore()) {
-//                storeScreenshotsInFileSystem(batch);
-//            } else if (this.serviceInfo.isFullRDBMSStore()) {
-//                storeScreenshotsInDB(batch);
-//            } else {
-//                throw new IllegalArgumentException("No screenshot store adapter found");
-//            }
+            applyBatchStore(batch);
 
             if (log.isDebugEnabled()) {
                 log.debug("BatchStoreScreenshotServiceImpl worker {} processes batch of size {} in {} ms",
@@ -237,8 +196,7 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
 
     }
 
-    private void storeScreenshotsInDB(final Collection<ScreenshotData> batch) {
-
+    private void applyBatchStore(final Collection<ScreenshotQueueData> batch) {
         try {
             this.transactionTemplate
                     .executeWithoutResult(status -> {
@@ -259,54 +217,6 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
                     "Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: ",
                     te);
             this.screenshotDataQueue.addAll(batch);
-        }
-    }
-
-//    private void storeScreenshotsInFileSystem(final Collection<ScreenshotData> batch) {
-//
-//        try {
-//            this.transactionTemplate
-//                    .executeWithoutResult(status -> {
-//
-//                        // store all screenshot data in batch and grab generated keys put back to records
-//                        batch.stream().forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
-//                        this.sqlSessionTemplate.flushStatements();
-//
-//                    });
-//        } catch (final TransactionException te) {
-//            log.error(
-//                    "Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: ",
-//                    te);
-//            this.screenshotDataQueue.addAll(batch);
-//        }
-//
-//        // TODO we cannot batch store on file-system here or maybe? how to?
-//        batch.stream().forEach(data -> this.screenshotDAO.storeImage(
-//                data.record.getId(),
-//                data.record.getSessionUuid(),
-//                data.screenshotIn)
-//                .onError(error -> log.error("Failed to store screenshot on file-system for: {}", data, error)));
-//    }
-
-    private static final class ScreenshotData {
-        final ScreenshotDataRecord record;
-        final ByteArrayInputStream screenshotIn;
-
-        public ScreenshotData(
-                final String sessionUUID,
-                final Long timestamp,
-                final ImageFormat imageFormat,
-                final String metadata,
-                final byte[] screenshot) {
-
-            this.record = new ScreenshotDataRecord(
-                    null,
-                    sessionUUID,
-                    timestamp,
-                    imageFormat != null ? imageFormat.code : null,
-                    metadata);
-
-            this.screenshotIn = new ByteArrayInputStream(screenshot);
         }
     }
 

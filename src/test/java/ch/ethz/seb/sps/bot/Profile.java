@@ -15,9 +15,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class Profile {
 
     @JsonProperty("webserviceAddress")
-    String webserviceAddress = "http://localhost:8090"; /* "http://ralph.ethz.ch:8090"; */
+    String webserviceAddress = /* "http://localhost:8090"; */ "http://ralph.ethz.ch:8090";
     @JsonProperty("websocketAddress")
-    String websocketAddress = "ws://localhost:8090"; /* "ws://ralph.ethz.ch:8090"; */
+    String websocketAddress = /* "ws://localhost:8090"; */ "ws://ralph.ethz.ch:8090";
     @JsonProperty("apiPath")
     String apiPath = "/seb-api/v1";
     @JsonProperty("accessTokenEndpoint")
@@ -33,11 +33,11 @@ public final class Profile {
     String clientSecret = "test";
 
     @JsonProperty("runtime")
-    int runtime = 10000;
+    int runtime = 15 * 60000;
     @JsonProperty("numberOfConnections")
-    int numberOfConnections = 1;
+    int numberOfConnections = 100;
     @JsonProperty("spawnDelay")
-    long spawnDelay = 1000;
+    long spawnDelay = 2000;
     @JsonProperty("screenshotIntervall")
     long screenshotInterval = 1000;
 

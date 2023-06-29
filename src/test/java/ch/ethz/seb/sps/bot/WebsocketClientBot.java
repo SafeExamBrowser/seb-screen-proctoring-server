@@ -201,8 +201,6 @@ public class WebsocketClientBot {
                 final byte[] metaDataBytes = screenshotDataJSON.getBytes("UTF8");
                 final int length = metaDataBytes.length;
 
-                System.out.println("************ metaLength: " + length);
-
                 // write the two byte long integer length
                 byteArrayOutputStream.write(ByteBuffer.allocate(2).putShort((short) length).array());
                 // then write the metadata

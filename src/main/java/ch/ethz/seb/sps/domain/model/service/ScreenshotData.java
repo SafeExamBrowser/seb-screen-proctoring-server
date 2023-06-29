@@ -36,7 +36,6 @@ public class ScreenshotData implements Entity {
     @JsonProperty(SCREENSHOT_DATA.ATTR_IMAGE_FORMAT)
     public final ImageFormat imageFormat;
 
-    // TODO make this string
     @JsonProperty(SCREENSHOT_DATA.ATTR_META_DATA)
     public final String metaData;
 

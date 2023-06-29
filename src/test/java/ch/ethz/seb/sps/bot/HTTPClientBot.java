@@ -169,7 +169,9 @@ public class HTTPClientBot {
 
         private void screenshot(final String sessionUUID) {
 
-            log.info("ConnectionBot {} : take screenshot...", this.name);
+            if (log.isTraceEnabled()) {
+                log.debug("ConnectionBot {} : take screenshot...", this.name);
+            }
 
             final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             takeScreenshot(byteArrayOutputStream);
@@ -182,7 +184,9 @@ public class HTTPClientBot {
 
             final HttpEntity<byte[]> entity = new HttpEntity<>(byteArrayOutputStream.toByteArray(), headers);
 
-            log.info("ConnectionBot {} : send screenshot...", this.name);
+            if (log.isTraceEnabled()) {
+                log.debug("ConnectionBot {} : send screenshot...", this.name);
+            }
 
             final ResponseEntity<Void> exchange = this.restTemplate.exchange(
                     this.imageUploadURI,
@@ -193,6 +197,14 @@ public class HTTPClientBot {
 
             if (exchange.getStatusCode() != HttpStatus.OK) {
                 log.error("Failed to send screenshot: {}", exchange.getStatusCode());
+            } else {
+                try {
+                    final String health = exchange.getHeaders().getFirst("sps_server_health");
+                    if (health != null && Integer.parseInt(health) > 0) {
+                        System.out.println("********** health: " + health);
+                    }
+                } catch (final Exception e) {
+                }
             }
         }
 

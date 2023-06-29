@@ -57,8 +57,8 @@ public class ServiceUpdateTask implements DisposableBean {
 
         this.serviceInfo.updateMaster();
 
-        ServiceInit.INIT_LOGGER.info("--------> Service Health: {}",
-                this.sessionServiceHealthControl.getOverallLoadIndicator());
+//        ServiceInit.INIT_LOGGER.info("--------> Service Health: {}",
+//                this.sessionServiceHealthControl.getOverallLoadIndicator());
 
     }
 

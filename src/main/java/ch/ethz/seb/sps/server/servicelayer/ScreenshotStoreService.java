@@ -11,10 +11,8 @@ package ch.ethz.seb.sps.server.servicelayer;
 import java.io.InputStream;
 
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
-import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
 
 public interface ScreenshotStoreService {
@@ -26,11 +24,10 @@ public interface ScreenshotStoreService {
             String metadata,
             InputStream in);
 
+    void storeScreenshot(String sessionUUID, InputStream in);
+
     @EventListener(ServiceInitEvent.class)
     void init();
-
-    @Async(value = ServiceConfig.SCREENSHOT_UPLOAD_API_EXECUTOR)
-    void storeScreenshot(String sessionUUID, InputStream in);
 
     int getStoreHealthIndicator();
 

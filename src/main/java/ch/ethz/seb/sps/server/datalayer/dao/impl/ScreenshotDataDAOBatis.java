@@ -8,7 +8,7 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.timestamp;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 import static org.mybatis.dynamic.sql.SqlBuilder.isLikeWhenPresent;
 
@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.select.SelectDSL;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,13 +105,22 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<Long> getLatestScreenshotId(final String sessionId) {
         return Result.tryCatch(() -> {
 
-            final List<Long> execute = this.screenshotDataRecordMapper.selectIdsByExample()
+            final ScreenshotDataRecord execute = SelectDSL
+                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne, id, SqlBuilder.max(timestamp))
+                    .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionId))
-                    .orderBy(timestamp.descending())
                     .build()
                     .execute();
+            // TODO make this with max for better performance
+//            final List<Long> execute = this.screenshotDataRecordMapper.selectIdsByExample()
+//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionId))
+//                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.max(timestamp))
+//                    .orderBy(timestamp.descending())
+//
+//                    .build()
+//                    .execute();
 
-            return execute.get(0);
+            return execute.getId();
         });
     }
 
