@@ -81,7 +81,7 @@ public class AdminProctorController {
                     MediaType.IMAGE_PNG_VALUE,
                     Constants.MIME_TYPE_IMAGE_WEBP,
                     MediaType.APPLICATION_OCTET_STREAM_VALUE })
-    public CompletableFuture<Void> getLatestScreenshot(
+    public CompletableFuture<Void> getScreenshot(
             @PathVariable(name = API.PARAM_SCREENSHOT_ID) final String screenshotId,
             final HttpServletResponse response) {
 

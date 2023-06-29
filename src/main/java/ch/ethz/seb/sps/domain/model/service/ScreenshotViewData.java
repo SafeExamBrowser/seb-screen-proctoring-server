@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class SessionData {
+public final class ScreenshotViewData {
 
     public static final String ATTR_TIMESTAMP = "timestamp";
     public static final String ATTR_SESSION = "session";
@@ -34,7 +34,7 @@ public final class SessionData {
     @JsonProperty(ATTR_META_DATA)
     public final Map<String, String> metaData;
 
-    public SessionData(
+    public ScreenshotViewData(
             @JsonProperty(ATTR_TIMESTAMP) final Long timestamp,
             @JsonProperty(ATTR_SESSION) final Session session,
             @JsonProperty(ATTR_IMAGE_LINK) final String imageLink,
@@ -75,14 +75,14 @@ public final class SessionData {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        final SessionData other = (SessionData) obj;
+        final ScreenshotViewData other = (ScreenshotViewData) obj;
         return Objects.equals(this.session, other.session) && Objects.equals(this.timestamp, other.timestamp);
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("SessionData [timestamp=");
+        builder.append("RecordedImageData [timestamp=");
         builder.append(this.timestamp);
         builder.append(", session=");
         builder.append(this.session);

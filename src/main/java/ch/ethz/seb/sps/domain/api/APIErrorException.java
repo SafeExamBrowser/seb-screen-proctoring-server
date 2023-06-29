@@ -135,4 +135,17 @@ public class APIErrorException extends RuntimeException {
                 filedErrors));
     }
 
+    public static APIErrorException notFound(
+            final EntityType entityType,
+            final String groupUUID,
+            final String message) {
+
+        return new APIErrorException(new APIError(
+                APIErrorType.BAD_REQUEST,
+                "get entity: " + entityType,
+                message,
+                null,
+                null));
+    }
+
 }

@@ -8,7 +8,7 @@
 
 package ch.ethz.seb.sps.domain.model.service;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -20,18 +20,18 @@ import ch.ethz.seb.sps.domain.model.PageSortOrder;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MonitoringPageData {
 
-    public static final String ATTR_ACTIVE_SESSIONS = "activeSessions";
+    public static final String ATTR_NUM_OF_SESSIONS = "numberOfSessions";
     public static final String ATTR_PAGE_NUMBER = "pageNumber";
     public static final String ATTR_PAGE_SIZE = "pageSize";
     public static final String ATTR_SORT_BY = "sortBy";
     public static final String ATTR_SORT_ORDER = "sortOrder";
-    public static final String ATTR_SESSION_DATA_PAGE = "sessionDataPage";
+    public static final String ATTR_SCREENSHOTS = "screenshots";
 
     @JsonProperty(SEB_GROUP.ATTR_UUID)
     public final String groupUUID;
 
-    @JsonProperty(ATTR_ACTIVE_SESSIONS)
-    public final int activeSessions;
+    @JsonProperty(ATTR_NUM_OF_SESSIONS)
+    public final int numberOfSessions;
 
     @JsonProperty(ATTR_PAGE_NUMBER)
     public final int pageNumber;
@@ -45,33 +45,33 @@ public class MonitoringPageData {
     @JsonProperty(ATTR_SORT_ORDER)
     public final PageSortOrder sortOrder;
 
-    @JsonProperty(ATTR_SESSION_DATA_PAGE)
-    public final SessionData[] sessionDataPage;
+    @JsonProperty(ATTR_SCREENSHOTS)
+    public final List<ScreenshotViewData> screenshots;
 
     public MonitoringPageData(
             @JsonProperty(SEB_GROUP.ATTR_UUID) final String groupUUID,
-            @JsonProperty(ATTR_ACTIVE_SESSIONS) final int activeSessions,
+            @JsonProperty(ATTR_NUM_OF_SESSIONS) final int numberOfSessions,
             @JsonProperty(ATTR_PAGE_NUMBER) final int pageNumber,
             @JsonProperty(ATTR_PAGE_SIZE) final int pageSize,
             @JsonProperty(ATTR_SORT_BY) final String sortBy,
             @JsonProperty(ATTR_SORT_ORDER) final PageSortOrder sortOrder,
-            @JsonProperty(ATTR_SESSION_DATA_PAGE) final SessionData[] sessionDataPage) {
+            @JsonProperty(ATTR_SCREENSHOTS) final List<ScreenshotViewData> sessionDataPage) {
 
         this.groupUUID = groupUUID;
-        this.activeSessions = activeSessions;
+        this.numberOfSessions = numberOfSessions;
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
         this.sortBy = sortBy;
         this.sortOrder = sortOrder;
-        this.sessionDataPage = sessionDataPage;
+        this.screenshots = sessionDataPage;
     }
 
     public String getGroupUUID() {
         return this.groupUUID;
     }
 
-    public int getActiveSessions() {
-        return this.activeSessions;
+    public int getNumberOfSessions() {
+        return this.numberOfSessions;
     }
 
     public int getPageNumber() {
@@ -90,8 +90,8 @@ public class MonitoringPageData {
         return this.sortOrder;
     }
 
-    public SessionData[] getSessionDataPage() {
-        return this.sessionDataPage;
+    public List<ScreenshotViewData> getScreenshots() {
+        return this.screenshots;
     }
 
     @Override
@@ -109,27 +109,6 @@ public class MonitoringPageData {
             return false;
         final MonitoringPageData other = (MonitoringPageData) obj;
         return Objects.equals(this.groupUUID, other.groupUUID);
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("MonitoringPageData [groupUUID=");
-        builder.append(this.groupUUID);
-        builder.append(", activeSessions=");
-        builder.append(this.activeSessions);
-        builder.append(", pageNumber=");
-        builder.append(this.pageNumber);
-        builder.append(", pageSize=");
-        builder.append(this.pageSize);
-        builder.append(", sortBy=");
-        builder.append(this.sortBy);
-        builder.append(", sortOrder=");
-        builder.append(this.sortOrder);
-        builder.append(", sessionDataPage=");
-        builder.append(Arrays.toString(this.sessionDataPage));
-        builder.append("]");
-        return builder.toString();
     }
 
 }

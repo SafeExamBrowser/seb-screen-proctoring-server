@@ -15,23 +15,18 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
-
 @Lazy
 @Component
 public class ServiceUpdateTask implements DisposableBean {
 
     private final ServiceInfo serviceInfo;
-    private final SessionServiceHealthControl sessionServiceHealthControl;
     private final long updateInteval;
 
     public ServiceUpdateTask(
             final ServiceInfo serviceInfo,
-            final SessionServiceHealthControl sessionServiceHealthControl,
             @Value("${sps.webservice.distributed.update:15000}") final long updateInteval) {
 
         this.serviceInfo = serviceInfo;
-        this.sessionServiceHealthControl = sessionServiceHealthControl;
         this.updateInteval = updateInteval;
     }
 

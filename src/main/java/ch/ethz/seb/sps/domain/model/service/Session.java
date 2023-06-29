@@ -8,9 +8,12 @@
 
 package ch.ethz.seb.sps.domain.model.service;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -250,5 +253,35 @@ public class Session implements Entity, WithLifeCycle {
         builder.append("]");
         return builder.toString();
     }
+
+    public static Comparator<Session> getComparator(final String field, final boolean descending) {
+        Comparator<Session> result = DEFAULT_COMPARATOR;
+
+        if (field == null) {
+            result = DEFAULT_COMPARATOR;
+        } else if (SESSION.ATTR_CLIENT_NAME.equals(field)) {
+            result = CLIENT_NAME_COMPARATOR;
+        }
+
+        return descending ? result.reversed() : DEFAULT_COMPARATOR;
+    }
+
+    public static final Comparator<Session> DEFAULT_COMPARATOR = new Comparator<>() {
+
+        @Override
+        public int compare(final Session s1, final Session s2) {
+            return Long.compare(s1.id, s2.id);
+        }
+
+    };
+
+    public static final Comparator<Session> CLIENT_NAME_COMPARATOR = new Comparator<>() {
+
+        @Override
+        public int compare(final Session s1, final Session s2) {
+            return StringUtils.compare(s1.clientName, s2.clientName, true);
+        }
+
+    };
 
 }

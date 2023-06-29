@@ -25,6 +25,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.server.datalayer.dao.WebserviceInfoDAO;
 import ch.ethz.seb.sps.utils.Constants;
 
@@ -57,6 +58,10 @@ public class ServiceInfo {
     private final String serverPort; // internal
     private final String contextPath;
 
+    @Value("${sps.api.admin.endpoint}")
+    private String adminAPIEndpoint;
+    @Value("${sps.api.session.endpoint}")
+    private String sessionAPIEndpoint;
     @Value("${sps.api.admin.accessTokenValiditySeconds:3600}")
     private int adminAccessTokenValSec;
     @Value("${sps.api.admin.refreshTokenValiditySeconds:-1}")
@@ -75,6 +80,7 @@ public class ServiceInfo {
     private final String webserverName; // external
     private final String webserverPort; // external
     private final String externalServiceURI;
+    private final String screenshotRequestURI;
 
     public ServiceInfo(final Environment environment, final WebserviceInfoDAO webserviceInfoDAO) {
         this.version = environment.getRequiredProperty(VERSION_KEY);
@@ -112,6 +118,8 @@ public class ServiceInfo {
             builder.path(this.contextPath);
         }
         this.externalServiceURI = builder.toUriString();
+        this.screenshotRequestURI =
+                this.externalServiceURI + this.adminAPIEndpoint + API.PROCTORING_ENDPOINT + API.SCREENSHOT_ENDPOINT;
 
         this.webserviceUUID = UUID.randomUUID().toString()
                 + Constants.UNDERLINE
@@ -257,6 +265,26 @@ public class ServiceInfo {
 
     public String getServerPort() {
         return this.serverPort;
+    }
+
+    public String getAdminAPIEndpoint() {
+        return this.adminAPIEndpoint;
+    }
+
+    public void setAdminAPIEndpoint(final String adminAPIEndpoint) {
+        this.adminAPIEndpoint = adminAPIEndpoint;
+    }
+
+    public String getSessionAPIEndpoint() {
+        return this.sessionAPIEndpoint;
+    }
+
+    public void setSessionAPIEndpoint(final String sessionAPIEndpoint) {
+        this.sessionAPIEndpoint = sessionAPIEndpoint;
+    }
+
+    public String getScreenshotRequestURI() {
+        return this.screenshotRequestURI;
     }
 
 }

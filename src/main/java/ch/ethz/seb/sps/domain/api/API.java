@@ -97,7 +97,5 @@ public final class API {
     public static final String PARAM_SCREENSHOT_ID = "screenshotId";
     public static final String SCREENSHOT_ID_PATH_SEGMENT = "/{screenshotId}";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
-//    public static final String SCREENSHOT_AT_ENDPOINT = SCREENSHOT_ENDPOINT + "/at" + PARAM_TIMESTAMP_PATH_SEGMENT;
-//    public static final String SCREENSHOT_LATEST_ENDPOINT = SCREENSHOT_ENDPOINT + "/latest";
 
 }

@@ -13,16 +13,15 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 import static org.mybatis.dynamic.sql.SqlBuilder.isLikeWhenPresent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.SelectDSL;
 import org.springframework.stereotype.Service;
@@ -34,26 +33,19 @@ import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
-import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotDataMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
-import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 
 @Service
 public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
-    private final ScreenshotDataMapper screenshotDataMapper;
 
-    public ScreenshotDataDAOBatis(
-            final ScreenshotDataRecordMapper screenshotDataRecordMapper,
-            final ScreenshotDataMapper screenshotDataMapper) {
-
+    public ScreenshotDataDAOBatis(final ScreenshotDataRecordMapper screenshotDataRecordMapper) {
         this.screenshotDataRecordMapper = screenshotDataRecordMapper;
-        this.screenshotDataMapper = screenshotDataMapper;
     }
 
     @Override
@@ -102,57 +94,61 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Long> getLatestScreenshotId(final String sessionId) {
+    public Result<ScreenshotDataRecord> getAt(final String sessionUUID, final Long at) {
         return Result.tryCatch(() -> {
-
-            final ScreenshotDataRecord execute = SelectDSL
+            return SelectDSL
                     .selectWithMapper(this.screenshotDataRecordMapper::selectOne, id, SqlBuilder.max(timestamp))
                     .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionId))
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
                     .build()
                     .execute();
-            // TODO make this with max for better performance
-//            final List<Long> execute = this.screenshotDataRecordMapper.selectIdsByExample()
-//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionId))
-//                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.max(timestamp))
-//                    .orderBy(timestamp.descending())
-//
-//                    .build()
-//                    .execute();
-
-            return execute.getId();
-        });
-    }
-
-    @Override
-    public Result<Map<String, ScreenshotData>> allLatestIn(final List<String> sessionUUIDs) {
-        return Result.tryCatch(() -> {
-
-            final List<Long> alIds = this.screenshotDataMapper.selectLatestIdByExample()
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isIn(sessionUUIDs))
-                    .build()
-                    .execute();
-
-            return this.screenshotDataRecordMapper.selectByExample()
-                    .where(ScreenshotDataRecordDynamicSqlSupport.id, SqlBuilder.isIn(alIds))
-                    .build()
-                    .execute()
-                    .stream()
-                    .collect(Collectors.toMap(e -> e.getSessionUuid(), e -> toDomainModel(e)));
-
         });
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Map<String, ScreenshotData>> allLatestOfSessions(final String sessionIds) {
+    public Result<Long> getLatestId(final String sessionUUID) {
         return Result.tryCatch(() -> {
 
-            final List<String> ids = sessionIds.contains(Constants.LIST_SEPARATOR)
-                    ? Arrays.asList(StringUtils.split(sessionIds, Constants.LIST_SEPARATOR))
-                    : Arrays.asList(sessionIds);
+            final List<Long> execute = SelectDSL
+                    .selectDistinctWithMapper(this.screenshotDataRecordMapper::selectIds, id, SqlBuilder.max(timestamp))
+                    .from(screenshotDataRecord)
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .build()
+                    .execute();
 
-            return allLatestIn(ids).getOrThrow();
+            return execute.get(0);
+        });
+    }
+
+    @Override
+    public Result<ScreenshotDataRecord> getLatest(final String sessionUUID) {
+        return Result.tryCatch(() -> {
+            return SelectDSL
+                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne, id, SqlBuilder.max(timestamp))
+                    .from(screenshotDataRecord)
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .build()
+                    .execute();
+        });
+    }
+
+    @Override
+    public Result<Map<String, ScreenshotDataRecord>> allLatestIn(final List<String> sessionUUIDs) {
+        return Result.tryCatch(() -> {
+            if (sessionUUIDs == null || sessionUUIDs.isEmpty()) {
+                return Collections.emptyMap();
+            }
+
+            return SelectDSL
+                    .selectWithMapper(this.screenshotDataRecordMapper::selectMany, id, SqlBuilder.max(timestamp))
+                    .from(screenshotDataRecord)
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isIn(sessionUUIDs))
+                    .build()
+                    .execute()
+                    .stream()
+                    .collect(Collectors.toMap(r -> r.getSessionUuid(), Function.identity()));
         });
     }
 
