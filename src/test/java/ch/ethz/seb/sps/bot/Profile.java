@@ -40,5 +40,7 @@ public final class Profile {
     long spawnDelay = 2000;
     @JsonProperty("screenshotIntervall")
     long screenshotInterval = 1000;
+    @JsonProperty("takeOnlyOneScreenshot")
+    boolean takeOnlyOneScreenshot = false;
 
 }

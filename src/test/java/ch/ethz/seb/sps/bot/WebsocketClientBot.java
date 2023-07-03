@@ -315,13 +315,24 @@ public class WebsocketClientBot {
     }
 
     private final Rectangle screenRect = new Rectangle(0, 0, 800, 600);
+    private BufferedImage singleScreenshot = null;
 
     private void takeScreenshot(final OutputStream out) {
         try {
 
-            final BufferedImage capture = new Robot().createScreenCapture(this.screenRect);
-            ImageIO.write(capture, "jpg", out);
+            if (this.profile.takeOnlyOneScreenshot) {
+                if (this.singleScreenshot == null) {
+                    this.singleScreenshot = new Robot().createScreenCapture(this.screenRect);
+                }
 
+                ImageIO.write(this.singleScreenshot, "jpg", out);
+
+            } else {
+
+                final BufferedImage capture = new Robot().createScreenCapture(this.screenRect);
+                ImageIO.write(capture, "jpg", out);
+
+            }
         } catch (final Exception e) {
             e.printStackTrace();
             IOUtils.closeQuietly(out);
