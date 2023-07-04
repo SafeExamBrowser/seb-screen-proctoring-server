@@ -13,26 +13,17 @@ COPY seb-sps.jar /sebsps/
 
 WORKDIR /sebsps
 
-CMD if [ "x${JMX_PORT}" = "x" ] ; \
-    then exec java \
-        -Xms${JAVA_HEAP_MIN} \
-        -Xmx${JAVA_HEAP_MAX} \
-        -jar "seb-sps.jar" \
-        --spring.config.location=file:/sebsps/config/spring/,classpath:/config/; \
-    else echo "admin ${JMX_SECRET}" > jmxremote.password && chown spring:spring /sebsps/jmxremote.password && chmod 400 /sebsps/jmxremote.password && exec java \
+CMD exec java \
         -Xms${JAVA_HEAP_MIN} \
         -Xmx${JAVA_HEAP_MAX} \
         -Dcom.sun.management.jmxremote \
-        -Dcom.sun.management.jmxremote.port=${JMX_PORT} \
-        -Dcom.sun.management.jmxremote.rmi.port=${JMX_PORT} \
+        -Dcom.sun.management.jmxremote.port=9090 \
+        -Dcom.sun.management.jmxremote.rmi.port=9090 \
         -Djava.rmi.server.hostname=localhost \
         -Dcom.sun.management.jmxremote.local.only=false \
         -Dcom.sun.management.jmxremote.ssl=false \
-        -Dcom.sun.management.jmxremote.authenticate=true \
-        -Dcom.sun.management.jmxremote.password.file=/sebsps/jmxremote.password \
-        -Dcom.sun.management.jmxremote.access.file=/sebsps/config/jmx/jmxremote.access \
+        -Dcom.sun.management.jmxremote.authenticate=false \
         -jar "seb-sps.jar" \
         --spring.config.location=file:/sebsps/config/spring/,classpath:/config/; \
-fi
 
 EXPOSE $SERVER_PORT $JMX_PORT
