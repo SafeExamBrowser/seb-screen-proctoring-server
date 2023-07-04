@@ -163,7 +163,7 @@ public class SessionDAOBatis implements SessionDAO {
                     .where(
                             SessionRecordDynamicSqlSupport.terminationTime,
                             (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
-                                    : SqlBuilder.isEqualToWhenPresent(null))
+                                    : SqlBuilder.isEqualToWhenPresent(() -> null))
                     .and(
                             SessionRecordDynamicSqlSupport.groupId,
                             SqlBuilder.isEqualToWhenPresent(filterMap.getLong(Domain.SESSION.ATTR_GROUP_ID)))

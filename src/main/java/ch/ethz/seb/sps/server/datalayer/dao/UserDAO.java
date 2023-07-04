@@ -15,6 +15,8 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface UserDAO extends ActivatableEntityDAO<UserInfo, UserMod> {
 
+    Result<Long> getUserIdByUUID(final String userUUID);
+
     Result<ServerUser> byUsername(String adminName);
 
     Result<UserInfo> changePassword(String modelId, CharSequence newPassword);

@@ -126,7 +126,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                     .where(
                             UserRecordDynamicSqlSupport.terminationTime,
                             (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
-                                    : SqlBuilder.isEqualToWhenPresent(null))
+                                    : SqlBuilder.isEqualToWhenPresent(() -> null))
                     .and(
                             ClientAccessRecordDynamicSqlSupport.name,
                             isLikeWhenPresent(filterMap.getSQLWildcard(Domain.CLIENT_ACCESS.ATTR_NAME)))

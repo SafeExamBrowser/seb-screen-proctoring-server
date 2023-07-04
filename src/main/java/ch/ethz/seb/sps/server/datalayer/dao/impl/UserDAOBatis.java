@@ -86,6 +86,27 @@ public class UserDAOBatis implements UserDAO {
     }
 
     @Override
+    public Result<UserInfo> byModelId(final String id) {
+        try {
+            return this.byPK(Long.parseLong(id));
+        } catch (final Exception e) {
+            return getUserIdByUUID(id)
+                    .flatMap(this::byPK);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Long> getUserIdByUUID(final String userUUID) {
+        return Result.tryCatch(() -> this.userRecordMapper
+                .selectIdsByExample()
+                .where(UserRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(userUUID))
+                .build()
+                .execute()
+                .get(0));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public boolean isActive(final String modelId) {
         if (StringUtils.isBlank(modelId)) {
