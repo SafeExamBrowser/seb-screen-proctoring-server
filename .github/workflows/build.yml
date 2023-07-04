@@ -109,3 +109,14 @@ jobs:
         push: true
         tags: |
           anhefti/seb-sps:${{ env.TAG_NAME }}
+          
+  cleanup:
+     # Run only on tagging
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Delete Artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: Package
