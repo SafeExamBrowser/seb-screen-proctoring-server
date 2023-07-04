@@ -149,13 +149,13 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sort,
-            @RequestParam final MultiValueMap<String, String> allRequestParams,
+            @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 
         // at least current user must have read access for specified entity type within its own institution
         checkReadPrivilege();
 
-        final FilterMap filterMap = new FilterMap(allRequestParams, request.getQueryString());
+        final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
 
         final Page<T> page = this.paginationService.getPage(
                 pageNumber,
@@ -185,7 +185,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             parameters = {
                     @Parameter(
                             name = "filterCriteria",
-                            description = "Additional filter criterias \n" +
+                            description = "Additional filter criteria \n" +
                                     "For OpenAPI 3 input please use the form: {\"columnName\":\"filterValue\"}",
                             example = "{\"name\":\"ethz\"}",
                             required = false,
@@ -197,13 +197,13 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<EntityName> getNames(
-            @RequestParam final MultiValueMap<String, String> allRequestParams,
+            @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 
         // at least current user must have read access for specified entity type within its own institution
         checkReadPrivilege();
 
-        final FilterMap filterMap = new FilterMap(allRequestParams, request.getQueryString());
+        final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
         final Collection<T> all = getAll(filterMap)
                 .getOrThrow();
 

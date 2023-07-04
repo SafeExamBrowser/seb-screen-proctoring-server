@@ -115,7 +115,7 @@ public class UserDAOBatis implements UserDAO {
                     .where(
                             UserRecordDynamicSqlSupport.terminationTime,
                             (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
-                                    : SqlBuilder.isEqualToWhenPresent(null))
+                                    : SqlBuilder.isEqualToWhenPresent(() -> null))
 
                     .and(
                             UserRecordDynamicSqlSupport.name,

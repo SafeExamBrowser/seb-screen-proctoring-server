@@ -144,7 +144,7 @@ public class GroupDAOBatis implements GroupDAO {
                     .where(
                             GroupRecordDynamicSqlSupport.terminationTime,
                             (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
-                                    : SqlBuilder.isEqualToWhenPresent(null))
+                                    : SqlBuilder.isEqualToWhenPresent(() -> null))
                     .and(
                             GroupRecordDynamicSqlSupport.name,
                             isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_NAME)))

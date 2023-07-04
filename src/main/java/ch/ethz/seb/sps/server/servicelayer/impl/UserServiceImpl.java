@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean hasGrant(final UserInfo user, final PrivilegeType privilegeType, final EntityType entityType) {
 
-        user.roles.stream()
+        return user.roles.stream()
                 .map(UserRole::valueOf)
                 .map(role -> this.rolePrivileges.get(role))
                 .filter(Objects::nonNull)
@@ -124,7 +124,6 @@ public class UserServiceImpl implements UserService {
                 .findAny()
                 .isPresent();
 
-        return false;
     }
 
     @Override
