@@ -56,9 +56,9 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         final Map<String, String> attributes = new HashMap<>();
-        attributes.put("http-status", status.name());
-        attributes.put("headers", headers.toString());
-        attributes.put("body", body.toString());
+        attributes.put("http-status", (status != null) ? status.name() : "--");
+        attributes.put("headers", String.valueOf(headers));
+        attributes.put("body", String.valueOf(body));
 
         final APIError apiError = new APIError(
                 APIError.APIErrorType.UNEXPECTED,
@@ -74,7 +74,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
             log.error("Failed to parse APIError to String: ", e);
         }
 
-        log.error("API error: {}", apiError);
+        log.error("API error: {}", apiError, ex);
 
         return new ResponseEntity<>(errorJSON, headers, status);
     }

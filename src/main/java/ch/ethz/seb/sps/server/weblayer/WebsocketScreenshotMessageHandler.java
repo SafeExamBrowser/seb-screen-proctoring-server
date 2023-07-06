@@ -196,6 +196,9 @@ public class WebsocketScreenshotMessageHandler extends BinaryWebSocketHandler {
 
         private void streamImageData(final BinaryMessage message) {
             try {
+
+                log.info("--> streamImageData");
+
                 this.out.write(Utils.toByteArray(message.getPayload()));
             } catch (final IOException e) {
                 log.error("Failed to stream data to open transaction: ", e);

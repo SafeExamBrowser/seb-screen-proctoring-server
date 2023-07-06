@@ -35,12 +35,14 @@ public final class Profile {
     @JsonProperty("runtime")
     int runtime = 15 * 60000;
     @JsonProperty("numberOfConnections")
-    int numberOfConnections = 100;
+    int numberOfConnections = 50;
     @JsonProperty("spawnDelay")
-    long spawnDelay = 2000;
+    long spawnDelay = 1000;
     @JsonProperty("screenshotIntervall")
     long screenshotInterval = 1000;
     @JsonProperty("takeOnlyOneScreenshot")
-    boolean takeOnlyOneScreenshot = false;
+    boolean takeOnlyOneScreenshot = true;
+    @JsonProperty("countConnections")
+    boolean countConnections = true;
 
 }

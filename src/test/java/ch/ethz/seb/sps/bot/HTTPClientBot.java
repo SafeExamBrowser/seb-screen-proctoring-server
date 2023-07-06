@@ -20,6 +20,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
@@ -62,6 +63,8 @@ public class HTTPClientBot {
     private Profile profile;
     private final ObjectMapper jsonMapper = new ObjectMapper();
 
+    private final AtomicLong screenshots = new AtomicLong();
+
     public HTTPClientBot(final Properties properties) throws Exception {
 
         final String profileName = properties.getProperty("profile");
@@ -83,7 +86,7 @@ public class HTTPClientBot {
         for (int i = 0; i < this.profile.numberOfConnections; i++) {
             final String sessionId = StringUtils.isNotBlank(this.profile.sessionId)
                     ? this.profile.sessionId
-                    : "seb_" + getRandomName();
+                    : "seb_" + (this.profile.countConnections ? i : this.random.nextInt(100));
 
             this.executorService.execute(new ConnectionBot(sessionId));
 
@@ -95,6 +98,15 @@ public class HTTPClientBot {
         }
 
         this.executorService.shutdown();
+
+        final boolean probe = true;
+        if (probe) {
+            while (true) {
+                this.screenshots.set(0);
+                Thread.sleep(1000);
+                System.out.println("********* screenshots per second: " + this.screenshots.get());
+            }
+        }
     }
 
     private final class ConnectionBot implements Runnable {
@@ -157,7 +169,7 @@ public class HTTPClientBot {
                     }
 
                     try {
-                        Thread.sleep(50);
+                        Thread.sleep(20);
                     } catch (final Exception e) {
                     }
                     currentTime = System.currentTimeMillis();
@@ -172,6 +184,8 @@ public class HTTPClientBot {
             if (log.isTraceEnabled()) {
                 log.debug("ConnectionBot {} : take screenshot...", this.name);
             }
+
+            HTTPClientBot.this.screenshots.incrementAndGet();
 
             final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             takeScreenshot(byteArrayOutputStream);

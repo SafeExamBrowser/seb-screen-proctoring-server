@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
@@ -76,6 +77,8 @@ public class WebsocketClientBot {
     private Profile profile;
     private final ObjectMapper jsonMapper = new ObjectMapper();
 
+    private final AtomicLong screenshots = new AtomicLong();
+
     public WebsocketClientBot(final Properties properties) throws Exception {
 
         final String profileName = properties.getProperty("profile");
@@ -109,6 +112,15 @@ public class WebsocketClientBot {
         }
 
         this.executorService.shutdown();
+
+        final boolean probe = true;
+        if (probe) {
+            while (true) {
+                this.screenshots.set(0);
+                Thread.sleep(1000);
+                System.out.println("********* screenshots per second: " + this.screenshots.get());
+            }
+        }
     }
 
     private final class ConnectionBot implements Runnable {
@@ -209,6 +221,8 @@ public class WebsocketClientBot {
                 takeScreenshot(byteArrayOutputStream);
                 // and send the data in a binary message
                 screenshotDataSession.sendMessage(new BinaryMessage(byteArrayOutputStream.toByteArray()));
+
+                WebsocketClientBot.this.screenshots.incrementAndGet();
 
             } catch (final Exception e) {
                 e.printStackTrace();
