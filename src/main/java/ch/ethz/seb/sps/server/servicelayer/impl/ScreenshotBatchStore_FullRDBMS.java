@@ -146,8 +146,6 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
                     metadata,
                     IOUtils.toByteArray(in)));
 
-            Thread.sleep(1000 * 80);
-
         } catch (final Exception e) {
             log.error("Failed to get screenshot from InputStream for session: {}", sessionUUID, e);
         }
