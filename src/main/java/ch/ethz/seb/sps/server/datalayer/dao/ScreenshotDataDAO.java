@@ -28,7 +28,9 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
 
     Result<ScreenshotDataRecord> getAt(String sessionUUID, Long at);
 
-    Result<Long> getLatestId(String sessionUUID);
+    Result<Long> getIdAt(String sessionUUID, Long at);
+
+    Result<Long> getLatestImageId(String sessionUUID);
 
     Result<ScreenshotDataRecord> getLatest(String sessionUUID);
 

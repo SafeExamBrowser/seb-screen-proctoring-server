@@ -156,7 +156,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
         checkReadPrivilege();
 
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
-
         final Page<T> page = this.paginationService.getPage(
                 pageNumber,
                 pageSize,

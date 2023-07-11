@@ -10,19 +10,9 @@ package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.io.InputStream;
 
-import org.springframework.util.StringUtils;
-
-import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 
 public interface ScreenshotDAO {
-
-    default Result<InputStream> getImage(final String screenshotId) {
-        return Result.tryCatch(() -> {
-            final String[] split = StringUtils.split(screenshotId, Constants.UNDERLINE_STRING);
-            return getImage(Long.parseLong(split[1]), split[0]).getOrThrow();
-        });
-    }
 
     Result<InputStream> getImage(
             Long pk,

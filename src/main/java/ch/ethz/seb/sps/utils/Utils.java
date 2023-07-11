@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +102,19 @@ public final class Utils {
         }
 
         return immutableListOf(Arrays.asList(values));
+    }
+
+    public static <T> List<T> immutableListOf(final Iterator<T> values) {
+        if (values == null) {
+            return Collections.emptyList();
+        }
+
+        final List<T> list = new ArrayList<>();
+        while (values.hasNext()) {
+            list.add(values.next());
+        }
+
+        return immutableListOf(list);
     }
 
     /** Get an immutable List from a Collection of elements
@@ -735,6 +749,23 @@ public final class Utils {
         }
 
         return false;
+    }
+
+    public static String toString(final Map<String, String[]> parameterMap) {
+        if (parameterMap == null) {
+            return null;
+        }
+        if (parameterMap.isEmpty()) {
+            return StringUtils.EMPTY;
+        }
+        final StringBuilder sb = new StringBuilder();
+
+        parameterMap.entrySet().forEach(entry -> sb.append(entry.getKey())
+                .append(Constants.EQUALITY_SIGN)
+                .append(entry.getValue())
+                .append(Constants.COMPLEX_VALUE_SEPARATOR));
+
+        return sb.toString();
     }
 
 }

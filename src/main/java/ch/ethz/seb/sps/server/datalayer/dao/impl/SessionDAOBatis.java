@@ -35,7 +35,6 @@ import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
@@ -96,15 +95,29 @@ public class SessionDAOBatis implements SessionDAO {
         });
     }
 
+//    @Override
+//    @Transactional(readOnly = true)
+//    public Result<Collection<String>> allActiveSessionIds(final String groupUUID) {
+//        return Result.tryCatch(() -> {
+//            return this.sessionRecordMapper.selectByExample()
+//                    .leftJoin(GroupRecordDynamicSqlSupport.groupRecord)
+//                    .on(GroupRecordDynamicSqlSupport.id, SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.groupId))
+//                    .where(GroupRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(groupUUID))
+//                    .and(SessionRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
+//                    .build()
+//                    .execute()
+//                    .stream()
+//                    .map(rec -> rec.getUuid())
+//                    .collect(Collectors.toList());
+//        });
+//    }
+
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<String>> allActiveSessionIds(final String groupUUID) {
+    public Result<Collection<String>> allSessionUUIDs(final Long groupId) {
         return Result.tryCatch(() -> {
             return this.sessionRecordMapper.selectByExample()
-                    .leftJoin(GroupRecordDynamicSqlSupport.groupRecord)
-                    .on(GroupRecordDynamicSqlSupport.id, SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.groupId))
-                    .where(GroupRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(groupUUID))
-                    .and(SessionRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
+                    .where(SessionRecordDynamicSqlSupport.groupId, SqlBuilder.isEqualTo(groupId))
                     .build()
                     .execute()
                     .stream()

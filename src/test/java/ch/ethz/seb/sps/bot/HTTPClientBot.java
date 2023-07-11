@@ -86,7 +86,7 @@ public class HTTPClientBot {
         for (int i = 0; i < this.profile.numberOfConnections; i++) {
             final String sessionId = StringUtils.isNotBlank(this.profile.sessionId)
                     ? this.profile.sessionId
-                    : "seb_" + (this.profile.countConnections ? i : this.random.nextInt(100));
+                    : "seb_" + (this.profile.countConnections ? i : getRandomName());
 
             this.executorService.execute(new ConnectionBot(sessionId));
 
@@ -228,6 +228,11 @@ public class HTTPClientBot {
             final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
             headers.set(API.GROUP_HEADER_UUID, HTTPClientBot.this.profile.groupId);
+            headers.set(API.SESSION_HEADER_SEB_USER_NAME, this.name);
+            headers.set(API.SESSION_HEADER_SEB_IP, "0.0.0.0");
+            headers.set(API.SESSION_HEADER_SEB_MACHINE_NAME, "localhost");
+            headers.set(API.SESSION_HEADER_SEB_OS, "windows");
+            headers.set(API.SESSION_HEADER_SEB_VERSION, "0.1-httpBot");
 
             final ResponseEntity<Void> exchange = this.restTemplate.exchange(
                     this.createSessionURL,

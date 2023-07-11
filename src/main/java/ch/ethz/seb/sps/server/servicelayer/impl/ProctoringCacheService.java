@@ -81,8 +81,9 @@ public class ProctoringCacheService {
             cacheNames = SESSION_TOKENS_CACHE,
             key = "#groupUUID",
             unless = "#result == null")
-    public Collection<String> getSessionTokens(final String groupUUID) {
-        final Result<Collection<String>> activeSessions = this.sessionDAO.allActiveSessionIds(groupUUID);
+    public Collection<String> getSessionTokens(final String groupUUID, final Long groupId) {
+
+        final Result<Collection<String>> activeSessions = this.sessionDAO.allSessionUUIDs(groupId);
         if (activeSessions.hasError()) {
             log.error("Failed to load active session for group: {}", groupUUID, activeSessions.getError());
             return null;

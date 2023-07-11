@@ -19,7 +19,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -58,16 +57,13 @@ public class ServiceInfo {
     private final String serverPort; // internal
     private final String contextPath;
 
-    @Value("${sps.api.admin.endpoint}")
-    private String adminAPIEndpoint;
-    @Value("${sps.api.session.endpoint}")
-    private String sessionAPIEndpoint;
-    @Value("${sps.api.admin.accessTokenValiditySeconds:3600}")
-    private int adminAccessTokenValSec;
-    @Value("${sps.api.admin.refreshTokenValiditySeconds:-1}")
-    private int adminRefreshTokenValSec;
-    @Value("${sps.api.session.accessTokenValiditySeconds:43200}")
-    private int sessionAPITokenValiditySeconds;
+    private final String adminAPIEndpoint;
+    private final String adminAPIEndpointV1;
+    private final String sessionAPIEndpoint;
+    private final String sessionAPIEndpointV1;
+    private final int adminAccessTokenValSec;
+    private final int adminRefreshTokenValSec;
+    private final int sessionAPITokenValiditySeconds;
 
     private final WebserviceInfoDAO webserviceInfoDAO;
 
@@ -82,12 +78,32 @@ public class ServiceInfo {
     private final String externalServiceURI;
     private final String screenshotRequestURI;
 
-    public ServiceInfo(final Environment environment, final WebserviceInfoDAO webserviceInfoDAO) {
+    public ServiceInfo(
+            final Environment environment,
+            final WebserviceInfoDAO webserviceInfoDAO) {
         this.version = environment.getRequiredProperty(VERSION_KEY);
         this.activeProfiles = new HashSet<>(Arrays.asList(environment.getActiveProfiles()));
         this.storeAdapter = environment.getRequiredProperty(STORE_ADAPTER_KEY);
         this.storeStrategy = environment.getRequiredProperty(STORE_STRATEGY_KEY);
         this.webserviceInfoDAO = webserviceInfoDAO;
+
+        this.adminAPIEndpoint = environment.getProperty("sps.api.admin.endpoint");
+        this.adminAPIEndpointV1 = environment.getProperty("sps.api.admin.endpoint.v1");
+        this.sessionAPIEndpoint = environment.getProperty("sps.api.session.endpoint");
+        this.sessionAPIEndpointV1 = environment.getProperty("sps.api.session.endpoint.v1");
+
+        this.adminAccessTokenValSec = environment.getProperty(
+                "sps.api.admin.accessTokenValiditySeconds",
+                Integer.class,
+                3600);
+        this.adminRefreshTokenValSec = environment.getProperty(
+                "sps.api.admin.refreshTokenValiditySeconds",
+                Integer.class,
+                -1);
+        this.sessionAPITokenValiditySeconds = environment.getProperty(
+                "sps.api.session.accessTokenValiditySeconds",
+                Integer.class,
+                43200);
 
         // internal
         this.hostAddress = environment.getRequiredProperty(WEB_SERVICE_HOST_ADDRESS_KEY);
@@ -119,7 +135,9 @@ public class ServiceInfo {
         }
         this.externalServiceURI = builder.toUriString();
         this.screenshotRequestURI =
-                this.externalServiceURI + this.adminAPIEndpoint + API.PROCTORING_ENDPOINT + API.SCREENSHOT_ENDPOINT;
+                this.externalServiceURI + this.adminAPIEndpointV1 +
+                        API.PROCTORING_ENDPOINT +
+                        API.SCREENSHOT_ENDPOINT;
 
         this.webserviceUUID = UUID.randomUUID().toString()
                 + Constants.UNDERLINE
@@ -271,16 +289,16 @@ public class ServiceInfo {
         return this.adminAPIEndpoint;
     }
 
-    public void setAdminAPIEndpoint(final String adminAPIEndpoint) {
-        this.adminAPIEndpoint = adminAPIEndpoint;
+    public String getAdminAPIEndpointV1() {
+        return this.adminAPIEndpointV1;
     }
 
     public String getSessionAPIEndpoint() {
         return this.sessionAPIEndpoint;
     }
 
-    public void setSessionAPIEndpoint(final String sessionAPIEndpoint) {
-        this.sessionAPIEndpoint = sessionAPIEndpoint;
+    public String getSessionAPIEndpointV1() {
+        return this.sessionAPIEndpointV1;
     }
 
     public String getScreenshotRequestURI() {

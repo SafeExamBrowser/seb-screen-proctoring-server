@@ -91,11 +91,17 @@ public final class API {
 
     public static final String SPS_SERVER_HEALTH = "SPS_SERVER_HEALTH";
 
+    public static final String PARAM_GROUP_ID = "groupUUID";
+    public static final String PARAM_SESSION_ID = "sessionUUID";
+
+    public static final String PROCTORING_ENDPOINT = "/proctoring";
     public static final String GROUP_ENDPOINT = "/group";
     public static final String SESSION_ENDPOINT = "/session";
-    public static final String PROCTORING_ENDPOINT = "/proctoring";
-    public static final String PARAM_SCREENSHOT_ID = "screenshotId";
-    public static final String SCREENSHOT_ID_PATH_SEGMENT = "/{screenshotId}";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
+
+    public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_ID + "}";
+    public static final String SESSION_ID_PATH_SEGMENT = "/{" + PARAM_SESSION_ID + "}";
+    public static final String SESSION_ID_TIMESTAMP_PATH_SEGMENT =
+            "/{" + PARAM_SESSION_ID + "}" + PARAM_TIMESTAMP_PATH_SEGMENT;
 
 }

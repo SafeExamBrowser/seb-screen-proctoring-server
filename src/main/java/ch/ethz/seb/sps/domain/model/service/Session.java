@@ -14,6 +14,7 @@ import java.util.Objects;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,20 +25,27 @@ import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
+import ch.ethz.seb.sps.utils.Constants;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Session implements Entity, WithLifeCycle {
 
     public enum ImageFormat {
-        PNG(0, "png"),
-        WEBP(1, "webp");
+        PNG(0, "png", MediaType.IMAGE_PNG_VALUE),
+        WEBP(1, "webp", Constants.MIME_TYPE_IMAGE_WEBP);
 
         public final int code;
         public final String formatName;
+        public final String mimeType;
 
-        private ImageFormat(final int formatCode, final String formatName) {
+        private ImageFormat(
+                final int formatCode,
+                final String formatName,
+                final String mimeType) {
+
             this.code = formatCode;
             this.formatName = formatName;
+            this.mimeType = mimeType;
         }
 
         public static ImageFormat valueOf(final int code) {

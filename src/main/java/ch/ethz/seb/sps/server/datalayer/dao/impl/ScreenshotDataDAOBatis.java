@@ -36,6 +36,7 @@ import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import ch.ethz.seb.sps.utils.Result;
 
@@ -97,7 +98,13 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<ScreenshotDataRecord> getAt(final String sessionUUID, final Long at) {
         return Result.tryCatch(() -> {
             return SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne, id, SqlBuilder.max(timestamp))
+                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
+                            id,
+                            sessionUuid,
+                            timestamp,
+                            imageFormat,
+                            metaData,
+                            SqlBuilder.max(timestamp))
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                     .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
@@ -108,7 +115,29 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Long> getLatestId(final String sessionUUID) {
+    public Result<Long> getIdAt(final String sessionUUID, final Long at) {
+        return Result.tryCatch(() -> {
+
+            final List<Long> execute = SelectDSL
+                    .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, SqlBuilder.max(timestamp))
+                    .from(screenshotDataRecord)
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
+                    .build()
+                    .execute();
+
+            if (execute == null || execute.isEmpty() || execute.get(0) == null) {
+                throw new NoResourceFoundException(EntityType.SCREENSHOT, sessionUUID);
+            }
+
+            return execute.get(0);
+
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Long> getLatestImageId(final String sessionUUID) {
         return Result.tryCatch(() -> {
 
             final List<Long> execute = SelectDSL
@@ -126,7 +155,13 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<ScreenshotDataRecord> getLatest(final String sessionUUID) {
         return Result.tryCatch(() -> {
             return SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne, id, SqlBuilder.max(timestamp))
+                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
+                            id,
+                            sessionUuid,
+                            timestamp,
+                            imageFormat,
+                            metaData,
+                            SqlBuilder.max(timestamp))
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                     .build()
@@ -142,9 +177,16 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
             }
 
             return SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectMany, id, SqlBuilder.max(timestamp))
+                    .selectWithMapper(this.screenshotDataRecordMapper::selectMany,
+                            id,
+                            sessionUuid,
+                            timestamp,
+                            imageFormat,
+                            metaData,
+                            SqlBuilder.max(timestamp))
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isIn(sessionUUIDs))
+                    .groupBy(ScreenshotDataRecordDynamicSqlSupport.sessionUuid)
                     .build()
                     .execute()
                     .stream()

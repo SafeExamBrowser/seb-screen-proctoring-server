@@ -9,10 +9,17 @@
 package ch.ethz.seb.sps.domain.model.service;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -23,6 +30,7 @@ import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.OwnedEntity;
+import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.domain.model.WithNameDescription;
@@ -179,6 +187,29 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
         builder.append(this.entityPrivileges);
         builder.append("]");
         return builder.toString();
+    }
+
+    public static final Function<Collection<Group>, List<Group>> groupSort(final String sort) {
+
+        final String sortBy = PageSortOrder.decode(sort);
+        return groups -> {
+            final List<Group> list = groups.stream().collect(Collectors.toList());
+            if (StringUtils.isBlank(sort)) {
+                return list;
+            }
+
+            if (sortBy.equals(Group.FILTER_ATTR_NAME)) {
+                list.sort(Comparator.comparing(group -> (group.name != null) ? group.name : StringUtils.EMPTY));
+            }
+            if (sortBy.equals(Group.FILTER_ATTR_CREATTION_TIME)) {
+                list.sort(Comparator.comparing(group -> (group.creationTime != null) ? group.creationTime : 0L));
+            }
+
+            if (PageSortOrder.DESCENDING == PageSortOrder.getSortOrder(sort)) {
+                Collections.reverse(list);
+            }
+            return list;
+        };
     }
 
 }

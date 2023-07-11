@@ -9,7 +9,9 @@
 package ch.ethz.seb.sps.server.servicelayer;
 
 import java.io.OutputStream;
+import java.util.function.Consumer;
 
+import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
@@ -17,12 +19,15 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface ProctoringService {
 
-    /** Check current users monitoring access for given group id
+    /** Check current users monitoring access for given groupUUID
      *
      * @param groupUUID */
     void checkMonitroingAccess(String groupUUID);
 
-    Result<ScreenshotViewData> getLiveImageData(String sessionUUID);
+    /** Check current users monitoring access for given sessionUUID
+     *
+     * @param sessionUUID */
+    void checkMonitroingSessionAccess(String sessionUUID);
 
     Result<ScreenshotViewData> getRecordedImageDataAt(String sessionUUID, Long timestamp);
 
@@ -31,9 +36,18 @@ public interface ProctoringService {
             Integer pageNumber,
             Integer pageSize,
             String sortBy,
-            PageSortOrder sortOrder);
+            PageSortOrder sortOrder,
+            FilterMap filterMap);
 
-    //@Async(value = ServiceConfig.SCREENSHOT_DOWNLOAD_API_EXECUTOR)
-    void streamScreenshot(String screenshotId, OutputStream out);
+    void streamScreenshot(
+            String sessionUUID,
+            Long timestamp,
+            Consumer<String> mimeTypePropagation,
+            OutputStream out);
+
+    void streamScreenshot(
+            Long screenhotId,
+            String sessionUUID,
+            OutputStream out);
 
 }

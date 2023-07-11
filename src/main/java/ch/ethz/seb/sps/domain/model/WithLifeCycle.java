@@ -10,6 +10,8 @@ package ch.ethz.seb.sps.domain.model;
 
 public interface WithLifeCycle extends Activatable {
 
+    String FILTER_ATTR_CREATTION_TIME = "creationTime";
+
     Long getCreationTime();
 
     Long getLastUpdateTime();

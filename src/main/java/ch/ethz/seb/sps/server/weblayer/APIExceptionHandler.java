@@ -8,8 +8,12 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +33,7 @@ import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.utils.Utils;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
@@ -41,6 +46,38 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
     public APIExceptionHandler(final JSONMapper jsonMapper) {
         super();
         this.jsonMapper = jsonMapper;
+    }
+
+    public void handleGenericExcpetionResponse(
+            final Exception ex,
+            final String request,
+            final HttpServletResponse response) {
+
+        final Map<String, String> attributes = new HashMap<>();
+        // TODO more infos?
+
+        final APIError apiError = new APIError(
+                APIError.APIErrorType.UNEXPECTED,
+                request,
+                ex.getMessage(),
+                attributes,
+                null);
+
+        String errorJSON = apiError.toString();
+        try {
+            errorJSON = this.jsonMapper.writeValueAsString(apiError);
+        } catch (final Exception e) {
+            log.error("Failed to parse APIError to String: ", e);
+        }
+
+        log.error("API error: {}", apiError, ex);
+
+        try {
+            final ServletOutputStream outputStream = response.getOutputStream();
+            outputStream.write(Utils.toByteArray(errorJSON));
+        } catch (final Exception e) {
+            log.error("Failed to send error message to client: ", e);
+        }
     }
 
     @Override
@@ -57,7 +94,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 
         final Map<String, String> attributes = new HashMap<>();
         attributes.put("http-status", (status != null) ? status.name() : "--");
-        attributes.put("headers", String.valueOf(headers));
+        addRequestAttributes(request, attributes);
         attributes.put("body", String.valueOf(body));
 
         final APIError apiError = new APIError(
@@ -85,9 +122,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
             final WebRequest request) {
 
         final Map<String, String> attributes = new HashMap<>();
-        attributes.put("request-parameter", request.getParameterMap().toString());
-        attributes.put("request-headers", request.getHeaderNames().toString());
-        attributes.put("request-user", request.getUserPrincipal().toString());
+        addRequestAttributes(request, attributes);
 
         final APIError apiError = new APIError(
                 APIError.APIErrorType.UNEXPECTED,
@@ -131,9 +166,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
             final WebRequest request) {
 
         final Map<String, String> attributes = new HashMap<>();
-        attributes.put("request-parameter", request.getParameterMap().toString());
-        attributes.put("request-headers", request.getHeaderNames().toString());
-        attributes.put("request-user", request.getUserPrincipal().toString());
+        addRequestAttributes(request, attributes);
         attributes.put("filedName", ex.fieldName);
         attributes.put("message", ex.message);
         attributes.put("entityType", ex.entityType.name());
@@ -163,9 +196,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
             final WebRequest request) {
 
         final Map<String, String> attributes = new HashMap<>();
-        attributes.put("request-parameter", request.getParameterMap().toString());
-        attributes.put("request-headers", request.getHeaderNames().toString());
-        attributes.put("request-user", request.getUserPrincipal().toString());
+        addRequestAttributes(request, attributes);
         attributes.put("message", ex.getMessage());
         attributes.put("entityType", ex.entityType.name());
 
@@ -186,6 +217,44 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("API error: {}", apiError);
 
         return new ResponseEntity<>(errorJSON, null, apiError.errorType.httpStatus);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleBadRequestException(
+            final BadRequestException ex,
+            final WebRequest request) {
+
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("request", ex.request);
+        addRequestAttributes(request, attributes);
+        attributes.put("message", ex.getMessage());
+
+        final APIError apiError = new APIError(
+                APIError.APIErrorType.BAD_REQUEST,
+                request.getDescription(false),
+                ex.getMessage(),
+                attributes,
+                null);
+
+        String errorJSON = apiError.toString();
+        try {
+            errorJSON = this.jsonMapper.writeValueAsString(apiError);
+        } catch (final Exception e) {
+            log.error("Failed to parse APIError to String: ", e);
+        }
+
+        log.error("API error: {}", apiError);
+
+        return new ResponseEntity<>(errorJSON, null, apiError.errorType.httpStatus);
+    }
+
+    private void addRequestAttributes(final WebRequest request, final Map<String, String> attributes) {
+        final Principal userPrincipal = request.getUserPrincipal();
+        attributes.put("request-parameter", Utils.toString(request.getParameterMap()));
+        //attributes.put("request-headers", Utils.immutableListOf(request.getHeaderNames()).toString());
+        if (userPrincipal != null) {
+            attributes.put("request-user", userPrincipal.getName());
+        }
     }
 
 }

@@ -31,44 +31,43 @@ public class AuditLogDAOBatis implements AuditLogDAO {
 
     @Override
     public EntityType entityType() {
-        // TODO Auto-generated method stub
-        return null;
+        return EntityType.AUDIT_LOG;
     }
 
     @Override
     public Result<AuditLog> byPK(final Long id) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.ofRuntimeError("TODO");
     }
 
     @Override
     public Result<Collection<AuditLog>> allOf(final Set<Long> pks) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.ofRuntimeError("TODO");
     }
 
     @Override
     public Result<AuditLog> createNew(final AuditLog data) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.ofRuntimeError("TODO");
     }
 
     @Override
     public Result<AuditLog> save(final AuditLog data) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.ofRuntimeError("TODO");
     }
 
     @Override
     public Result<Collection<EntityKey>> delete(final Set<EntityKey> all) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.ofRuntimeError("TODO");
     }
 
     @Override
     public Result<Collection<AuditLog>> allMatching(final FilterMap filterMap, final Predicate<AuditLog> predicate) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.ofRuntimeError("TODO");
     }
 
     @Override
@@ -80,31 +79,31 @@ public class AuditLogDAOBatis implements AuditLogDAO {
     @Override
     public <T extends Entity> Result<T> log(final AuditLogType logType, final T entity) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.of(entity);
     }
 
     @Override
     public <T extends Entity> Result<T> logCreate(final T entity) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.of(entity);
     }
 
     @Override
     public <T extends Entity> Result<T> logModify(final T entity) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.of(entity);
     }
 
     @Override
     public <T extends Entity> Result<T> logDelete(final T entity) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.of(entity);
     }
 
     @Override
     public Result<Collection<EntityKey>> logDeleted(final Collection<EntityKey> entities) {
         // TODO Auto-generated method stub
-        return null;
+        return Result.of(entities);
     }
 
     @Override
