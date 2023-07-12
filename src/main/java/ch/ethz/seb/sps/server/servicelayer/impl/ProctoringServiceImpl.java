@@ -148,6 +148,8 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             return new MonitoringPageData(
                     groupUUID,
+                    activeGroup.name,
+                    activeGroup.description,
                     sessionTokens.size(),
                     pnum,
                     pSize,

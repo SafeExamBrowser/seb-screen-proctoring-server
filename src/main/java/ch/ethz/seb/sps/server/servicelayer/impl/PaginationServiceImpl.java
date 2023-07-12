@@ -133,6 +133,7 @@ public class PaginationServiceImpl implements PaginationService {
             return new Page<>(
                     page.getPages(),
                     page.getPageNum(),
+                    this.getPageSize(pageSize),
                     sort,
                     list);
         });
@@ -156,6 +157,7 @@ public class PaginationServiceImpl implements PaginationService {
             return new Page<>(
                     page.getPages(),
                     page.getPageNum(),
+                    this.getPageSize(pageSize),
                     sort,
                     list);
         });

@@ -30,6 +30,12 @@ public class MonitoringPageData {
     @JsonProperty(SEB_GROUP.ATTR_UUID)
     public final String groupUUID;
 
+    @JsonProperty(SEB_GROUP.ATTR_NAME)
+    public final String groupName;
+
+    @JsonProperty(SEB_GROUP.ATTR_DESCRIPTION)
+    public final String groupDescription;
+
     @JsonProperty(ATTR_NUM_OF_SESSIONS)
     public final int numberOfSessions;
 
@@ -50,6 +56,8 @@ public class MonitoringPageData {
 
     public MonitoringPageData(
             @JsonProperty(SEB_GROUP.ATTR_UUID) final String groupUUID,
+            @JsonProperty(SEB_GROUP.ATTR_NAME) final String groupName,
+            @JsonProperty(SEB_GROUP.ATTR_DESCRIPTION) final String groupDescription,
             @JsonProperty(ATTR_NUM_OF_SESSIONS) final int numberOfSessions,
             @JsonProperty(ATTR_PAGE_NUMBER) final int pageNumber,
             @JsonProperty(ATTR_PAGE_SIZE) final int pageSize,
@@ -58,6 +66,8 @@ public class MonitoringPageData {
             @JsonProperty(ATTR_SCREENSHOTS) final List<ScreenshotViewData> sessionDataPage) {
 
         this.groupUUID = groupUUID;
+        this.groupName = groupName;
+        this.groupDescription = groupDescription;
         this.numberOfSessions = numberOfSessions;
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
@@ -68,6 +78,14 @@ public class MonitoringPageData {
 
     public String getGroupUUID() {
         return this.groupUUID;
+    }
+
+    public String getGroupName() {
+        return this.groupName;
+    }
+
+    public String getGroupDescription() {
+        return this.groupDescription;
     }
 
     public int getNumberOfSessions() {
@@ -109,6 +127,31 @@ public class MonitoringPageData {
             return false;
         final MonitoringPageData other = (MonitoringPageData) obj;
         return Objects.equals(this.groupUUID, other.groupUUID);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("MonitoringPageData [groupUUID=");
+        builder.append(this.groupUUID);
+        builder.append(", groupName=");
+        builder.append(this.groupName);
+        builder.append(", groupDescription=");
+        builder.append(this.groupDescription);
+        builder.append(", numberOfSessions=");
+        builder.append(this.numberOfSessions);
+        builder.append(", pageNumber=");
+        builder.append(this.pageNumber);
+        builder.append(", pageSize=");
+        builder.append(this.pageSize);
+        builder.append(", sortBy=");
+        builder.append(this.sortBy);
+        builder.append(", sortOrder=");
+        builder.append(this.sortOrder);
+        builder.append(", screenshots=");
+        builder.append(this.screenshots);
+        builder.append("]");
+        return builder.toString();
     }
 
 }
