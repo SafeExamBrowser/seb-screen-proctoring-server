@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -65,6 +67,15 @@ public class GroupDAOBatis implements GroupDAO {
     @Override
     public EntityType entityType() {
         return EntityType.SEB_GROUP;
+    }
+
+    @Override
+    public Long modelIdToPK(final String modelId) {
+        if (isUUID(modelId)) {
+            return getGroupIdByUUID(modelId).getOr(null);
+        } else {
+            return GroupDAO.super.modelIdToPK(modelId);
+        }
     }
 
     @Override
@@ -247,19 +258,34 @@ public class GroupDAOBatis implements GroupDAO {
         return Result.tryCatch(() -> {
 
             final long millisecondsNow = Utils.getMillisecondsNow();
-            final GroupRecord newRecord = new GroupRecord(
-                    data.id,
-                    null,
-                    data.name,
-                    data.description,
-                    null,
-                    null,
-                    millisecondsNow,
-                    null);
 
-            this.groupRecordMapper.updateByPrimaryKeySelective(newRecord);
-            this.entityPrivilegeDAO.savePut(EntityType.SEB_GROUP, data.id, data.entityPrivileges);
-            return this.groupRecordMapper.selectByPrimaryKey(data.id);
+            Long pk = data.id;
+            if (pk == null && data.uuid != null) {
+                pk = this.getGroupIdByUUID(data.uuid).getOr(pk);
+            }
+
+            UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
+                    .set(name).equalTo(data.name)
+                    .set(description).equalTo(data.description)
+                    .set(owner).equalTo(data.owner)
+                    .set(lastUpdateTime).equalTo(millisecondsNow)
+                    .where(id, isEqualTo(pk))
+                    .build()
+                    .execute();
+
+//            final GroupRecord newRecord = new GroupRecord(
+//                    pk,
+//                    data.uuid,
+//                    data.name,
+//                    data.description,
+//                    null,
+//                    null,
+//                    millisecondsNow,
+//                    null);
+//
+//            this.groupRecordMapper.updateByPrimaryKeySelective(newRecord);
+            this.entityPrivilegeDAO.savePut(EntityType.SEB_GROUP, pk, data.entityPrivileges);
+            return this.groupRecordMapper.selectByPrimaryKey(pk);
         })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);
@@ -336,7 +362,7 @@ public class GroupDAOBatis implements GroupDAO {
 
         if (otherWithSameName != null && otherWithSameName > 0) {
             throw new DuplicateEntityException(
-                    EntityType.CLIENT_ACCESS,
+                    EntityType.SEB_GROUP,
                     Domain.CLIENT_ACCESS.ATTR_NAME,
                     "clientaccess:name:name.notunique");
         }

@@ -95,23 +95,6 @@ public class SessionDAOBatis implements SessionDAO {
         });
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public Result<Collection<String>> allActiveSessionIds(final String groupUUID) {
-//        return Result.tryCatch(() -> {
-//            return this.sessionRecordMapper.selectByExample()
-//                    .leftJoin(GroupRecordDynamicSqlSupport.groupRecord)
-//                    .on(GroupRecordDynamicSqlSupport.id, SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.groupId))
-//                    .where(GroupRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(groupUUID))
-//                    .and(SessionRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
-//                    .build()
-//                    .execute()
-//                    .stream()
-//                    .map(rec -> rec.getUuid())
-//                    .collect(Collectors.toList());
-//        });
-//    }
-
     @Override
     @Transactional(readOnly = true)
     public Result<Collection<String>> allSessionUUIDs(final Long groupId) {
@@ -299,8 +282,14 @@ public class SessionDAOBatis implements SessionDAO {
         return Result.tryCatch(() -> {
 
             final long now = Utils.getMillisecondsNow();
+
+            Long pk = data.id;
+            if (pk == null && data.uuid != null) {
+                pk = this.pkByUUID(data.uuid).getOr(pk);
+            }
+
             final SessionRecord record = new SessionRecord(
-                    data.id,
+                    pk,
                     null,
                     null,
                     (data.imageFormat != null) ? null : data.imageFormat.code,
@@ -312,7 +301,7 @@ public class SessionDAOBatis implements SessionDAO {
                     null, now, null);
 
             this.sessionRecordMapper.updateByPrimaryKeySelective(record);
-            return this.sessionRecordMapper.selectByPrimaryKey(data.id);
+            return this.sessionRecordMapper.selectByPrimaryKey(pk);
         })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);

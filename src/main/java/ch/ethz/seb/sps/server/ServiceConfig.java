@@ -90,22 +90,6 @@ public class ServiceConfig {
         return executor;
     }
 
-//    @Bean(name = SCREENSHOT_STORE_API_EXECUTOR)
-//    public ConcurrentTaskExecutor screenhortStoreThreadPoolTaskExecutor() {
-//        final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-//        executor.setCorePoolSize(4);
-//        executor.setMaxPoolSize(10);
-//        executor.setQueueCapacity(0);
-//        executor.setThreadPriority(Thread.NORM_PRIORITY);
-//        executor.setThreadNamePrefix("store-");
-//        executor.initialize();
-//        executor.setWaitForTasksToCompleteOnShutdown(false);
-//
-//        final ConcurrentTaskExecutor taskExecutor = new ConcurrentTaskExecutor();
-//        taskExecutor.setConcurrentExecutor(executor);
-//        return taskExecutor;
-//    }
-
     @Bean(name = SCREENSHOT_STORE_API_EXECUTOR)
     public TaskScheduler batchStoreScreenShotcheduler() {
         final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();

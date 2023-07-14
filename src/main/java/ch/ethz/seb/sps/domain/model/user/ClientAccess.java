@@ -28,6 +28,8 @@ import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.domain.model.WithNameDescription;
 import ch.ethz.seb.sps.utils.Utils;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
@@ -47,24 +49,31 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
     @Size(max = 4000, message = "clientaccess:description:size:{max}:${validatedValue}")
     public final String description;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_NAME)
     public final String clientId;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_SECRET)
     public final String clientSecret;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(CLIENT_ACCESS.ATTR_OWNER)
     public final String owner;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES)
     public final Collection<EntityPrivilege> entityPrivileges;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(CLIENT_ACCESS.ATTR_CREATION_TIME)
     public final Long creationTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(CLIENT_ACCESS.ATTR_LAST_UPDATE_TIME)
     public final Long lastUpdateTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(CLIENT_ACCESS.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 

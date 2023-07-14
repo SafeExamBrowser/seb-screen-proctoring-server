@@ -17,7 +17,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlTable;
@@ -56,7 +55,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
  * by all entity types.
  *
  * @param <T> The concrete Entity domain-model type used on all GET, PUT
- * @param <M> The concrete Entity domain-model type used for POST methods (new) */
+ * @param <M> The concrete Entity domain-model type used for write methods (new, save) */
 @SecurityRequirement(name = "AdminOAuth")
 public abstract class EntityController<T extends Entity, M extends Entity> {
 
@@ -135,9 +134,11 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                             description = "the sort parameter to sort the list of entities before paging"),
                     @Parameter(
                             name = "filterCriteria",
-                            description = "Additional filter criterias \n" +
-                                    "For OpenAPI 3 input please use the form: {\"columnName\":\"filterValue\"}",
+                            description = "Additional filter criteria as query parameter or application/x-www-form-urlencoded body value \n"
+                                    +
+                                    "For OpenAPI 3 input please use the JSON object form: {\"columnName\":\"filterValue\"} Swagger will translate it to form-urlencoded body",
                             example = "{\"name\":\"ethz\"}",
+                            in = ParameterIn.DEFAULT,
                             required = false,
                             allowEmptyValue = true)
             })
@@ -278,29 +279,32 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                     " format for the form parameter" +
                     " and tries to create a new entity object from this form parameter, " +
                     "resulting in an error if there are missing" +
-                    " or incorrect form paramter. The needed form paramter " +
-
+                    " or incorrect form parameter. The needed form parameter " +
                     "can be verified within the specific entity object.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+
             parameters = {
                     @Parameter(
-                            name = "formParams",
-                            description = "The from paramter value map that is been used to create a new entity object.",
-                            in = ParameterIn.DEFAULT)
+                            name = "formParameter",
+                            required = false,
+                            hidden = true,
+                            description = "The from parameter value map that is been used to create a new entity object.",
+                            example = "{\"name\":\"new entity\"}")
             })
     @RequestMapping(
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public T create(
-            @RequestParam final MultiValueMap<String, String> allRequestParams,
+            @RequestParam final MultiValueMap<String, String> formParameter,
             final HttpServletRequest request) {
 
         // check write privilege for requested institution and concrete entityType
         this.checkWritePrivilege();
 
-        final POSTMapper postMap = new POSTMapper(allRequestParams, request.getQueryString());
+        final POSTMapper postMap = new POSTMapper(formParameter, request.getQueryString());
         final M requestModel = this.createNew(postMap);
         return this.validForCreate(requestModel)
                 .flatMap(this.entityDAO::createNew)
@@ -314,25 +318,64 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     // ****************
 
     @Operation(
-            summary = "Modifies an already existing entity object of the specific type.",
-            description = "This expects " + MediaType.APPLICATION_JSON_VALUE +
-                    " format for the response data and verifies consistencies " +
+            summary = "Replaces an already existing entity object of the specific type with the new one.",
+            description = "Note, all writable data from existing entity gets overridden with the requested data" +
+                    " and is then validated for save then. Make sure the request contains all writable " +
+                    "data of the entity otherwise the old ones are reset to null. \n" +
+                    "This expects " + MediaType.APPLICATION_JSON_VALUE +
+                    " format for the request data and verifies consistencies " +
                     "within the definition of the specific entity object type. " +
                     "Missing (NULL) parameter that are not mandatory will be ignored and the original value will not be affected",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE) }))
     @RequestMapping(
+            path = API.PARAM_MODEL_PATH_SEGMENT,
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public T savePut(@Valid @RequestBody final T modifyData) {
-        return this.checkModifyAccess(modifyData)
-                .flatMap(this::validForSave)
+    public T savePut(
+            @PathVariable final String modelId,
+            @RequestBody final M modifyData) {
+
+        return this.entityDAO.byModelId(modelId)
+                .map(this::checkModifyAccess)
+                .map(e -> this.merge(modifyData, e))
+                .map(this::validForSave)
                 .flatMap(this.entityDAO::save)
                 .flatMap(this::logModify)
-                .flatMap(this::notifySaved)
+                .map(this::notifySaved)
                 .getOrThrow();
     }
+
+//    // ****************
+//    // * PATCH (save)
+//    // ****************
+//
+//    @Operation(
+//            summary = "Modifies an already existing entity object of the specific type.",
+//            description = "This expects " + MediaType.APPLICATION_FORM_URLENCODED_VALUE +
+//                    " format for the request data and verifies consistencies " +
+//                    "within the definition of the specific entity object type. " +
+//                    "Missing (NULL) parameter that are not mandatory will be ignored and the original value will not be affected",
+//            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+//                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }))
+//    @RequestMapping(
+//            path = API.PARAM_MODEL_PATH_SEGMENT,
+//            method = RequestMethod.PUT,
+//            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+//            produces = MediaType.APPLICATION_JSON_VALUE)
+//    public T savePatch(
+//            @PathVariable final String modelId,
+//            @RequestParam final MultiValueMap<String, String> formParameter) {
+//
+//        return this.entityOf(modelId, modifyData)
+//                .flatMap(this::checkModifyAccess)
+//                .flatMap(this::validForSave)
+//                .flatMap(this.entityDAO::save)
+//                .flatMap(this::logModify)
+//                .flatMap(this::notifySaved)
+//                .getOrThrow();
+//    }
 
     // ************************
     // * DELETE (hard-delete)
@@ -402,7 +445,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                         .filter(one -> this.checkWriteAccess(one).hasValue() &&
                                 this.validForDelete(one).hasValue())
                         .map(Entity::getModelId)
-                        .map(modelId -> new EntityKey(this.entityDAO.modelIDToPK(modelId), entityType))
+                        .map(modelId -> new EntityKey(this.entityDAO.modelIdToPK(modelId), entityType))
                         .collect(Collectors.toSet()))
                 .flatMap(this.entityDAO::delete)
                 .flatMap(this::logDeleted)
@@ -461,15 +504,15 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
         }
     }
 
-    protected Result<T> validForSave(final T entity) {
+    protected T validForSave(final T entity) {
         if (entity.getModelId() != null) {
-            return Result.of(entity);
+            return this.beanValidationService.validateBean(entity)
+                    .getOrThrow();
         } else {
-            return Result.ofError(
-                    APIErrorException.entityValidationError(
-                            "Missing model identifier",
-                            entity,
-                            "validForSave"));
+            throw APIErrorException.entityValidationError(
+                    "Missing model identifier",
+                    entity,
+                    "validForSave");
         }
     }
 
@@ -485,8 +528,8 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
         }
     }
 
-    protected Result<T> notifySaved(final T entity) {
-        return Result.of(entity);
+    protected T notifySaved(final T entity) {
+        return entity;
     }
 
     protected Result<Collection<EntityKey>> notifyDeleted(final Collection<EntityKey> entities) {
@@ -510,12 +553,12 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
         return true;
     }
 
-    protected Result<T> checkModifyAccess(final T entity) {
+    protected T checkModifyAccess(final T entity) {
         final Entity grantEntity = toGrantEntity(entity);
         if (grantEntity != null) {
             this.userService.checkModify(grantEntity);
         }
-        return Result.of(entity);
+        return entity;
     }
 
     protected Result<T> checkWriteAccess(final T entity) {
@@ -573,6 +616,13 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
      * @param postParams contains all post parameter from request
      * @return new created Entity instance */
     protected abstract M createNew(POSTMapper postParams);
+
+    /** This merges the requested modify data into the given entity data for save.
+     *
+     * @param modifyData The requested modify data
+     * @param existingEntity the existing entity data
+     * @return Result refer to the new merged data for save or to an error when happened */
+    protected abstract T merge(M modifyData, T existingEntity);
 
     /** Gets the MyBatis SqlTable for the concrete Entity
      *

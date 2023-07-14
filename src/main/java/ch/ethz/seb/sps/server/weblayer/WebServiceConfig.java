@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -48,6 +49,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.OAuthFlow;
 import io.swagger.v3.oas.models.security.OAuthFlows;
+import io.swagger.v3.oas.models.security.Scopes;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityScheme.In;
 import io.swagger.v3.oas.models.security.SecurityScheme.Type;
@@ -58,7 +60,8 @@ import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 @Import(DataSourceAutoConfiguration.class)
 @SuppressWarnings("deprecation")
 public class WebServiceConfig
-        extends org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter {
+        extends org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
+        implements ErrorController {
 
     private static final Logger log = LoggerFactory.getLogger(WebServiceConfig.class);
 
@@ -75,6 +78,8 @@ public class WebServiceConfig
     @Autowired
     private SEBClientDetailsService webServiceClientDetails;
 
+    @Value("${server.error.path}")
+    private String errorPath;
     @Value("${sps.api.admin.endpoint}")
     private String adminAPIEndpoint;
     @Value("${sps.api.session.endpoint}")
@@ -101,9 +106,6 @@ public class WebServiceConfig
     @Bean
     public OpenAPI customOpenAPI() {
 
-        final OAuthFlow oAuthFlow = new OAuthFlow();
-        oAuthFlow.tokenUrl("/oauth/token");
-
         return new OpenAPI()
                 .components(new Components()
                         .addSecuritySchemes("AdminOAuth", new SecurityScheme()
@@ -111,7 +113,15 @@ public class WebServiceConfig
                                 .scheme("bearer")
                                 .in(In.HEADER)
                                 .bearerFormat("jwt")
-                                .flows(new OAuthFlows().password(oAuthFlow))));
+                                .flows(new OAuthFlows().password(new OAuthFlow().tokenUrl("/oauth/token"))))
+
+                        .addSecuritySchemes("SEBOAuth", new SecurityScheme()
+                                .type(Type.OAUTH2)
+                                .scheme("basic")
+                                .in(In.HEADER)
+                                .flows(new OAuthFlows().clientCredentials(new OAuthFlow()
+                                        .tokenUrl("/oauth/token")
+                                        .scopes(new Scopes().addString("read", "read").addString("write", "write"))))));
 
     }
 
@@ -157,6 +167,13 @@ public class WebServiceConfig
                 .and()
                 .csrf().disable();
     }
+
+//    @Override
+//    public void configure(final WebSecurity web) {
+//        web
+//                .ignoring()
+//                .antMatchers(this.errorPath);
+//    }
 
     @Bean
     protected ResourceServerConfiguration sebServerAdminAPIResources() throws Exception {

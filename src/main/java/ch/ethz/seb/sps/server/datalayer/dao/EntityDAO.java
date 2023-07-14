@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,31 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
 
     Logger log = LoggerFactory.getLogger(EntityDAO.class);
 
+    /** converts a given model identifier to an entity primary key (PK).
+     *
+     * NOTE: usually they are the same but either as long or String representation.
+     * If modelId differs from PK, this must be overwritten to adapt and convert correctly.
+     *
+     * @param modelId the model id of the entity
+     * @return the corresponding primary key of the entity or null if conversion failed. */
+    default Long modelIdToPK(final String modelId) {
+        try {
+            return Long.parseLong(modelId);
+        } catch (final Exception e) {
+            log.error("Failed to convert modelId to PK: {} cause: {}", modelId, e.getMessage());
+            return null;
+        }
+    }
+
+    default boolean isUUID(final String modelId) {
+        try {
+            UUID.fromString(modelId);
+            return true;
+        } catch (final Exception e) {
+            return false;
+        }
+    }
+
     /** Get the entity type for a concrete EntityDAO implementation.
      *
      * @return The EntityType for a concrete EntityDAO implementation */
@@ -57,28 +83,12 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
      * NOTE: A model identifier may differ from the string representation of the database identifier
      * but usually they are the same.
      *
-     * @param id the model identifier
+     * @param modelId the model identifier
      * @return Result referring the Entity instance with the specified model identifier or refer to an error if
      *         happened */
-    default Result<T> byModelId(final String id) {
-        return Result.tryCatch(() -> Long.parseLong(id))
+    default Result<T> byModelId(final String modelId) {
+        return Result.tryCatch(() -> modelIdToPK(modelId))
                 .flatMap(this::byPK);
-    }
-
-    /** converts a given model identifier to an entity primary key (PK).
-     *
-     * NOTE: usually they are the same but either as long or String representation.
-     * If modelId differs from PK, this must be overwritten to adapt and convert correctly.
-     *
-     * @param modelId the model id of the entity
-     * @return the corresponding primary key of the entity or null if conversion failed. */
-    default Long modelIDToPK(final String modelId) {
-        try {
-            return Long.parseLong(modelId);
-        } catch (final Exception e) {
-            log.error("Failed to convert modelId to PK: {} cause: {}", modelId, e.getMessage());
-            return null;
-        }
     }
 
     /** Get a collection of all entities for the given Set of model id.
@@ -86,7 +96,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
      * @param pks the Set of primary keys to get the Entity's for
      * @return Result referring the collection or an error if happened */
     default Result<Collection<T>> allOf(final Collection<String> ids) {
-        return allOf(ids.stream().map(this::modelIDToPK).collect(Collectors.toSet()));
+        return allOf(ids.stream().map(this::modelIdToPK).collect(Collectors.toSet()));
     }
 
     /** Get a collection of all entities for the given Set of primary keys.
@@ -233,7 +243,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
      * @param keys Collection of EntityKey of various types
      * @param entityType the entity type of the keys to extract
      * @return Set of id's (PK's) from the given key collection that match the concrete EntityType */
-    static Set<Long> extractPKsFromKeys(final Collection<EntityKey> keys, final EntityType entityType) {
+    default Set<Long> extractPKsFromKeys(final Collection<EntityKey> keys, final EntityType entityType) {
         try {
 
             if (keys == null) {
@@ -243,7 +253,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
             return keys
                     .stream()
                     .filter(key -> key.entityType == entityType)
-                    .map(key -> Long.valueOf(key.modelId))
+                    .map(key -> modelIdToPK(key.modelId))
                     .collect(Collectors.toSet());
         } catch (final Exception e) {
             log.error("unexpected error while trying to extract PK's from EntityKey's : ", e);

@@ -12,9 +12,6 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -30,9 +27,9 @@ import org.springframework.web.util.WebUtils;
 
 import ch.ethz.seb.sps.domain.api.APIError;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
-import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.server.servicelayer.BeanValidationException;
 import ch.ethz.seb.sps.utils.Utils;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -40,45 +37,6 @@ import ch.ethz.seb.sps.utils.Utils;
 public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(APIExceptionHandler.class);
-
-    private final JSONMapper jsonMapper;
-
-    public APIExceptionHandler(final JSONMapper jsonMapper) {
-        super();
-        this.jsonMapper = jsonMapper;
-    }
-
-    public void handleGenericExcpetionResponse(
-            final Exception ex,
-            final String request,
-            final HttpServletResponse response) {
-
-        final Map<String, String> attributes = new HashMap<>();
-        // TODO more infos?
-
-        final APIError apiError = new APIError(
-                APIError.APIErrorType.UNEXPECTED,
-                request,
-                ex.getMessage(),
-                attributes,
-                null);
-
-        String errorJSON = apiError.toString();
-        try {
-            errorJSON = this.jsonMapper.writeValueAsString(apiError);
-        } catch (final Exception e) {
-            log.error("Failed to parse APIError to String: ", e);
-        }
-
-        log.error("API error: {}", apiError, ex);
-
-        try {
-            final ServletOutputStream outputStream = response.getOutputStream();
-            outputStream.write(Utils.toByteArray(errorJSON));
-        } catch (final Exception e) {
-            log.error("Failed to send error message to client: ", e);
-        }
-    }
 
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(
@@ -104,16 +62,9 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
                 attributes,
                 null);
 
-        String errorJSON = apiError.toString();
-        try {
-            errorJSON = this.jsonMapper.writeValueAsString(apiError);
-        } catch (final Exception e) {
-            log.error("Failed to parse APIError to String: ", e);
-        }
+        log.error("Error intercepted at API response error handler: {}", apiError, ex);
 
-        log.error("API error: {}", apiError, ex);
-
-        return new ResponseEntity<>(errorJSON, headers, status);
+        return new ResponseEntity<>(apiError, headers, status);
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -131,16 +82,9 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
                 attributes,
                 null);
 
-        String errorJSON = apiError.toString();
-        try {
-            errorJSON = this.jsonMapper.writeValueAsString(apiError);
-        } catch (final Exception e) {
-            log.error("Failed to parse APIError to String: ", e);
-        }
+        log.error("Error intercepted at API response error handler: {}", apiError, ex);
 
-        log.error("API error: {} cause: ", apiError, ex);
-
-        return new ResponseEntity<>(errorJSON, null, apiError.errorType.httpStatus);
+        return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
 
     @ExceptionHandler(APIErrorException.class)
@@ -148,16 +92,40 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
             final APIErrorException ex,
             final WebRequest request) {
 
-        String errorJSON = ex.error.toString();
-        try {
-            errorJSON = this.jsonMapper.writeValueAsString(ex.error);
-        } catch (final Exception e) {
-            log.error("Failed to parse APIError to String: ", e);
-        }
+        log.error("Error intercepted at API response error handler: {}", ex.error);
 
-        log.error("API error: {}", ex.error);
+        return new ResponseEntity<>(ex.error, null, ex.error.errorType.httpStatus);
+    }
 
-        return new ResponseEntity<>(errorJSON, null, ex.error.errorType.httpStatus);
+    @ExceptionHandler(BeanValidationException.class)
+    public ResponseEntity<Object> handleBeanValidationException(
+            final BeanValidationException ex,
+            final WebRequest request) {
+
+        final Map<String, String> attributes = new HashMap<>();
+        addRequestAttributes(request, attributes);
+        ex.getBindingResult().getFieldErrors().stream().forEach(fieldError -> {
+            final String field = fieldError.getField();
+            // TODO more?
+            attributes.put("field", field);
+            attributes.put("validation-code", fieldError.getCode());
+            attributes.put("validation-message", fieldError.getDefaultMessage());
+        });
+        ex.getBindingResult()
+                .getModel()
+                .entrySet()
+                .forEach(entry -> attributes.put(entry.getKey(), String.valueOf(entry.getValue())));
+
+        final APIError apiError = new APIError(
+                APIError.APIErrorType.FIELD_VALIDATION,
+                request.getDescription(false),
+                ex.getMessage(),
+                attributes,
+                null);
+
+        log.error("Error intercepted at API response error handler: {}", apiError);
+
+        return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
 
     @ExceptionHandler(DuplicateEntityException.class)
@@ -172,22 +140,15 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
         attributes.put("entityType", ex.entityType.name());
 
         final APIError apiError = new APIError(
-                APIError.APIErrorType.NO_RESOURCE_FOUND,
+                APIError.APIErrorType.BAD_REQUEST,
                 request.getDescription(false),
                 ex.getMessage(),
                 attributes,
                 null);
 
-        String errorJSON = apiError.toString();
-        try {
-            errorJSON = this.jsonMapper.writeValueAsString(apiError);
-        } catch (final Exception e) {
-            log.error("Failed to parse APIError to String: ", e);
-        }
+        log.error("Error intercepted at API response error handler: {}", apiError);
 
-        log.error("API error: {}", apiError);
-
-        return new ResponseEntity<>(errorJSON, null, apiError.errorType.httpStatus);
+        return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
@@ -207,16 +168,9 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
                 attributes,
                 null);
 
-        String errorJSON = apiError.toString();
-        try {
-            errorJSON = this.jsonMapper.writeValueAsString(apiError);
-        } catch (final Exception e) {
-            log.error("Failed to parse APIError to String: ", e);
-        }
+        log.error("Error intercepted at API response error handler: {}", apiError);
 
-        log.error("API error: {}", apiError);
-
-        return new ResponseEntity<>(errorJSON, null, apiError.errorType.httpStatus);
+        return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
 
     @ExceptionHandler(BadRequestException.class)
@@ -236,16 +190,9 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
                 attributes,
                 null);
 
-        String errorJSON = apiError.toString();
-        try {
-            errorJSON = this.jsonMapper.writeValueAsString(apiError);
-        } catch (final Exception e) {
-            log.error("Failed to parse APIError to String: ", e);
-        }
+        log.error("Error intercepted at API response error handler: {}", apiError);
 
-        log.error("API error: {}", apiError);
-
-        return new ResponseEntity<>(errorJSON, null, apiError.errorType.httpStatus);
+        return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
 
     private void addRequestAttributes(final WebRequest request, final Map<String, String> attributes) {

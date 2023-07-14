@@ -18,12 +18,15 @@ import ch.ethz.seb.sps.domain.Domain.SCREENSHOT_DATA;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ScreenshotData implements Entity {
 
     public static final String SCREEN_PREFIX = "screen_";
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SCREENSHOT_DATA.ATTR_ID)
     public final Long id;
 

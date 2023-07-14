@@ -177,21 +177,23 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
         return this.entityDAO
                 .byModelId(modelId)
                 .map(this.userService::checkWrite)
-                .flatMap(entity -> validForActivation(entity, active))
-                .flatMap(entity -> doActivation(entity, active))
-                .flatMap(this::notifySaved);
+                .map(entity -> validForActivation(entity, active))
+                .map(entity -> doActivation(entity, active))
+                .map(this::notifySaved);
     }
 
-    protected Result<T> validForActivation(final T entity, final boolean activation) {
+    protected T validForActivation(final T entity, final boolean activation) {
         if ((entity.isActive() && !activation) || (!entity.isActive() && activation)) {
-            return Result.of(entity);
+            return entity;
         } else {
             throw new IllegalArgumentException("Activation argument mismatch.");
         }
     }
 
-    protected Result<T> doActivation(final T entity, final boolean activation) {
-        return ((ActivatableEntityDAO<T, M>) this.entityDAO).setActive(entity, activation);
+    protected T doActivation(final T entity, final boolean activation) {
+        return ((ActivatableEntityDAO<T, M>) this.entityDAO)
+                .setActive(entity, activation)
+                .getOrThrow();
     }
 
 }

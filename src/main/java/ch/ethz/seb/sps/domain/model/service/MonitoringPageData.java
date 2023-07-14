@@ -16,6 +16,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.seb.sps.domain.Domain.SEB_GROUP;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MonitoringPageData {
@@ -27,15 +29,19 @@ public class MonitoringPageData {
     public static final String ATTR_SORT_ORDER = "sortOrder";
     public static final String ATTR_SCREENSHOTS = "screenshots";
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_UUID)
     public final String groupUUID;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_NAME)
     public final String groupName;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_DESCRIPTION)
     public final String groupDescription;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(ATTR_NUM_OF_SESSIONS)
     public final int numberOfSessions;
 
@@ -51,6 +57,7 @@ public class MonitoringPageData {
     @JsonProperty(ATTR_SORT_ORDER)
     public final PageSortOrder sortOrder;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(ATTR_SCREENSHOTS)
     public final List<ScreenshotViewData> screenshots;
 

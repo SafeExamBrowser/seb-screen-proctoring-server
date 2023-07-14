@@ -16,6 +16,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.seb.sps.domain.Domain.SESSION;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class ScreenshotViewData {
@@ -26,36 +28,47 @@ public final class ScreenshotViewData {
     public static final String ATTR_IMAGE_LINK = "imageLink";
     public static final String ATTR_META_DATA = "metaData";
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(ATTR_TIMESTAMP)
     public final Long timestamp;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_UUID)
     public final String uuid;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_CLIENT_NAME)
     public final String clientName;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_CLIENT_IP)
     public final String clientIP;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_CLIENT_MACHINE_NAME)
     public final String clientMachineName;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_CLIENT_OS_NAME)
     public final String clientOSName;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_CLIENT_VERSION)
     public final String clientVersion;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_IMAGE_FORMAT)
     public final ImageFormat imageFormat;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(ATTR_LATEST_IMAGE_LINK)
     public final String latestImageLink;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(ATTR_IMAGE_LINK)
     public final String imageLink;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(ATTR_META_DATA)
     public final Map<String, String> metaData;
 

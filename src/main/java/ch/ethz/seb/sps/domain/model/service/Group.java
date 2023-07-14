@@ -35,13 +35,17 @@ import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.domain.model.WithNameDescription;
 import ch.ethz.seb.sps.utils.Utils;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Group implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_ID)
     public final Long id;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_UUID)
     public final String uuid;
 
@@ -54,18 +58,23 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
     @Size(max = 4000, message = "group:description:size:{max}:${validatedValue}")
     public final String description;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_OWNER)
     public final String owner;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_CREATION_TIME)
     public final Long creationTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_LAST_UPDATE_TIME)
     public final Long lastUpdateTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES)
     public final Collection<EntityPrivilege> entityPrivileges;
 
@@ -94,9 +103,11 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
 
     @Override
     public String getModelId() {
-        return (this.id != null)
-                ? String.valueOf(this.id)
-                : null;
+        return (this.uuid != null)
+                ? this.uuid
+                : (this.id != null)
+                        ? String.valueOf(this.id)
+                        : null;
     }
 
     @Override

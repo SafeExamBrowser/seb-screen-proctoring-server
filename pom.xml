@@ -164,7 +164,7 @@
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>1.5.10</version>
         </dependency>
-         <!-- https://stackoverflow.com/questions/72397763/error-starting-springboot-when-update-version-to-2-7-0-an-attempt-was-made-to-c -->
+        <!-- https://stackoverflow.com/questions/72397763/error-starting-springboot-when-update-version-to-2-7-0-an-attempt-was-made-to-c -->
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
@@ -182,6 +182,16 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
+        </dependency>
+
+        <!-- EHCache -->
+        <dependency>
+            <groupId>org.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
         </dependency>
 
         <!-- Misc -->

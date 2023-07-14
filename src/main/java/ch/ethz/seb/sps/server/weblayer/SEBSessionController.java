@@ -37,10 +37,14 @@ import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("${sps.api.session.endpoint.v1}" + API.SESSION_ENDPOINT)
+@SecurityRequirement(name = "SEBOAuth")
 public class SEBSessionController {
 
     private static final Logger log = LoggerFactory.getLogger(SEBSessionController.class);
@@ -256,7 +260,13 @@ public class SEBSessionController {
                             description = "The meta data of the screenshot in JSON format (Name-Value-Pair/Map/Dictionary)",
                             in = ParameterIn.HEADER,
                             required = false)
-            })
+            },
+            requestBody = @RequestBody(
+                    required = true,
+                    description = "The image binary data",
+                    content = { @Content(
+                            mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                            schema = @Schema(format = "binary")) }))
     @RequestMapping(
             path = API.PARAM_MODEL_PATH_SEGMENT + API.SCREENSHOT_ENDPOINT,
             method = RequestMethod.POST,

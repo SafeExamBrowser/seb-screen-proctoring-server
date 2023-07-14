@@ -116,6 +116,20 @@ public class AdminUserAccountController extends ActivatableEntityController<User
     }
 
     @Override
+    protected UserInfo merge(final UserMod modifyData, final UserInfo existingEntity) {
+        return new UserInfo(
+                existingEntity.uuid,
+                modifyData.name,
+                modifyData.surname,
+                modifyData.username,
+                modifyData.email,
+                modifyData.language,
+                modifyData.timeZone,
+                modifyData.roles,
+                null, null, null);
+    }
+
+    @Override
     protected Result<UserMod> validForCreate(final UserMod userInfo) {
         return super.validForCreate(userInfo)
                 .flatMap(this::passwordMatch);
@@ -172,4 +186,5 @@ public class AdminUserAccountController extends ActivatableEntityController<User
         return info;
 
     }
+
 }

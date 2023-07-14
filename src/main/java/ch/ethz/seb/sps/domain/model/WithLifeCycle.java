@@ -8,6 +8,8 @@
 
 package ch.ethz.seb.sps.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public interface WithLifeCycle extends Activatable {
 
     String FILTER_ATTR_CREATTION_TIME = "creationTime";
@@ -19,6 +21,7 @@ public interface WithLifeCycle extends Activatable {
     Long getTerminationTime();
 
     @Override
+    @JsonIgnore
     default boolean isActive() {
         return getTerminationTime() == null;
     }

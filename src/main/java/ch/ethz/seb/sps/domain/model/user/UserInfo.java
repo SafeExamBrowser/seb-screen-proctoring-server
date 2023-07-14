@@ -37,6 +37,8 @@ import ch.ethz.seb.sps.domain.model.EntityName;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.utils.Utils;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 
 /** The user info domain model contains primary user information
  *
@@ -55,6 +57,7 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
     public static final String FILTER_ATTR_LANGUAGE = "language";
 
     /** The user's UUID */
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(USER.ATTR_UUID)
     public final String uuid;
 
@@ -92,17 +95,21 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
     public final DateTimeZone timeZone;
 
     /** The users roles in a unmodifiable set. Is never null */
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @NotNull(message = "user:userRoles:notNull")
     @NotEmpty(message = "user:userRoles:notNull")
     @JsonProperty(USER.ATTR_ROLES)
     public final Set<String> roles;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(USER.ATTR_CREATION_TIME)
     public final Long creationTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(USER.ATTR_LAST_UPDATE_TIME)
     public final Long lastUpdateTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(USER.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 

@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +26,6 @@ import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
-import io.micrometer.core.instrument.util.StringUtils;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.ADMIN_SESSION_ENDPOINT)
@@ -65,6 +65,21 @@ public class AdminSessionController extends EntityController<Session, Session> {
                 postParams.getString(Domain.SESSION.ATTR_CLIENT_OS_NAME),
                 postParams.getString(Domain.SESSION.ATTR_CLIENT_VERSION),
                 postParams.getEnum(Domain.SESSION.ATTR_IMAGE_FORMAT, ImageFormat.class),
+                null, null, null);
+    }
+
+    @Override
+    protected Session merge(final Session modifyData, final Session existingEntity) {
+        return new Session(
+                existingEntity.id,
+                null,
+                existingEntity.uuid,
+                modifyData.clientName,
+                modifyData.clientIP,
+                modifyData.clientMachineName,
+                modifyData.clientOSName,
+                modifyData.clientVersion,
+                modifyData.imageFormat,
                 null, null, null);
     }
 

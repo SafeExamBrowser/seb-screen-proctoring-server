@@ -47,6 +47,15 @@ public class AdminClientAccessController extends ActivatableEntityController<Cli
     }
 
     @Override
+    protected ClientAccess merge(final ClientAccess modifyData, final ClientAccess existingEntity) {
+        return new ClientAccess(
+                existingEntity.id,
+                modifyData.name,
+                modifyData.description,
+                null, null, null, null, null, null, null);
+    }
+
+    @Override
     protected SqlTable getSQLTableOfEntity() {
         return ClientAccessRecordDynamicSqlSupport.clientAccessRecord;
     }

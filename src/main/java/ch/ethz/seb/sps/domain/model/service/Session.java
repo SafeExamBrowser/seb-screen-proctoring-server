@@ -21,11 +21,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.seb.sps.domain.Domain.SESSION;
-import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.utils.Constants;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Session implements Entity, WithLifeCycle {
@@ -77,9 +78,7 @@ public class Session implements Entity, WithLifeCycle {
 
     public static final String[] IMAGE_FORMATS = {};
 
-    @JsonProperty(API.PARAM_ENTITY_TYPE)
-    public final EntityType entityType = EntityType.SESSION;
-
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_ID)
     public final Long id;
 
@@ -87,6 +86,7 @@ public class Session implements Entity, WithLifeCycle {
     @NotNull
     public final Long groupId;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_UUID)
     public final String uuid;
 
@@ -108,12 +108,15 @@ public class Session implements Entity, WithLifeCycle {
     @JsonProperty(SESSION.ATTR_IMAGE_FORMAT)
     public final ImageFormat imageFormat;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_CREATION_TIME)
     public final Long creationTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_LAST_UPDATE_TIME)
     public final Long lastUpdateTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 
@@ -148,14 +151,16 @@ public class Session implements Entity, WithLifeCycle {
 
     @Override
     public String getModelId() {
-        return (this.id != null)
-                ? String.valueOf(this.id)
-                : null;
+        return (this.uuid != null)
+                ? this.uuid
+                : (this.id != null)
+                        ? String.valueOf(this.id)
+                        : null;
     }
 
     @Override
     public EntityType entityType() {
-        return this.entityType;
+        return EntityType.SESSION;
     }
 
     @Override
@@ -216,7 +221,7 @@ public class Session implements Entity, WithLifeCycle {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.entityType, this.id);
+        return Objects.hash(this.id);
     }
 
     @Override
@@ -228,15 +233,13 @@ public class Session implements Entity, WithLifeCycle {
         if (getClass() != obj.getClass())
             return false;
         final Session other = (Session) obj;
-        return this.entityType == other.entityType && Objects.equals(this.id, other.id);
+        return Objects.equals(this.id, other.id);
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("Session [entityType=");
-        builder.append(this.entityType);
-        builder.append(", id=");
+        builder.append("Session [id=");
         builder.append(this.id);
         builder.append(", groupId=");
         builder.append(this.groupId);
@@ -256,6 +259,8 @@ public class Session implements Entity, WithLifeCycle {
         builder.append(this.imageFormat);
         builder.append(", creationTime=");
         builder.append(this.creationTime);
+        builder.append(", lastUpdateTime=");
+        builder.append(this.lastUpdateTime);
         builder.append(", terminationTime=");
         builder.append(this.terminationTime);
         builder.append("]");
