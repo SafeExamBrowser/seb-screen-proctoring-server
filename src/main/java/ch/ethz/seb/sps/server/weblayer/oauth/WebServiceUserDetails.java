@@ -9,16 +9,20 @@
 package ch.ethz.seb.sps.server.weblayer.oauth;
 
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 
 @Lazy
 @Component
-public class WebServiceUserDetails implements UserDetailsService {
+public class WebServiceUserDetails
+        implements UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
     private final UserDAO userDAO;
 
@@ -32,6 +36,18 @@ public class WebServiceUserDetails implements UserDetailsService {
                 .get(error -> {
                     throw new UsernameNotFoundException("No User with name: " + username + " found", error);
                 });
+    }
+
+    @Override
+    public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token)
+            throws UsernameNotFoundException {
+
+        final Object principal = token.getPrincipal();
+        if (principal instanceof UsernamePasswordAuthenticationToken) {
+            return loadUserByUsername(((UsernamePasswordAuthenticationToken) principal).getName());
+        }
+
+        throw new UsernameNotFoundException("No User for principal: " + principal + " found");
     }
 
 }

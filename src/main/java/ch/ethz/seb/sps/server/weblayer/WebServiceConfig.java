@@ -42,6 +42,7 @@ import org.springframework.security.oauth2.provider.token.UserAuthenticationConv
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 import ch.ethz.seb.sps.server.ServiceConfig;
+import ch.ethz.seb.sps.server.weblayer.oauth.PreAuthProvider;
 import ch.ethz.seb.sps.server.weblayer.oauth.SEBClientDetailsService;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebServiceUserDetails;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
@@ -77,6 +78,8 @@ public class WebServiceConfig
     private TokenStore tokenStore;
     @Autowired
     private SEBClientDetailsService webServiceClientDetails;
+    @Autowired
+    private PreAuthProvider preAuthProvider;
 
     @Value("${server.error.path}")
     private String errorPath;
@@ -152,6 +155,8 @@ public class WebServiceConfig
         auth
                 .userDetailsService(this.webServiceUserDetails)
                 .passwordEncoder(this.userPasswordEncoder);
+
+        auth.authenticationProvider(this.preAuthProvider);
     }
 
     @Override
@@ -189,7 +194,7 @@ public class WebServiceConfig
 
     @Bean
     protected ResourceServerConfiguration sebServerExamAPIResources() throws Exception {
-        return new ExamAPIClientResourceServerConfiguration(
+        return new SessionAPIClientResourceServerConfiguration(
                 this.tokenStore,
                 this.webServiceClientDetails,
                 authenticationManagerBean(),
@@ -197,8 +202,6 @@ public class WebServiceConfig
                 this.sessionAccessTokenValSec);
     }
 
-    // NOTE: We need two different class types here to support Spring configuration for different
-    //       ResourceServerConfiguration. There is a class type now for the Admin API as well as for the Exam API
     private static final class AdminAPIResourceServerConfiguration extends WebserviceResourceConfiguration {
 
         public AdminAPIResourceServerConfiguration(
@@ -214,7 +217,7 @@ public class WebServiceConfig
                     tokenStore,
                     webServiceClientDetails,
                     authenticationManager,
-                    new LoginRedirectOnUnauthorized(redirect),
+                    new LoginRedirectOnUnauthorized(),
                     ADMIN_API_RESOURCE_ID,
                     apiEndpoint,
                     true,
@@ -224,11 +227,9 @@ public class WebServiceConfig
         }
     }
 
-    // NOTE: We need two different class types here to support Spring configuration for different
-    //       ResourceServerConfiguration. There is a class type now for the Admin API as well as for the Exam API
-    private static final class ExamAPIClientResourceServerConfiguration extends WebserviceResourceConfiguration {
+    private static final class SessionAPIClientResourceServerConfiguration extends WebserviceResourceConfiguration {
 
-        public ExamAPIClientResourceServerConfiguration(
+        public SessionAPIClientResourceServerConfiguration(
                 final TokenStore tokenStore,
                 final SEBClientDetailsService webServiceClientDetails,
                 final AuthenticationManager authenticationManager,
@@ -256,12 +257,6 @@ public class WebServiceConfig
     }
 
     private static class LoginRedirectOnUnauthorized implements AuthenticationEntryPoint {
-
-        private final String redirect;
-
-        protected LoginRedirectOnUnauthorized(final String redirect) {
-            this.redirect = redirect;
-        }
 
         @Override
         public void commence(
