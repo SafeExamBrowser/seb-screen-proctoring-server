@@ -23,14 +23,24 @@ import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 public final class ScreenshotViewData {
 
     public static final String ATTR_TIMESTAMP = "timestamp";
+    public static final String ATTR_START_TIME = "startTime";
+    public static final String ATTR_END_TIME = "endTime";
     public static final String ATTR_SESSION = "session";
     public static final String ATTR_LATEST_IMAGE_LINK = "latestImageLink";
     public static final String ATTR_IMAGE_LINK = "imageLink";
     public static final String ATTR_META_DATA = "metaData";
 
     @Schema(accessMode = AccessMode.READ_ONLY)
+    @JsonProperty(ATTR_START_TIME)
+    public final Long startTime;
+
+    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(ATTR_TIMESTAMP)
     public final Long timestamp;
+
+    @Schema(accessMode = AccessMode.READ_ONLY)
+    @JsonProperty(ATTR_END_TIME)
+    public final Long endTime;
 
     @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_UUID)
@@ -73,7 +83,9 @@ public final class ScreenshotViewData {
     public final Map<String, String> metaData;
 
     public ScreenshotViewData(
+            @JsonProperty(ATTR_START_TIME) final Long startTime,
             @JsonProperty(ATTR_TIMESTAMP) final Long timestamp,
+            @JsonProperty(ATTR_END_TIME) final Long endTime,
             @JsonProperty(SESSION.ATTR_UUID) final String uuid,
             @JsonProperty(SESSION.ATTR_CLIENT_NAME) final String clientName,
             @JsonProperty(SESSION.ATTR_CLIENT_IP) final String clientIP,
@@ -85,7 +97,9 @@ public final class ScreenshotViewData {
             @JsonProperty(ATTR_IMAGE_LINK) final String imageLink,
             @JsonProperty(ATTR_META_DATA) final Map<String, String> metaData) {
 
+        this.startTime = startTime;
         this.timestamp = timestamp;
+        this.endTime = endTime;
         this.uuid = uuid;
         this.clientName = clientName;
         this.clientIP = clientIP;
@@ -96,6 +110,14 @@ public final class ScreenshotViewData {
         this.latestImageLink = latestImageLink;
         this.imageLink = imageLink;
         this.metaData = metaData;
+    }
+
+    public Long getStartTime() {
+        return this.startTime;
+    }
+
+    public Long getEndTime() {
+        return this.endTime;
     }
 
     public Long getTimestamp() {
@@ -162,8 +184,12 @@ public final class ScreenshotViewData {
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("ScreenshotViewData [timestamp=");
+        builder.append("ScreenshotViewData [startTime=");
+        builder.append(this.startTime);
+        builder.append(", timestamp=");
         builder.append(this.timestamp);
+        builder.append(", endTime=");
+        builder.append(this.endTime);
         builder.append(", uuid=");
         builder.append(this.uuid);
         builder.append(", clientName=");

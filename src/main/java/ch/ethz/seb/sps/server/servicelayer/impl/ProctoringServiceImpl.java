@@ -284,7 +284,9 @@ public class ProctoringServiceImpl implements ProctoringService {
             }
 
             return new ScreenshotViewData(
+                    session.creationTime,
                     data.getTimestamp(),
+                    session.terminationTime != null ? session.terminationTime : Utils.getMillisecondsNow(),
                     session.uuid,
                     session.clientName,
                     session.clientIP,
