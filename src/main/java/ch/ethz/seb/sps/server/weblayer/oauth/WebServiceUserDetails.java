@@ -9,7 +9,7 @@
 package ch.ethz.seb.sps.server.weblayer.oauth;
 
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -39,12 +39,13 @@ public class WebServiceUserDetails
     }
 
     @Override
-    public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token)
+    public UserDetails loadUserDetails(
+            final PreAuthenticatedAuthenticationToken token)
             throws UsernameNotFoundException {
 
         final Object principal = token.getPrincipal();
-        if (principal instanceof UsernamePasswordAuthenticationToken) {
-            return loadUserByUsername(((UsernamePasswordAuthenticationToken) principal).getName());
+        if (principal instanceof AbstractAuthenticationToken) {
+            return loadUserByUsername(((AbstractAuthenticationToken) principal).getName());
         }
 
         throw new UsernameNotFoundException("No User for principal: " + principal + " found");
