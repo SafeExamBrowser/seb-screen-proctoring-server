@@ -92,7 +92,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
             final APIErrorException ex,
             final WebRequest request) {
 
-        log.error("Error intercepted at API response error handler: {}", ex.error);
+        log.warn("Error intercepted at API response error handler: {}", ex.error);
 
         return new ResponseEntity<>(ex.error, null, ex.error.errorType.httpStatus);
     }
@@ -123,7 +123,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
                 attributes,
                 null);
 
-        log.error("Error intercepted at API response error handler: {}", apiError);
+        log.info("Error intercepted at API response error handler: {}", apiError);
 
         return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
@@ -146,7 +146,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
                 attributes,
                 null);
 
-        log.error("Error intercepted at API response error handler: {}", apiError);
+        log.warn("Error intercepted at API response error handler: {}", apiError);
 
         return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
@@ -190,7 +190,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
                 attributes,
                 null);
 
-        log.error("Error intercepted at API response error handler: {}", apiError);
+        log.warn("Error intercepted at API response error handler: {}", apiError);
 
         return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }

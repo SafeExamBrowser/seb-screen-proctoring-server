@@ -73,25 +73,6 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
         return super.create(formParameter, request);
     }
 
-//    @Operation(
-//            summary = "Replaces an already existing entity object of the specific type with the new one.",
-//            description = "This expects " + MediaType.APPLICATION_JSON_VALUE +
-//                    " format for the request data and verifies consistencies " +
-//                    "within the definition of the specific entity object type. " +
-//                    "Missing (NULL) parameter that are not mandatory will be ignored and the original value will not be affected",
-//            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-//                    content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE) }))
-//    @RequestMapping(
-//            method = RequestMethod.PUT,
-//            consumes = MediaType.APPLICATION_JSON_VALUE,
-//            produces = MediaType.APPLICATION_JSON_VALUE)
-//    public Group savePut(
-//            @PathVariable final String modelId,
-//            @Valid @RequestBody final Group modifyData) {
-//
-//        return super.savePut(modelId, modifyData);
-//    }
-
     @Override
     protected Group createNew(final POSTMapper postParams) {
         return new Group(

@@ -41,6 +41,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.model.GroupRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
@@ -81,8 +82,7 @@ public class GroupDAOBatis implements GroupDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<Group> byPK(final Long id) {
-        return Result.tryCatch(() -> this.groupRecordMapper
-                .selectByPrimaryKey(id))
+        return recordByPK(id)
                 .map(this::toDomainModel);
     }
 
@@ -117,12 +117,19 @@ public class GroupDAOBatis implements GroupDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<Long> getGroupIdByUUID(final String groupUUID) {
-        return Result.tryCatch(() -> this.groupRecordMapper
-                .selectIdsByExample()
-                .where(GroupRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(groupUUID))
-                .build()
-                .execute()
-                .get(0));
+        return Result.tryCatch(() -> {
+            final List<Long> execute = this.groupRecordMapper
+                    .selectIdsByExample()
+                    .where(GroupRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(groupUUID))
+                    .build()
+                    .execute();
+
+            if (execute == null || execute.isEmpty()) {
+                throw new NoResourceFoundException(EntityType.SEB_GROUP, groupUUID);
+            }
+
+            return execute.get(0);
+        });
     }
 
     @Override
@@ -201,13 +208,20 @@ public class GroupDAOBatis implements GroupDAO {
 
             final long now = Utils.getMillisecondsNow();
 
-            final GroupRecord newRecord = new GroupRecord(
-                    null, null, null, null, null, null,
-                    now,
-                    active ? null : now);
+//            final GroupRecord newRecord = new GroupRecord(
+//                    null, null, null, null, null, null,
+//                    now,
+//                    active ? null : now);
+//
+//            this.groupRecordMapper.updateByExampleSelective(newRecord)
+//                    .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
+//                    .build()
+//                    .execute();
 
-            this.groupRecordMapper.updateByExampleSelective(newRecord)
-                    .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
+            UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
+                    .set(lastUpdateTime).equalTo(now)
+                    .set(terminationTime).equalTo(() -> active ? null : now)
+                    .where(id, isIn(ids))
                     .build()
                     .execute();
 
@@ -273,17 +287,6 @@ public class GroupDAOBatis implements GroupDAO {
                     .build()
                     .execute();
 
-//            final GroupRecord newRecord = new GroupRecord(
-//                    pk,
-//                    data.uuid,
-//                    data.name,
-//                    data.description,
-//                    null,
-//                    null,
-//                    millisecondsNow,
-//                    null);
-//
-//            this.groupRecordMapper.updateByPrimaryKeySelective(newRecord);
             this.entityPrivilegeDAO.savePut(EntityType.SEB_GROUP, pk, data.entityPrivileges);
             return this.groupRecordMapper.selectByPrimaryKey(pk);
         })
@@ -318,6 +321,19 @@ public class GroupDAOBatis implements GroupDAO {
             return groups.stream()
                     .map(rec -> new EntityKey(rec.getId(), EntityType.SEB_GROUP))
                     .collect(Collectors.toList());
+        });
+    }
+
+    private Result<GroupRecord> recordByPK(final Long pk) {
+        return Result.tryCatch(() -> {
+
+            final GroupRecord selectByPrimaryKey = this.groupRecordMapper.selectByPrimaryKey(pk);
+
+            if (selectByPrimaryKey == null) {
+                throw new NoResourceFoundException(EntityType.SEB_GROUP, String.valueOf(pk));
+            }
+
+            return selectByPrimaryKey;
         });
     }
 
