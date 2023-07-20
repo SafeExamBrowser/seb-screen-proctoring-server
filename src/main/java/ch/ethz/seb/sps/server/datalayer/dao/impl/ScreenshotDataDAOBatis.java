@@ -180,21 +180,29 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                 return Collections.emptyMap();
             }
 
-            return SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectMany,
-                            id,
-                            sessionUuid,
-                            timestamp,
-                            imageFormat,
-                            metaData)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isIn(sessionUUIDs))
-                    .groupBy(ScreenshotDataRecordDynamicSqlSupport.sessionUuid)
-                    .orderBy(timestamp.descending())
-                    .limit(1)
-                    .build()
-                    .execute()
-                    .stream()
+            // NOTE: This was not working as expected since limit does not work with group (groupBy)
+//            return SelectDSL
+//                    .selectWithMapper(this.screenshotDataRecordMapper::selectMany,
+//                            id,
+//                            sessionUuid,
+//                            timestamp,
+//                            imageFormat,
+//                            metaData)
+//                    .from(screenshotDataRecord)
+//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isIn(sessionUUIDs))
+//                    .groupBy(ScreenshotDataRecordDynamicSqlSupport.sessionUuid)
+//                    .orderBy(timestamp.descending())
+//                    .limit(1)
+//                    .build()
+//                    .execute()
+//                    .stream()
+//                    .collect(Collectors.toMap(r -> r.getSessionUuid(), Function.identity()));
+
+            // NOTE: For now we use a less efficient version that uses getLatest(final String sessionUUID) for
+            //       all requested sessions but in the future we should solve this problem on DB layer
+            return sessionUUIDs.stream()
+                    .map(this::getLatest)
+                    .flatMap(Result::onErrorLogAndSkip)
                     .collect(Collectors.toMap(r -> r.getSessionUuid(), Function.identity()));
         });
     }
