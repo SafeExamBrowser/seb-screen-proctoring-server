@@ -15,8 +15,6 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     boolean existsByUUID(String groupUUID);
 
-    Result<Long> getGroupIdByUUID(String groupUUID);
-
     Result<Group> createNew(String name);
 
 }

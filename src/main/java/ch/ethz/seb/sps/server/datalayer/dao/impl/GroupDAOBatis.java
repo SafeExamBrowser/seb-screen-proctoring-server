@@ -43,6 +43,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
+import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
@@ -72,10 +73,11 @@ public class GroupDAOBatis implements GroupDAO {
 
     @Override
     public Long modelIdToPK(final String modelId) {
-        if (isUUID(modelId)) {
-            return getGroupIdByUUID(modelId).getOr(null);
+        final Long pk = isPK(modelId);
+        if (pk != null) {
+            return pk;
         } else {
-            return GroupDAO.super.modelIdToPK(modelId);
+            return pkByUUID(modelId).getOr(null);
         }
     }
 
@@ -89,10 +91,11 @@ public class GroupDAOBatis implements GroupDAO {
     @Override
     public Result<Group> byModelId(final String id) {
         try {
-            return this.byPK(Long.parseLong(id));
+            final long pk = Long.parseLong(id);
+            return this.byPK(pk);
         } catch (final Exception e) {
-            return getGroupIdByUUID(id)
-                    .flatMap(this::byPK);
+            return recordByUUID(id)
+                    .map(this::toDomainModel);
         }
     }
 
@@ -112,24 +115,6 @@ public class GroupDAOBatis implements GroupDAO {
             log.error("Failed to check group exists: ", e);
             return false;
         }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Result<Long> getGroupIdByUUID(final String groupUUID) {
-        return Result.tryCatch(() -> {
-            final List<Long> execute = this.groupRecordMapper
-                    .selectIdsByExample()
-                    .where(GroupRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(groupUUID))
-                    .build()
-                    .execute();
-
-            if (execute == null || execute.isEmpty()) {
-                throw new NoResourceFoundException(EntityType.SEB_GROUP, groupUUID);
-            }
-
-            return execute.get(0);
-        });
     }
 
     @Override
@@ -208,16 +193,6 @@ public class GroupDAOBatis implements GroupDAO {
 
             final long now = Utils.getMillisecondsNow();
 
-//            final GroupRecord newRecord = new GroupRecord(
-//                    null, null, null, null, null, null,
-//                    now,
-//                    active ? null : now);
-//
-//            this.groupRecordMapper.updateByExampleSelective(newRecord)
-//                    .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
-//                    .build()
-//                    .execute();
-
             UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
                     .set(lastUpdateTime).equalTo(now)
                     .set(terminationTime).equalTo(() -> active ? null : now)
@@ -275,7 +250,10 @@ public class GroupDAOBatis implements GroupDAO {
 
             Long pk = data.id;
             if (pk == null && data.uuid != null) {
-                pk = this.getGroupIdByUUID(data.uuid).getOr(pk);
+                pk = this.pkByUUID(data.uuid).getOr(null);
+            }
+            if (pk == null) {
+                throw new BadRequestException("group save", "no group with uuid: " + data.uuid + "found");
             }
 
             UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
@@ -334,6 +312,39 @@ public class GroupDAOBatis implements GroupDAO {
             }
 
             return selectByPrimaryKey;
+        });
+    }
+
+    private Result<GroupRecord> recordByUUID(final String uuid) {
+        return Result.tryCatch(() -> {
+
+            final List<GroupRecord> execute = this.groupRecordMapper.selectByExample()
+                    .where(GroupRecordDynamicSqlSupport.uuid, isEqualTo(uuid))
+                    .build()
+                    .execute();
+
+            if (execute == null || execute.isEmpty()) {
+                throw new NoResourceFoundException(EntityType.SEB_GROUP, uuid);
+            }
+
+            return execute.get(0);
+        });
+    }
+
+    private Result<Long> pkByUUID(final String groupUUID) {
+
+        return Result.tryCatch(() -> {
+            final List<Long> execute = this.groupRecordMapper
+                    .selectIdsByExample()
+                    .where(GroupRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(groupUUID))
+                    .build()
+                    .execute();
+
+            if (execute == null || execute.isEmpty()) {
+                throw new NoResourceFoundException(EntityType.SEB_GROUP, groupUUID);
+            }
+
+            return execute.get(0);
         });
     }
 

@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -41,6 +40,14 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
 
     Logger log = LoggerFactory.getLogger(EntityDAO.class);
 
+    default Long isPK(final String modelId) {
+        try {
+            return Long.parseLong(modelId);
+        } catch (final Exception e) {
+            return null;
+        }
+    }
+
     /** converts a given model identifier to an entity primary key (PK).
      *
      * NOTE: usually they are the same but either as long or String representation.
@@ -52,17 +59,8 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
         try {
             return Long.parseLong(modelId);
         } catch (final Exception e) {
-            log.error("Failed to convert modelId to PK: {} cause: {}", modelId, e.getMessage());
+            log.warn("Failed to convert modelId to PK: {} cause: {}", modelId, e.getMessage());
             return null;
-        }
-    }
-
-    default boolean isUUID(final String modelId) {
-        try {
-            UUID.fromString(modelId);
-            return true;
-        } catch (final Exception e) {
-            return false;
         }
     }
 

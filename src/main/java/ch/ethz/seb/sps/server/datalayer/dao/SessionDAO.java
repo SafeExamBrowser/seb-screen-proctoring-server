@@ -16,12 +16,12 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface SessionDAO extends EntityDAO<Session, Session> {
 
-    Result<Session> byUUID(String sessionUUID);
-
-    Result<Long> pkByUUID(String sessionUUID);
+//    Result<Session> byUUID(String sessionUUID);
+//
+//    Result<Long> pkByUUID(String sessionUUID);
 
     Result<Session> createNew(
-            Long groupId,
+            String groupUUID,
             String uuid,
             String userSessionName,
             String clientIP,

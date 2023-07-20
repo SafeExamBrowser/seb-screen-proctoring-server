@@ -68,13 +68,9 @@ public class SessionServiceImpl implements SessionService {
                         .getOrThrow();
             }
 
-            // and get id
-            final Long groupId = this.groupDAO.getGroupIdByUUID(groupUUID)
-                    .getOrThrow();
-
             final Session session = this.sessionDAO
                     .createNew(
-                            groupId,
+                            groupUUID,
                             newSessionId,
                             userSessionName,
                             clientIP,
@@ -101,7 +97,7 @@ public class SessionServiceImpl implements SessionService {
             final String clientVersion) {
 
         return this.sessionDAO
-                .byUUID(sessionUUID)
+                .byModelId(sessionUUID)
                 .map(this::checkUpdateIntegrity)
                 .flatMap(session -> saveSession(
                         sessionUUID,

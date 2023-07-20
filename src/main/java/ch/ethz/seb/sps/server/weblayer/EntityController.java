@@ -117,7 +117,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                     + "are.\n"
                     + "</p>\n"
                     + "Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)\n"
-                    + "and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or type=EXAM. Usually\n"
+                    + "and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc. Usually\n"
                     + "filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing\n"
                     + "a given text-snippet.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -177,7 +177,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             description = "An entity name key is a minimal entity data object with the entity-type, modelId and the name of the entity."
                     + "</p>\n"
                     + "Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)\n"
-                    + "and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or type=EXAM. Usually\n"
+                    + "and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or. Usually\n"
                     + "filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing\n"
                     + "a given text-snippet.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(

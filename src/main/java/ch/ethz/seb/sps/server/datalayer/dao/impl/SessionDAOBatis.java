@@ -8,8 +8,8 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
-import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
-import static org.mybatis.dynamic.sql.SqlBuilder.isLikeWhenPresent;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.*;
+import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,10 +21,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.javassist.NotFoundException;
 import org.mybatis.dynamic.sql.SqlBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,22 +33,29 @@ import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
+import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
 @Service
 public class SessionDAOBatis implements SessionDAO {
 
-    private static final Logger log = LoggerFactory.getLogger(SessionDAOBatis.class);
-
     private final SessionRecordMapper sessionRecordMapper;
+    private final GroupRecordMapper groupRecordMapper;
 
-    public SessionDAOBatis(final SessionRecordMapper sessionRecordMapper) {
+    public SessionDAOBatis(
+            final SessionRecordMapper sessionRecordMapper,
+            final GroupRecordMapper groupRecordMapper) {
+
         this.sessionRecordMapper = sessionRecordMapper;
+        this.groupRecordMapper = groupRecordMapper;
     }
 
     @Override
@@ -59,19 +64,30 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
+    public Long modelIdToPK(final String modelId) {
+        final Long pk = isPK(modelId);
+        if (pk != null) {
+            return pk;
+        } else {
+            return pkByUUID(modelId).getOr(null);
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Result<Session> byPK(final Long id) {
-        return Result.tryCatch(() -> this.sessionRecordMapper
-                .selectByPrimaryKey(id))
+        return recordByPK(id)
                 .map(this::toDomainModel);
     }
 
     @Override
     public Result<Session> byModelId(final String id) {
         try {
-            return this.byPK(Long.parseLong(id));
+            final long pk = Long.parseLong(id);
+            return this.byPK(pk);
         } catch (final Exception e) {
-            return byUUID(id);
+            return recordByUUID(id)
+                    .map(this::toDomainModel);
         }
     }
 
@@ -106,42 +122,6 @@ public class SessionDAOBatis implements SessionDAO {
                     .stream()
                     .map(rec -> rec.getUuid())
                     .collect(Collectors.toList());
-        });
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Result<Session> byUUID(final String sessionUUID) {
-        return Result.tryCatch(() -> {
-            final List<SessionRecord> execute = this.sessionRecordMapper.selectByExample()
-                    .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .build()
-                    .execute();
-
-            if (execute != null && !execute.isEmpty()) {
-                return this.toDomainModel(execute.get(0));
-            } else {
-                log.warn("Session with ID {} not found", sessionUUID);
-                throw new NotFoundException("No Session with UUID: " + sessionUUID + " found");
-            }
-        });
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Result<Long> pkByUUID(final String sessionUUID) {
-        return Result.tryCatch(() -> {
-            final List<Long> execute = this.sessionRecordMapper.selectIdsByExample()
-                    .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .build()
-                    .execute();
-
-            if (execute != null && !execute.isEmpty()) {
-                return execute.get(0);
-            } else {
-                log.warn("Session with ID {} not found", sessionUUID);
-                throw new NotFoundException("No Session with UUID: " + sessionUUID + " found");
-            }
         });
     }
 
@@ -215,7 +195,7 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     public Result<Session> createNew(
-            final Long groupId,
+            final String groupId,
             final String uuid,
             final String userSessionName,
             final String clientIP,
@@ -226,10 +206,22 @@ public class SessionDAOBatis implements SessionDAO {
 
         return Result.tryCatch(() -> {
 
+            Long groupPK = isPK(groupId);
+            if (groupPK == null) {
+                final List<Long> groupPKs = this.groupRecordMapper.selectIdsByExample()
+                        .where(GroupRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(groupId))
+                        .build()
+                        .execute();
+                if (groupPKs == null || groupPKs.isEmpty()) {
+                    throw new BadRequestException("create new session", "no group with modelId: " + groupId + " found");
+                }
+                groupPK = groupPKs.get(0);
+            }
+
             final long now = Utils.getMillisecondsNow();
             final SessionRecord record = new SessionRecord(
                     null,
-                    groupId,
+                    groupPK,
                     (StringUtils.isNotBlank(uuid)) ? uuid : UUID.randomUUID().toString(),
                     (imageFormat != null) ? imageFormat.code : ImageFormat.PNG.code,
                     userSessionName,
@@ -285,22 +277,38 @@ public class SessionDAOBatis implements SessionDAO {
 
             Long pk = data.id;
             if (pk == null && data.uuid != null) {
-                pk = this.pkByUUID(data.uuid).getOr(pk);
+                pk = this.pkByUUID(data.uuid).getOr(null);
+            }
+            if (pk == null) {
+                throw new BadRequestException("session save", "no session with uuid: " + data.uuid + "found");
             }
 
-            final SessionRecord record = new SessionRecord(
-                    pk,
-                    null,
-                    null,
-                    (data.imageFormat != null) ? null : data.imageFormat.code,
-                    data.clientName,
-                    data.clientIP,
-                    data.clientMachineName,
-                    data.clientOSName,
-                    data.clientVersion,
-                    null, now, null);
+            UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
+                    .set(imageFormat).equalTo((data.imageFormat != null) ? null : data.imageFormat.code)
+                    .set(clientName).equalTo(data.clientName)
+                    .set(clientIp).equalTo(data.clientIP)
+                    .set(clientMachineName).equalTo(data.clientMachineName)
+                    .set(clientOsName).equalTo(data.clientOSName)
+                    .set(clientVersion).equalTo(data.clientVersion)
+                    .set(lastUpdateTime).equalTo(now)
+                    .where(id, isEqualTo(pk))
+                    .build()
+                    .execute();
 
-            this.sessionRecordMapper.updateByPrimaryKeySelective(record);
+//            final SessionRecord record = new SessionRecord(
+//                    pk,
+//                    null,
+//                    null,
+//                    (data.imageFormat != null) ? null : data.imageFormat.code,
+//                    data.clientName,
+//                    data.clientIP,
+//                    data.clientMachineName,
+//                    data.clientOSName,
+//                    data.clientVersion,
+//                    null, now, null);
+//
+//            this.sessionRecordMapper.updateByPrimaryKeySelective(record);
+
             return this.sessionRecordMapper.selectByPrimaryKey(pk);
         })
                 .map(this::toDomainModel)
@@ -330,6 +338,51 @@ public class SessionDAOBatis implements SessionDAO {
             return sessionUUID;
         })
                 .onError(TransactionHandler::rollback);
+    }
+
+    private Result<SessionRecord> recordByPK(final Long pk) {
+        return Result.tryCatch(() -> {
+
+            final SessionRecord selectByPrimaryKey = this.sessionRecordMapper.selectByPrimaryKey(pk);
+
+            if (selectByPrimaryKey == null) {
+                throw new NoResourceFoundException(EntityType.SEB_GROUP, String.valueOf(pk));
+            }
+
+            return selectByPrimaryKey;
+        });
+    }
+
+    private Result<SessionRecord> recordByUUID(final String uuid) {
+        return Result.tryCatch(() -> {
+
+            final List<SessionRecord> execute = this.sessionRecordMapper.selectByExample()
+                    .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(uuid))
+                    .build()
+                    .execute();
+
+            if (execute == null || execute.isEmpty()) {
+                throw new NoResourceFoundException(EntityType.SEB_GROUP, uuid);
+            }
+
+            return execute.get(0);
+        });
+    }
+
+    private Result<Long> pkByUUID(final String uuid) {
+        return Result.tryCatch(() -> {
+
+            final List<Long> execute = this.sessionRecordMapper.selectIdsByExample()
+                    .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(uuid))
+                    .build()
+                    .execute();
+
+            if (execute == null || execute.isEmpty()) {
+                throw new NoResourceFoundException(EntityType.SEB_GROUP, uuid);
+            }
+
+            return execute.get(0);
+        });
     }
 
     private Session toDomainModel(final SessionRecord record) {
