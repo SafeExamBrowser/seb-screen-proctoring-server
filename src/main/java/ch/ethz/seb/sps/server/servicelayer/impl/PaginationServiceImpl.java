@@ -63,7 +63,7 @@ public class PaginationServiceImpl implements PaginationService {
             return false;
         }
 
-        final Map<String, String> tableMap = this.sortColumnMapping.get(table.name());
+        final Map<String, String> tableMap = this.sortColumnMapping.get(table.tableNameAtRuntime());
         if (tableMap == null) {
             return false;
         }
@@ -222,8 +222,8 @@ public class PaginationServiceImpl implements PaginationService {
         userTableMap.put(Domain.USER.ATTR_EMAIL, UserRecordDynamicSqlSupport.email.name());
         userTableMap.put(Domain.USER.ATTR_LANGUAGE, UserRecordDynamicSqlSupport.language.name());
         userTableMap.put(Domain.USER.ATTR_CREATION_TIME, UserRecordDynamicSqlSupport.creationTime.name());
-        this.sortColumnMapping.put(UserRecordDynamicSqlSupport.userRecord.name(), userTableMap);
-        this.defaultSortColumn.put(UserRecordDynamicSqlSupport.userRecord.name(), Domain.USER.ATTR_ID);
+        this.sortColumnMapping.put(UserRecordDynamicSqlSupport.userRecord.tableNameAtRuntime(), userTableMap);
+        this.defaultSortColumn.put(UserRecordDynamicSqlSupport.userRecord.tableNameAtRuntime(), Domain.USER.ATTR_ID);
 
         // Group Table
         final Map<String, String> groupTableMap = new HashMap<>();
@@ -236,8 +236,9 @@ public class PaginationServiceImpl implements PaginationService {
         groupTableMap.put(
                 Domain.SEB_GROUP.ATTR_TERMINATION_TIME,
                 GroupRecordDynamicSqlSupport.terminationTime.name());
-        this.sortColumnMapping.put(GroupRecordDynamicSqlSupport.groupRecord.name(), groupTableMap);
-        this.defaultSortColumn.put(GroupRecordDynamicSqlSupport.groupRecord.name(), Domain.SEB_GROUP.ATTR_NAME);
+        this.sortColumnMapping.put(GroupRecordDynamicSqlSupport.groupRecord.tableNameAtRuntime(), groupTableMap);
+        this.defaultSortColumn.put(GroupRecordDynamicSqlSupport.groupRecord.tableNameAtRuntime(),
+                Domain.SEB_GROUP.ATTR_NAME);
 
         // TODO define sort mapping for other tables
 

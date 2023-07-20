@@ -86,7 +86,7 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
                 pageNumber,
                 pageSize,
                 sort,
-                getSQLTableOfEntity().name(),
+                getSQLTableOfEntity().tableNameAtRuntime(),
                 () -> getAll(filterMap)).getOrThrow();
     }
 
@@ -129,7 +129,7 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
                 pageNumber,
                 pageSize,
                 sort,
-                getSQLTableOfEntity().name(),
+                getSQLTableOfEntity().tableNameAtRuntime(),
                 () -> getAll(filterMap)).getOrThrow();
     }
 
@@ -154,7 +154,7 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
     }
 
     @Operation(
-            summary = "Dectivate a single entity by its modelId.",
+            summary = "Deactivate a single entity by its modelId.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {

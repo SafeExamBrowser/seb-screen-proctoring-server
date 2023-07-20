@@ -118,21 +118,13 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<Long> getIdAt(final String sessionUUID, final Long at) {
         return Result.tryCatch(() -> {
 
-            // TODO it seems that max is not working as expected here and always get the first image.
-//            final List<Long> execute = SelectDSL
-//                    .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, SqlBuilder.max(timestamp))
-//                    .from(screenshotDataRecord)
-//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-//                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
-//                    .build()
-//                    .execute();
-
             final List<Long> execute = SelectDSL
                     .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                     .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
                     .orderBy(timestamp.descending())
+                    .limit(1)
                     .build()
                     .execute();
 
@@ -149,19 +141,12 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<Long> getLatestImageId(final String sessionUUID) {
         return Result.tryCatch(() -> {
 
-            // TODO it seems that max is not working as expected here and always get the first image.
-//            final List<Long> execute = SelectDSL
-//                    .selectDistinctWithMapper(this.screenshotDataRecordMapper::selectIds, id, SqlBuilder.max(timestamp))
-//                    .from(screenshotDataRecord)
-//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-//                    .build()
-//                    .execute();
-
             final List<Long> execute = SelectDSL
                     .selectDistinctWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                     .orderBy(timestamp.descending())
+                    .limit(1)
                     .build()
                     .execute();
 
