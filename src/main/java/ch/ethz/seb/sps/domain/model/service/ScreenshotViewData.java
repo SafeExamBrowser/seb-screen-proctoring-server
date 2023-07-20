@@ -11,6 +11,7 @@ package ch.ethz.seb.sps.domain.model.service;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,6 +26,7 @@ public final class ScreenshotViewData {
     public static final String ATTR_TIMESTAMP = "timestamp";
     public static final String ATTR_START_TIME = "startTime";
     public static final String ATTR_END_TIME = "endTime";
+    public static final String ATTR_ACTIVE = "active";
     public static final String ATTR_SESSION = "session";
     public static final String ATTR_LATEST_IMAGE_LINK = "latestImageLink";
     public static final String ATTR_IMAGE_LINK = "imageLink";
@@ -41,6 +43,10 @@ public final class ScreenshotViewData {
     @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(ATTR_END_TIME)
     public final Long endTime;
+
+    @Schema(accessMode = AccessMode.READ_ONLY)
+    @JsonProperty(ATTR_ACTIVE)
+    public final boolean active;
 
     @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SESSION.ATTR_UUID)
@@ -82,10 +88,12 @@ public final class ScreenshotViewData {
     @JsonProperty(ATTR_META_DATA)
     public final Map<String, String> metaData;
 
+    @JsonCreator
     public ScreenshotViewData(
             @JsonProperty(ATTR_START_TIME) final Long startTime,
             @JsonProperty(ATTR_TIMESTAMP) final Long timestamp,
             @JsonProperty(ATTR_END_TIME) final Long endTime,
+            @JsonProperty(ATTR_ACTIVE) final boolean active,
             @JsonProperty(SESSION.ATTR_UUID) final String uuid,
             @JsonProperty(SESSION.ATTR_CLIENT_NAME) final String clientName,
             @JsonProperty(SESSION.ATTR_CLIENT_IP) final String clientIP,
@@ -100,6 +108,38 @@ public final class ScreenshotViewData {
         this.startTime = startTime;
         this.timestamp = timestamp;
         this.endTime = endTime;
+        this.active = active;
+        this.uuid = uuid;
+        this.clientName = clientName;
+        this.clientIP = clientIP;
+        this.clientMachineName = clientMachineName;
+        this.clientOSName = clientOSName;
+        this.clientVersion = clientVersion;
+        this.imageFormat = imageFormat;
+        this.latestImageLink = latestImageLink;
+        this.imageLink = imageLink;
+        this.metaData = metaData;
+    }
+
+    public ScreenshotViewData(
+            final Long startTime,
+            final Long timestamp,
+            final Long endTime,
+            final String uuid,
+            final String clientName,
+            final String clientIP,
+            final String clientMachineName,
+            final String clientOSName,
+            final String clientVersion,
+            final ImageFormat imageFormat,
+            final String latestImageLink,
+            final String imageLink,
+            final Map<String, String> metaData) {
+
+        this.startTime = startTime;
+        this.timestamp = timestamp;
+        this.endTime = endTime;
+        this.active = this.timestamp >= this.endTime;
         this.uuid = uuid;
         this.clientName = clientName;
         this.clientIP = clientIP;

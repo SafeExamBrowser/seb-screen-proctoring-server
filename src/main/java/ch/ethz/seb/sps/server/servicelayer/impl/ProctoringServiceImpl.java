@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -144,6 +145,7 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             final List<ScreenshotViewData> page = sessionIdsInOrder.stream()
                     .map(sid -> createScreenshotViewData(sid, mapping.get(sid), millisecondsNow))
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             return new MonitoringPageData(
@@ -264,6 +266,10 @@ public class ProctoringServiceImpl implements ProctoringService {
             final ScreenshotDataRecord data,
             final Long timestamp) {
 
+        if (data == null) {
+            return null;
+        }
+
         try {
 
             final Session session = this.proctoringCacheService.getSession(sessionUUID);
@@ -286,7 +292,7 @@ public class ProctoringServiceImpl implements ProctoringService {
             return new ScreenshotViewData(
                     session.creationTime,
                     data.getTimestamp(),
-                    session.terminationTime != null ? session.terminationTime : Utils.getMillisecondsNow(),
+                    session.terminationTime != null ? session.terminationTime : data.getTimestamp(),
                     session.uuid,
                     session.clientName,
                     session.clientIP,

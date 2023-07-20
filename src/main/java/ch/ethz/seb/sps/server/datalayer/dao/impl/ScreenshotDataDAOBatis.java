@@ -163,10 +163,11 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             sessionUuid,
                             timestamp,
                             imageFormat,
-                            metaData,
-                            SqlBuilder.max(timestamp))
+                            metaData)
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .orderBy(timestamp.descending())
+                    .limit(1)
                     .build()
                     .execute();
         });
@@ -185,11 +186,12 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             sessionUuid,
                             timestamp,
                             imageFormat,
-                            metaData,
-                            SqlBuilder.max(timestamp))
+                            metaData)
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isIn(sessionUUIDs))
                     .groupBy(ScreenshotDataRecordDynamicSqlSupport.sessionUuid)
+                    .orderBy(timestamp.descending())
+                    .limit(1)
                     .build()
                     .execute()
                     .stream()

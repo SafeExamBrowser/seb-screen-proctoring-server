@@ -346,8 +346,8 @@ public class SessionDAOBatis implements SessionDAO {
                         ? ImageFormat.valueOf(record.getImageFormat())
                         : ImageFormat.PNG,
                 record.getCreationTime(),
-                record.getTerminationTime(),
-                record.getLastUpdateTime());
+                record.getLastUpdateTime(),
+                record.getTerminationTime());
     }
 
 }
