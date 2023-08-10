@@ -16,10 +16,6 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface SessionDAO extends EntityDAO<Session, Session> {
 
-//    Result<Session> byUUID(String sessionUUID);
-//
-//    Result<Long> pkByUUID(String sessionUUID);
-
     Result<Session> createNew(
             String groupUUID,
             String uuid,
@@ -29,8 +25,6 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
             String clientOSName,
             String clientVersion,
             ImageFormat imageFormat);
-
-    //Result<Collection<String>> allActiveSessionIds(String groupUUID);
 
     Result<Collection<String>> allSessionUUIDs(Long groupId);
 

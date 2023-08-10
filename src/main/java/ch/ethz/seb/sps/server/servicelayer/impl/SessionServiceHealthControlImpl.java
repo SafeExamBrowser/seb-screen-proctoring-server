@@ -61,14 +61,12 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
 
     @Override
     public int getUploadHealthIndicator() {
-        // 0 ... 10
-        return this.uploadExecutor.getPoolSize() / 1000 * this.uploadExecutor.getActiveCount();
+        return mapPoolSizeToIndicatorRange(this.uploadExecutor.getActiveCount());
     }
 
     @Override
     public int getDownloadHealthIndicator() {
-        // 0 ... 10
-        return this.downloadExecutor.getPoolSize() / 1000 * this.downloadExecutor.getActiveCount();
+        return mapPoolSizeToIndicatorRange(this.downloadExecutor.getActiveCount());
     }
 
     @Override
@@ -99,7 +97,22 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
         final int storeHealthIndicator = getStoreHealthIndicator();
         final int dataSourceHelathIndicator = getDataSourceHelathIndicator();
 
-        return (uploadHealthIndicator + downloadHealthIndicator + storeHealthIndicator + dataSourceHelathIndicator) / 4;
+        return Math.max(
+                Math.max(uploadHealthIndicator, downloadHealthIndicator),
+                Math.max(storeHealthIndicator, dataSourceHelathIndicator));
+    }
+
+    // map size between THREAD_POOL_SIZE_INDICATOR_MAP_MIN ... THREAD_POOL_SIZE_INDICATOR_MAP_MAX to 0 ... HEALTH_INDICATOR_MAX
+    private int mapPoolSizeToIndicatorRange(final int size) {
+        if (size > THREAD_POOL_SIZE_INDICATOR_MAP_MAX) {
+            return HEALTH_INDICATOR_MAX;
+        }
+
+        final int offset = size - THREAD_POOL_SIZE_INDICATOR_MAP_MIN;
+        if (offset < 0) {
+            return 0;
+        }
+        return (int) (offset / (float) THREAD_POOL_SIZE_INDICATOR_MAP_MAX * HEALTH_INDICATOR_MAX);
     }
 
 }

@@ -8,10 +8,14 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 /** Defines some static Spring based transaction handling functionality for rollback handling */
 public interface TransactionHandler {
+
+    Logger log = LoggerFactory.getLogger(TransactionHandler.class);
 
     /** Use this to mark the current transaction within the calling thread as "to rollback".
      * This uses Springs; TransactionInterceptor.currentTransactionStatus().setRollbackOnly()
@@ -46,6 +50,7 @@ public interface TransactionHandler {
      * @see org.springframework.transaction.support.TransactionCallback#doInTransaction
      * @see org.springframework.transaction.interceptor.TransactionAttribute#rollbackOn */
     static void rollback(final Exception t) {
+        log.warn("Perform rollback because of exception:", t.getMessage());
         TransactionInterceptor.currentTransactionStatus().setRollbackOnly();
     }
 

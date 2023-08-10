@@ -194,6 +194,7 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
+    //@Transactional
     public Result<Session> createNew(
             final String groupId,
             final String uuid,
@@ -233,6 +234,7 @@ public class SessionDAOBatis implements SessionDAO {
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
+
         })
                 .flatMap(this::byPK)
                 .onError(TransactionHandler::rollback);

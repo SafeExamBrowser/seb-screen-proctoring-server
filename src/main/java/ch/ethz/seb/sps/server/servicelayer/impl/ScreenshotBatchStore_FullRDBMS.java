@@ -41,6 +41,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper.BlobContent;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.servicelayer.ScreenshotStoreService;
+import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
 import ch.ethz.seb.sps.utils.Utils;
 
 @Lazy
@@ -122,7 +123,10 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
     @Override
     public int getStoreHealthIndicator() {
         final int size = this.screenshotDataQueue.size();
-        return (size < 100) ? 0 : (size < 300) ? 1 : (size < 500) ? 2 : 3;
+        if (size >= SessionServiceHealthControl.BATCH_STORE_SIZE_INDICATOR_MAP_MAX) {
+            return 10;
+        }
+        return (int) (size / (float) SessionServiceHealthControl.BATCH_STORE_SIZE_INDICATOR_MAP_MAX * 10);
     }
 
     public void processOneTime() {
@@ -212,12 +216,18 @@ public class ScreenshotBatchStore_FullRDBMS implements ScreenshotStoreService {
                                 data -> this.screenshotMapper.insert(new BlobContent(
                                         data.record.getId(),
                                         data.screenshotIn)));
+
                         this.sqlSessionTemplate.flushStatements();
                     });
         } catch (final TransactionException te) {
             log.error(
                     "Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: ",
                     te);
+            this.screenshotDataQueue.addAll(batch);
+        } catch (final RuntimeException re) {
+            log.error(
+                    "Failed to batch store screenshot data... put data back to queue. Cause: ",
+                    re);
             this.screenshotDataQueue.addAll(batch);
         }
     }
