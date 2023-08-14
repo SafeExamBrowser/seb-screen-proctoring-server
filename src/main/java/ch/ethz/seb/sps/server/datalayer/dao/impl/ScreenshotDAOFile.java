@@ -10,7 +10,9 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -42,12 +44,12 @@ public class ScreenshotDAOFile implements ScreenshotDAO {
     @Override
     public Result<InputStream> getImage(
             final Long pk,
-            final String sessionId) {
+            final String sessionUUID) {
 
         return Result.tryCatch(() -> {
 
-            final String dir = this.rootDir + sessionId + "/";
-            final String fileName = "screen" + "_" + pk;
+            final String dir = this.rootDir + sessionUUID + "/";
+            final String fileName = ScreenshotData.SCREEN_PREFIX + pk;
 
             final FileSystemResource fileResource = new FileSystemResource(dir + fileName);
             return fileResource.getInputStream();
@@ -57,12 +59,12 @@ public class ScreenshotDAOFile implements ScreenshotDAO {
     @Override
     public Result<Long> storeImage(
             final Long pk,
-            final String sessionId,
+            final String sessionUUID,
             final InputStream in) {
 
         return Result.tryCatch(() -> {
 
-            final String dir = this.rootDir + sessionId + "/";
+            final String dir = this.rootDir + sessionUUID + "/";
             final String fileName = ScreenshotData.SCREEN_PREFIX + pk;
 
             final FileSystemResource fileSystemResource = new FileSystemResource(dir);
@@ -82,6 +84,26 @@ public class ScreenshotDAOFile implements ScreenshotDAO {
             outputStream.close();
 
             return pk;
+        });
+    }
+
+    @Override
+    public Result<List<Long>> deleteAllForSession(final String sessionUUID, final List<Long> screenShotPKs) {
+        return Result.tryCatch(() -> {
+            final String dir = this.rootDir + screenShotPKs;
+
+            final FileSystemResource fileSystemResource = new FileSystemResource(dir);
+            if (!fileSystemResource.exists()) {
+                throw new IllegalArgumentException("Session screenshot directory: " + dir + " not found!");
+            }
+
+            if (!fileSystemResource.getFile().isDirectory()) {
+                throw new IllegalArgumentException("Session screenshot path: " + dir + " is not a directory!");
+            }
+
+            FileUtils.deleteDirectory(fileSystemResource.getFile());
+
+            return screenShotPKs;
         });
     }
 

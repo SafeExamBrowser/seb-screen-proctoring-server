@@ -35,10 +35,13 @@ import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
@@ -49,13 +52,19 @@ public class SessionDAOBatis implements SessionDAO {
 
     private final SessionRecordMapper sessionRecordMapper;
     private final GroupRecordMapper groupRecordMapper;
+    private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
+    private final ScreenshotDAO screenshotDAO;
 
     public SessionDAOBatis(
             final SessionRecordMapper sessionRecordMapper,
-            final GroupRecordMapper groupRecordMapper) {
+            final GroupRecordMapper groupRecordMapper,
+            final ScreenshotDataRecordMapper screenshotDataRecordMapper,
+            final ScreenshotDAO screenshotDAO) {
 
         this.sessionRecordMapper = sessionRecordMapper;
         this.groupRecordMapper = groupRecordMapper;
+        this.screenshotDataRecordMapper = screenshotDataRecordMapper;
+        this.screenshotDAO = screenshotDAO;
     }
 
     @Override
@@ -250,14 +259,15 @@ public class SessionDAOBatis implements SessionDAO {
                 return Collections.emptyList();
             }
 
-            // get all client access records for later processing
             final List<SessionRecord> sessions = this.sessionRecordMapper
                     .selectByExample()
                     .where(SessionRecordDynamicSqlSupport.id, isIn(ids))
                     .build()
                     .execute();
 
-            // then delete the client access
+            // delete session data for each session
+            sessions.stream().forEach(this::deleteSessionScreenshots);
+
             this.sessionRecordMapper
                     .deleteByExample()
                     .where(SessionRecordDynamicSqlSupport.id, isIn(ids))
@@ -268,6 +278,30 @@ public class SessionDAOBatis implements SessionDAO {
                     .map(rec -> new EntityKey(rec.getId(), EntityType.SESSION))
                     .collect(Collectors.toList());
         });
+    }
+
+    private void deleteSessionScreenshots(final SessionRecord sessionRecord) {
+        // get all screenshot record ids for the session
+        final List<Long> screenShotPKs = this.screenshotDataRecordMapper
+                .selectIdsByExample()
+                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionRecord.getUuid()))
+                .build()
+                .execute();
+
+        if (screenShotPKs == null || screenShotPKs.isEmpty()) {
+            log.info("No session data found for deletion for session: {}", sessionRecord.getUuid());
+            return;
+        }
+
+        // delete all screenshot data
+        this.screenshotDataRecordMapper
+                .deleteByExample()
+                .where(ScreenshotDataRecordDynamicSqlSupport.id, isIn(screenShotPKs))
+                .build()
+                .execute();
+
+        // then all screenshots
+        this.screenshotDAO.deleteAllForSession(sessionRecord.getUuid(), screenShotPKs);
     }
 
     @Override
