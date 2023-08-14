@@ -84,7 +84,7 @@ public class AdminProctorController {
      * </p>
      * For example for the "exam" domain-entity
      * GET /admin-api/v1/exam
-     * GET /admin-api/v1/exam?page_number=2&page_size=10&sort=-name
+     * GET /admin-api/v1/exam?pageNumber=2&pageSize=10&sort=-name
      * GET /admin-api/v1/exam?name=seb&active=true
      * </p>
      * Sorting: the sort parameter to sort the list of entities before paging
