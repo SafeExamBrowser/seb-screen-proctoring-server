@@ -8,7 +8,10 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
+
 import java.io.InputStream;
+import java.util.List;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.event.EventListener;
@@ -19,6 +22,8 @@ import ch.ethz.seb.sps.server.ServiceInit;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
 import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper.BlobContent;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.utils.Result;
 
@@ -27,9 +32,14 @@ import ch.ethz.seb.sps.utils.Result;
 public class ScreenshotDAOBatis implements ScreenshotDAO {
 
     private final ScreenshotMapper screenshotMapper;
+    private final ScreenshotRecordMapper screenshotRecordMapper;
 
-    public ScreenshotDAOBatis(final ScreenshotMapper screenshotMapper) {
+    public ScreenshotDAOBatis(
+            final ScreenshotMapper screenshotMapper,
+            final ScreenshotRecordMapper screenshotRecordMapper) {
+
         this.screenshotMapper = screenshotMapper;
+        this.screenshotRecordMapper = screenshotRecordMapper;
     }
 
     @EventListener(ServiceInitEvent.class)
@@ -41,7 +51,7 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
     @Transactional(readOnly = true)
     public Result<InputStream> getImage(
             final Long pk,
-            final String sessionId) {
+            final String sessionUUID) {
 
         return Result.tryCatch(() -> {
             return this.screenshotMapper
@@ -54,7 +64,7 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
     @Transactional
     public Result<Long> storeImage(
             final Long pk,
-            final String sessionId,
+            final String sessionUUID,
             final InputStream in) {
 
         return Result.tryCatch(() -> {
@@ -62,6 +72,26 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
             this.screenshotMapper.insert(blobContent);
             return blobContent.getId();
         });
+    }
+
+    @Override
+    @Transactional
+    public Result<List<Long>> deleteAllForSession(
+            final String sessionId,
+            final List<Long> screenShotPKs) {
+
+        return Result.tryCatch(() -> {
+
+            this.screenshotRecordMapper
+                    .deleteByExample()
+                    .where(ScreenshotRecordDynamicSqlSupport.id, isIn(screenShotPKs))
+                    .build()
+                    .execute();
+
+            return screenShotPKs;
+        })
+                .onError(TransactionHandler::rollback);
+
     }
 
 }

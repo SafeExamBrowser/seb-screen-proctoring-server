@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.io.InputStream;
+import java.util.List;
 
 import ch.ethz.seb.sps.utils.Result;
 
@@ -16,11 +17,15 @@ public interface ScreenshotDAO {
 
     Result<InputStream> getImage(
             Long pk,
-            final String sessionId);
+            String sessionUUID);
 
     Result<Long> storeImage(
             Long pk,
-            String sessionId,
+            String sessionUUID,
             InputStream in);
+
+    Result<List<Long>> deleteAllForSession(
+            String sessionUUID,
+            List<Long> screenShotPKs);
 
 }
