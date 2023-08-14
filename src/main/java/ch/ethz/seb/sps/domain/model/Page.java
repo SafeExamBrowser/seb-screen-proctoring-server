@@ -25,10 +25,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param <T> The type of a page entry entity */
 public final class Page<T> {
 
-    public static final String ATTR_NAMES_ONLY = "names_only";
-    public static final String ATTR_NUMBER_OF_PAGES = "number_of_pages";
-    public static final String ATTR_PAGE_NUMBER = "page_number";
-    public static final String ATTR_PAGE_SIZE = "page_size";
+    public static final String ATTR_NAMES_ONLY = "namesOnly";
+    public static final String ATTR_NUMBER_OF_PAGES = "numberOfPages";
+    public static final String ATTR_PAGE_NUMBER = "pageNumber";
+    public static final String ATTR_PAGE_SIZE = "pageSize";
     public static final String ATTR_SORT = "sort";
     public static final String ATTR_CONTENT = "content";
 
