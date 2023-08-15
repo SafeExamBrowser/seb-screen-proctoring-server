@@ -120,6 +120,10 @@ public class Session implements Entity, WithLifeCycle {
     @JsonProperty(SESSION.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
+    @JsonProperty(SESSION.ATTR_FIRST_SCREENSHOT_TIME)
+    public final Long firstScreenshotTime;
+
     @JsonCreator
     public Session(
             @JsonProperty(SESSION.ATTR_ID) final Long id,
@@ -133,7 +137,8 @@ public class Session implements Entity, WithLifeCycle {
             @JsonProperty(SESSION.ATTR_IMAGE_FORMAT) final ImageFormat imageFormat,
             @JsonProperty(SESSION.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(SESSION.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
-            @JsonProperty(SESSION.ATTR_TERMINATION_TIME) final Long terminationTime) {
+            @JsonProperty(SESSION.ATTR_TERMINATION_TIME) final Long terminationTime,
+            @JsonProperty(SESSION.ATTR_FIRST_SCREENSHOT_TIME) final Long firstScreenshotTime) {
 
         this.id = id;
         this.groupId = groupId;
@@ -147,6 +152,7 @@ public class Session implements Entity, WithLifeCycle {
         this.creationTime = creationTime;
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
+        this.firstScreenshotTime = firstScreenshotTime;
     }
 
     @Override
@@ -217,6 +223,10 @@ public class Session implements Entity, WithLifeCycle {
     @Override
     public Long getLastUpdateTime() {
         return this.lastUpdateTime;
+    }
+
+    public Long getFirstScreenshotTime() {
+        return this.firstScreenshotTime;
     }
 
     @Override

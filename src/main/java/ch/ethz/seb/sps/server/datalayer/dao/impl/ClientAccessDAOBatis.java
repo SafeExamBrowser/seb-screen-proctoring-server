@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -159,8 +160,12 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                     checkUniqueName(data);
 
                     final long millisecondsNow = Utils.getMillisecondsNow();
+
                     final ClientAccessRecord newRecord = new ClientAccessRecord(
                             null,
+                            (StringUtils.isNotBlank(data.uuid))
+                                    ? data.uuid
+                                    : UUID.randomUUID().toString(),
                             data.name,
                             data.description,
                             cc.clientIdAsString(),
@@ -187,6 +192,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
             final long millisecondsNow = Utils.getMillisecondsNow();
             final ClientAccessRecord newRecord = new ClientAccessRecord(
                     data.id,
+                    null,
                     data.name,
                     data.description,
                     null,
@@ -216,7 +222,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
             final long now = Utils.getMillisecondsNow();
 
             final ClientAccessRecord newRecord = new ClientAccessRecord(
-                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null, null,
                     now,
                     active ? null : now);
 
@@ -291,6 +297,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
     private ClientAccess toDomainModel(final ClientAccessRecord record) {
         return new ClientAccess(
                 record.getId(),
+                record.getUuid(),
                 record.getName(),
                 record.getDescription(),
                 record.getClientName(),

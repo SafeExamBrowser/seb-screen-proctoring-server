@@ -193,7 +193,7 @@ public class SessionDAOBatis implements SessionDAO {
                     data.clientMachineName,
                     data.clientOSName,
                     data.clientVersion,
-                    now, now, null);
+                    now, now, null, null);
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -239,7 +239,7 @@ public class SessionDAOBatis implements SessionDAO {
                     clientMachineName,
                     clientOSName,
                     clientVersion,
-                    now, now, null);
+                    now, now, null, null);
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -353,6 +353,31 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional
+    public Result<String> setFirstScreenshotTime(final String sessionUUID, final Long time) {
+        return Result.tryCatch(() -> {
+
+            final long now = Utils.getMillisecondsNow();
+            final Long id = this.sessionRecordMapper
+                    .selectByExample()
+                    .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .build()
+                    .execute()
+                    .get(0)
+                    .getId();
+
+            final SessionRecord record = new SessionRecord(
+                    id,
+                    null, null, null, null, null, null, null, null,
+                    null, now, null, time);
+
+            this.sessionRecordMapper.updateByPrimaryKeySelective(record);
+            return sessionUUID;
+        })
+                .onError(TransactionHandler::rollback);
+    }
+
+    @Override
+    @Transactional
     public Result<String> closeSession(final String sessionUUID) {
         return Result.tryCatch(() -> {
 
@@ -368,7 +393,7 @@ public class SessionDAOBatis implements SessionDAO {
             final SessionRecord record = new SessionRecord(
                     id,
                     null, null, null, null, null, null, null, null,
-                    null, now, now);
+                    null, now, now, null);
 
             this.sessionRecordMapper.updateByPrimaryKeySelective(record);
             return sessionUUID;
@@ -436,7 +461,8 @@ public class SessionDAOBatis implements SessionDAO {
                         : ImageFormat.PNG,
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
-                record.getTerminationTime());
+                record.getTerminationTime(),
+                record.getFirstScreenshotTime());
     }
 
 }

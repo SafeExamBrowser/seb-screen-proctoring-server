@@ -28,6 +28,8 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
 
     Result<Collection<String>> allSessionUUIDs(Long groupId);
 
+    Result<String> setFirstScreenshotTime(String sessionUUID, Long time);
+
     Result<String> closeSession(String sessionUUID);
 
 }

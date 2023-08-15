@@ -3,28 +3,28 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import javax.annotation.Generated;
 
 public class WebserviceInfoRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.234+02:00", comments="Source field: webservice_server_info.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.234+02:00", comments="Source field: webservice_server_info.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.uuid")
     private String uuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.234+02:00", comments="Source field: webservice_server_info.server_address")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.server_address")
     private String serverAddress;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.235+02:00", comments="Source field: webservice_server_info.master")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.master")
     private Integer master;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.235+02:00", comments="Source field: webservice_server_info.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.creation_time")
     private Long creationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.235+02:00", comments="Source field: webservice_server_info.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.last_update_time")
     private Long lastUpdateTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.235+02:00", comments="Source field: webservice_server_info.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.892+02:00", comments="Source field: webservice_server_info.termination_time")
     private Long terminationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.234+02:00", comments="Source Table: webservice_server_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source Table: webservice_server_info")
     public WebserviceInfoRecord(Long id, String uuid, String serverAddress, Integer master, Long creationTime, Long lastUpdateTime, Long terminationTime) {
         this.id = id;
         this.uuid = uuid;
@@ -35,37 +35,37 @@ public class WebserviceInfoRecord {
         this.terminationTime = terminationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.234+02:00", comments="Source field: webservice_server_info.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.234+02:00", comments="Source field: webservice_server_info.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.uuid")
     public String getUuid() {
         return uuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.234+02:00", comments="Source field: webservice_server_info.server_address")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.server_address")
     public String getServerAddress() {
         return serverAddress;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.235+02:00", comments="Source field: webservice_server_info.master")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.master")
     public Integer getMaster() {
         return master;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.235+02:00", comments="Source field: webservice_server_info.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.891+02:00", comments="Source field: webservice_server_info.creation_time")
     public Long getCreationTime() {
         return creationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.235+02:00", comments="Source field: webservice_server_info.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.892+02:00", comments="Source field: webservice_server_info.last_update_time")
     public Long getLastUpdateTime() {
         return lastUpdateTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.235+02:00", comments="Source field: webservice_server_info.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.892+02:00", comments="Source field: webservice_server_info.termination_time")
     public Long getTerminationTime() {
         return terminationTime;
     }
@@ -74,7 +74,7 @@ public class WebserviceInfoRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table webservice_server_info
      *
-     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
+     * @mbg.generated Tue Aug 15 14:43:27 CEST 2023
      */
     @Override
     public String toString() {
@@ -97,7 +97,7 @@ public class WebserviceInfoRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table webservice_server_info
      *
-     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
+     * @mbg.generated Tue Aug 15 14:43:27 CEST 2023
      */
     @Override
     public boolean equals(Object that) {
@@ -124,7 +124,7 @@ public class WebserviceInfoRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table webservice_server_info
      *
-     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
+     * @mbg.generated Tue Aug 15 14:43:27 CEST 2023
      */
     @Override
     public int hashCode() {

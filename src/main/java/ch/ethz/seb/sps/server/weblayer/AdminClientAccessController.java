@@ -8,6 +8,8 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.util.UUID;
+
 import org.mybatis.dynamic.sql.SqlTable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +43,7 @@ public class AdminClientAccessController extends ActivatableEntityController<Cli
     protected ClientAccess createNew(final POSTMapper postParams) {
         return new ClientAccess(
                 null,
+                UUID.randomUUID().toString(),
                 postParams.getString(Domain.CLIENT_ACCESS.ATTR_NAME),
                 postParams.getString(Domain.CLIENT_ACCESS.ATTR_DESCRIPTION),
                 null, null, null, null, null, null, null);
@@ -50,6 +53,7 @@ public class AdminClientAccessController extends ActivatableEntityController<Cli
     protected ClientAccess merge(final ClientAccess modifyData, final ClientAccess existingEntity) {
         return new ClientAccess(
                 existingEntity.id,
+                existingEntity.uuid,
                 modifyData.name,
                 modifyData.description,
                 null, null, null, null, null, null, null);

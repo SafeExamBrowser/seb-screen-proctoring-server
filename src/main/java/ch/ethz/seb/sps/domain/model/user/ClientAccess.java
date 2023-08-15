@@ -40,6 +40,10 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
     @JsonProperty(CLIENT_ACCESS.ATTR_ID)
     public final Long id;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
+    @JsonProperty(CLIENT_ACCESS.ATTR_UUID)
+    public final String uuid;
+
     @JsonProperty(CLIENT_ACCESS.ATTR_NAME)
     @NotNull(message = "clientaccess:name:notNull")
     @Size(min = 3, max = 255, message = "clientconfig:name:size:{min}:{max}:${validatedValue}")
@@ -80,6 +84,7 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
     @JsonCreator
     public ClientAccess(
             @JsonProperty(CLIENT_ACCESS.ATTR_ID) final Long id,
+            @JsonProperty(CLIENT_ACCESS.ATTR_UUID) final String uuid,
             @JsonProperty(CLIENT_ACCESS.ATTR_NAME) final String name,
             @JsonProperty(CLIENT_ACCESS.ATTR_DESCRIPTION) final String description,
             @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_NAME) final String clientId,
@@ -91,6 +96,7 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
             @JsonProperty(CLIENT_ACCESS.ATTR_TERMINATION_TIME) final Long terminationTime) {
 
         this.id = id;
+        this.uuid = uuid;
         this.name = name;
         this.description = description;
         this.clientId = clientId;
@@ -104,9 +110,15 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
 
     @Override
     public String getModelId() {
-        return (this.id != null)
-                ? String.valueOf(this.id)
-                : null;
+        return (this.uuid != null)
+                ? this.uuid
+                : (this.id != null)
+                        ? String.valueOf(this.id)
+                        : null;
+    }
+
+    public String getUuid() {
+        return this.uuid;
     }
 
     @Override
