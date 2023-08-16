@@ -81,15 +81,15 @@ public final class API {
 
     public static final String ADMIN_SESSION_ENDPOINT = "/session";
 
-    public static final String GROUP_HEADER_UUID = "SEB_GROUP_UUID";
-    public static final String SESSION_HEADER_UUID = "SEB_SESSION_UUID";
-    public static final String SESSION_HEADER_SEB_USER_NAME = "SEB_USER_NAME";
-    public static final String SESSION_HEADER_SEB_IP = "SEB_IP_ADDRESS";
-    public static final String SESSION_HEADER_SEB_MACHINE_NAME = "SEB_MACHINE_NAME";
-    public static final String SESSION_HEADER_SEB_OS = "SEB_OS_NAME";
-    public static final String SESSION_HEADER_SEB_VERSION = "SEB_VERSION";
+    public static final String GROUP_HEADER_UUID = "seb_group_uuid";
+    public static final String SESSION_HEADER_UUID = "seb_session_uuid";
+    public static final String SESSION_HEADER_SEB_USER_NAME = "seb_user_name";
+    public static final String SESSION_HEADER_SEB_IP = "seb_ip_address";
+    public static final String SESSION_HEADER_SEB_MACHINE_NAME = "seb_machine_name";
+    public static final String SESSION_HEADER_SEB_OS = "seb_os_name";
+    public static final String SESSION_HEADER_SEB_VERSION = "seb_version";
 
-    public static final String SPS_SERVER_HEALTH = "SPS_SERVER_HEALTH";
+    public static final String SPS_SERVER_HEALTH = "sps_server_health";
 
     public static final String PARAM_GROUP_ID = "groupUUID";
     public static final String PARAM_SESSION_ID = "sessionUUID";
