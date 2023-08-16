@@ -193,7 +193,7 @@ public class SessionDAOBatis implements SessionDAO {
                     data.clientMachineName,
                     data.clientOSName,
                     data.clientVersion,
-                    now, now, null, null);
+                    now, now, null);
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -239,7 +239,7 @@ public class SessionDAOBatis implements SessionDAO {
                     clientMachineName,
                     clientOSName,
                     clientVersion,
-                    now, now, null, null);
+                    now, now, null);
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -280,7 +280,21 @@ public class SessionDAOBatis implements SessionDAO {
         });
     }
 
+    @Override
+    @Transactional
+    public Result<Collection<EntityKey>> deleteAllSessionsForGroup(final Long groupPK) {
+        return delete(this.sessionRecordMapper
+                .selectIdsByExample()
+                .where(SessionRecordDynamicSqlSupport.groupId, isEqualTo(groupPK))
+                .build()
+                .execute()
+                .stream()
+                .map(pk -> new EntityKey(pk, EntityType.SESSION))
+                .collect(Collectors.toSet()));
+    }
+
     private void deleteSessionScreenshots(final SessionRecord sessionRecord) {
+
         // get all screenshot record ids for the session
         final List<Long> screenShotPKs = this.screenshotDataRecordMapper
                 .selectIdsByExample()
@@ -353,31 +367,6 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional
-    public Result<String> setFirstScreenshotTime(final String sessionUUID, final Long time) {
-        return Result.tryCatch(() -> {
-
-            final long now = Utils.getMillisecondsNow();
-            final Long id = this.sessionRecordMapper
-                    .selectByExample()
-                    .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .build()
-                    .execute()
-                    .get(0)
-                    .getId();
-
-            final SessionRecord record = new SessionRecord(
-                    id,
-                    null, null, null, null, null, null, null, null,
-                    null, now, null, time);
-
-            this.sessionRecordMapper.updateByPrimaryKeySelective(record);
-            return sessionUUID;
-        })
-                .onError(TransactionHandler::rollback);
-    }
-
-    @Override
-    @Transactional
     public Result<String> closeSession(final String sessionUUID) {
         return Result.tryCatch(() -> {
 
@@ -393,7 +382,7 @@ public class SessionDAOBatis implements SessionDAO {
             final SessionRecord record = new SessionRecord(
                     id,
                     null, null, null, null, null, null, null, null,
-                    null, now, now, null);
+                    null, now, now);
 
             this.sessionRecordMapper.updateByPrimaryKeySelective(record);
             return sessionUUID;
@@ -461,8 +450,7 @@ public class SessionDAOBatis implements SessionDAO {
                         : ImageFormat.PNG,
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
-                record.getTerminationTime(),
-                record.getFirstScreenshotTime());
+                record.getTerminationTime());
     }
 
 }

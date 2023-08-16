@@ -32,20 +32,20 @@ import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
 @Mapper
 public interface AdditionalAttributeRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.886+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.647+02:00", comments="Source Table: additional_attribute")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.886+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.647+02:00", comments="Source Table: additional_attribute")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.886+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.647+02:00", comments="Source Table: additional_attribute")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<AdditionalAttributeRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.647+02:00", comments="Source Table: additional_attribute")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -56,7 +56,7 @@ public interface AdditionalAttributeRecordMapper {
     })
     AdditionalAttributeRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.647+02:00", comments="Source Table: additional_attribute")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -67,22 +67,22 @@ public interface AdditionalAttributeRecordMapper {
     })
     List<AdditionalAttributeRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(additionalAttributeRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, additionalAttributeRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, additionalAttributeRecord)
                 .where(id, isEqualTo(id_))
@@ -90,7 +90,7 @@ public interface AdditionalAttributeRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default int insert(AdditionalAttributeRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(additionalAttributeRecord)
@@ -102,7 +102,7 @@ public interface AdditionalAttributeRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default int insertSelective(AdditionalAttributeRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(additionalAttributeRecord)
@@ -114,19 +114,19 @@ public interface AdditionalAttributeRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<AdditionalAttributeRecord>>> selectByExample() {
         return SelectDSL.selectWithMapper(this::selectMany, id, entityType, entityId, name, value)
                 .from(additionalAttributeRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<AdditionalAttributeRecord>>> selectDistinctByExample() {
         return SelectDSL.selectDistinctWithMapper(this::selectMany, id, entityType, entityId, name, value)
                 .from(additionalAttributeRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default AdditionalAttributeRecord selectByPrimaryKey(Long id_) {
         return SelectDSL.selectWithMapper(this::selectOne, id, entityType, entityId, name, value)
                 .from(additionalAttributeRecord)
@@ -135,7 +135,7 @@ public interface AdditionalAttributeRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(AdditionalAttributeRecord record) {
         return UpdateDSL.updateWithMapper(this::update, additionalAttributeRecord)
                 .set(entityType).equalTo(record::getEntityType)
@@ -144,7 +144,7 @@ public interface AdditionalAttributeRecordMapper {
                 .set(value).equalTo(record::getValue);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.887+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(AdditionalAttributeRecord record) {
         return UpdateDSL.updateWithMapper(this::update, additionalAttributeRecord)
                 .set(entityType).equalToWhenPresent(record::getEntityType)
@@ -153,7 +153,7 @@ public interface AdditionalAttributeRecordMapper {
                 .set(value).equalToWhenPresent(record::getValue);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.888+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default int updateByPrimaryKey(AdditionalAttributeRecord record) {
         return UpdateDSL.updateWithMapper(this::update, additionalAttributeRecord)
                 .set(entityType).equalTo(record::getEntityType)
@@ -165,7 +165,7 @@ public interface AdditionalAttributeRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.888+02:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.648+02:00", comments="Source Table: additional_attribute")
     default int updateByPrimaryKeySelective(AdditionalAttributeRecord record) {
         return UpdateDSL.updateWithMapper(this::update, additionalAttributeRecord)
                 .set(entityType).equalToWhenPresent(record::getEntityType)

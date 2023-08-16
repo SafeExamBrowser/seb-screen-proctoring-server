@@ -32,20 +32,20 @@ import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
 @Mapper
 public interface GroupRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.860+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.618+02:00", comments="Source Table: seb_group")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.860+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.618+02:00", comments="Source Table: seb_group")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.860+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.619+02:00", comments="Source Table: seb_group")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<GroupRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.860+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.619+02:00", comments="Source Table: seb_group")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -59,7 +59,7 @@ public interface GroupRecordMapper {
     })
     GroupRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.860+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.619+02:00", comments="Source Table: seb_group")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -73,22 +73,22 @@ public interface GroupRecordMapper {
     })
     List<GroupRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.860+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.619+02:00", comments="Source Table: seb_group")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.860+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.620+02:00", comments="Source Table: seb_group")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(groupRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.860+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.620+02:00", comments="Source Table: seb_group")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, groupRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.860+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.620+02:00", comments="Source Table: seb_group")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, groupRecord)
                 .where(id, isEqualTo(id_))
@@ -96,7 +96,7 @@ public interface GroupRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.861+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.620+02:00", comments="Source Table: seb_group")
     default int insert(GroupRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(groupRecord)
@@ -111,7 +111,7 @@ public interface GroupRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.861+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.620+02:00", comments="Source Table: seb_group")
     default int insertSelective(GroupRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(groupRecord)
@@ -126,19 +126,19 @@ public interface GroupRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.865+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.621+02:00", comments="Source Table: seb_group")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<GroupRecord>>> selectByExample() {
         return SelectDSL.selectWithMapper(this::selectMany, id, uuid, name, description, owner, creationTime, lastUpdateTime, terminationTime)
                 .from(groupRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.865+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.621+02:00", comments="Source Table: seb_group")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<GroupRecord>>> selectDistinctByExample() {
         return SelectDSL.selectDistinctWithMapper(this::selectMany, id, uuid, name, description, owner, creationTime, lastUpdateTime, terminationTime)
                 .from(groupRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.865+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.621+02:00", comments="Source Table: seb_group")
     default GroupRecord selectByPrimaryKey(Long id_) {
         return SelectDSL.selectWithMapper(this::selectOne, id, uuid, name, description, owner, creationTime, lastUpdateTime, terminationTime)
                 .from(groupRecord)
@@ -147,7 +147,7 @@ public interface GroupRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.865+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.621+02:00", comments="Source Table: seb_group")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(GroupRecord record) {
         return UpdateDSL.updateWithMapper(this::update, groupRecord)
                 .set(uuid).equalTo(record::getUuid)
@@ -159,7 +159,7 @@ public interface GroupRecordMapper {
                 .set(terminationTime).equalTo(record::getTerminationTime);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.866+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.621+02:00", comments="Source Table: seb_group")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(GroupRecord record) {
         return UpdateDSL.updateWithMapper(this::update, groupRecord)
                 .set(uuid).equalToWhenPresent(record::getUuid)
@@ -171,7 +171,7 @@ public interface GroupRecordMapper {
                 .set(terminationTime).equalToWhenPresent(record::getTerminationTime);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.866+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.621+02:00", comments="Source Table: seb_group")
     default int updateByPrimaryKey(GroupRecord record) {
         return UpdateDSL.updateWithMapper(this::update, groupRecord)
                 .set(uuid).equalTo(record::getUuid)
@@ -186,7 +186,7 @@ public interface GroupRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-15T14:43:27.866+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.621+02:00", comments="Source Table: seb_group")
     default int updateByPrimaryKeySelective(GroupRecord record) {
         return UpdateDSL.updateWithMapper(this::update, groupRecord)
                 .set(uuid).equalToWhenPresent(record::getUuid)

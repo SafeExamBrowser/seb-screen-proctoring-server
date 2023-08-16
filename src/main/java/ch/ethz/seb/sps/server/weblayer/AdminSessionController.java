@@ -65,7 +65,7 @@ public class AdminSessionController extends EntityController<Session, Session> {
                 postParams.getString(Domain.SESSION.ATTR_CLIENT_OS_NAME),
                 postParams.getString(Domain.SESSION.ATTR_CLIENT_VERSION),
                 postParams.getEnum(Domain.SESSION.ATTR_IMAGE_FORMAT, ImageFormat.class),
-                null, null, null, null);
+                null, null, null);
     }
 
     @Override
@@ -82,8 +82,7 @@ public class AdminSessionController extends EntityController<Session, Session> {
                 modifyData.imageFormat,
                 existingEntity.creationTime,
                 null,
-                null,
-                existingEntity.firstScreenshotTime);
+                null);
     }
 
     @Override

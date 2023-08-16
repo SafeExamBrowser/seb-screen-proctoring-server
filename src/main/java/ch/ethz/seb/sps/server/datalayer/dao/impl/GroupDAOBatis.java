@@ -42,6 +42,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
@@ -54,15 +55,18 @@ public class GroupDAOBatis implements GroupDAO {
 
     private final GroupRecordMapper groupRecordMapper;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
+    private final SessionDAO sessionDAO;
     private final UserService userService;
 
     public GroupDAOBatis(
             final GroupRecordMapper groupRecordMapper,
             final EntityPrivilegeDAO entityPrivilegeDAO,
+            final SessionDAO sessionDAO,
             final UserService userService) {
 
         this.groupRecordMapper = groupRecordMapper;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
+        this.sessionDAO = sessionDAO;
         this.userService = userService;
     }
 
@@ -282,14 +286,15 @@ public class GroupDAOBatis implements GroupDAO {
                 return Collections.emptyList();
             }
 
-            // get all client access records for later processing
             final List<GroupRecord> groups = this.groupRecordMapper
                     .selectByExample()
                     .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
                     .build()
                     .execute();
 
-            // then delete the client access
+            // delete session data for each session
+            groups.stream().forEach(this::deleteSessions);
+
             this.groupRecordMapper
                     .deleteByExample()
                     .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
@@ -300,6 +305,15 @@ public class GroupDAOBatis implements GroupDAO {
                     .map(rec -> new EntityKey(rec.getId(), EntityType.SEB_GROUP))
                     .collect(Collectors.toList());
         });
+    }
+
+    private void deleteSessions(final GroupRecord record) {
+
+        final Collection<EntityKey> deleted = this.sessionDAO
+                .deleteAllSessionsForGroup(record.getId())
+                .getOrThrow();
+
+        log.info("Deleted following sessions for group {}, {}", record.getUuid(), deleted);
     }
 
     private Result<GroupRecord> recordByPK(final Long pk) {

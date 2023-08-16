@@ -154,7 +154,7 @@ public class SessionServiceImpl implements SessionService {
                 clientMachineName,
                 clientOSName,
                 clientVersion,
-                null, null, null, null, null));
+                null, null, null, null));
 
         // caching update
         this.proctoringCacheService.evictSession(sessionUUID);

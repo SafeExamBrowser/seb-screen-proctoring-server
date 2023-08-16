@@ -114,7 +114,6 @@ CREATE TABLE IF NOT EXISTS `session` (
   `creation_time` BIGINT NOT NULL,
   `last_update_time` BIGINT NOT NULL,
   `termination_time` BIGINT NULL,
-  `first_screenshot_time` BIGINT NULL,
   PRIMARY KEY (`id`),
   INDEX `group_ref_idx` (`group_id` ASC),
   UNIQUE INDEX `id_session` (`id` ASC),

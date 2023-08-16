@@ -17,9 +17,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlTable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -431,7 +433,8 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<EntityKey> hardDeleteAll(
-            @RequestParam(name = API.PARAM_MODEL_ID_LIST) final List<String> ids) {
+            @RequestParam(name = API.PARAM_MODEL_ID_LIST) final List<String> ids,
+            final HttpServletResponse response) {
 
         this.checkWritePrivilege();
 
@@ -440,7 +443,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
         }
 
         final EntityType entityType = this.entityDAO.entityType();
-        return this.entityDAO.allOf(ids)
+        final Collection<EntityKey> result = this.entityDAO.allOf(ids)
                 .map(all -> all.stream()
                         .filter(one -> this.checkWriteAccess(one).hasValue() &&
                                 this.validForDelete(one).hasValue())
@@ -451,6 +454,12 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                 .flatMap(this::logDeleted)
                 .flatMap(this::notifyDeleted)
                 .getOrThrow();
+
+        if (ids.size() != result.size()) {
+            response.setStatus(HttpStatus.MULTI_STATUS.value());
+        }
+
+        return result;
     }
 
     protected EnumSet<EntityType> convertToEntityType(final boolean addIncludes, final List<String> includes) {
