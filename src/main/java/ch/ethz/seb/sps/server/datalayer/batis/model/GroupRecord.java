@@ -3,31 +3,31 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import javax.annotation.Generated;
 
 public class GroupRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.185+02:00", comments="Source field: seb_group.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.615+02:00", comments="Source field: seb_group.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.186+02:00", comments="Source field: seb_group.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.615+02:00", comments="Source field: seb_group.uuid")
     private String uuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.188+02:00", comments="Source field: seb_group.name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.615+02:00", comments="Source field: seb_group.name")
     private String name;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.188+02:00", comments="Source field: seb_group.description")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.615+02:00", comments="Source field: seb_group.description")
     private String description;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.188+02:00", comments="Source field: seb_group.owner")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.617+02:00", comments="Source field: seb_group.owner")
     private String owner;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.189+02:00", comments="Source field: seb_group.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.617+02:00", comments="Source field: seb_group.creation_time")
     private Long creationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.189+02:00", comments="Source field: seb_group.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.617+02:00", comments="Source field: seb_group.last_update_time")
     private Long lastUpdateTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.189+02:00", comments="Source field: seb_group.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.617+02:00", comments="Source field: seb_group.termination_time")
     private Long terminationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.185+02:00", comments="Source Table: seb_group")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.614+02:00", comments="Source Table: seb_group")
     public GroupRecord(Long id, String uuid, String name, String description, String owner, Long creationTime, Long lastUpdateTime, Long terminationTime) {
         this.id = id;
         this.uuid = uuid;
@@ -39,42 +39,42 @@ public class GroupRecord {
         this.terminationTime = terminationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.185+02:00", comments="Source field: seb_group.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.615+02:00", comments="Source field: seb_group.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.186+02:00", comments="Source field: seb_group.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.615+02:00", comments="Source field: seb_group.uuid")
     public String getUuid() {
         return uuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.188+02:00", comments="Source field: seb_group.name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.615+02:00", comments="Source field: seb_group.name")
     public String getName() {
         return name;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.188+02:00", comments="Source field: seb_group.description")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.615+02:00", comments="Source field: seb_group.description")
     public String getDescription() {
         return description;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.189+02:00", comments="Source field: seb_group.owner")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.617+02:00", comments="Source field: seb_group.owner")
     public String getOwner() {
         return owner;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.189+02:00", comments="Source field: seb_group.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.617+02:00", comments="Source field: seb_group.creation_time")
     public Long getCreationTime() {
         return creationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.189+02:00", comments="Source field: seb_group.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.617+02:00", comments="Source field: seb_group.last_update_time")
     public Long getLastUpdateTime() {
         return lastUpdateTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-06-22T17:01:10.189+02:00", comments="Source field: seb_group.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.617+02:00", comments="Source field: seb_group.termination_time")
     public Long getTerminationTime() {
         return terminationTime;
     }
@@ -83,7 +83,7 @@ public class GroupRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table seb_group
      *
-     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
+     * @mbg.generated Wed Aug 16 13:34:04 CEST 2023
      */
     @Override
     public String toString() {
@@ -107,7 +107,7 @@ public class GroupRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table seb_group
      *
-     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
+     * @mbg.generated Wed Aug 16 13:34:04 CEST 2023
      */
     @Override
     public boolean equals(Object that) {
@@ -135,7 +135,7 @@ public class GroupRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table seb_group
      *
-     * @mbg.generated Thu Jun 22 17:01:10 CEST 2023
+     * @mbg.generated Wed Aug 16 13:34:04 CEST 2023
      */
     @Override
     public int hashCode() {

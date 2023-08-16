@@ -80,7 +80,9 @@ public class AdminSessionController extends EntityController<Session, Session> {
                 modifyData.clientOSName,
                 modifyData.clientVersion,
                 modifyData.imageFormat,
-                null, null, null);
+                existingEntity.creationTime,
+                null,
+                null);
     }
 
     @Override

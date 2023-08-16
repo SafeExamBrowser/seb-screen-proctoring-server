@@ -97,7 +97,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Transactional(readOnly = true)
     public Result<ScreenshotDataRecord> getAt(final String sessionUUID, final Long at) {
         return Result.tryCatch(() -> {
-            return SelectDSL
+            ScreenshotDataRecord record = SelectDSL
                     .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
                             id,
                             sessionUuid,
@@ -108,8 +108,37 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                     .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
+                    .orderBy(timestamp.descending())
+                    .limit(1)
                     .build()
                     .execute();
+
+            if (record != null) {
+                return record;
+            }
+
+            // there is no screenshot at the time of given timestamp. Try to get first image for the session
+            record = SelectDSL
+                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
+                            id,
+                            sessionUuid,
+                            timestamp,
+                            imageFormat,
+                            metaData,
+                            SqlBuilder.max(timestamp))
+                    .from(screenshotDataRecord)
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .orderBy(timestamp)
+                    .limit(1)
+                    .build()
+                    .execute();
+
+            // still no screenshot... seems that there are none at this time
+            if (record == null) {
+                throw new NoResourceFoundException(EntityType.SCREENSHOT, sessionUUID);
+            }
+
+            return record;
         });
     }
 
@@ -118,7 +147,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<Long> getIdAt(final String sessionUUID, final Long at) {
         return Result.tryCatch(() -> {
 
-            final List<Long> execute = SelectDSL
+            List<Long> result = SelectDSL
                     .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
@@ -128,11 +157,26 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                     .build()
                     .execute();
 
-            if (execute == null) {
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+
+            // there is no screenshot at the time of given timestamp. Try to get first image for the session
+            result = SelectDSL
+                    .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
+                    .from(screenshotDataRecord)
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .orderBy(timestamp)
+                    .limit(1)
+                    .build()
+                    .execute();
+
+            // still no screenshot... seems that there are none at this time
+            if (result == null || result.isEmpty()) {
                 throw new NoResourceFoundException(EntityType.SCREENSHOT, sessionUUID);
             }
 
-            return execute.get(0);
+            return result.get(0);
         });
     }
 

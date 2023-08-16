@@ -134,6 +134,7 @@ DROP TABLE IF EXISTS `client_access` ;
 
 CREATE TABLE IF NOT EXISTS `client_access` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `uuid` VARCHAR(45) NULL,
   `name` VARCHAR(255) NOT NULL,
   `description` VARCHAR(4000) NULL,
   `client_name` VARCHAR(255) NOT NULL,

@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -66,6 +67,16 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
     @Override
     public EntityType entityType() {
         return EntityType.CLIENT_ACCESS;
+    }
+
+    @Override
+    public Long modelIdToPK(final String modelId) {
+        final Long pk = isPK(modelId);
+        if (pk != null) {
+            return pk;
+        } else {
+            return pkByUUID(modelId).getOr(null);
+        }
     }
 
     @Override
@@ -159,8 +170,12 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                     checkUniqueName(data);
 
                     final long millisecondsNow = Utils.getMillisecondsNow();
+
                     final ClientAccessRecord newRecord = new ClientAccessRecord(
                             null,
+                            (StringUtils.isNotBlank(data.uuid))
+                                    ? data.uuid
+                                    : UUID.randomUUID().toString(),
                             data.name,
                             data.description,
                             cc.clientIdAsString(),
@@ -187,6 +202,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
             final long millisecondsNow = Utils.getMillisecondsNow();
             final ClientAccessRecord newRecord = new ClientAccessRecord(
                     data.id,
+                    null,
                     data.name,
                     data.description,
                     null,
@@ -216,7 +232,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
             final long now = Utils.getMillisecondsNow();
 
             final ClientAccessRecord newRecord = new ClientAccessRecord(
-                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null, null,
                     now,
                     active ? null : now);
 
@@ -291,6 +307,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
     private ClientAccess toDomainModel(final ClientAccessRecord record) {
         return new ClientAccess(
                 record.getId(),
+                record.getUuid(),
                 record.getName(),
                 record.getDescription(),
                 record.getClientName(),
@@ -336,6 +353,23 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                     Domain.CLIENT_ACCESS.ATTR_NAME,
                     "clientaccess:name:name.notunique");
         }
+    }
+
+    private Result<Long> pkByUUID(final String uuid) {
+        return Result.tryCatch(() -> {
+
+            final List<Long> execute = this.clientAccessRecordMapper
+                    .selectIdsByExample()
+                    .where(ClientAccessRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(uuid))
+                    .build()
+                    .execute();
+
+            if (execute == null || execute.isEmpty()) {
+                throw new NoResourceFoundException(EntityType.CLIENT_ACCESS, uuid);
+            }
+
+            return execute.get(0);
+        });
     }
 
 }

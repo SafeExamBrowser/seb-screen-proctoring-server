@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.util.Collection;
 
+import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Result;
@@ -29,5 +30,7 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
     Result<Collection<String>> allSessionUUIDs(Long groupId);
 
     Result<String> closeSession(String sessionUUID);
+
+    Result<Collection<EntityKey>> deleteAllSessionsForGroup(Long groupPK);
 
 }

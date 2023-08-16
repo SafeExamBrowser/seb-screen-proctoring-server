@@ -280,7 +280,21 @@ public class SessionDAOBatis implements SessionDAO {
         });
     }
 
+    @Override
+    @Transactional
+    public Result<Collection<EntityKey>> deleteAllSessionsForGroup(final Long groupPK) {
+        return delete(this.sessionRecordMapper
+                .selectIdsByExample()
+                .where(SessionRecordDynamicSqlSupport.groupId, isEqualTo(groupPK))
+                .build()
+                .execute()
+                .stream()
+                .map(pk -> new EntityKey(pk, EntityType.SESSION))
+                .collect(Collectors.toSet()));
+    }
+
     private void deleteSessionScreenshots(final SessionRecord sessionRecord) {
+
         // get all screenshot record ids for the session
         final List<Long> screenShotPKs = this.screenshotDataRecordMapper
                 .selectIdsByExample()
@@ -408,7 +422,8 @@ public class SessionDAOBatis implements SessionDAO {
     private Result<Long> pkByUUID(final String uuid) {
         return Result.tryCatch(() -> {
 
-            final List<Long> execute = this.sessionRecordMapper.selectIdsByExample()
+            final List<Long> execute = this.sessionRecordMapper
+                    .selectIdsByExample()
                     .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(uuid))
                     .build()
                     .execute();

@@ -10,8 +10,11 @@ package ch.ethz.seb.sps.repltests;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import io.swagger.v3.core.util.Constants;
 
 public class ReplTest {
 
@@ -40,6 +43,20 @@ public class ReplTest {
 
         assertEquals("9", String.valueOf((int) (499 / max * mappedMax)));
         assertEquals("10", String.valueOf((int) (500 / max * mappedMax)));
+    }
+
+    @Test
+    @Ignore
+    public void commaSeparatedNumberListGenerator() {
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        for (int i = 2900; i < 2940; i++) {
+            stringBuilder.append(i).append(Constants.COMMA);
+        }
+
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+
+        assertEquals("", stringBuilder.toString());
     }
 
 }

@@ -43,6 +43,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
+import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
@@ -301,7 +302,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     session.clientVersion,
                     session.imageFormat,
                     imageLink,
-                    imageLink + "/" + (timestamp != null ? timestamp : data.getTimestamp()),
+                    imageLink + Constants.SLASH + data.getTimestamp(),
                     metaData);
 
         } catch (final Exception e) {

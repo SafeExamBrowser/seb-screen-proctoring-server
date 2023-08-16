@@ -3,7 +3,7 @@ INSERT IGNORE INTO `user` VALUES
 ;
 
 INSERT IGNORE INTO `client_access` VALUES
-    (1, 'test', 'test-description','test', '$2a$04$9JXeMn4nIHtHUSujpgTiqe11Y./qM/LdiMeaSDbTTWBI/zkHWAfEi', 'super-admin', 0, 0, null)
+    (1, 'test', 'test', 'test-description','test', '$2a$04$9JXeMn4nIHtHUSujpgTiqe11Y./qM/LdiMeaSDbTTWBI/zkHWAfEi', 'super-admin', 0, 0, null)
 ;
 
 INSERT IGNORE INTO `seb_group` VALUES
