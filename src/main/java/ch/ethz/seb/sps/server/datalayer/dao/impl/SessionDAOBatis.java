@@ -422,7 +422,8 @@ public class SessionDAOBatis implements SessionDAO {
     private Result<Long> pkByUUID(final String uuid) {
         return Result.tryCatch(() -> {
 
-            final List<Long> execute = this.sessionRecordMapper.selectIdsByExample()
+            final List<Long> execute = this.sessionRecordMapper
+                    .selectIdsByExample()
                     .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(uuid))
                     .build()
                     .execute();

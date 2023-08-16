@@ -70,6 +70,16 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
     }
 
     @Override
+    public Long modelIdToPK(final String modelId) {
+        final Long pk = isPK(modelId);
+        if (pk != null) {
+            return pk;
+        } else {
+            return pkByUUID(modelId).getOr(null);
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Result<ClientAccess> byPK(final Long id) {
         return Result.tryCatch(() -> this.clientAccessRecordMapper
@@ -343,6 +353,23 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                     Domain.CLIENT_ACCESS.ATTR_NAME,
                     "clientaccess:name:name.notunique");
         }
+    }
+
+    private Result<Long> pkByUUID(final String uuid) {
+        return Result.tryCatch(() -> {
+
+            final List<Long> execute = this.clientAccessRecordMapper
+                    .selectIdsByExample()
+                    .where(ClientAccessRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(uuid))
+                    .build()
+                    .execute();
+
+            if (execute == null || execute.isEmpty()) {
+                throw new NoResourceFoundException(EntityType.CLIENT_ACCESS, uuid);
+            }
+
+            return execute.get(0);
+        });
     }
 
 }
