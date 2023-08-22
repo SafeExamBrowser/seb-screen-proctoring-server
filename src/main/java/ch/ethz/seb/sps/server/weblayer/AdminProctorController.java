@@ -39,7 +39,9 @@ import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
+import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
@@ -443,7 +445,7 @@ public class AdminProctorController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<ScreenshotViewData> searchScreenshots(
+    public Page<ScreenshotSearchResult> searchScreenshots(
             @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
             @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
             @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
@@ -456,13 +458,111 @@ public class AdminProctorController {
 
         final FilterMap filterMap = new FilterMap(request);
 
-        final Page<ScreenshotViewData> page = this.paginationService.getPageOf(
+        final Page<ScreenshotSearchResult> page = this.paginationService.getPageOf(
                 pageNumber,
                 pageSize,
                 sortBy,
                 ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
                 () -> preProcessGroupCriteria(filterMap),
                 () -> queryScreenShots(filterMap))
+                .getOrThrow();
+
+        return page;
+
+    }
+
+    @Operation(
+            summary = "Get the requested page of a given screen shot search result",
+            description = "The search query includes specific and generic filter criteria und paging as well as sorting. See detailed description for each part in the parameter description",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_GROUP_ID,
+                            description = "The group UUID filter criteria. If available the search is restricted to the given group. The value must be the UUID or the PK of the group",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_GROUP_NAME,
+                            description = "The group name filter criteria. If available the search is restricted to the given full text search on group name",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_SESSION_ID,
+                            description = "The session filter criteria. If available the search is restricted to the given session. The value must be the UUID or the PK of the session",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_FROM_TIME,
+                            description = "The search from-time filter criteria. If given only matches from this time onwards are part of the search result. Value must be a unix timestamp in millisecods in UTC timezone",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_TO_TIME,
+                            description = "The search to-time filter criteria. If given only matches from this time backwards in time are part of the search result. Value must be a unix timestamp in millisecods in UTC timezone",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_NAME,
+                            description = "The search filter criteria for a specific session user name. This is used for full-text search on the participant/students login-name session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_MACHINE_NAME,
+                            description = "The search filter criteria for a specific session user machine name. This is used for full-text search on the participant/students machine name session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_OS_NAME,
+                            description = "The search filter criteria for a specific session user machine operating system name. This is used for full-text search on the participant/students machine operating system name session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_VERSION,
+                            description = "The search filter criteria for a specific session user SEB version. This is used for full-text search on the participant/students SEB version session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Page.ATTR_PAGE_NUMBER,
+                            description = "The number of the page to get from the whole list. If the page does not exists, the API retruns with the first page.",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Page.ATTR_PAGE_SIZE,
+                            description = "The size of the page to get. Default is 20",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Page.ATTR_SORT,
+                            in = ParameterIn.QUERY,
+                            description = "the sort parameter to sort the result list of entities before paging. The sort parameter is the name of the result set attribute to sort with a leading '-' sign for descending sort order.",
+                            required = false)
+            })
+    @RequestMapping(
+            path = API.SESSION_SEARCH_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<SessionSearchResult> searchSessions(
+            @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
+            @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
+            @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
+            @RequestParam(name = API.PARAM_FROM_TIME, required = false) final String fromTime,
+            @RequestParam(name = API.PARAM_TO_TIME, required = false) final String toTime,
+            @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
+            @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
+            @RequestParam(name = Page.ATTR_SORT, required = false) final String sortBy,
+            final HttpServletRequest request) {
+
+        final FilterMap filterMap = new FilterMap(request);
+
+        final Page<SessionSearchResult> page = this.paginationService.getPageOf(
+                pageNumber,
+                pageSize,
+                sortBy,
+                ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
+                () -> preProcessGroupCriteria(filterMap),
+                () -> querySessions(filterMap))
                 .getOrThrow();
 
         return page;
@@ -487,12 +587,21 @@ public class AdminProctorController {
         }
     }
 
-    private Result<Collection<ScreenshotViewData>> queryScreenShots(final FilterMap filterMap) {
+    private Result<Collection<ScreenshotSearchResult>> queryScreenShots(final FilterMap filterMap) {
         final String groupIds = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
         if (groupIds != null && StringUtils.isBlank(groupIds)) {
             return Result.of(Collections.emptyList());
         } else {
             return this.proctoringService.searchScreenshots(filterMap);
+        }
+    }
+
+    private Result<Collection<SessionSearchResult>> querySessions(final FilterMap filterMap) {
+        final String groupIds = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
+        if (groupIds != null && StringUtils.isBlank(groupIds)) {
+            return Result.of(Collections.emptyList());
+        } else {
+            return this.proctoringService.searchSessions(filterMap);
         }
     }
 

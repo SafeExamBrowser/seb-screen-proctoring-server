@@ -15,7 +15,9 @@ import java.util.function.Consumer;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
+import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
 import ch.ethz.seb.sps.utils.Result;
 
 public interface ProctoringService {
@@ -51,6 +53,8 @@ public interface ProctoringService {
             String sessionUUID,
             OutputStream out);
 
-    Result<Collection<ScreenshotViewData>> searchScreenshots(final FilterMap filterMap);
+    Result<Collection<SessionSearchResult>> searchSessions(FilterMap filterMap);
+
+    Result<Collection<ScreenshotSearchResult>> searchScreenshots(final FilterMap filterMap);
 
 }

@@ -118,7 +118,9 @@ public final class API {
     public static final String GROUP_ENDPOINT = "/group";
     public static final String SESSION_ENDPOINT = "/session";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
-    public static final String SCREENSHOT_SEARCH_ENDPOINT = "/search";
+    public static final String SEARCH_ENDPOINT = "/search";
+    public static final String SCREENSHOT_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/screenshots";
+    public static final String SESSION_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/sessions";
 
     public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_ID + "}";
     public static final String SESSION_ID_PATH_SEGMENT = "/{" + PARAM_SESSION_ID + "}";

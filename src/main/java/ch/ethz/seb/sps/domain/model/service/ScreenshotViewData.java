@@ -27,7 +27,6 @@ public final class ScreenshotViewData {
     public static final String ATTR_START_TIME = "startTime";
     public static final String ATTR_END_TIME = "endTime";
     public static final String ATTR_ACTIVE = "active";
-    public static final String ATTR_SESSION = "session";
     public static final String ATTR_LATEST_IMAGE_LINK = "latestImageLink";
     public static final String ATTR_IMAGE_LINK = "imageLink";
     public static final String ATTR_META_DATA = "metaData";

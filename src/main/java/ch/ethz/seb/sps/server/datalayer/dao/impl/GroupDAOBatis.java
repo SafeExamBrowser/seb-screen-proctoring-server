@@ -146,6 +146,8 @@ public class GroupDAOBatis implements GroupDAO {
         return Result.tryCatch(() -> {
 
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
+            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
+            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
             final List<Group> result = this.groupRecordMapper
                     .selectByExample()
@@ -161,8 +163,10 @@ public class GroupDAOBatis implements GroupDAO {
                             isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_DESCRIPTION)))
                     .and(
                             GroupRecordDynamicSqlSupport.creationTime,
-                            SqlBuilder.isGreaterThanOrEqualToWhenPresent(
-                                    filterMap.getLong(Domain.SEB_GROUP.ATTR_CREATION_TIME)))
+                            SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                    .and(
+                            GroupRecordDynamicSqlSupport.creationTime,
+                            SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
                     .build()
                     .execute()
                     .stream()

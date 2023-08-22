@@ -34,11 +34,14 @@ import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
+import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
 import ch.ethz.seb.sps.server.ServiceInfo;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
@@ -54,6 +57,7 @@ public class ProctoringServiceImpl implements ProctoringService {
 
     private static final Logger log = LoggerFactory.getLogger(ProctoringServiceImpl.class);
 
+    private final GroupDAO groupDAO;
     private final SessionDAO sessionDAO;
     private final ScreenshotDAO screenshotDAO;
     private final ScreenshotDataDAO screenshotDataDAO;
@@ -63,6 +67,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     private final JSONMapper jsonMapper;
 
     public ProctoringServiceImpl(
+            final GroupDAO groupDAO,
             final SessionDAO sessionDAO,
             final ScreenshotDAO screenshotDAO,
             final ScreenshotDataDAO screenshotDataDAO,
@@ -71,6 +76,7 @@ public class ProctoringServiceImpl implements ProctoringService {
             final ServiceInfo serviceInfo,
             final JSONMapper jsonMapper) {
 
+        this.groupDAO = groupDAO;
         this.sessionDAO = sessionDAO;
         this.screenshotDAO = screenshotDAO;
         this.screenshotDataDAO = screenshotDataDAO;
@@ -215,10 +221,17 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public Result<Collection<ScreenshotViewData>> searchScreenshots(final FilterMap filterMap) {
+    public Result<Collection<SessionSearchResult>> searchSessions(final FilterMap filterMap) {
+        return this.sessionDAO
+                .allMatching(filterMap)
+                .map(this::createSessionSearchResult);
+    }
+
+    @Override
+    public Result<Collection<ScreenshotSearchResult>> searchScreenshots(final FilterMap filterMap) {
         return this.screenshotDataDAO
                 .searchScreenshotData(filterMap)
-                .map(this::createScreenshotViewData);
+                .map(this::createScreenshotSearchResult);
     }
 
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
@@ -273,28 +286,82 @@ public class ProctoringServiceImpl implements ProctoringService {
         this.proctoringCacheService.evictGroup(groupUUID);
     }
 
-    private Collection<ScreenshotViewData> createScreenshotViewData(final Collection<ScreenshotDataRecord> data) {
-        final Map<String, Session> sessionCache = new HashMap<>();
+    private Collection<SessionSearchResult> createSessionSearchResult(final Collection<Session> data) {
+        final Map<Long, Group> groupCache = new HashMap<>();
         return data
                 .stream()
-                .map(rec -> toScreenshotViewData(rec, sessionCache))
+                .map(session -> toSessionSearchResult(session, groupCache))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
-    private ScreenshotViewData toScreenshotViewData(
-            final ScreenshotDataRecord data,
+    private Collection<ScreenshotSearchResult> createScreenshotSearchResult(
+            final Collection<ScreenshotDataRecord> data) {
+
+        final Map<String, Session> sessionCache = new HashMap<>();
+        final Map<Long, Group> groupCache = new HashMap<>();
+        return data
+                .stream()
+                .map(rec -> toScreenshotSearchResult(rec, groupCache, sessionCache))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    private SessionSearchResult toSessionSearchResult(
+            final Session session,
+            final Map<Long, Group> groupCache) {
+
+        groupCache.computeIfAbsent(
+                session.getGroupId(),
+                gid -> this.groupDAO.byPK(gid).getOr(null));
+
+        final Group group = groupCache.get(session.getGroupId());
+        final Long nrOfScreenshots = this.sessionDAO.getNumberOfScreenshots(session.uuid);
+
+        return new SessionSearchResult(
+                session,
+                group,
+                nrOfScreenshots != null ? nrOfScreenshots.intValue() : -1);
+    }
+
+    private ScreenshotSearchResult toScreenshotSearchResult(
+            final ScreenshotDataRecord rec,
+            final Map<Long, Group> groupCache,
             final Map<String, Session> sessionCache) {
 
         try {
 
-            final Session session = sessionCache.containsKey(data.getSessionUuid())
-                    ? sessionCache.get(data.getSessionUuid())
-                    : this.sessionDAO.byModelId(data.getSessionUuid()).getOrThrow();
-            return createViewData(data, session);
+            // check cache and fill if needed
+            sessionCache.computeIfAbsent(rec.getSessionUuid(), uuid -> {
+                final Session session = this.sessionDAO.byModelId(uuid).getOr(null);
+                groupCache.computeIfAbsent(
+                        session.getGroupId(),
+                        gid -> this.groupDAO.byPK(gid).getOr(null));
+                return session;
+            });
+
+            final Session session = sessionCache.get(rec.getSessionUuid());
+            final Group group = groupCache.get(session.getGroupId());
+
+            ImageFormat imageFormat = session.getImageFormat();
+            if (rec.getImageFormat() != null) {
+                try {
+                    imageFormat = ImageFormat.valueOf(rec.getImageFormat());
+                } catch (final Exception e) {
+                    log.error("Failed to get imageFormat from screenshot: ", e);
+                }
+            }
+
+            return new ScreenshotSearchResult(
+                    rec.getId(),
+                    group,
+                    session,
+                    rec.getTimestamp(),
+                    imageFormat,
+                    this.extractedMetaData(rec));
 
         } catch (final Exception e) {
-            log.error("Failed to convert ScreenshotDataRecord to ScreenshotViewData for {}", data, e);
+            log.error("Failed to convert ScreenshotDataRecord to ScreenshotViewData for {}", rec, e);
             return null;
         }
     }
@@ -324,20 +391,7 @@ public class ProctoringServiceImpl implements ProctoringService {
             final Session session) {
 
         final String imageLink = this.serviceInfo.getScreenshotRequestURI() + "/" + data.getSessionUuid();
-        final Map<String, String> metaData = new HashMap<>();
-
-        try {
-
-            metaData.putAll(
-                    this.jsonMapper.readValue(
-                            data.getMetaData(),
-                            new TypeReference<Map<String, String>>() {
-                            }));
-
-        } catch (final Exception e) {
-            log.warn("Failed to parse meta data JSON, add it as single attribute: {}", data.getMetaData());
-            metaData.put("data", data.getMetaData());
-        }
+        final Map<String, String> metaData = extractedMetaData(data);
 
         return new ScreenshotViewData(
                 session.creationTime,
@@ -353,6 +407,26 @@ public class ProctoringServiceImpl implements ProctoringService {
                 imageLink,
                 imageLink + Constants.SLASH + data.getTimestamp(),
                 metaData);
+    }
+
+    private Map<String, String> extractedMetaData(final ScreenshotDataRecord data) {
+
+        final Map<String, String> metaData = new HashMap<>();
+
+        try {
+
+            metaData.putAll(
+                    this.jsonMapper.readValue(
+                            data.getMetaData(),
+                            new TypeReference<Map<String, String>>() {
+                            }));
+
+        } catch (final Exception e) {
+            log.warn("Failed to parse meta data JSON, add it as single attribute: {}", data.getMetaData());
+            metaData.put("data", data.getMetaData());
+        }
+
+        return metaData;
     }
 
 }

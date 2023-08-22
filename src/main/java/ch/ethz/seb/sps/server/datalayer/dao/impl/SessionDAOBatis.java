@@ -12,6 +12,7 @@ import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamic
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +23,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
+import org.mybatis.dynamic.sql.select.QueryExpressionDSL;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +47,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
+import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
@@ -143,32 +147,59 @@ public class SessionDAOBatis implements SessionDAO {
         return Result.tryCatch(() -> {
 
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
-            return this.sessionRecordMapper
-                    .selectByExample()
-                    .where(
-                            SessionRecordDynamicSqlSupport.terminationTime,
-                            (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
-                                    : SqlBuilder.isEqualToWhenPresent(() -> null))
-                    .and(
-                            SessionRecordDynamicSqlSupport.groupId,
-                            SqlBuilder.isEqualToWhenPresent(filterMap.getLong(Domain.SESSION.ATTR_GROUP_ID)))
-                    .and(
-                            SessionRecordDynamicSqlSupport.clientName,
-                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_NAME)))
-                    .and(
-                            SessionRecordDynamicSqlSupport.clientMachineName,
-                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_MACHINE_NAME)))
-                    .and(
-                            SessionRecordDynamicSqlSupport.clientVersion,
-                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_VERSION)))
-                    .and(
-                            SessionRecordDynamicSqlSupport.clientIp,
-                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_IP)))
-                    .and(
-                            SessionRecordDynamicSqlSupport.creationTime,
-                            SqlBuilder.isGreaterThanOrEqualToWhenPresent(
-                                    filterMap.getLong(Domain.SESSION.ATTR_CREATION_TIME)))
+            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
+            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
+            final String groupPKs = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
+
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<SessionRecord>>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.sessionRecordMapper
+                            .selectByExample()
+                            .where(
+                                    SessionRecordDynamicSqlSupport.terminationTime,
+                                    (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
+                                            : SqlBuilder.isEqualToWhenPresent(() -> null))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.groupId,
+                                    SqlBuilder.isEqualToWhenPresent(filterMap.getLong(Domain.SESSION.ATTR_GROUP_ID)))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.clientName,
+                                    isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_NAME)))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.clientMachineName,
+                                    isLikeWhenPresent(
+                                            filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_MACHINE_NAME)))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.clientVersion,
+                                    isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_VERSION)))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.clientIp,
+                                    isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_IP)))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.creationTime,
+                                    SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.creationTime,
+                                    SqlBuilder.isLessThanOrEqualToWhenPresent(toTime));
+
+            // group constraint
+            if (groupPKs != null) {
+                if (groupPKs.contains(Constants.LIST_SEPARATOR)) {
+                    final List<Long> pksAsList = Arrays.asList(StringUtils.split(groupPKs, Constants.LIST_SEPARATOR))
+                            .stream()
+                            .map(Long::parseLong)
+                            .collect(Collectors.toList());
+                    queryBuilder = queryBuilder.and(
+                            SessionRecordDynamicSqlSupport.groupId,
+                            SqlBuilder.isInWhenPresent(pksAsList));
+                } else {
+                    queryBuilder = queryBuilder.and(
+                            SessionRecordDynamicSqlSupport.groupId,
+                            SqlBuilder.isEqualToWhenPresent(Long.parseLong(groupPKs)));
+                }
+            }
+
+            return queryBuilder
                     .build()
                     .execute()
                     .stream()
@@ -388,6 +419,16 @@ public class SessionDAOBatis implements SessionDAO {
             return sessionUUID;
         })
                 .onError(TransactionHandler::rollback);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public Long getNumberOfScreenshots(final String uuid) {
+        return this.screenshotDataRecordMapper
+                .countByExample()
+                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(uuid))
+                .build()
+                .execute();
     }
 
     private Result<SessionRecord> recordByPK(final Long pk) {
