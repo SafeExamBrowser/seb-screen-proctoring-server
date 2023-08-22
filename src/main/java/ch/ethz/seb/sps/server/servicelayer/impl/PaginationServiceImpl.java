@@ -15,6 +15,8 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.utils.Result;
@@ -33,6 +36,8 @@ import ch.ethz.seb.sps.utils.Result;
 @Lazy
 @Service
 public class PaginationServiceImpl implements PaginationService {
+
+    private static final Logger log = LoggerFactory.getLogger(PaginationServiceImpl.class);
 
     private final int defaultPageSize;
     private final int maxPageSize;
@@ -126,7 +131,54 @@ public class PaginationServiceImpl implements PaginationService {
         return Result.tryCatch(() -> {
             //final SqlTable table = SqlTable.of(tableName);
             final com.github.pagehelper.Page<Object> page =
-                    setPagination(pageNumber, pageSize, sort, tableName);
+                    setPagination(pageNumber, this.getPageSize(pageSize), sort, tableName);
+
+            final Collection<T> list = delegate.get().getOrThrow();
+
+            return new Page<>(
+                    page.getPages(),
+                    page.getPageNum(),
+                    this.getPageSize(pageSize),
+                    sort,
+                    list);
+        });
+    }
+
+    @Override
+    public <T extends Entity> Result<Page<T>> getPage(
+            final Integer pageNumber,
+            final Integer pageSize,
+            final String sort,
+            final String tableName,
+            final Runnable preProcessor,
+            final Supplier<Result<Collection<T>>> delegate) {
+
+        if (preProcessor != null) {
+            try {
+                preProcessor.run();
+            } catch (final Exception e) {
+                log.error("Failed to apply pagination pre processing: ", e);
+            }
+        }
+        return getPage(pageNumber, pageSize, sort, tableName, delegate);
+    }
+
+    @Override
+    public <T> Result<Page<T>> getPageOf(
+            final Integer pageNumber,
+            final Integer pageSize,
+            final String sort,
+            final String tableName,
+            final Supplier<Result<Collection<T>>> delegate) {
+
+        return Result.tryCatch(() -> {
+            //final SqlTable table = SqlTable.of(tableName);
+            final com.github.pagehelper.Page<Object> page =
+                    setPagination(
+                            pageNumber,
+                            this.getPageSize(pageSize),
+                            sort,
+                            tableName);
 
             final Collection<T> list = delegate.get().getOrThrow();
 
@@ -145,22 +197,17 @@ public class PaginationServiceImpl implements PaginationService {
             final Integer pageSize,
             final String sort,
             final String tableName,
+            final Runnable preProcessor,
             final Supplier<Result<Collection<T>>> delegate) {
 
-        return Result.tryCatch(() -> {
-            //final SqlTable table = SqlTable.of(tableName);
-            final com.github.pagehelper.Page<Object> page =
-                    setPagination(pageNumber, pageSize, sort, tableName);
-
-            final Collection<T> list = delegate.get().getOrThrow();
-
-            return new Page<>(
-                    page.getPages(),
-                    page.getPageNum(),
-                    this.getPageSize(pageSize),
-                    sort,
-                    list);
-        });
+        if (preProcessor != null) {
+            try {
+                preProcessor.run();
+            } catch (final Exception e) {
+                log.error("Failed to apply pagination pre processing: ", e);
+            }
+        }
+        return getPageOf(pageNumber, pageSize, sort, tableName, delegate);
     }
 
     private String verifySortColumnName(final String sort, final String columnName) {
@@ -239,6 +286,17 @@ public class PaginationServiceImpl implements PaginationService {
         this.sortColumnMapping.put(GroupRecordDynamicSqlSupport.groupRecord.tableNameAtRuntime(), groupTableMap);
         this.defaultSortColumn.put(GroupRecordDynamicSqlSupport.groupRecord.tableNameAtRuntime(),
                 Domain.SEB_GROUP.ATTR_NAME);
+
+        final Map<String, String> screenshotDataTableMap = new HashMap<>();
+        groupTableMap.put(
+                Domain.SCREENSHOT_DATA.ATTR_TIMESTAMP,
+                ScreenshotDataRecordDynamicSqlSupport.timestamp.name());
+
+        this.sortColumnMapping.put(ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
+                screenshotDataTableMap);
+        this.defaultSortColumn.put(
+                ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
+                Domain.SCREENSHOT_DATA.ATTR_TIMESTAMP);
 
         // TODO define sort mapping for other tables
 

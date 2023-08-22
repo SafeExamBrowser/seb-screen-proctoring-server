@@ -11,6 +11,8 @@ package ch.ethz.seb.sps.domain.model;
 import java.util.Arrays;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -31,6 +33,18 @@ public class FilterMap extends POSTMapper {
 
     public FilterMap(final MultiValueMap<String, String> params, final String uriQueryString) {
         super(params, uriQueryString);
+    }
+
+    public FilterMap(final HttpServletRequest request) {
+        super(getRequestParams(request), null);
+    }
+
+    private static MultiValueMap<String, String> getRequestParams(final HttpServletRequest request) {
+        final LinkedMultiValueMap<String, String> linkedMultiValueMap = new LinkedMultiValueMap<>();
+        request.getParameterMap()
+                .entrySet()
+                .forEach(entry -> linkedMultiValueMap.put(entry.getKey(), Arrays.asList(entry.getValue())));
+        return linkedMultiValueMap;
     }
 
     public boolean containsAny(final Set<String> extFilter) {

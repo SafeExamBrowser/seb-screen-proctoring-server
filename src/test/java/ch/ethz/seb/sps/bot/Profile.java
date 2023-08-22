@@ -40,7 +40,7 @@ public final class Profile {
     @JsonProperty("runtime")
     int runtime = 15 * 60000;
     @JsonProperty("numberOfConnections")
-    int numberOfConnections = 1;
+    int numberOfConnections = 3;
     @JsonProperty("spawnDelay")
     long spawnDelay = 1000;
     @JsonProperty("screenshotIntervall")

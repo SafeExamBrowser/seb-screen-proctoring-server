@@ -16,11 +16,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
@@ -47,6 +53,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.ethz.seb.sps.domain.Domain;
@@ -86,7 +93,7 @@ public class HTTPClientBot {
         for (int i = 0; i < this.profile.numberOfConnections; i++) {
             final String sessionId = StringUtils.isNotBlank(this.profile.sessionId)
                     ? this.profile.sessionId
-                    : "seb_" + (this.profile.countConnections ? i : getRandomName());
+                    : "seb_" + getRandomName() + "_" + i;
 
             this.executorService.execute(new ConnectionBot(sessionId));
 
@@ -190,11 +197,15 @@ public class HTTPClientBot {
             final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             takeScreenshot(byteArrayOutputStream);
 
+            final String metaData = createMetaData();
+
             final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
             headers.set(Domain.SCREENSHOT_DATA.ATTR_TIMESTAMP, String.valueOf(Utils.getMillisecondsNow()));
             headers.set(Domain.SCREENSHOT_DATA.ATTR_IMAGE_FORMAT, "jpg");
-            headers.set(Domain.SCREENSHOT_DATA.ATTR_META_DATA, "some metadata " + sessionUUID);
+            if (metaData != null) {
+                headers.set(Domain.SCREENSHOT_DATA.ATTR_META_DATA, metaData);
+            }
 
             final HttpEntity<byte[]> entity = new HttpEntity<>(byteArrayOutputStream.toByteArray(), headers);
 
@@ -219,6 +230,51 @@ public class HTTPClientBot {
                     }
                 } catch (final Exception e) {
                 }
+            }
+        }
+
+        private final List<String> urls = Stream.of(
+                "https://google.com",
+                "https://zoom.com",
+                "https://chat.com",
+                "https://moodle.com",
+                "https://safeexambrowser.org")
+                .collect(Collectors.toList());
+        private final List<String> titles = Stream.of(
+                "Firefox",
+                "Zoom",
+                "Calculator",
+                "Teams",
+                "Excel")
+                .collect(Collectors.toList());
+        private final List<String> actions = Stream.of(
+                "Text Input",
+                "Right Mouse Button",
+                "Left Mouse Button",
+                "Touch",
+                "Selection (Double Click)")
+                .collect(Collectors.toList());
+
+        private String createMetaData() {
+            final Map<String, String> metadata = new HashMap<>();
+            if (HTTPClientBot.this.random.nextBoolean()) {
+                metadata.put(
+                        API.SCREENSHOT_META_DATA_BROWSER_URL,
+                        this.urls.get(HTTPClientBot.this.random.nextInt(this.urls.size())));
+            } else {
+                metadata.put(
+                        API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
+                        this.titles.get(HTTPClientBot.this.random.nextInt(this.titles.size())));
+            }
+            metadata.put(
+                    API.SCREENSHOT_META_DATA_USER_ACTION,
+                    this.actions.get(HTTPClientBot.this.random.nextInt(this.actions.size())));
+
+            try {
+                return HTTPClientBot.this.jsonMapper.writeValueAsString(metadata);
+            } catch (final JsonProcessingException e) {
+                e.printStackTrace();
+                return null;
             }
         }
 
@@ -295,11 +351,7 @@ public class HTTPClientBot {
     }
 
     private String getRandomName() {
-        final StringBuilder sb = new StringBuilder(String.valueOf(this.random.nextInt(100)));
-        while (sb.length() < 3) {
-            sb.insert(0, "0");
-        }
-        return sb.toString();
+        return UUID.randomUUID().toString();
     }
 
     private OAuth2RestTemplate createRestTemplate(final String scopes) {

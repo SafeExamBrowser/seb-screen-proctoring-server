@@ -8,6 +8,9 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao;
 
+import java.util.Collection;
+
+import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.utils.Result;
 
@@ -16,5 +19,7 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
     boolean existsByUUID(String groupUUID);
 
     Result<Group> createNew(String name);
+
+    Result<Collection<Long>> pksByGroupName(final FilterMap filterMap);
 
 }

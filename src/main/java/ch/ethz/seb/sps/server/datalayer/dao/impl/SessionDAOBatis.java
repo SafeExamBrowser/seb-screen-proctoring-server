@@ -167,7 +167,7 @@ public class SessionDAOBatis implements SessionDAO {
                     .and(
                             SessionRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(
-                                    filterMap.getLong(Domain.CLIENT_ACCESS.ATTR_CREATION_TIME)))
+                                    filterMap.getLong(Domain.SESSION.ATTR_CREATION_TIME)))
 
                     .build()
                     .execute()
