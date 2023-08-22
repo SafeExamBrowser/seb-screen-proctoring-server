@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.server.servicelayer;
 
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.function.Consumer;
 
 import ch.ethz.seb.sps.domain.model.FilterMap;
@@ -49,5 +50,7 @@ public interface ProctoringService {
             Long screenhotId,
             String sessionUUID,
             OutputStream out);
+
+    Result<Collection<ScreenshotViewData>> searchScreenshots(final FilterMap filterMap);
 
 }

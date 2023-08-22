@@ -41,6 +41,7 @@ import ch.ethz.seb.sps.server.ServiceInfo;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
@@ -53,6 +54,7 @@ public class ProctoringServiceImpl implements ProctoringService {
 
     private static final Logger log = LoggerFactory.getLogger(ProctoringServiceImpl.class);
 
+    private final SessionDAO sessionDAO;
     private final ScreenshotDAO screenshotDAO;
     private final ScreenshotDataDAO screenshotDataDAO;
     private final ProctoringCacheService proctoringCacheService;
@@ -61,6 +63,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     private final JSONMapper jsonMapper;
 
     public ProctoringServiceImpl(
+            final SessionDAO sessionDAO,
             final ScreenshotDAO screenshotDAO,
             final ScreenshotDataDAO screenshotDataDAO,
             final ProctoringCacheService proctoringCacheService,
@@ -68,6 +71,7 @@ public class ProctoringServiceImpl implements ProctoringService {
             final ServiceInfo serviceInfo,
             final JSONMapper jsonMapper) {
 
+        this.sessionDAO = sessionDAO;
         this.screenshotDAO = screenshotDAO;
         this.screenshotDataDAO = screenshotDataDAO;
         this.proctoringCacheService = proctoringCacheService;
@@ -210,6 +214,13 @@ public class ProctoringServiceImpl implements ProctoringService {
         }
     }
 
+    @Override
+    public Result<Collection<ScreenshotViewData>> searchScreenshots(final FilterMap filterMap) {
+        return this.screenshotDataDAO
+                .searchScreenshotData(filterMap)
+                .map(this::createScreenshotViewData);
+    }
+
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
         try {
 
@@ -262,6 +273,32 @@ public class ProctoringServiceImpl implements ProctoringService {
         this.proctoringCacheService.evictGroup(groupUUID);
     }
 
+    private Collection<ScreenshotViewData> createScreenshotViewData(final Collection<ScreenshotDataRecord> data) {
+        final Map<String, Session> sessionCache = new HashMap<>();
+        return data
+                .stream()
+                .map(rec -> toScreenshotViewData(rec, sessionCache))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    private ScreenshotViewData toScreenshotViewData(
+            final ScreenshotDataRecord data,
+            final Map<String, Session> sessionCache) {
+
+        try {
+
+            final Session session = sessionCache.containsKey(data.getSessionUuid())
+                    ? sessionCache.get(data.getSessionUuid())
+                    : this.sessionDAO.byModelId(data.getSessionUuid()).getOrThrow();
+            return createViewData(data, session);
+
+        } catch (final Exception e) {
+            log.error("Failed to convert ScreenshotDataRecord to ScreenshotViewData for {}", data, e);
+            return null;
+        }
+    }
+
     private ScreenshotViewData createScreenshotViewData(
             final String sessionUUID,
             final ScreenshotDataRecord data,
@@ -274,41 +311,48 @@ public class ProctoringServiceImpl implements ProctoringService {
         try {
 
             final Session session = this.proctoringCacheService.getSession(sessionUUID);
-            final String imageLink = this.serviceInfo.getScreenshotRequestURI() + "/" + data.getSessionUuid();
-            final Map<String, String> metaData = new HashMap<>();
-
-            try {
-
-                metaData.putAll(
-                        this.jsonMapper.readValue(
-                                data.getMetaData(),
-                                new TypeReference<Map<String, String>>() {
-                                }));
-
-            } catch (final Exception e) {
-                log.warn("Failed to parse meta data JSON, add it as single attribute: {}", data.getMetaData());
-                metaData.put("data", data.getMetaData());
-            }
-
-            return new ScreenshotViewData(
-                    session.creationTime,
-                    data.getTimestamp(),
-                    session.terminationTime != null ? session.terminationTime : data.getTimestamp(),
-                    session.uuid,
-                    session.clientName,
-                    session.clientIP,
-                    session.clientMachineName,
-                    session.clientOSName,
-                    session.clientVersion,
-                    session.imageFormat,
-                    imageLink,
-                    imageLink + Constants.SLASH + data.getTimestamp(),
-                    metaData);
+            return createViewData(data, session);
 
         } catch (final Exception e) {
             log.error("Failed to create ScreenshotViewData for session: {} and data: {}", sessionUUID, data, e);
             return null;
         }
+    }
+
+    private ScreenshotViewData createViewData(
+            final ScreenshotDataRecord data,
+            final Session session) {
+
+        final String imageLink = this.serviceInfo.getScreenshotRequestURI() + "/" + data.getSessionUuid();
+        final Map<String, String> metaData = new HashMap<>();
+
+        try {
+
+            metaData.putAll(
+                    this.jsonMapper.readValue(
+                            data.getMetaData(),
+                            new TypeReference<Map<String, String>>() {
+                            }));
+
+        } catch (final Exception e) {
+            log.warn("Failed to parse meta data JSON, add it as single attribute: {}", data.getMetaData());
+            metaData.put("data", data.getMetaData());
+        }
+
+        return new ScreenshotViewData(
+                session.creationTime,
+                data.getTimestamp(),
+                session.terminationTime != null ? session.terminationTime : data.getTimestamp(),
+                session.uuid,
+                session.clientName,
+                session.clientIP,
+                session.clientMachineName,
+                session.clientOSName,
+                session.clientVersion,
+                session.imageFormat,
+                imageLink,
+                imageLink + Constants.SLASH + data.getTimestamp(),
+                metaData);
     }
 
 }

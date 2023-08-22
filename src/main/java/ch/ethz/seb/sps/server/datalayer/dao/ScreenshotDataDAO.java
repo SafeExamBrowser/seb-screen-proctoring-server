@@ -16,6 +16,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
@@ -53,5 +54,7 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
             Long timestamp,
             ImageFormat imageFormat,
             String metadata);
+
+    Result<Collection<ScreenshotDataRecord>> searchScreenshotData(FilterMap filterMap);
 
 }

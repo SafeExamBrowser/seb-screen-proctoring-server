@@ -33,6 +33,23 @@ public final class API {
 
     }
 
+    public static final String SCREENSHOT_META_DATA_BROWSER_URL = "screenProctoringMetadataURL";
+    public static final String SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE = "screenProctoringMetadataWindowTitle";
+    public static final String SCREENSHOT_META_DATA_USER_ACTION = "screenProctoringMetadataUserAction";
+
+    public enum ScreenshotMetadataType {
+        BROWSER_URL(SCREENSHOT_META_DATA_BROWSER_URL),
+        ACTIVE_WINDOW_TITLE(SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE),
+        USER_ACTION(SCREENSHOT_META_DATA_USER_ACTION);
+
+        public final String parameterName;
+
+        ScreenshotMetadataType(final String parameterName) {
+            this.parameterName = parameterName;
+        }
+
+    }
+
     public static final EnumSet<PrivilegeType> PRIVILEGES_WRITE = EnumSet.of(
             PrivilegeType.READ,
             PrivilegeType.MODIFY,
@@ -92,12 +109,16 @@ public final class API {
     public static final String SPS_SERVER_HEALTH = "sps_server_health";
 
     public static final String PARAM_GROUP_ID = "groupUUID";
+    public static final String PARAM_GROUP_NAME = "groupName";
     public static final String PARAM_SESSION_ID = "sessionUUID";
+    public static final String PARAM_FROM_TIME = "fromTime";
+    public static final String PARAM_TO_TIME = "toTime";
 
     public static final String PROCTORING_ENDPOINT = "/proctoring";
     public static final String GROUP_ENDPOINT = "/group";
     public static final String SESSION_ENDPOINT = "/session";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
+    public static final String SCREENSHOT_SEARCH_ENDPOINT = "/search";
 
     public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_ID + "}";
     public static final String SESSION_ID_PATH_SEGMENT = "/{" + PARAM_SESSION_ID + "}";

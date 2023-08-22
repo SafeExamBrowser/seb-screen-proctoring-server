@@ -13,6 +13,7 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 import static org.mybatis.dynamic.sql.SqlBuilder.isLikeWhenPresent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,12 +23,17 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
+import org.mybatis.dynamic.sql.select.QueryExpressionDSL;
 import org.mybatis.dynamic.sql.select.SelectDSL;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.API.ScreenshotMetadataType;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
@@ -35,9 +41,11 @@ import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
+import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 
 @Service
@@ -199,6 +207,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<ScreenshotDataRecord> getLatest(final String sessionUUID) {
         return Result.tryCatch(() -> {
             return SelectDSL
@@ -218,6 +227,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<Map<String, ScreenshotDataRecord>> allLatestIn(final List<String> sessionUUIDs) {
         return Result.tryCatch(() -> {
             if (sessionUUIDs == null || sessionUUIDs.isEmpty()) {
@@ -252,6 +262,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<Collection<ScreenshotData>> allMatching(
             final FilterMap filterMap,
             final Predicate<ScreenshotData> predicate) {
@@ -276,6 +287,92 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                     .stream()
                     .map(this::toDomainModel)
                     .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<ScreenshotDataRecord>> searchScreenshotData(final FilterMap filterMap) {
+        return Result.tryCatch(() -> {
+
+            final String groupPKs = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
+
+            final String sessionUUID = filterMap.getString(API.PARAM_SESSION_ID);
+            final String sessionUserName = filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_NAME);
+            final String machineName = filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_MACHINE_NAME);
+            final String osName = filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_OS_NAME);
+            final String sebVersion = filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_VERSION);
+
+            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
+            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
+
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<ScreenshotDataRecord>>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.screenshotDataRecordMapper
+                            .selectByExample()
+                            .join(SessionRecordDynamicSqlSupport.sessionRecord)
+                            .on(
+                                    SessionRecordDynamicSqlSupport.uuid,
+                                    SqlBuilder.equalTo(ScreenshotDataRecordDynamicSqlSupport.sessionUuid))
+
+                            // session constraint
+                            .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualToWhenPresent(sessionUUID))
+
+                            // session data constraint
+                            .and(SessionRecordDynamicSqlSupport.clientName,
+                                    SqlBuilder.isLikeWhenPresent(sessionUserName))
+                            .and(SessionRecordDynamicSqlSupport.clientMachineName,
+                                    SqlBuilder.isLikeWhenPresent(machineName))
+                            .and(SessionRecordDynamicSqlSupport.clientOsName, SqlBuilder.isLikeWhenPresent(osName))
+                            .and(SessionRecordDynamicSqlSupport.clientVersion, SqlBuilder.isLikeWhenPresent(sebVersion))
+
+                            // time range constraint
+                            .and(
+                                    ScreenshotDataRecordDynamicSqlSupport.timestamp,
+                                    SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                            .and(
+                                    ScreenshotDataRecordDynamicSqlSupport.timestamp,
+                                    SqlBuilder.isLessThanOrEqualToWhenPresent(toTime));
+
+            // group constraint
+            if (groupPKs != null) {
+                if (groupPKs.contains(Constants.LIST_SEPARATOR)) {
+                    final List<Long> pksAsList = Arrays.asList(StringUtils.split(groupPKs, Constants.LIST_SEPARATOR))
+                            .stream()
+                            .map(Long::parseLong)
+                            .collect(Collectors.toList());
+                    queryBuilder = queryBuilder.and(
+                            SessionRecordDynamicSqlSupport.groupId,
+                            SqlBuilder.isInWhenPresent(pksAsList));
+                } else {
+                    queryBuilder = queryBuilder.and(
+                            SessionRecordDynamicSqlSupport.groupId,
+                            SqlBuilder.isEqualToWhenPresent(Long.parseLong(groupPKs)));
+                }
+            }
+
+            // meta data constraint
+            final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
+            for (int i = 0; i < metaData.length; i++) {
+                final ScreenshotMetadataType mc = metaData[i];
+
+                final String sqlWildcard = filterMap.getSQLWildcard(mc.parameterName);
+                if (sqlWildcard == null) {
+                    continue;
+                }
+
+                final String value =
+                        Constants.PERCENTAGE_STRING +
+                                Constants.DOUBLE_QUOTE +
+                                mc.parameterName +
+                                Constants.DOUBLE_QUOTE +
+                                sqlWildcard;
+
+                queryBuilder = queryBuilder.and(
+                        ScreenshotDataRecordDynamicSqlSupport.metaData,
+                        SqlBuilder.isLike(value));
+            }
+
+            return queryBuilder.build().execute();
         });
     }
 

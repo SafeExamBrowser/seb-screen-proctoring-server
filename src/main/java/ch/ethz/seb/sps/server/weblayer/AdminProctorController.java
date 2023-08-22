@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.model.EntityType;
@@ -39,14 +41,17 @@ import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.server.ServiceConfig;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
+import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -78,32 +83,6 @@ public class AdminProctorController {
         this.proctoringService = proctoringService;
     }
 
-    /** The generic endpoint to get a Page of domain-entities of a specific type.
-     * </p>
-     * GET /{api}/{domain-entity-name}
-     * </p>
-     * For example for the "exam" domain-entity
-     * GET /admin-api/v1/exam
-     * GET /admin-api/v1/exam?pageNumber=2&pageSize=10&sort=-name
-     * GET /admin-api/v1/exam?name=seb&active=true
-     * </p>
-     * Sorting: the sort parameter to sort the list of entities before paging
-     * the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for
-     * descending sort order. Note that not all entity-model attribute are suited for sorting while the most
-     * are.
-     * </p>
-     * Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)
-     * and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or type=EXAM. Usually
-     * filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing
-     * a given text-snippet.
-     *
-     * @param pageNumber the number of the page that is requested
-     * @param pageSize the size of the page that is requested
-     * @param sort the sort parameter to sort the list of entities before paging
-     *            the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for
-     *            descending sort order.
-     * @param allRequestParams a MultiValueMap of all request parameter that is used for filtering.
-     * @return Page of domain-model-entities of specified type */
     @Operation(
             summary = "Get a page of all active groups the requesting user can access for proctoring",
             description = "Sorting: the sort parameter to sort the list of entities before paging\n"
@@ -198,9 +177,12 @@ public class AdminProctorController {
                             description = "The sorting order"),
                     @Parameter(
                             name = "filterCriteria",
-                            description = "NOTE: This is not implemented yet. <br/>" +
-                                    "Additional filter criterias \n" +
-                                    "For OpenAPI 3 input please use the form: {\"columnName\":\"filterValue\"}",
+                            description = "Additional search filter criteria \n" +
+                                    "This is a collecting map of all request parameter and used by the method to extract "
+                                    +
+                                    "known search filter criteria and if available in the mapping use it for the search request\n"
+                                    +
+                                    "NOTE: For OpenAPI 3 input please use the form: {\"columnName\":\"filterValue\"}",
                             example = "{\"active\":true}",
                             required = false,
                             allowEmptyValue = true)
@@ -250,7 +232,10 @@ public class AdminProctorController {
 
     @Operation(
             summary = "Get the recorded screenshot view and meta data for a given session at a specified time",
-            description = "TODO",
+            description = "If there is no existing screenshot at the given point in time or the time before, " +
+                    "this method checks if there is any existing screenshot in the future and if so, this will " +
+                    "return the data for that screenshot. If there is no screenshot for the given session yet " +
+                    "this will respond with a an respecting error response",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -370,4 +355,145 @@ public class AdminProctorController {
                 },
                 this.downloadExecutor);
     }
+
+    @Operation(
+            summary = "Get the requested page of a given screen shot search result",
+            description = "The search query includes specific and generic filter criteria und paging as well as sorting. See detailed description for each part in the parameter description",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_GROUP_ID,
+                            description = "The group UUID filter criteria. If available the search is restricted to the given group. The value must be the UUID or the PK of the group",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_GROUP_NAME,
+                            description = "The group name filter criteria. If available the search is restricted to the given full text search on group name",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_SESSION_ID,
+                            description = "The session filter criteria. If available the search is restricted to the given session. The value must be the UUID or the PK of the session",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_FROM_TIME,
+                            description = "The search from-time filter criteria. If given only matches from this time onwards are part of the search result. Value must be a unix timestamp in millisecods in UTC timezone",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_TO_TIME,
+                            description = "The search to-time filter criteria. If given only matches from this time backwards in time are part of the search result. Value must be a unix timestamp in millisecods in UTC timezone",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_NAME,
+                            description = "The search filter criteria for a specific session user name. This is used for full-text search on the participant/students login-name session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_MACHINE_NAME,
+                            description = "The search filter criteria for a specific session user machine name. This is used for full-text search on the participant/students machine name session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_OS_NAME,
+                            description = "The search filter criteria for a specific session user machine operating system name. This is used for full-text search on the participant/students machine operating system name session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_VERSION,
+                            description = "The search filter criteria for a specific session user SEB version. This is used for full-text search on the participant/students SEB version session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_BROWSER_URL,
+                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
+                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_USER_ACTION,
+                            description = "The search filter criteria for screenshot user action metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Page.ATTR_PAGE_NUMBER,
+                            description = "The number of the page to get from the whole list. If the page does not exists, the API retruns with the first page.",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Page.ATTR_PAGE_SIZE,
+                            description = "The size of the page to get. Default is 20",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Page.ATTR_SORT,
+                            in = ParameterIn.QUERY,
+                            description = "the sort parameter to sort the result list of entities before paging. The sort parameter is the name of the result set attribute to sort with a leading '-' sign for descending sort order.",
+                            required = false)
+            })
+    @RequestMapping(
+            path = API.SCREENSHOT_SEARCH_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<ScreenshotViewData> searchScreenshots(
+            @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
+            @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
+            @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
+            @RequestParam(name = API.PARAM_FROM_TIME, required = false) final String fromTime,
+            @RequestParam(name = API.PARAM_TO_TIME, required = false) final String toTime,
+            @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
+            @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
+            @RequestParam(name = Page.ATTR_SORT, required = false) final String sortBy,
+            final HttpServletRequest request) {
+
+        final FilterMap filterMap = new FilterMap(request);
+
+        final Page<ScreenshotViewData> page = this.paginationService.getPageOf(
+                pageNumber,
+                pageSize,
+                sortBy,
+                ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
+                () -> preProcessGroupCriteria(filterMap),
+                () -> queryScreenShots(filterMap))
+                .getOrThrow();
+
+        return page;
+
+    }
+
+    private void preProcessGroupCriteria(final FilterMap filterMap) {
+        final String groupUUID = filterMap.getString(API.PARAM_GROUP_ID);
+        final String groupName = filterMap.getString(API.PARAM_GROUP_NAME);
+
+        if (StringUtils.isNotBlank(groupUUID)) {
+            final Group group = this.groupDAO.byModelId(groupUUID).getOrThrow();
+            filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, String.valueOf(group.id));
+        } else if (StringUtils.isNotBlank(groupName)) {
+            final String ids = StringUtils.join(
+                    this.groupDAO
+                            .pksByGroupName(filterMap)
+                            .getOrThrow(),
+                    Constants.LIST_SEPARATOR);
+
+            filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, ids);
+        }
+    }
+
+    private Result<Collection<ScreenshotViewData>> queryScreenShots(final FilterMap filterMap) {
+        final String groupIds = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
+        if (groupIds != null && StringUtils.isBlank(groupIds)) {
+            return Result.of(Collections.emptyList());
+        } else {
+            return this.proctoringService.searchScreenshots(filterMap);
+        }
+    }
+
 }

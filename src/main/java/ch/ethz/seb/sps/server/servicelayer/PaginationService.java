@@ -77,6 +77,34 @@ public interface PaginationService {
             final String tableName,
             final Supplier<Result<Collection<T>>> delegate);
 
+    /** Get a Page of specified domain models from given pagination attributes within collection supplier delegate.
+     *
+     * NOTE: Paging always depends on SQL level. It depends on the collection given by the SQL select statement
+     * that is executed within MyBatis by using the MyBatis page service.
+     * Be aware that if the delegate that is given here applies an additional filter to the filtering done
+     * on SQL level, this will lead to paging with not fully filled pages or even to empty pages if the filter
+     * filters a lot of the entries given by the SQL statement away.
+     * So we recommend to apply as much of the filtering as possible on the SQL level and only if necessary and
+     * not avoidable, apply a additional filter on software-level that eventually filter one or two entities
+     * for a page.
+     *
+     * @param pageNumber the current page number
+     * @param pageSize the (full) size of the page
+     * @param sort the name of the sort column with a leading '-' for descending sort order
+     * @param tableName the name of the SQL table on which the pagination is applying to
+     * @param preProcessor A pre-processor block that gets executed before the pagination attributes are set to thread
+     *            local to be applied to next (following) SQL query. This is especially useful if there must be done
+     *            some SQL queries before the the paged query is applied.
+     * @param delegate a collection supplier the does the underling SQL query with specified pagination attributes
+     * @return Result refers to a Page of specified type of model models or to an exception on error case */
+    <T extends Entity> Result<Page<T>> getPage(
+            final Integer pageNumber,
+            final Integer pageSize,
+            final String sort,
+            final String tableName,
+            final Runnable preProcessor,
+            final Supplier<Result<Collection<T>>> delegate);
+
     /** Fetches a paged batch of objects
      *
      * NOTE: Paging always depends on SQL level. It depends on the collection given by the SQL select statement
@@ -99,6 +127,34 @@ public interface PaginationService {
             final Integer pageSize,
             final String sort,
             final String tableName,
+            final Supplier<Result<Collection<T>>> delegate);
+
+    /** Fetches a paged batch of objects
+     *
+     * NOTE: Paging always depends on SQL level. It depends on the collection given by the SQL select statement
+     * that is executed within MyBatis by using the MyBatis page service.
+     * Be aware that if the delegate that is given here applies an additional filter to the filtering done
+     * on SQL level, this will lead to paging with not fully filled pages or even to empty pages if the filter
+     * filters a lot of the entries given by the SQL statement away.
+     * So we recommend to apply as much of the filtering as possible on the SQL level and only if necessary and
+     * not avoidable, apply a additional filter on software-level that eventually filter one or two entities
+     * for a page.
+     *
+     * @param pageNumber the current page number
+     * @param pageSize the (full) size of the page
+     * @param sort the name of the sort column with a leading '-' for descending sort order
+     * @param tableName the name of the SQL table on which the pagination is applying to
+     * @param preProcessor A pre-processor block that gets executed before the pagination attributes are set to thread
+     *            local to be applied to next (following) SQL query. This is especially useful if there must be done
+     *            some SQL queries before the the paged query is applied.
+     * @param delegate a collection supplier the does the underling SQL query with specified pagination attributes
+     * @return Result refers to a Collection of specified type of objects or to an exception on error case */
+    <T> Result<Page<T>> getPageOf(
+            final Integer pageNumber,
+            final Integer pageSize,
+            final String sort,
+            final String tableName,
+            final Runnable preProcessor,
             final Supplier<Result<Collection<T>>> delegate);
 
     /** Use this to build a current Page from a given list of objects.

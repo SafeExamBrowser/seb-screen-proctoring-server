@@ -141,12 +141,13 @@ public class GroupDAOBatis implements GroupDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<Collection<Group>> allMatching(final FilterMap filterMap, final Predicate<Group> predicate) {
         return Result.tryCatch(() -> {
 
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
 
-            return this.groupRecordMapper
+            final List<Group> result = this.groupRecordMapper
                     .selectByExample()
                     .where(
                             GroupRecordDynamicSqlSupport.terminationTime,
@@ -161,12 +162,33 @@ public class GroupDAOBatis implements GroupDAO {
                     .and(
                             GroupRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(
-                                    filterMap.getLong(Domain.CLIENT_ACCESS.ATTR_CREATION_TIME)))
+                                    filterMap.getLong(Domain.SEB_GROUP.ATTR_CREATION_TIME)))
                     .build()
                     .execute()
                     .stream()
                     .map(this::toDomainModel)
                     .collect(Collectors.toList());
+
+            return result;
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<Long>> pksByGroupName(final FilterMap filterMap) {
+        return Result.tryCatch(() -> {
+
+            final List<Long> pks = this.groupRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            GroupRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
+                    .and(
+                            GroupRecordDynamicSqlSupport.name,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_GROUP_NAME)))
+                    .build()
+                    .execute();
+
+            return pks;
         });
     }
 
