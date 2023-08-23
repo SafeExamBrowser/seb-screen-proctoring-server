@@ -27,8 +27,11 @@ import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
+import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.utils.Result;
@@ -287,11 +290,65 @@ public class PaginationServiceImpl implements PaginationService {
         this.defaultSortColumn.put(GroupRecordDynamicSqlSupport.groupRecord.tableNameAtRuntime(),
                 Domain.SEB_GROUP.ATTR_NAME);
 
+        // Session Table
+        final Map<String, String> sessionTableMap = new HashMap<>();
+        sessionTableMap.put(
+                Domain.SESSION.ATTR_CREATION_TIME,
+                SessionRecordDynamicSqlSupport.creationTime.name());
+        sessionTableMap.put(
+                Domain.SESSION.ATTR_IMAGE_FORMAT,
+                SessionRecordDynamicSqlSupport.imageFormat.name());
+        sessionTableMap.put(
+                SessionSearchResult.ATTR_START_TIME,
+                SessionRecordDynamicSqlSupport.creationTime.name());
+        sessionTableMap.put(
+                Domain.SESSION.ATTR_CLIENT_NAME,
+                SessionRecordDynamicSqlSupport.clientName.name());
+        sessionTableMap.put(
+                Domain.SESSION.ATTR_CLIENT_IP,
+                SessionRecordDynamicSqlSupport.clientIp.name());
+        sessionTableMap.put(
+                Domain.SESSION.ATTR_CLIENT_OS_NAME,
+                SessionRecordDynamicSqlSupport.clientOsName.name());
+        sessionTableMap.put(
+                Domain.SESSION.ATTR_CLIENT_VERSION,
+                SessionRecordDynamicSqlSupport.clientVersion.name());
+        sessionTableMap.put(
+                Domain.SESSION.ATTR_CLIENT_MACHINE_NAME,
+                SessionRecordDynamicSqlSupport.clientMachineName.name());
+        this.sortColumnMapping.put(SessionRecordDynamicSqlSupport.sessionRecord.tableNameAtRuntime(), sessionTableMap);
+        this.defaultSortColumn.put(SessionRecordDynamicSqlSupport.sessionRecord.tableNameAtRuntime(),
+                Domain.SESSION.ATTR_CLIENT_NAME);
+
+        // Screenshot Table
         final Map<String, String> screenshotDataTableMap = new HashMap<>();
-        groupTableMap.put(
+        screenshotDataTableMap.put(
                 Domain.SCREENSHOT_DATA.ATTR_TIMESTAMP,
                 ScreenshotDataRecordDynamicSqlSupport.timestamp.name());
-
+        screenshotDataTableMap.put(
+                ScreenshotSearchResult.ATTR_TIMESTAMP,
+                ScreenshotDataRecordDynamicSqlSupport.timestamp.name());
+        screenshotDataTableMap.put(
+                ScreenshotSearchResult.ATTR_SESSION_START_TIME,
+                SessionRecordDynamicSqlSupport.creationTime.name());
+        screenshotDataTableMap.put(
+                ScreenshotSearchResult.ATTR_SESSION_END_TIME,
+                SessionRecordDynamicSqlSupport.terminationTime.name());
+        screenshotDataTableMap.put(
+                ScreenshotSearchResult.ATTR_SESSION_CLIENT_NAME,
+                SessionRecordDynamicSqlSupport.clientName.name());
+        screenshotDataTableMap.put(
+                ScreenshotSearchResult.ATTR_SESSION_CLIENT_IP,
+                SessionRecordDynamicSqlSupport.clientIp.name());
+        screenshotDataTableMap.put(
+                ScreenshotSearchResult.ATTR_SESSION_CLIENT_MACHINE_NAME,
+                SessionRecordDynamicSqlSupport.clientMachineName.name());
+        screenshotDataTableMap.put(
+                ScreenshotSearchResult.ATTR_SESSION_CLIENT_OS_NAME,
+                SessionRecordDynamicSqlSupport.clientOsName.name());
+        screenshotDataTableMap.put(
+                ScreenshotSearchResult.ATTR_SESSION_CLIENT_VERSION,
+                SessionRecordDynamicSqlSupport.clientVersion.name());
         this.sortColumnMapping.put(ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
                 screenshotDataTableMap);
         this.defaultSortColumn.put(

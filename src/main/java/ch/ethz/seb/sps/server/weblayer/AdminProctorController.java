@@ -44,6 +44,7 @@ import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
@@ -359,8 +360,8 @@ public class AdminProctorController {
     }
 
     @Operation(
-            summary = "Get the requested page of a given screen shot search result",
-            description = "The search query includes specific and generic filter criteria und paging as well as sorting. See detailed description for each part in the parameter description",
+            summary = "Get the requested page of a given screenshot search result",
+            description = "The search query includes specific and generic filter criteria and paging as well as sorting. See detailed description for each part in the parameter description",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -426,18 +427,18 @@ public class AdminProctorController {
                             required = false),
                     @Parameter(
                             name = Page.ATTR_PAGE_NUMBER,
-                            description = "The number of the page to get from the whole list. If the page does not exists, the API retruns with the first page.",
+                            description = "The number of the page to get from the whole list. If the page does not exists, the API returns with the first page.",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
                             name = Page.ATTR_PAGE_SIZE,
-                            description = "The size of the page to get. Default is 20",
+                            description = "The size of the page to get. Default is 10",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
                             name = Page.ATTR_SORT,
                             in = ParameterIn.QUERY,
-                            description = "the sort parameter to sort the result list of entities before paging. The sort parameter is the name of the result set attribute to sort with a leading '-' sign for descending sort order.",
+                            description = "The sort parameter to sort the result list of entities before paging. Sorting is only possible for: imageTimestamp, sessionStartTime, sessionEndTime, sessionClientName, sessionClientIP, sessionClientMachineName, sessionClientOSName, sessionClientVersion. Use a leading '-' sign for descending sort order.",
                             required = false)
             })
     @RequestMapping(
@@ -458,7 +459,7 @@ public class AdminProctorController {
 
         final FilterMap filterMap = new FilterMap(request);
 
-        final Page<ScreenshotSearchResult> page = this.paginationService.getPageOf(
+        return this.paginationService.getPageOf(
                 pageNumber,
                 pageSize,
                 sortBy,
@@ -466,14 +467,11 @@ public class AdminProctorController {
                 () -> preProcessGroupCriteria(filterMap),
                 () -> queryScreenShots(filterMap))
                 .getOrThrow();
-
-        return page;
-
     }
 
     @Operation(
-            summary = "Get the requested page of a given screen shot search result",
-            description = "The search query includes specific and generic filter criteria und paging as well as sorting. See detailed description for each part in the parameter description",
+            summary = "Get the requested page of a given session search result",
+            description = "This search is an extension to the generic session search to apply more screenshot specific data as a result. The search query includes specific and generic filter criteria and paging as well as sorting. See detailed description for each part in the parameter description",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -524,18 +522,18 @@ public class AdminProctorController {
                             required = false),
                     @Parameter(
                             name = Page.ATTR_PAGE_NUMBER,
-                            description = "The number of the page to get from the whole list. If the page does not exists, the API retruns with the first page.",
+                            description = "The number of the page to get from the whole list. If the page does not exists, the API returns with the first page.",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
                             name = Page.ATTR_PAGE_SIZE,
-                            description = "The size of the page to get. Default is 20",
+                            description = "The size of the page to get. Default is 10",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
                             name = Page.ATTR_SORT,
                             in = ParameterIn.QUERY,
-                            description = "the sort parameter to sort the result list of entities before paging. The sort parameter is the name of the result set attribute to sort with a leading '-' sign for descending sort order.",
+                            description = "The sort parameter to sort the result list of entities before paging. Sorting is only possible for: startTime, imageFormat, clientName, clientIp, clientOsName, clientVersion, clientMachineName. Use a leading '-' sign for descending sort order.",
                             required = false)
             })
     @RequestMapping(
@@ -556,17 +554,14 @@ public class AdminProctorController {
 
         final FilterMap filterMap = new FilterMap(request);
 
-        final Page<SessionSearchResult> page = this.paginationService.getPageOf(
+        return this.paginationService.getPageOf(
                 pageNumber,
                 pageSize,
                 sortBy,
-                ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
+                SessionRecordDynamicSqlSupport.sessionRecord.tableNameAtRuntime(),
                 () -> preProcessGroupCriteria(filterMap),
                 () -> querySessions(filterMap))
                 .getOrThrow();
-
-        return page;
-
     }
 
     private void preProcessGroupCriteria(final FilterMap filterMap) {

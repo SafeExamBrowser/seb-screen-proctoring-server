@@ -130,7 +130,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                             description = "The number of the page to get from the whole list. If the page does not exists, the API retruns with the first page."),
                     @Parameter(
                             name = Page.ATTR_PAGE_SIZE,
-                            description = "The size of the page to get."),
+                            description = "The size of the page to get. Default is 10"),
                     @Parameter(
                             name = Page.ATTR_SORT,
                             description = "the sort parameter to sort the list of entities before paging"),
