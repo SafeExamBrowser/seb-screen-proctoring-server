@@ -11,16 +11,10 @@ package ch.ethz.seb.sps.server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Import;
-
-import ch.ethz.seb.sps.server.datalayer.batis.BatisConfig;
 
 @SpringBootApplication(exclude = {
         UserDetailsServiceAutoConfiguration.class,
 })
-@EnableCaching
-@Import(BatisConfig.class)
 public class ScreenProctoringServer {
 
     public static void main(final String[] args) {

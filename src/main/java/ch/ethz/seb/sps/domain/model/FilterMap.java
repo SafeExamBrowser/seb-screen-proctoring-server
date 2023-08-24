@@ -81,4 +81,8 @@ public class FilterMap extends POSTMapper {
         }
     }
 
+    public boolean contains(final String key) {
+        return super.params.containsKey(key);
+    }
+
 }

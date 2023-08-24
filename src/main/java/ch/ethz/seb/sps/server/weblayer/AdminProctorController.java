@@ -450,8 +450,8 @@ public class AdminProctorController {
             @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
             @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
             @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
-            @RequestParam(name = API.PARAM_FROM_TIME, required = false) final String fromTime,
-            @RequestParam(name = API.PARAM_TO_TIME, required = false) final String toTime,
+            @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
+            @RequestParam(name = API.PARAM_TO_TIME, required = false) final Long toTime,
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sortBy,
@@ -545,8 +545,8 @@ public class AdminProctorController {
             @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
             @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
             @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
-            @RequestParam(name = API.PARAM_FROM_TIME, required = false) final String fromTime,
-            @RequestParam(name = API.PARAM_TO_TIME, required = false) final String toTime,
+            @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
+            @RequestParam(name = API.PARAM_TO_TIME, required = false) final Long toTime,
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sortBy,
@@ -569,8 +569,12 @@ public class AdminProctorController {
         final String groupName = filterMap.getString(API.PARAM_GROUP_NAME);
 
         if (StringUtils.isNotBlank(groupUUID)) {
-            final Group group = this.groupDAO.byModelId(groupUUID).getOrThrow();
-            filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, String.valueOf(group.id));
+            final String groupId = this.groupDAO
+                    .byModelId(groupUUID)
+                    .map(Group::getId)
+                    .map(String::valueOf)
+                    .getOr(StringUtils.EMPTY);
+            filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, groupId);
         } else if (StringUtils.isNotBlank(groupName)) {
             final String ids = StringUtils.join(
                     this.groupDAO

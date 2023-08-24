@@ -151,6 +151,9 @@ public class SessionDAOBatis implements SessionDAO {
             final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
             final String groupPKs = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
+            final String sessionUUID = filterMap.contains(API.PARAM_SESSION_ID)
+                    ? filterMap.getString(API.PARAM_SESSION_ID)
+                    : filterMap.getString(Domain.SESSION.ATTR_UUID);
 
             QueryExpressionDSL<MyBatis3SelectModelAdapter<List<SessionRecord>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.sessionRecordMapper
@@ -160,8 +163,8 @@ public class SessionDAOBatis implements SessionDAO {
                                     (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
                                             : SqlBuilder.isEqualToWhenPresent(() -> null))
                             .and(
-                                    SessionRecordDynamicSqlSupport.groupId,
-                                    SqlBuilder.isEqualToWhenPresent(filterMap.getLong(Domain.SESSION.ATTR_GROUP_ID)))
+                                    SessionRecordDynamicSqlSupport.uuid,
+                                    SqlBuilder.isEqualToWhenPresent(sessionUUID))
                             .and(
                                     SessionRecordDynamicSqlSupport.clientName,
                                     isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_NAME)))
