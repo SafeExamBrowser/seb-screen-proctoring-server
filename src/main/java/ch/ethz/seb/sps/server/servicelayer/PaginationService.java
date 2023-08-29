@@ -31,7 +31,7 @@ public interface PaginationService {
      * @param table SqlTable the SQL table (MyBatis)
      * @param orderBy the orderBy columnName
      * @return true if there is native sorting support for the given attributes */
-    boolean isNativeSortingSupported(final SqlTable table, final String orderBy);
+    boolean isNativeSortingSupported(SqlTable table, String orderBy);
 
     /** Use this to set a page limitation on SQL level. This checks first if there is
      * already a page-limitation set for the local thread and if not, set the default page-limitation */
@@ -39,9 +39,9 @@ public interface PaginationService {
 
     void setDefaultLimit();
 
-    void setDefaultLimit(final String sort, final String tableName);
+    void setDefaultLimit(String sort, String tableName);
 
-    int getPageNumber(final Integer pageNumber);
+    int getPageNumber(Integer pageNumber);
 
     /** Get the given pageSize as int type if it is not null and in the range of one to the defined maximum page size.
      * If the given pageSize null or less then one, this returns the defined default page size.
@@ -71,11 +71,11 @@ public interface PaginationService {
      * @param delegate a collection supplier the does the underling SQL query with specified pagination attributes
      * @return Result refers to a Page of specified type of model models or to an exception on error case */
     <T extends Entity> Result<Page<T>> getPage(
-            final Integer pageNumber,
-            final Integer pageSize,
-            final String sort,
-            final String tableName,
-            final Supplier<Result<Collection<T>>> delegate);
+            Integer pageNumber,
+            Integer pageSize,
+            String sort,
+            String tableName,
+            Supplier<Result<Collection<T>>> delegate);
 
     /** Get a Page of specified domain models from given pagination attributes within collection supplier delegate.
      *
@@ -98,12 +98,12 @@ public interface PaginationService {
      * @param delegate a collection supplier the does the underling SQL query with specified pagination attributes
      * @return Result refers to a Page of specified type of model models or to an exception on error case */
     <T extends Entity> Result<Page<T>> getPage(
-            final Integer pageNumber,
-            final Integer pageSize,
-            final String sort,
-            final String tableName,
-            final Runnable preProcessor,
-            final Supplier<Result<Collection<T>>> delegate);
+            Integer pageNumber,
+            Integer pageSize,
+            String sort,
+            String tableName,
+            Runnable preProcessor,
+            Supplier<Result<Collection<T>>> delegate);
 
     /** Fetches a paged batch of objects
      *
@@ -123,11 +123,11 @@ public interface PaginationService {
      * @param delegate a collection supplier the does the underling SQL query with specified pagination attributes
      * @return Result refers to a Collection of specified type of objects or to an exception on error case */
     <T> Result<Page<T>> getPageOf(
-            final Integer pageNumber,
-            final Integer pageSize,
-            final String sort,
-            final String tableName,
-            final Supplier<Result<Collection<T>>> delegate);
+            Integer pageNumber,
+            Integer pageSize,
+            String sort,
+            String tableName,
+            Supplier<Result<Collection<T>>> delegate);
 
     /** Fetches a paged batch of objects
      *
@@ -150,12 +150,24 @@ public interface PaginationService {
      * @param delegate a collection supplier the does the underling SQL query with specified pagination attributes
      * @return Result refers to a Collection of specified type of objects or to an exception on error case */
     <T> Result<Page<T>> getPageOf(
-            final Integer pageNumber,
-            final Integer pageSize,
-            final String sort,
-            final String tableName,
-            final Runnable preProcessor,
-            final Supplier<Result<Collection<T>>> delegate);
+            Integer pageNumber,
+            Integer pageSize,
+            String sort,
+            String tableName,
+            Runnable preProcessor,
+            Supplier<Result<Collection<T>>> delegate);
+
+    /** This sets a unlimited page fetch with filtering and sort on DB level for the next applying
+     * SQL call. This can be used in cases where pagination shall be done on back-end level but
+     * filter and sort still apply to database level. One can fetch a fully filtered and sorted page
+     * here with all elements found by the query and apply effective page afterwards.
+     * There is of course still an upper limit of 5000 entries that can be fetched with this
+     *
+     * @param sort sort the name of the sort column with a leading '-' for descending sort order
+     * @param tableName the name of the SQL table on which the pagination is applying to */
+    void setUnlimitedPagination(
+            String sort,
+            String tableName);
 
     /** Use this to build a current Page from a given list of objects.
      *

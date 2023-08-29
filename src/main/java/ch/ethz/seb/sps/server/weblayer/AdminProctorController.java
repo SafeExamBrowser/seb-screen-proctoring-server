@@ -10,6 +10,8 @@ package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
+import ch.ethz.seb.sps.domain.api.API.ScreenshotMetadataType;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.Page;
@@ -481,6 +484,11 @@ public class AdminProctorController {
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
+                            name = API.PARAM_EXAM_NAME,
+                            description = "The exam name filter criteria. If available the search is restricted to the given full text search on exam name",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
                             name = API.PARAM_GROUP_NAME,
                             description = "The group name filter criteria. If available the search is restricted to the given full text search on group name",
                             in = ParameterIn.QUERY,
@@ -521,6 +529,21 @@ public class AdminProctorController {
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
+                            name = API.SCREENSHOT_META_DATA_BROWSER_URL,
+                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
+                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_USER_ACTION,
+                            description = "The search filter criteria for screenshot user action metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
                             name = Page.ATTR_PAGE_NUMBER,
                             description = "The number of the page to get from the whole list. If the page does not exists, the API returns with the first page.",
                             in = ParameterIn.QUERY,
@@ -542,6 +565,7 @@ public class AdminProctorController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<SessionSearchResult> searchSessions(
+            @RequestParam(name = API.PARAM_EXAM_NAME, required = false) final String examName,
             @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
             @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
             @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
@@ -554,6 +578,26 @@ public class AdminProctorController {
 
         final FilterMap filterMap = new FilterMap(request);
 
+        if (hasMetaDataCriteria(filterMap)) {
+
+            // paging must be applied programmatically after getting sorted big page form DB
+            preProcessGroupCriteria(filterMap);
+            this.paginationService.setUnlimitedPagination(
+                    sortBy,
+                    SessionRecordDynamicSqlSupport.sessionRecord.tableNameAtRuntime());
+
+            final Collection<SessionSearchResult> result = querySessions(filterMap)
+                    .getOrThrow();
+
+            return this.paginationService.buildPageFromList(
+                    pageNumber,
+                    pageSize,
+                    sortBy,
+                    result,
+                    all -> (List<SessionSearchResult>) all);
+        }
+
+        // paging can be applied on DB level (SQL)
         return this.paginationService.getPageOf(
                 pageNumber,
                 pageSize,
@@ -564,13 +608,26 @@ public class AdminProctorController {
                 .getOrThrow();
     }
 
+    private boolean hasMetaDataCriteria(final FilterMap filterMap) {
+        final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
+        for (int i = 0; i < metaData.length; i++) {
+            if (filterMap.contains(metaData[i].parameterName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void preProcessGroupCriteria(final FilterMap filterMap) {
         final String groupUUID = filterMap.getString(API.PARAM_GROUP_ID);
         final String groupName = filterMap.getString(API.PARAM_GROUP_NAME);
 
+        // TODO add exam name search criteria and access filter
+
         if (StringUtils.isNotBlank(groupUUID)) {
             final String groupId = this.groupDAO
                     .byModelId(groupUUID)
+                    .map(this::hasGroupReadAccess)
                     .map(Group::getId)
                     .map(String::valueOf)
                     .getOr(StringUtils.EMPTY);
@@ -579,11 +636,24 @@ public class AdminProctorController {
             final String ids = StringUtils.join(
                     this.groupDAO
                             .pksByGroupName(filterMap)
-                            .getOrThrow(),
+                            .getOrThrow()
+                            .stream()
+                            .map(this::hasGroupReadAccess)
+                            .filter(Objects::nonNull)
+                            .map(Group::getId)
+                            .map(String::valueOf)
+                            .collect(Collectors.toList()),
                     Constants.LIST_SEPARATOR);
 
             filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, ids);
         }
+    }
+
+    private Group hasGroupReadAccess(final Group group) {
+        if (!this.userService.hasReadGrant(group)) {
+            return null;
+        }
+        return group;
     }
 
     private Result<Collection<ScreenshotSearchResult>> queryScreenShots(final FilterMap filterMap) {

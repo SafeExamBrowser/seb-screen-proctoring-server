@@ -179,20 +179,20 @@ public class GroupDAOBatis implements GroupDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Long>> pksByGroupName(final FilterMap filterMap) {
+    public Result<Collection<Group>> pksByGroupName(final FilterMap filterMap) {
         return Result.tryCatch(() -> {
-
-            final List<Long> pks = this.groupRecordMapper
-                    .selectIdsByExample()
+            return this.groupRecordMapper
+                    .selectByExample()
                     .where(
                             GroupRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                     .and(
                             GroupRecordDynamicSqlSupport.name,
                             isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_GROUP_NAME)))
                     .build()
-                    .execute();
-
-            return pks;
+                    .execute()
+                    .stream()
+                    .map(this::toDomainModel)
+                    .collect(Collectors.toList());
         });
     }
 

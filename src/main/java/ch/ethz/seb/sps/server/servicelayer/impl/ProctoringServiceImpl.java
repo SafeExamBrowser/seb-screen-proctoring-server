@@ -224,7 +224,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     public Result<Collection<SessionSearchResult>> searchSessions(final FilterMap filterMap) {
         return this.sessionDAO
                 .allMatching(filterMap)
-                .map(this::createSessionSearchResult);
+                .map(data -> this.createSessionSearchResult(data, filterMap));
     }
 
     @Override
@@ -286,11 +286,14 @@ public class ProctoringServiceImpl implements ProctoringService {
         this.proctoringCacheService.evictGroup(groupUUID);
     }
 
-    private Collection<SessionSearchResult> createSessionSearchResult(final Collection<Session> data) {
+    private Collection<SessionSearchResult> createSessionSearchResult(
+            final Collection<Session> data,
+            final FilterMap metaData) {
+
         final Map<Long, Group> groupCache = new HashMap<>();
         return data
                 .stream()
-                .map(session -> toSessionSearchResult(session, groupCache))
+                .map(session -> toSessionSearchResult(session, groupCache, metaData))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
@@ -309,14 +312,21 @@ public class ProctoringServiceImpl implements ProctoringService {
 
     private SessionSearchResult toSessionSearchResult(
             final Session session,
-            final Map<Long, Group> groupCache) {
+            final Map<Long, Group> groupCache,
+            final FilterMap metaData) {
 
         groupCache.computeIfAbsent(
                 session.getGroupId(),
                 gid -> this.groupDAO.byPK(gid).getOr(null));
 
         final Group group = groupCache.get(session.getGroupId());
-        final Long nrOfScreenshots = this.sessionDAO.getNumberOfScreenshots(session.uuid);
+        final Long nrOfScreenshots = this.sessionDAO.getNumberOfScreenshots(
+                session.uuid,
+                metaData);
+
+        if (nrOfScreenshots.longValue() <= 0) {
+            return null;
+        }
 
         return new SessionSearchResult(
                 session,

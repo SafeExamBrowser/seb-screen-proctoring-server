@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.API.ScreenshotMetadataType;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
@@ -426,10 +427,36 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = false)
-    public Long getNumberOfScreenshots(final String uuid) {
-        return this.screenshotDataRecordMapper
-                .countByExample()
-                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(uuid))
+    public Long getNumberOfScreenshots(final String uuid, final FilterMap filterMap) {
+
+        QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>>.QueryExpressionWhereBuilder queryBuilder =
+                this.screenshotDataRecordMapper
+                        .countByExample()
+                        .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(uuid));
+
+        // meta data constraint
+        final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
+        for (int i = 0; i < metaData.length; i++) {
+            final ScreenshotMetadataType mc = metaData[i];
+
+            final String sqlWildcard = filterMap.getSQLWildcard(mc.parameterName);
+            if (sqlWildcard == null) {
+                continue;
+            }
+
+            final String value =
+                    Constants.PERCENTAGE_STRING +
+                            Constants.DOUBLE_QUOTE +
+                            mc.parameterName +
+                            Constants.DOUBLE_QUOTE +
+                            sqlWildcard;
+
+            queryBuilder = queryBuilder.and(
+                    ScreenshotDataRecordDynamicSqlSupport.metaData,
+                    SqlBuilder.isLike(value));
+        }
+
+        return queryBuilder
                 .build()
                 .execute();
     }

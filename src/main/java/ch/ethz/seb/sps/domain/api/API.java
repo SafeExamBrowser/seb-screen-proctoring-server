@@ -108,6 +108,8 @@ public final class API {
 
     public static final String SPS_SERVER_HEALTH = "sps_server_health";
 
+    public static final String PARAM_EXAM_ID = "examUUID";
+    public static final String PARAM_EXAM_NAME = "examName";
     public static final String PARAM_GROUP_ID = "groupUUID";
     public static final String PARAM_GROUP_NAME = "groupName";
     public static final String PARAM_SESSION_ID = "sessionUUID";

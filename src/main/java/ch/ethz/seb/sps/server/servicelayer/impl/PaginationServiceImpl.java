@@ -231,6 +231,29 @@ public class PaginationServiceImpl implements PaginationService {
         return this.defaultSortColumn.get(columnName);
     }
 
+    @Override
+    public void setUnlimitedPagination(final String sort, final String tableName) {
+
+        PageHelper.startPage(1, 5000, true, true, false);
+
+        if (StringUtils.isNotBlank(tableName) && StringUtils.isNotBlank(sort)) {
+            final PageSortOrder sortOrder = PageSortOrder.getSortOrder(sort);
+            final String sortColumnName = verifySortColumnName(sort, tableName);
+            if (StringUtils.isNotBlank(sortColumnName)) {
+                switch (sortOrder) {
+                    case DESCENDING: {
+                        PageHelper.orderBy(sortColumnName + " DESC, id DESC");
+                        break;
+                    }
+                    default: {
+                        PageHelper.orderBy(sortColumnName + ", id");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     private com.github.pagehelper.Page<Object> setPagination(
             final Integer pageNumber,
             final Integer pageSize,

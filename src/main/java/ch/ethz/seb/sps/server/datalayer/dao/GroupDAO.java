@@ -20,6 +20,6 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Group> createNew(String name);
 
-    Result<Collection<Long>> pksByGroupName(final FilterMap filterMap);
+    Result<Collection<Group>> pksByGroupName(final FilterMap filterMap);
 
 }

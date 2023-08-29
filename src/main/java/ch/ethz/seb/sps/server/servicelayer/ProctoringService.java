@@ -32,6 +32,17 @@ public interface ProctoringService {
      * @param sessionUUID */
     void checkMonitroingSessionAccess(String sessionUUID);
 
+    /** Get the recorded image data and metadata at a given point of time.
+     *
+     * If the timestamp is null this returns the data for the last available screenshot
+     *
+     * If there is no screenshot at the exact given timestamp this returns the screenshot on
+     * the next previous point of time and if there is no such previous screenshot, this
+     * returns the screenshot on the next point in time from the given.
+     *
+     * @param sessionUUID The session identifier
+     * @param timestamp the point in time (UTC/milliseconds)
+     * @return Result refer to the screenshot data or to an error when happened */
     Result<ScreenshotViewData> getRecordedImageDataAt(String sessionUUID, Long timestamp);
 
     Result<MonitoringPageData> getMonitoringPageData(
@@ -53,6 +64,10 @@ public interface ProctoringService {
             String sessionUUID,
             OutputStream out);
 
+    /** This executes the session search and returns a list for the requested filter criteria
+     *
+     * @param filterMap Contains all filter criteria
+     * @return Result refer to the requested list of search results or to an error when happened */
     Result<Collection<SessionSearchResult>> searchSessions(FilterMap filterMap);
 
     Result<Collection<ScreenshotSearchResult>> searchScreenshots(final FilterMap filterMap);

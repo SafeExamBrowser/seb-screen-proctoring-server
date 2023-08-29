@@ -155,7 +155,8 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 
-        // at least current user must have read access for specified entity type within its own institution
+        // TODO if user has no overall read privilege get list and filter by entity read privilege
+
         checkReadPrivilege();
 
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
@@ -202,7 +203,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 
-        // at least current user must have read access for specified entity type within its own institution
+        // TODO if user has no overall read privilege get list and filter by entity read privilege
         checkReadPrivilege();
 
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
