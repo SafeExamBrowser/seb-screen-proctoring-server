@@ -112,7 +112,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             timestamp,
                             imageFormat,
                             metaData,
-                            SqlBuilder.max(timestamp))
+                            timestamp)
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                     .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
@@ -133,7 +133,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             timestamp,
                             imageFormat,
                             metaData,
-                            SqlBuilder.max(timestamp))
+                            timestamp)
                     .from(screenshotDataRecord)
                     .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                     .orderBy(timestamp)
