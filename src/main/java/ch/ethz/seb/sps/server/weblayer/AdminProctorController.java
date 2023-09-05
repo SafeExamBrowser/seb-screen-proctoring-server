@@ -64,7 +64,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.PROCTORING_ENDPOINT)
-@SecurityRequirement(name = "AdminOAuth")
+@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_GUI_ADMIN)
 public class AdminProctorController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminProctorController.class);

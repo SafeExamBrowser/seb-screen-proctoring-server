@@ -58,7 +58,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
  *
  * @param <T> The concrete Entity domain-model type used on all GET, PUT
  * @param <M> The concrete Entity domain-model type used for write methods (new, save) */
-@SecurityRequirement(name = "AdminOAuth")
+@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_GUI_ADMIN)
 public abstract class EntityController<T extends Entity, M extends Entity> {
 
     protected final UserService userService;

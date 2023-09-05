@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 ETH Zürich, Educational Development and Technology (LET)
+ * Copyright (c) 2023 ETH Zürich, Educational Development and Technology (LET)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,14 +19,13 @@ import org.springframework.stereotype.Component;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.utils.Constants;
 
-/** This defines the Spring's OAuth2 ClientDetails for an Administration API client. */
 @Lazy
 @Component
-public final class AdminAPIClientDetails extends BaseClientDetails {
+public class SEBServerAPIClientDetails extends BaseClientDetails {
 
-    private static final long serialVersionUID = 4505193832353978832L;
+    private static final long serialVersionUID = -6068402233043176387L;
 
-    public AdminAPIClientDetails(
+    public SEBServerAPIClientDetails(
             @Qualifier(ServiceConfig.CLIENT_PASSWORD_ENCODER_BEAN_NAME) final PasswordEncoder clientPasswordEncoder,
             @Value("${sps.api.admin.sebserver.clientId}") final String clientId,
             @Value("${sps.api.admin.sebserver.clientSecret}") final String clientSecret,

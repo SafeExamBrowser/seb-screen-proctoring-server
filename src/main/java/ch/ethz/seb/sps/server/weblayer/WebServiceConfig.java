@@ -64,6 +64,10 @@ public class WebServiceConfig
         extends org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
         implements ErrorController {
 
+    public static final String SWAGGER_AUTH_SEB_CLIENT = "SEBOAuth";
+    public static final String SWAGGER_AUTH_GUI_ADMIN = "guiClient";
+    public static final String SWAGGER_AUTH_SEBSEVER_ADMIN = "sebserverClient";
+
     private static final Logger log = LoggerFactory.getLogger(WebServiceConfig.class);
 
     /** Spring bean name of single AuthenticationManager bean */
@@ -111,14 +115,14 @@ public class WebServiceConfig
 
         return new OpenAPI()
                 .components(new Components()
-                        .addSecuritySchemes("AdminOAuth", new SecurityScheme()
+                        .addSecuritySchemes(SWAGGER_AUTH_GUI_ADMIN, new SecurityScheme()
                                 .type(Type.OAUTH2)
                                 .scheme("bearer")
                                 .in(In.HEADER)
                                 .bearerFormat("jwt")
                                 .flows(new OAuthFlows().password(new OAuthFlow().tokenUrl("/oauth/token"))))
 
-                        .addSecuritySchemes("SEBOAuth", new SecurityScheme()
+                        .addSecuritySchemes(SWAGGER_AUTH_SEB_CLIENT, new SecurityScheme()
                                 .type(Type.OAUTH2)
                                 .scheme("basic")
                                 .in(In.HEADER)
@@ -172,13 +176,6 @@ public class WebServiceConfig
                 .and()
                 .csrf().disable();
     }
-
-//    @Override
-//    public void configure(final WebSecurity web) {
-//        web
-//                .ignoring()
-//                .antMatchers(this.errorPath);
-//    }
 
     @Bean
     protected ResourceServerConfiguration sebServerAdminAPIResources() throws Exception {
@@ -267,7 +264,6 @@ public class WebServiceConfig
             log.warn("Unauthorized Request on: {}", request.getRequestURI());
 
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            //response.setHeader(HttpHeaders.LOCATION, this.redirect);
             response.flushBuffer();
         }
     }

@@ -31,16 +31,16 @@ import ch.ethz.seb.sps.domain.api.API;
 public class RevokeTokenEndpoint {
 
     private final ConsumerTokenServices tokenServices;
-    private final AdminAPIClientDetails adminAPIClientDetails;
+    private final GUIClientAPIClientDetails guiClientAPIClientDetails;
     private final TokenStore tokenStore;
 
     public RevokeTokenEndpoint(
             final ConsumerTokenServices tokenServices,
-            final AdminAPIClientDetails adminAPIClientDetails,
+            final GUIClientAPIClientDetails guiClientAPIClientDetails,
             final TokenStore tokenStore) {
 
         this.tokenServices = tokenServices;
-        this.adminAPIClientDetails = adminAPIClientDetails;
+        this.guiClientAPIClientDetails = guiClientAPIClientDetails;
         this.tokenStore = tokenStore;
     }
 
@@ -56,7 +56,7 @@ public class RevokeTokenEndpoint {
 
     @EventListener(RevokeTokenEvent.class)
     void revokeAccessToken(final RevokeTokenEvent event) {
-        final String clientId = this.adminAPIClientDetails.getClientId();
+        final String clientId = this.guiClientAPIClientDetails.getClientId();
         final Collection<OAuth2AccessToken> tokens = this.tokenStore
                 .findTokensByClientIdAndUserName(clientId, event.userName);
 

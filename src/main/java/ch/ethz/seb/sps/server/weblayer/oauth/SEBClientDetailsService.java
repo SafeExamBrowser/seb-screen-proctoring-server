@@ -33,14 +33,17 @@ public class SEBClientDetailsService implements ClientDetailsService {
     private static final Logger log = LoggerFactory.getLogger(SEBClientDetailsService.class);
 
     private final ClientAccessService clientAccessService;
-    private final AdminAPIClientDetails adminClientDetails;
+    private final GUIClientAPIClientDetails guiClientAPIClientDetails;
+    private final SEBServerAPIClientDetails sebServerAPIClientDetails;
 
     public SEBClientDetailsService(
-            final AdminAPIClientDetails adminClientDetails,
-            final ClientAccessService clientAccessService) {
+            final GUIClientAPIClientDetails guiClientAPIClientDetails,
+            final ClientAccessService clientAccessService,
+            final SEBServerAPIClientDetails sebServerAPIClientDetails) {
 
-        this.adminClientDetails = adminClientDetails;
+        this.guiClientAPIClientDetails = guiClientAPIClientDetails;
         this.clientAccessService = clientAccessService;
+        this.sebServerAPIClientDetails = sebServerAPIClientDetails;
     }
 
     /** Load a client by the client id. This method must not return null.
@@ -60,8 +63,11 @@ public class SEBClientDetailsService implements ClientDetailsService {
             throw new ClientRegistrationException("clientId is null");
         }
 
-        if (clientId.equals(this.adminClientDetails.getClientId())) {
-            return this.adminClientDetails;
+        if (clientId.equals(this.guiClientAPIClientDetails.getClientId())) {
+            return this.guiClientAPIClientDetails;
+        }
+        if (clientId.equals(this.sebServerAPIClientDetails.getClientId())) {
+            return this.sebServerAPIClientDetails;
         }
 
         return getForClientAPI(clientId)
