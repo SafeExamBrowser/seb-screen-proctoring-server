@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -22,13 +23,20 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
+import ch.ethz.seb.sps.domain.api.API.UserRole;
 import ch.ethz.seb.sps.domain.api.APIError;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.api.POSTMapper;
+import ch.ethz.seb.sps.domain.model.EntityKey;
+import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.user.AuditLog;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.user.PasswordChange;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserAccount;
@@ -37,6 +45,7 @@ import ch.ethz.seb.sps.domain.model.user.UserMod;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
@@ -51,10 +60,12 @@ public class AdminUserAccountController extends ActivatableEntityController<User
     private final ApplicationEventPublisher applicationEventPublisher;
     private final UserDAO userDAO;
     private final PasswordEncoder userPasswordEncoder;
+    private final EntityPrivilegeDAO entityPrivilegeDAO;
 
     public AdminUserAccountController(
             final UserDAO userDAO,
             final AuditLogDAO auditLogDAO,
+            final EntityPrivilegeDAO entityPrivilegeDAO,
             final UserService userService,
             final PaginationService paginationService,
             final ApplicationEventPublisher applicationEventPublisher,
@@ -62,6 +73,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
             @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME) final PasswordEncoder userPasswordEncoder) {
 
         super(userService, userDAO, auditLogDAO, paginationService, beanValidationService);
+        this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.applicationEventPublisher = applicationEventPublisher;
         this.userDAO = userDAO;
         this.userPasswordEncoder = userPasswordEncoder;
@@ -185,6 +197,56 @@ public class AdminUserAccountController extends ActivatableEntityController<User
 
         return info;
 
+    }
+
+    @RequestMapping(
+            path = API.ENTITY_PRIVILEGE_ENDPOINT,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public EntityPrivilege createEntityPrivilege(
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_TYPE, required = true) final String entityType,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_ID, required = true) final Long entityId,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID, required = true) final String userUUID,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_PRIVILEGES, required = true) final String privilege) {
+
+        checkAdminRole();
+
+        return this.entityPrivilegeDAO.addPrivilege(
+                EntityType.valueOf(entityType),
+                entityId,
+                userUUID,
+                PrivilegeType.valueOf(privilege))
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.ENTITY_PRIVILEGE_ENDPOINT,
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public EntityKey deleteEntityPrivilege(
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_TYPE, required = true) final String entityType,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_ID, required = true) final Long entityId,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID, required = true) final String userUUID) {
+
+        checkAdminRole();
+
+        return this.entityPrivilegeDAO.deletePrivilege(
+                EntityType.valueOf(entityType),
+                entityId,
+                userUUID)
+                .getOrThrow();
+    }
+
+    private void checkAdminRole() {
+        final Set<UserRole> userRoles = this.userService.getCurrentUser().getUserRoles();
+        if (!userRoles.contains(UserRole.ADMIN)) {
+            throw APIErrorException.ofPermissionDenied(
+                    EntityType.ENTITY_PRIVILEGE,
+                    PrivilegeType.WRITE,
+                    this.userService.getCurrentUser().getUserInfo());
+        }
     }
 
 }

@@ -11,7 +11,6 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.EntityKey;
-import ch.ethz.seb.sps.domain.model.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.Exam;
@@ -20,6 +19,7 @@ import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import ch.ethz.seb.sps.server.datalayer.batis.GroupViewMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.customrecords.GroupViewRecord;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.GroupRecord;
@@ -523,11 +523,6 @@ public class GroupDAOBatis implements GroupDAO {
                     Domain.CLIENT_ACCESS.ATTR_NAME,
                     "clientaccess:name:name.notunique");
         }
-    }
-
-    private <T> Stream<T> logAndSkipOnError(final Result<T> result) {
-        return Result.skipOnError(
-                result.onError(error -> log.error("Unexpected error. Object processing is skipped: ", error)));
     }
 
 }

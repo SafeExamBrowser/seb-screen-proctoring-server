@@ -17,11 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.api.POSTMapper;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
@@ -31,7 +33,10 @@ import ch.ethz.seb.sps.server.servicelayer.UserService;
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.ADMIN_SESSION_ENDPOINT)
 public class AdminSessionController extends EntityController<Session, Session> {
 
+    private final GroupDAO groupDAO;
+
     public AdminSessionController(
+            final GroupDAO groupDAO,
             final UserService userService,
             final SessionDAO entityDAO,
             final AuditLogDAO auditLogDAO,
@@ -39,6 +44,7 @@ public class AdminSessionController extends EntityController<Session, Session> {
             final BeanValidationService beanValidationService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
+        this.groupDAO = groupDAO;
     }
 
     @Override
@@ -55,9 +61,15 @@ public class AdminSessionController extends EntityController<Session, Session> {
             uuid = UUID.randomUUID().toString();
         }
 
+        final String groupId = postParams.getString(Domain.SESSION.ATTR_GROUP_ID);
+        final Long groupPK = this.groupDAO.modelIdToPK(groupId);
+        if (groupPK == null) {
+            throw APIErrorException.ofMissingAttribute(Domain.SESSION.ATTR_GROUP_ID, groupId);
+        }
+
         return new Session(
                 null,
-                postParams.getLong(Domain.SESSION.ATTR_GROUP_ID),
+                groupPK,
                 uuid,
                 postParams.getString(Domain.SESSION.ATTR_CLIENT_NAME),
                 postParams.getString(Domain.SESSION.ATTR_CLIENT_IP),
