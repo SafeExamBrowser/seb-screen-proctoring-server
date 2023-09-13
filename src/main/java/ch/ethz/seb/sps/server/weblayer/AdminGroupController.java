@@ -8,16 +8,6 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.mybatis.dynamic.sql.SqlTable;
-import org.springframework.http.MediaType;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.POSTMapper;
@@ -32,6 +22,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.mybatis.dynamic.sql.SqlTable;
+import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.GROUP_ENDPOINT)
@@ -80,7 +79,13 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
                 null,
                 postParams.getString(Domain.SEB_GROUP.ATTR_NAME),
                 postParams.getString(Domain.SEB_GROUP.ATTR_DESCRIPTION),
-                null, null, null, null, null);
+                null,
+                null,
+                null,
+                null,
+                postParams.getLong(Domain.SEB_GROUP.ATTR_EXAM_ID),
+                null
+        );
     }
 
     @Override
@@ -90,7 +95,13 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
                 existingEntity.uuid,
                 modifyData.name,
                 modifyData.description,
-                null, null, null, null, null);
+                null,
+                null,
+                null,
+                null,
+                modifyData.exam_id,
+                null
+        );
     }
 
     @Override

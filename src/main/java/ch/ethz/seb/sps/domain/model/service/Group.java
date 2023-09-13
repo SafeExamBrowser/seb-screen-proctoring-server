@@ -8,23 +8,6 @@
 
 package ch.ethz.seb.sps.domain.model.service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import ch.ethz.seb.sps.domain.Domain.SEB_GROUP;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityPrivilege;
@@ -35,8 +18,22 @@ import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.domain.model.WithNameDescription;
 import ch.ethz.seb.sps.utils.Utils;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Group implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
@@ -74,9 +71,13 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
     @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 
+    @JsonProperty(SEB_GROUP.ATTR_EXAM_ID)
+    public final Long exam_id;
+
     @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES)
     public final Collection<EntityPrivilege> entityPrivileges;
+
 
     @JsonCreator
     public Group(
@@ -88,6 +89,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
             @JsonProperty(SEB_GROUP.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(SEB_GROUP.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
             @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME) final Long terminationTime,
+            @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME) final Long exam_id,
             @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES) final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
@@ -98,6 +100,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
         this.creationTime = creationTime;
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
+        this.exam_id = exam_id;
         this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
     }
 
@@ -106,8 +109,8 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
         return (this.uuid != null)
                 ? this.uuid
                 : (this.id != null)
-                        ? String.valueOf(this.id)
-                        : null;
+                ? String.valueOf(this.id)
+                : null;
     }
 
     @Override
@@ -146,6 +149,10 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
     @Override
     public Long getTerminationTime() {
         return this.terminationTime;
+    }
+
+    public Long getExam_id() {
+        return exam_id;
     }
 
     @Override
@@ -195,6 +202,8 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
         builder.append(", terminationTime=");
         builder.append(this.terminationTime);
         builder.append(", entityPrivileges=");
+        builder.append(this.exam_id);
+        builder.append(", exam_id=");
         builder.append(this.entityPrivileges);
         builder.append("]");
         return builder.toString();

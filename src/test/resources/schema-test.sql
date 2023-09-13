@@ -79,11 +79,31 @@ CREATE TABLE IF NOT EXISTS `screenshot` (
   UNIQUE INDEX `id_screenshot` (`id` ASC));
 
 
+
+-- -----------------------------------------------------
+-- Table `exam`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `exam` ;
+
+CREATE TABLE IF NOT EXISTS `exam` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `uuid` VARCHAR(45) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `description` VARCHAR(4000) NULL,
+  `url` VARCHAR(255) NULL,
+  `type` VARCHAR(45) NULL,
+  `owner` VARCHAR(255) NOT NULL,
+  `creation_time` BIGINT NOT NULL,
+  `last_update_time` BIGINT NOT NULL,
+  `termination_time` BIGINT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `exam_UNIQUE` (`id` ASC));
+
+
+
 -- -----------------------------------------------------
 -- Table `seb_group`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `seb_group` ;
-
 CREATE TABLE IF NOT EXISTS `seb_group` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `uuid` VARCHAR(45) NOT NULL,
@@ -93,9 +113,16 @@ CREATE TABLE IF NOT EXISTS `seb_group` (
   `creation_time` BIGINT NOT NULL,
   `last_update_time` BIGINT NOT NULL,
   `termination_time` BIGINT NULL,
+  `exam_id` BIGINT UNSIGNED NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_group` (`id` ASC),
-  INDEX `group_uuid_ix` (`uuid` ASC));
+  INDEX `group_uuid_ix` (`uuid` ASC),
+  UNIQUE INDEX `exam_id_UNIQUE` (`exam_id` ASC),
+  CONSTRAINT `exam_ref`
+    FOREIGN KEY (`exam_id`)
+    REFERENCES `exam` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
 
 
 -- -----------------------------------------------------

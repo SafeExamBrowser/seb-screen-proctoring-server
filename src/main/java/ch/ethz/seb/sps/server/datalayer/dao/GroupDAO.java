@@ -8,11 +8,12 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao;
 
-import java.util.Collection;
-
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.Group;
+import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import ch.ethz.seb.sps.utils.Result;
+
+import java.util.Collection;
 
 public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
@@ -22,4 +23,5 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Collection<Group>> pksByGroupName(final FilterMap filterMap);
 
+    Result<Collection<GroupViewData>> getGroupsWithExamData(final FilterMap filterMap);
 }

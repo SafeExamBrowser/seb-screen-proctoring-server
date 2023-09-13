@@ -8,6 +8,40 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
+import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
+import ch.ethz.seb.sps.domain.api.APIErrorException;
+import ch.ethz.seb.sps.domain.api.JSONMapper;
+import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.FilterMap;
+import ch.ethz.seb.sps.domain.model.PageSortOrder;
+import ch.ethz.seb.sps.domain.model.service.Exam;
+import ch.ethz.seb.sps.domain.model.service.ExamViewData;
+import ch.ethz.seb.sps.domain.model.service.Group;
+import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
+import ch.ethz.seb.sps.domain.model.service.Session;
+import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
+import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
+import ch.ethz.seb.sps.server.ServiceInfo;
+import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
+import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
+import ch.ethz.seb.sps.server.servicelayer.UserService;
+import ch.ethz.seb.sps.utils.Constants;
+import ch.ethz.seb.sps.utils.Result;
+import ch.ethz.seb.sps.utils.Utils;
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -18,45 +52,13 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
-import ch.ethz.seb.sps.domain.api.APIErrorException;
-import ch.ethz.seb.sps.domain.api.JSONMapper;
-import ch.ethz.seb.sps.domain.model.EntityType;
-import ch.ethz.seb.sps.domain.model.FilterMap;
-import ch.ethz.seb.sps.domain.model.PageSortOrder;
-import ch.ethz.seb.sps.domain.model.service.Group;
-import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
-import ch.ethz.seb.sps.domain.model.service.Session;
-import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
-import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
-import ch.ethz.seb.sps.server.ServiceInfo;
-import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
-import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
-import ch.ethz.seb.sps.utils.Constants;
-import ch.ethz.seb.sps.utils.Result;
-import ch.ethz.seb.sps.utils.Utils;
-
 @Lazy
 @Component
 public class ProctoringServiceImpl implements ProctoringService {
 
     private static final Logger log = LoggerFactory.getLogger(ProctoringServiceImpl.class);
 
+    private final ExamDAO examDAO;
     private final GroupDAO groupDAO;
     private final SessionDAO sessionDAO;
     private final ScreenshotDAO screenshotDAO;
@@ -67,6 +69,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     private final JSONMapper jsonMapper;
 
     public ProctoringServiceImpl(
+            final ExamDAO examDAO,
             final GroupDAO groupDAO,
             final SessionDAO sessionDAO,
             final ScreenshotDAO screenshotDAO,
@@ -76,6 +79,7 @@ public class ProctoringServiceImpl implements ProctoringService {
             final ServiceInfo serviceInfo,
             final JSONMapper jsonMapper) {
 
+        this.examDAO = examDAO;
         this.groupDAO = groupDAO;
         this.sessionDAO = sessionDAO;
         this.screenshotDAO = screenshotDAO;
@@ -107,8 +111,8 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public Result<ScreenshotViewData> getRecordedImageDataAt(final String sessionUUID, final Long timestamp) {
-        if (timestamp != null) {
+        public Result<ScreenshotViewData> getRecordedImageDataAt(final String sessionUUID, final Long timestamp) {
+            if (timestamp != null) {
             return this.screenshotDataDAO
                     .getAt(sessionUUID, timestamp)
                     .map(data -> createScreenshotViewData(sessionUUID, data, null));
@@ -159,6 +163,12 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
+            ExamViewData examViewData = new ExamViewData(null, null);
+            if(activeGroup.getExam_id() != null){
+                Exam exam = this.examDAO.byModelId(activeGroup.getExam_id().toString()).get();
+                examViewData = new ExamViewData(exam.getUuid(), exam.getName());
+            }
+
             return new MonitoringPageData(
                     groupUUID,
                     activeGroup.name,
@@ -168,7 +178,8 @@ public class ProctoringServiceImpl implements ProctoringService {
                     pSize,
                     sortBy,
                     sortOrder,
-                    page);
+                    page,
+                    examViewData);
         });
     }
 

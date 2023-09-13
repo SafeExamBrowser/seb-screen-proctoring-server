@@ -1,9 +1,5 @@
 package ch.ethz.seb.sps.generator;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.h2.jdbcx.JdbcDataSource;
 import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.config.Configuration;
@@ -13,6 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SPSModelGenerator {
 
@@ -29,6 +29,7 @@ public class SPSModelGenerator {
     private static final String DB_URL = "jdbc:h2:mem:" + SCHEMA_NAME;
 
     public static void main(final String[] args) throws Exception {
+
 
         final String getenv = System.getProperty(SCHEMA_VERSION_ENV_KEY);
         final String url = SCHEMA_URL_PREFIX + "version_" + getenv.replace(".", "_") + "/" + SCHEMA_FILE_NAME + "'";

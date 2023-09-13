@@ -7,7 +7,7 @@ INSERT IGNORE INTO `client_access` VALUES
 ;
 
 INSERT IGNORE INTO `seb_group` VALUES
-    (1, 'test_group', 'test_group', 'test-description', 'super-admin', 0, 0, null)
+    (1, 'test_group', 'test_group', 'test-description', 'super-admin', 0, 0, null, null)
 ;
 
 INSERT IGNORE INTO `session` VALUES

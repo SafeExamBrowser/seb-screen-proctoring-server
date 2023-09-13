@@ -48,6 +48,10 @@
             <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
             <columnOverride column="creation_date" javaType="org.joda.time.DateTime" typeHandler="ch.ethz.seb.sps.server.datalayer.batis.JodaTimeTypeResolver" />
         </table>
+        <table tableName="exam" domainObjectName="ExamRecord">
+            <property name="immutable" value="true"/>
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
         <table tableName="seb_group" domainObjectName="GroupRecord">
             <property name="immutable" value="true"/>
             <generatedKey column="id" sqlStatement="JDBC" identity="true"/>

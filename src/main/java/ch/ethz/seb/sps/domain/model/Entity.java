@@ -16,12 +16,6 @@ public interface Entity extends ModelIdAware {
     String FILTER_ATTR_ACTIVE = "active";
     String FILTER_ATTR_NAME = "name";
 
-    /** Get the type of the entity.
-     *
-     * @return the type of the entity */
-    @JsonIgnore
-    EntityType entityType();
-
     /** Get the name of the entity
      *
      * @return the name of the entity */
@@ -40,6 +34,12 @@ public interface Entity extends ModelIdAware {
         }
         return new EntityKey(modelId, entityType());
     }
+
+    /** Get the type of the entity.
+     *
+     * @return the type of the entity */
+    @JsonIgnore
+    EntityType entityType();
 
     /** Creates an EntityName instance from this Entity instance.
      *
