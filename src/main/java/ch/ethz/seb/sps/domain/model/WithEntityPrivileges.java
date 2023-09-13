@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 
 public interface WithEntityPrivileges {
 

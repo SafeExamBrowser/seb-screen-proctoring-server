@@ -9,18 +9,24 @@
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.ethz.seb.sps.domain.model.EntityPrivilege;
+import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
+import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.EntityPrivilegeRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.utils.Result;
 
 @Service
@@ -96,6 +102,105 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                 record.getEntityId(),
                 record.getUserUuid(),
                 record.getPrivileges());
+    }
+
+    @Override
+    @Transactional
+    public Result<EntityPrivilege> addPrivilege(
+            final EntityType type,
+            final Long entityId,
+            final String userUUID,
+            final PrivilegeType privilegeType) {
+
+        return Result.tryCatch(() -> {
+
+            // check duplication
+            final List<Long> ids = this.entityPrivilegeRecordMapper.selectIdsByExample()
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
+                    .and(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            if (ids != null && !ids.isEmpty()) {
+                throw new DuplicateEntityException(EntityType.ENTITY_PRIVILEGE, "userUUID",
+                        "for type: " + type + " and id: " + entityId + " and userId: " + userUUID);
+            }
+
+            final EntityPrivilegeRecord entityPrivilegeRecord = new EntityPrivilegeRecord(
+                    null,
+                    type.name(),
+                    entityId,
+                    userUUID,
+                    privilegeType.flag);
+
+            this.entityPrivilegeRecordMapper.insert(entityPrivilegeRecord);
+
+            return entityPrivilegeRecord;
+        })
+                .map(this::toDomainObject);
+    }
+
+    @Override
+    @Transactional
+    public Result<EntityKey> deletePrivilege(
+            final EntityType type,
+            final Long entityId,
+            final String userUUID) {
+
+        return Result.tryCatch(() -> {
+
+            final List<Long> ids = this.entityPrivilegeRecordMapper.selectIdsByExample()
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
+                    .and(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            if (ids == null || ids.isEmpty()) {
+                throw new NoResourceFoundException(EntityType.ENTITY_PRIVILEGE,
+                        "for type: " + type + " and id: " + entityId + " and userId: " + userUUID);
+            }
+
+            this.entityPrivilegeRecordMapper.deleteByExample()
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
+                    .and(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return new EntityKey(ids.get(0), EntityType.ENTITY_PRIVILEGE);
+
+        });
+    }
+
+    @Override
+    @Transactional
+    public Result<Collection<EntityKey>> deleteAllPrivileges(
+            final EntityType type,
+            final Long entityId) {
+
+        return Result.tryCatch(() -> {
+
+            final List<Long> ids = this.entityPrivilegeRecordMapper.selectIdsByExample()
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
+                    .build()
+                    .execute();
+
+            if (ids == null || ids.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            this.entityPrivilegeRecordMapper.deleteByExample()
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.id, SqlBuilder.isIn(ids))
+                    .build()
+                    .execute();
+
+            return ids.stream()
+                    .map(id -> new EntityKey(id, EntityType.ENTITY_PRIVILEGE))
+                    .collect(Collectors.toList());
+        });
     }
 
 }

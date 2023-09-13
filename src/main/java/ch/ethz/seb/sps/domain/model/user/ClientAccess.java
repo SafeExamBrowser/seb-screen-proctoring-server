@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import ch.ethz.seb.sps.domain.Domain.CLIENT_ACCESS;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.Entity;
-import ch.ethz.seb.sps.domain.model.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.OwnedEntity;
 import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;

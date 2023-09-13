@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package ch.ethz.seb.sps.domain.model;
+package ch.ethz.seb.sps.domain.model.user;
 
 import java.util.Objects;
 
@@ -14,7 +14,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import ch.ethz.seb.sps.domain.Domain.ENTITY_PRIVILEGE;;
+import ch.ethz.seb.sps.domain.Domain.ENTITY_PRIVILEGE;
+import ch.ethz.seb.sps.domain.model.EntityType;;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EntityPrivilege {

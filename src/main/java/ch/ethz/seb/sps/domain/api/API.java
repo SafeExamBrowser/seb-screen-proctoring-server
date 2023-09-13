@@ -93,6 +93,7 @@ public final class API {
     public static final String LOGIN_PATH_SEGMENT = "/loglogin";
     public static final String LOGOUT_PATH_SEGMENT = "/loglogout";
     public static final String PASSWORD_PATH_SEGMENT = "/password";
+    public static final String ENTITY_PRIVILEGE_ENDPOINT = "/entityprivilege";
 
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 
