@@ -283,6 +283,9 @@ public class SEBSessionController {
                 () -> {
                     try {
 
+                        // TODO inject session cache and get session by sessionUUID and check if it is still active (not terminated)
+                        //      if inactive throw error for SEB client to notify session closed
+
                         final ImageFormat imageFormat = (StringUtils.isNotEmpty(format))
                                 ? ImageFormat.byName(format)
                                 : null;

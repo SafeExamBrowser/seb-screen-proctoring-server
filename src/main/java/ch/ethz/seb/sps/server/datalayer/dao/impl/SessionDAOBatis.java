@@ -8,7 +8,11 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.id;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.lastUpdateTime;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.terminationTime;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.*;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.uuid;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.util.ArrayList;
@@ -406,20 +410,14 @@ public class SessionDAOBatis implements SessionDAO {
         return Result.tryCatch(() -> {
 
             final long now = Utils.getMillisecondsNow();
-            final Long id = this.sessionRecordMapper
-                    .selectByExample()
-                    .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(sessionUUID))
+
+            UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
+                    .set(lastUpdateTime).equalTo(now)
+                    .set(terminationTime).equalTo(now)
+                    .where(uuid, isEqualTo(sessionUUID))
                     .build()
-                    .execute()
-                    .get(0)
-                    .getId();
+                    .execute();
 
-            final SessionRecord record = new SessionRecord(
-                    id,
-                    null, null, null, null, null, null, null, null,
-                    null, now, now);
-
-            this.sessionRecordMapper.updateByPrimaryKeySelective(record);
             return sessionUUID;
         })
                 .onError(TransactionHandler::rollback);

@@ -216,7 +216,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
                 EntityType.valueOf(entityType),
                 entityId,
                 userUUID,
-                PrivilegeType.valueOf(privilege))
+                PrivilegeType.byFlag(privilege))
                 .getOrThrow();
     }
 

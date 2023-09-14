@@ -47,6 +47,9 @@ public class WebsocketDataExtractor {
 
         try {
 
+            // TODO inject session cache and get session by sessionUUID and check if it is still active (not terminated)
+            //      if inactive throw error for SEB client to notify session closed
+
             // get fist two bytes with meta date length
             final byte[] lBytes = new byte[2];
             in.read(lBytes);

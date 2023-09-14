@@ -31,6 +31,15 @@ public final class API {
             this.flag = flag;
         }
 
+        public static final PrivilegeType byFlag(final String flag) {
+            for (final PrivilegeType t : PrivilegeType.values()) {
+                if (t.flag.equals(flag)) {
+                    return t;
+                }
+            }
+            return null;
+        }
+
     }
 
     public static final String SCREENSHOT_META_DATA_BROWSER_URL = "screenProctoringMetadataURL";
