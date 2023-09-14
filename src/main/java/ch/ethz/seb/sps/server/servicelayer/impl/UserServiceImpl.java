@@ -8,13 +8,16 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Objects;
-
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
+import ch.ethz.seb.sps.domain.api.API.UserRole;
+import ch.ethz.seb.sps.domain.model.Entity;
+import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.OwnedEntity;
+import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
+import ch.ethz.seb.sps.domain.model.user.ServerUser;
+import ch.ethz.seb.sps.domain.model.user.UserInfo;
+import ch.ethz.seb.sps.server.servicelayer.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -26,16 +29,12 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
-import ch.ethz.seb.sps.domain.api.API.UserRole;
-import ch.ethz.seb.sps.domain.model.Entity;
-import ch.ethz.seb.sps.domain.model.EntityType;
-import ch.ethz.seb.sps.domain.model.OwnedEntity;
-import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
-import ch.ethz.seb.sps.domain.model.user.ServerUser;
-import ch.ethz.seb.sps.domain.model.user.UserInfo;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Objects;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,13 +46,13 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies) {
         this.extractStrategies = extractStrategies;
-
         // admin privileges
         this.rolePrivileges.put(
                 UserRole.ADMIN,
                 Arrays.asList(
                         new Privilege(EntityType.USER, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.CLIENT_ACCESS, API.PRIVILEGES_WRITE),
+                        new Privilege(EntityType.EXAM, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.SEB_GROUP, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.SCREENSHOT, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.SESSION, API.PRIVILEGES_WRITE),

@@ -8,9 +8,9 @@
 
 package ch.ethz.seb.sps.domain.api;
 
-import java.util.EnumSet;
-
 import ch.ethz.seb.sps.domain.model.Entity;
+
+import java.util.EnumSet;
 
 public final class API {
 
@@ -127,6 +127,7 @@ public final class API {
     public static final String PARAM_TO_TIME = "toTime";
 
     public static final String PROCTORING_ENDPOINT = "/proctoring";
+    public static final String EXAM_ENDPOINT = "/exam";
     public static final String GROUP_ENDPOINT = "/group";
     public static final String SESSION_ENDPOINT = "/session";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";

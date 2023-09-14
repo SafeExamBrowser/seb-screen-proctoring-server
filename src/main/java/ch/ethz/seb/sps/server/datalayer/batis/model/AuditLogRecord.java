@@ -3,28 +3,28 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import javax.annotation.Generated;
 
 public class AuditLogRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.653+02:00", comments="Source field: audit_log.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.user_uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.user_uuid")
     private String userUuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.timestamp")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.timestamp")
     private Long timestamp;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.activity_type")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.activity_type")
     private String activityType;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.entity_type")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.entity_type")
     private String entityType;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.entity_id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.entity_id")
     private Long entityId;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.message")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.message")
     private String message;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.653+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source Table: audit_log")
     public AuditLogRecord(Long id, String userUuid, Long timestamp, String activityType, String entityType, Long entityId, String message) {
         this.id = id;
         this.userUuid = userUuid;
@@ -35,37 +35,37 @@ public class AuditLogRecord {
         this.message = message;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.653+02:00", comments="Source field: audit_log.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.user_uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.user_uuid")
     public String getUserUuid() {
         return userUuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.timestamp")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.timestamp")
     public Long getTimestamp() {
         return timestamp;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.activity_type")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.activity_type")
     public String getActivityType() {
         return activityType;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.entity_type")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.entity_type")
     public String getEntityType() {
         return entityType;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.entity_id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.entity_id")
     public Long getEntityId() {
         return entityId;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.654+02:00", comments="Source field: audit_log.message")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.335+02:00", comments="Source field: audit_log.message")
     public String getMessage() {
         return message;
     }
@@ -74,7 +74,7 @@ public class AuditLogRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table audit_log
      *
-     * @mbg.generated Wed Aug 16 13:34:04 CEST 2023
+     * @mbg.generated Wed Sep 13 17:30:00 CEST 2023
      */
     @Override
     public String toString() {
@@ -97,7 +97,7 @@ public class AuditLogRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table audit_log
      *
-     * @mbg.generated Wed Aug 16 13:34:04 CEST 2023
+     * @mbg.generated Wed Sep 13 17:30:00 CEST 2023
      */
     @Override
     public boolean equals(Object that) {
@@ -124,7 +124,7 @@ public class AuditLogRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table audit_log
      *
-     * @mbg.generated Wed Aug 16 13:34:04 CEST 2023
+     * @mbg.generated Wed Sep 13 17:30:00 CEST 2023
      */
     @Override
     public int hashCode() {

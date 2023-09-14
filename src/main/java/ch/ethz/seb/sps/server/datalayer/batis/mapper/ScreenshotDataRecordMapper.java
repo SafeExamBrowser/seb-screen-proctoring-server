@@ -1,11 +1,6 @@
 package ch.ethz.seb.sps.server.datalayer.batis.mapper;
 
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.*;
-import static org.mybatis.dynamic.sql.SqlBuilder.*;
-
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
-import java.util.List;
-import javax.annotation.Generated;
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
 import org.apache.ibatis.annotations.DeleteProvider;
@@ -30,22 +25,33 @@ import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.mybatis.dynamic.sql.update.render.UpdateStatementProvider;
 import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
+import javax.annotation.Generated;
+import java.util.List;
+
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.id;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.imageFormat;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.metaData;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.sessionUuid;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.timestamp;
+import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
+
 @Mapper
 public interface ScreenshotDataRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<ScreenshotDataRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -56,7 +62,7 @@ public interface ScreenshotDataRecordMapper {
     })
     ScreenshotDataRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -67,22 +73,22 @@ public interface ScreenshotDataRecordMapper {
     })
     List<ScreenshotDataRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(screenshotDataRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, screenshotDataRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, screenshotDataRecord)
                 .where(id, isEqualTo(id_))
@@ -90,7 +96,7 @@ public interface ScreenshotDataRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default int insert(ScreenshotDataRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(screenshotDataRecord)
@@ -102,7 +108,7 @@ public interface ScreenshotDataRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.631+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default int insertSelective(ScreenshotDataRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(screenshotDataRecord)
@@ -114,19 +120,19 @@ public interface ScreenshotDataRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.632+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<ScreenshotDataRecord>>> selectByExample() {
         return SelectDSL.selectWithMapper(this::selectMany, id, sessionUuid, timestamp, imageFormat, metaData)
                 .from(screenshotDataRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.632+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<ScreenshotDataRecord>>> selectDistinctByExample() {
         return SelectDSL.selectDistinctWithMapper(this::selectMany, id, sessionUuid, timestamp, imageFormat, metaData)
                 .from(screenshotDataRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.632+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default ScreenshotDataRecord selectByPrimaryKey(Long id_) {
         return SelectDSL.selectWithMapper(this::selectOne, id, sessionUuid, timestamp, imageFormat, metaData)
                 .from(screenshotDataRecord)
@@ -135,7 +141,7 @@ public interface ScreenshotDataRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.632+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(ScreenshotDataRecord record) {
         return UpdateDSL.updateWithMapper(this::update, screenshotDataRecord)
                 .set(sessionUuid).equalTo(record::getSessionUuid)
@@ -144,7 +150,7 @@ public interface ScreenshotDataRecordMapper {
                 .set(metaData).equalTo(record::getMetaData);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.632+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(ScreenshotDataRecord record) {
         return UpdateDSL.updateWithMapper(this::update, screenshotDataRecord)
                 .set(sessionUuid).equalToWhenPresent(record::getSessionUuid)
@@ -153,7 +159,7 @@ public interface ScreenshotDataRecordMapper {
                 .set(metaData).equalToWhenPresent(record::getMetaData);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.632+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default int updateByPrimaryKey(ScreenshotDataRecord record) {
         return UpdateDSL.updateWithMapper(this::update, screenshotDataRecord)
                 .set(sessionUuid).equalTo(record::getSessionUuid)
@@ -165,7 +171,7 @@ public interface ScreenshotDataRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.632+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     default int updateByPrimaryKeySelective(ScreenshotDataRecord record) {
         return UpdateDSL.updateWithMapper(this::update, screenshotDataRecord)
                 .set(sessionUuid).equalToWhenPresent(record::getSessionUuid)

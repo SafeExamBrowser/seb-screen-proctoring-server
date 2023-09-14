@@ -8,20 +8,20 @@
 
 package ch.ethz.seb.sps.domain.model.service;
 
-import java.util.List;
-import java.util.Objects;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import ch.ethz.seb.sps.domain.Domain.SEB_GROUP;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
+
+import java.util.List;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MonitoringPageData {
 
+    public static final String ATTR_EXAM = "exam";
     public static final String ATTR_NUM_OF_SESSIONS = "numberOfSessions";
     public static final String ATTR_PAGE_NUMBER = "pageNumber";
     public static final String ATTR_PAGE_SIZE = "pageSize";
@@ -61,6 +61,9 @@ public class MonitoringPageData {
     @JsonProperty(ATTR_SCREENSHOTS)
     public final List<ScreenshotViewData> screenshots;
 
+    @JsonProperty(ATTR_EXAM)
+    public final ExamViewData examViewData;
+
     public MonitoringPageData(
             @JsonProperty(SEB_GROUP.ATTR_UUID) final String groupUUID,
             @JsonProperty(SEB_GROUP.ATTR_NAME) final String groupName,
@@ -70,7 +73,8 @@ public class MonitoringPageData {
             @JsonProperty(ATTR_PAGE_SIZE) final int pageSize,
             @JsonProperty(ATTR_SORT_BY) final String sortBy,
             @JsonProperty(ATTR_SORT_ORDER) final PageSortOrder sortOrder,
-            @JsonProperty(ATTR_SCREENSHOTS) final List<ScreenshotViewData> sessionDataPage) {
+            @JsonProperty(ATTR_SCREENSHOTS) final List<ScreenshotViewData> sessionDataPage,
+            @JsonProperty(ATTR_EXAM) final ExamViewData examViewData) {
 
         this.groupUUID = groupUUID;
         this.groupName = groupName;
@@ -81,6 +85,7 @@ public class MonitoringPageData {
         this.sortBy = sortBy;
         this.sortOrder = sortOrder;
         this.screenshots = sessionDataPage;
+        this.examViewData = examViewData;
     }
 
     public String getGroupUUID() {

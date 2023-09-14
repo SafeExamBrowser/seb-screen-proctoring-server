@@ -8,30 +8,6 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
@@ -41,6 +17,7 @@ import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Group;
+import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
@@ -61,6 +38,28 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.PROCTORING_ENDPOINT)
@@ -124,7 +123,7 @@ public class AdminProctorController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<Group> getPage(
+    public Page<GroupViewData> getPage(
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sort,
@@ -137,8 +136,8 @@ public class AdminProctorController {
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
         filterMap.putIfAbsent(Group.FILTER_ATTR_ACTIVE, Constants.TRUE_STRING);
 
-        final Collection<Group> groups = this.groupDAO
-                .allMatching(filterMap)
+        final Collection<GroupViewData> groups = this.groupDAO
+                .getGroupsWithExamData(filterMap)
                 .getOrThrow()
                 .stream()
                 .filter(group -> this.userService.hasGrant(PrivilegeType.READ, group))
@@ -149,7 +148,7 @@ public class AdminProctorController {
                 pageSize,
                 sort,
                 groups,
-                Group.groupSort(sort));
+                GroupViewData.groupSort(sort));
     }
 
     @Operation(

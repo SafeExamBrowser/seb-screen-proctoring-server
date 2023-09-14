@@ -1,11 +1,6 @@
 package ch.ethz.seb.sps.server.datalayer.batis.mapper;
 
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport.*;
-import static org.mybatis.dynamic.sql.SqlBuilder.*;
-
 import ch.ethz.seb.sps.server.datalayer.batis.model.EntityPrivilegeRecord;
-import java.util.List;
-import javax.annotation.Generated;
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
 import org.apache.ibatis.annotations.DeleteProvider;
@@ -30,22 +25,33 @@ import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.mybatis.dynamic.sql.update.render.UpdateStatementProvider;
 import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
+import javax.annotation.Generated;
+import java.util.List;
+
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport.entityId;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport.entityPrivilegeRecord;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport.entityType;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport.id;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport.privileges;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport.userUuid;
+import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
+
 @Mapper
 public interface EntityPrivilegeRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.644+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.332+02:00", comments="Source Table: entity_privilege")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.332+02:00", comments="Source Table: entity_privilege")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<EntityPrivilegeRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -56,7 +62,7 @@ public interface EntityPrivilegeRecordMapper {
     })
     EntityPrivilegeRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -67,22 +73,22 @@ public interface EntityPrivilegeRecordMapper {
     })
     List<EntityPrivilegeRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(entityPrivilegeRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, entityPrivilegeRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, entityPrivilegeRecord)
                 .where(id, isEqualTo(id_))
@@ -90,7 +96,7 @@ public interface EntityPrivilegeRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default int insert(EntityPrivilegeRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(entityPrivilegeRecord)
@@ -102,7 +108,7 @@ public interface EntityPrivilegeRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default int insertSelective(EntityPrivilegeRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(entityPrivilegeRecord)
@@ -114,19 +120,19 @@ public interface EntityPrivilegeRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<EntityPrivilegeRecord>>> selectByExample() {
         return SelectDSL.selectWithMapper(this::selectMany, id, entityType, entityId, userUuid, privileges)
                 .from(entityPrivilegeRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<EntityPrivilegeRecord>>> selectDistinctByExample() {
         return SelectDSL.selectDistinctWithMapper(this::selectMany, id, entityType, entityId, userUuid, privileges)
                 .from(entityPrivilegeRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default EntityPrivilegeRecord selectByPrimaryKey(Long id_) {
         return SelectDSL.selectWithMapper(this::selectOne, id, entityType, entityId, userUuid, privileges)
                 .from(entityPrivilegeRecord)
@@ -135,7 +141,7 @@ public interface EntityPrivilegeRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(EntityPrivilegeRecord record) {
         return UpdateDSL.updateWithMapper(this::update, entityPrivilegeRecord)
                 .set(entityType).equalTo(record::getEntityType)
@@ -144,7 +150,7 @@ public interface EntityPrivilegeRecordMapper {
                 .set(privileges).equalTo(record::getPrivileges);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(EntityPrivilegeRecord record) {
         return UpdateDSL.updateWithMapper(this::update, entityPrivilegeRecord)
                 .set(entityType).equalToWhenPresent(record::getEntityType)
@@ -153,7 +159,7 @@ public interface EntityPrivilegeRecordMapper {
                 .set(privileges).equalToWhenPresent(record::getPrivileges);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.645+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default int updateByPrimaryKey(EntityPrivilegeRecord record) {
         return UpdateDSL.updateWithMapper(this::update, entityPrivilegeRecord)
                 .set(entityType).equalTo(record::getEntityType)
@@ -165,7 +171,7 @@ public interface EntityPrivilegeRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-08-16T13:34:04.646+02:00", comments="Source Table: entity_privilege")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.333+02:00", comments="Source Table: entity_privilege")
     default int updateByPrimaryKeySelective(EntityPrivilegeRecord record) {
         return UpdateDSL.updateWithMapper(this::update, entityPrivilegeRecord)
                 .set(entityType).equalToWhenPresent(record::getEntityType)
