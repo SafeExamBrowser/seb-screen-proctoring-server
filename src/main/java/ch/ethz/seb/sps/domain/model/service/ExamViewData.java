@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExamViewData {
 
+    public static final ExamViewData EMPTY_MODEL = new ExamViewData(null, null);
+
     @JsonProperty(EXAM.ATTR_UUID)
     public final String uuid;
 

@@ -163,7 +163,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
-            ExamViewData examViewData = new ExamViewData(null, null);
+            ExamViewData examViewData = ExamViewData.EMPTY_MODEL;
             if (activeGroup.getExam_id() != null) {
                 Exam exam = this.examDAO.byModelId(activeGroup.getExam_id().toString()).get();
                 examViewData = new ExamViewData(exam.getUuid(), exam.getName());

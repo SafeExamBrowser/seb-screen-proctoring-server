@@ -480,7 +480,7 @@ public class GroupDAOBatis implements GroupDAO {
     }
 
     private ExamViewData getExamData(Long examId) {
-        ExamViewData examViewData = new ExamViewData(null, null);
+        ExamViewData examViewData = ExamViewData.EMPTY_MODEL;
         if (examId != null) {
             Exam exam = this.examDAO.byModelId(examId.toString()).get();
             examViewData = new ExamViewData(exam.getUuid(), exam.getName());
