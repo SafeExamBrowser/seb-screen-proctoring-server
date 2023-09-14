@@ -8,6 +8,23 @@
 
 package ch.ethz.seb.sps.domain.model.service;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.seb.sps.domain.Domain.SEB_GROUP;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
@@ -18,22 +35,8 @@ import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.domain.model.WithNameDescription;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.utils.Utils;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Group implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
@@ -78,7 +81,6 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
     @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES)
     public final Collection<EntityPrivilege> entityPrivileges;
 
-
     @JsonCreator
     public Group(
             @JsonProperty(SEB_GROUP.ATTR_ID) final Long id,
@@ -109,8 +111,8 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
         return (this.uuid != null)
                 ? this.uuid
                 : (this.id != null)
-                ? String.valueOf(this.id)
-                : null;
+                        ? String.valueOf(this.id)
+                        : null;
     }
 
     @Override
@@ -152,7 +154,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
     }
 
     public Long getExam_id() {
-        return exam_id;
+        return this.exam_id;
     }
 
     @Override
@@ -224,7 +226,6 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
             if (sortBy.equals(Group.FILTER_ATTR_CREATTION_TIME)) {
                 list.sort(Comparator.comparing(group -> (group.creationTime != null) ? group.creationTime : 0L));
             }
-
             if (PageSortOrder.DESCENDING == PageSortOrder.getSortOrder(sort)) {
                 Collections.reverse(list);
             }

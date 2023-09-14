@@ -1,5 +1,18 @@
 package ch.ethz.seb.sps.domain.model.service;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.seb.sps.domain.Domain.SEB_GROUP;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
@@ -10,19 +23,12 @@ import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.domain.model.WithNameDescription;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.utils.Utils;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
 
     public static final String ATTR_EXAM = "exam";
+    public static final String FILTER_ATTR_EXAM_NAME = "examName";
 
     @JsonProperty(SEB_GROUP.ATTR_ID)
     public final Long id;
@@ -60,10 +66,9 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
             final String description,
             final String owner,
             final Long creationTime,
-            final Long lastUpdateTime, Long terminationTime,
+            final Long lastUpdateTime, final Long terminationTime,
             final ExamViewData examViewData,
-            final Collection<EntityPrivilege> entityPrivileges
-    ) {
+            final Collection<EntityPrivilege> entityPrivileges) {
         this.id = id;
         this.uuid = uuid;
         this.name = name;
@@ -75,7 +80,6 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
         this.examViewData = examViewData;
         this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
     }
-
 
     @Override
     public EntityType entityType() {
@@ -92,53 +96,76 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
         return (this.uuid != null)
                 ? this.uuid
                 : (this.id != null)
-                ? String.valueOf(this.id)
-                : null;
+                        ? String.valueOf(this.id)
+                        : null;
     }
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     public String getUuid() {
-        return uuid;
+        return this.uuid;
     }
 
+    @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
+    @Override
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
+    @Override
     public String getOwner() {
-        return owner;
+        return this.owner;
     }
 
+    @Override
     public Long getCreationTime() {
-        return creationTime;
+        return this.creationTime;
     }
 
+    @Override
     public Long getLastUpdateTime() {
-        return lastUpdateTime;
+        return this.lastUpdateTime;
     }
 
+    @Override
     public Long getTerminationTime() {
-        return terminationTime;
+        return this.terminationTime;
     }
 
     public ExamViewData getExamViewData() {
-        return examViewData;
+        return this.examViewData;
     }
-
-
 
     public static final Function<Collection<GroupViewData>, List<GroupViewData>> groupSort(final String sort) {
 
         final String sortBy = PageSortOrder.decode(sort);
         return groups -> {
             final List<GroupViewData> list = groups.stream().collect(Collectors.toList());
+            if (StringUtils.isBlank(sort)) {
+                return list;
+            }
+
+            if (sortBy.equals(Group.FILTER_ATTR_NAME)) {
+                list.sort(Comparator.comparing(group -> (group.name != null) ? group.name : StringUtils.EMPTY));
+            }
+            if (sortBy.equals(FILTER_ATTR_EXAM_NAME)) {
+                list.sort(Comparator.comparing(group -> (group.examViewData != null && group.examViewData.name != null)
+                        ? group.examViewData.name
+                        : StringUtils.EMPTY));
+            }
+            if (sortBy.equals(Group.FILTER_ATTR_CREATTION_TIME)) {
+                list.sort(Comparator.comparing(group -> (group.creationTime != null) ? group.creationTime : 0L));
+            }
+
+            if (PageSortOrder.DESCENDING == PageSortOrder.getSortOrder(sort)) {
+                Collections.reverse(list);
+            }
             return list;
         };
     }
