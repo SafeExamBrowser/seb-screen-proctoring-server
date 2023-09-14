@@ -89,7 +89,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
             @JsonProperty(SEB_GROUP.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(SEB_GROUP.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
             @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME) final Long terminationTime,
-            @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME) final Long exam_id,
+            @JsonProperty(SEB_GROUP.ATTR_EXAM_ID) final Long exam_id,
             @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES) final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;

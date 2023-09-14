@@ -168,7 +168,7 @@ public class GroupDAOBatis implements GroupDAO {
             final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
 
-            final List<GroupViewData> result =  this.groupViewMapper
+            final List<GroupViewData> result = this.groupViewMapper
                     .getGroupsWithExamData()
 
                     .where(

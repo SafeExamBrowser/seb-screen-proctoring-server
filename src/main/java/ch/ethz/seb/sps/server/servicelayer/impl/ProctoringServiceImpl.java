@@ -111,8 +111,8 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-        public Result<ScreenshotViewData> getRecordedImageDataAt(final String sessionUUID, final Long timestamp) {
-            if (timestamp != null) {
+    public Result<ScreenshotViewData> getRecordedImageDataAt(final String sessionUUID, final Long timestamp) {
+        if (timestamp != null) {
             return this.screenshotDataDAO
                     .getAt(sessionUUID, timestamp)
                     .map(data -> createScreenshotViewData(sessionUUID, data, null));
@@ -164,7 +164,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .collect(Collectors.toList());
 
             ExamViewData examViewData = new ExamViewData(null, null);
-            if(activeGroup.getExam_id() != null){
+            if (activeGroup.getExam_id() != null) {
                 Exam exam = this.examDAO.byModelId(activeGroup.getExam_id().toString()).get();
                 examViewData = new ExamViewData(exam.getUuid(), exam.getName());
             }
