@@ -1,11 +1,6 @@
 package ch.ethz.seb.sps.server.datalayer.batis.mapper;
 
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.*;
-import static org.mybatis.dynamic.sql.SqlBuilder.*;
-
 import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
-import java.util.List;
-import javax.annotation.Generated;
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
 import org.apache.ibatis.annotations.DeleteProvider;
@@ -30,22 +25,40 @@ import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.mybatis.dynamic.sql.update.render.UpdateStatementProvider;
 import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
+import javax.annotation.Generated;
+import java.util.List;
+
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.clientIp;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.clientMachineName;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.clientName;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.clientOsName;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.clientVersion;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.creationTime;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.groupId;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.id;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.imageFormat;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.lastUpdateTime;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.sessionRecord;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.terminationTime;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.uuid;
+import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
+
 @Mapper
 public interface SessionRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<SessionRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -63,7 +76,7 @@ public interface SessionRecordMapper {
     })
     SessionRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -81,22 +94,22 @@ public interface SessionRecordMapper {
     })
     List<SessionRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(sessionRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, sessionRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, sessionRecord)
                 .where(id, isEqualTo(id_))
@@ -104,7 +117,7 @@ public interface SessionRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default int insert(SessionRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(sessionRecord)
@@ -123,7 +136,7 @@ public interface SessionRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default int insertSelective(SessionRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(sessionRecord)
@@ -142,19 +155,19 @@ public interface SessionRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<SessionRecord>>> selectByExample() {
         return SelectDSL.selectWithMapper(this::selectMany, id, groupId, uuid, imageFormat, clientName, clientIp, clientMachineName, clientOsName, clientVersion, creationTime, lastUpdateTime, terminationTime)
                 .from(sessionRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.596+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<SessionRecord>>> selectDistinctByExample() {
         return SelectDSL.selectDistinctWithMapper(this::selectMany, id, groupId, uuid, imageFormat, clientName, clientIp, clientMachineName, clientOsName, clientVersion, creationTime, lastUpdateTime, terminationTime)
                 .from(sessionRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default SessionRecord selectByPrimaryKey(Long id_) {
         return SelectDSL.selectWithMapper(this::selectOne, id, groupId, uuid, imageFormat, clientName, clientIp, clientMachineName, clientOsName, clientVersion, creationTime, lastUpdateTime, terminationTime)
                 .from(sessionRecord)
@@ -163,7 +176,7 @@ public interface SessionRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(SessionRecord record) {
         return UpdateDSL.updateWithMapper(this::update, sessionRecord)
                 .set(groupId).equalTo(record::getGroupId)
@@ -179,7 +192,7 @@ public interface SessionRecordMapper {
                 .set(terminationTime).equalTo(record::getTerminationTime);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(SessionRecord record) {
         return UpdateDSL.updateWithMapper(this::update, sessionRecord)
                 .set(groupId).equalToWhenPresent(record::getGroupId)
@@ -195,7 +208,7 @@ public interface SessionRecordMapper {
                 .set(terminationTime).equalToWhenPresent(record::getTerminationTime);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default int updateByPrimaryKey(SessionRecord record) {
         return UpdateDSL.updateWithMapper(this::update, sessionRecord)
                 .set(groupId).equalTo(record::getGroupId)
@@ -214,7 +227,7 @@ public interface SessionRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.330+02:00", comments="Source Table: session")
     default int updateByPrimaryKeySelective(SessionRecord record) {
         return UpdateDSL.updateWithMapper(this::update, sessionRecord)
                 .set(groupId).equalToWhenPresent(record::getGroupId)

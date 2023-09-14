@@ -4,10 +4,10 @@ import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.Domain.EXAM;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.EntityKey;
-import ch.ethz.seb.sps.domain.model.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.Exam;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ExamRecord;
@@ -250,6 +250,8 @@ public class ExamDAOBatis implements ExamDAO {
                         null,
                         null,
                         null,
+                        null,
+                        null,
                         null
                 )
         );
@@ -273,7 +275,9 @@ public class ExamDAOBatis implements ExamDAO {
                             this.userService.getCurrentUserUUIDOrNull(),
                             millisecondsNow,
                             millisecondsNow,
-                            null
+                            null,
+                            data.startTime != null ? data.startTime : millisecondsNow,
+                            data.endTime
                     );
 
                     this.examRecordMapper.insert(newRecord);
@@ -405,6 +409,8 @@ public class ExamDAOBatis implements ExamDAO {
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),
+                record.getStartTime(),
+                record.getEndTime(),
                 getEntityPrivileges(record.getId()));
     }
 

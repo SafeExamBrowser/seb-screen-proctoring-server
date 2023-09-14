@@ -8,7 +8,6 @@
 
 package ch.ethz.seb.sps.domain.model.service;
 
-import ch.ethz.seb.sps.domain.Domain.EXAM;
 import ch.ethz.seb.sps.domain.Domain.SEB_GROUP;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -22,6 +21,7 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MonitoringPageData {
 
+    public static final String ATTR_EXAM = "exam";
     public static final String ATTR_NUM_OF_SESSIONS = "numberOfSessions";
     public static final String ATTR_PAGE_NUMBER = "pageNumber";
     public static final String ATTR_PAGE_SIZE = "pageSize";
@@ -61,7 +61,7 @@ public class MonitoringPageData {
     @JsonProperty(ATTR_SCREENSHOTS)
     public final List<ScreenshotViewData> screenshots;
 
-    @JsonProperty(EXAM.ATTR_EXAM)
+    @JsonProperty(ATTR_EXAM)
     public final ExamViewData examViewData;
 
     public MonitoringPageData(
@@ -74,7 +74,7 @@ public class MonitoringPageData {
             @JsonProperty(ATTR_SORT_BY) final String sortBy,
             @JsonProperty(ATTR_SORT_ORDER) final PageSortOrder sortOrder,
             @JsonProperty(ATTR_SCREENSHOTS) final List<ScreenshotViewData> sessionDataPage,
-            @JsonProperty(EXAM.ATTR_EXAM) final ExamViewData examViewData) {
+            @JsonProperty(ATTR_EXAM) final ExamViewData examViewData) {
 
         this.groupUUID = groupUUID;
         this.groupName = groupName;

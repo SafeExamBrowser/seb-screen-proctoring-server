@@ -1,30 +1,31 @@
 package ch.ethz.seb.sps.server.datalayer.batis.mapper;
 
-import java.sql.JDBCType;
-import javax.annotation.Generated;
 import org.mybatis.dynamic.sql.SqlColumn;
 import org.mybatis.dynamic.sql.SqlTable;
 
+import javax.annotation.Generated;
+import java.sql.JDBCType;
+
 public final class ScreenshotDataRecordDynamicSqlSupport {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     public static final ScreenshotDataRecord screenshotDataRecord = new ScreenshotDataRecord();
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source field: screenshot_data.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source field: screenshot_data.id")
     public static final SqlColumn<Long> id = screenshotDataRecord.id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source field: screenshot_data.session_uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source field: screenshot_data.session_uuid")
     public static final SqlColumn<String> sessionUuid = screenshotDataRecord.sessionUuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source field: screenshot_data.timestamp")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source field: screenshot_data.timestamp")
     public static final SqlColumn<Long> timestamp = screenshotDataRecord.timestamp;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source field: screenshot_data.image_format")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source field: screenshot_data.image_format")
     public static final SqlColumn<Integer> imageFormat = screenshotDataRecord.imageFormat;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source field: screenshot_data.meta_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source field: screenshot_data.meta_data")
     public static final SqlColumn<String> metaData = screenshotDataRecord.metaData;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-07T09:53:44.597+02:00", comments="Source Table: screenshot_data")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-09-13T17:30:00.331+02:00", comments="Source Table: screenshot_data")
     public static final class ScreenshotDataRecord extends SqlTable {
         public final SqlColumn<Long> id = column("id", JDBCType.BIGINT);
 

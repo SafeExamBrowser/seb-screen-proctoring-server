@@ -1,6 +1,5 @@
 package ch.ethz.seb.sps.domain.model.service;
 
-import ch.ethz.seb.sps.domain.Domain.EXAM;
 import ch.ethz.seb.sps.domain.Domain.SEB_GROUP;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
@@ -22,6 +21,8 @@ import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
+
+    public static final String ATTR_EXAM = "exam";
 
     @JsonProperty(SEB_GROUP.ATTR_ID)
     public final Long id;
@@ -46,7 +47,7 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
 
     @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
-    @JsonProperty(EXAM.ATTR_EXAM)
+    @JsonProperty(ATTR_EXAM)
     public final ExamViewData examViewData;
 
     @JsonIgnore

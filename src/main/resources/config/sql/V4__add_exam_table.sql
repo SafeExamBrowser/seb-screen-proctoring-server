@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS `exam` (
   `creation_time` BIGINT NOT NULL,
   `last_update_time` BIGINT NOT NULL,
   `termination_time` BIGINT NULL,
+  `start_time` BIGINT NULL,
+  `end_time` BIGINT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `exam_UNIQUE` (`id` ASC));
 

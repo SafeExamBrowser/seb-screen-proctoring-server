@@ -10,13 +10,13 @@ package ch.ethz.seb.sps.domain.model.service;
 
 import ch.ethz.seb.sps.domain.Domain.EXAM;
 import ch.ethz.seb.sps.domain.model.Entity;
-import ch.ethz.seb.sps.domain.model.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.OwnedEntity;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.domain.model.WithNameDescription;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.utils.Utils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -78,6 +78,12 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
     @JsonProperty(EXAM.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 
+    @JsonProperty(EXAM.ATTR_START_TIME)
+    public final Long startTime;
+
+    @JsonProperty(EXAM.ATTR_END_TIME)
+    public final Long endTime;
+
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES)
     public final Collection<EntityPrivilege> entityPrivileges;
@@ -94,6 +100,8 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             @JsonProperty(EXAM.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(EXAM.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
             @JsonProperty(EXAM.ATTR_TERMINATION_TIME) final Long terminationTime,
+            @JsonProperty(EXAM.ATTR_START_TIME) final Long startTime,
+            @JsonProperty(EXAM.ATTR_END_TIME) final Long endTime,
             @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES) final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
@@ -106,6 +114,8 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         this.creationTime = creationTime;
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
     }
 
@@ -164,6 +174,14 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         return lastUpdateTime;
     }
 
+    public Long getStartTime() {
+        return startTime;
+    }
+
+    public Long getEndTime() {
+        return endTime;
+    }
+
     @Override
     public Long getTerminationTime() {
         return terminationTime;
@@ -214,6 +232,10 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         builder.append(this.lastUpdateTime);
         builder.append(", terminationTime=");
         builder.append(this.terminationTime);
+        builder.append(", startTime=");
+        builder.append(this.startTime);
+        builder.append(", endTime=");
+        builder.append(this.endTime);
         builder.append(", entityPrivileges=");
         builder.append(this.entityPrivileges);
         builder.append("]");

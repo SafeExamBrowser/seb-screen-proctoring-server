@@ -78,6 +78,8 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 null,
                 null,
                 null,
+                postParams.getLong(EXAM.ATTR_START_TIME),
+                postParams.getLong(EXAM.ATTR_END_TIME),
                 null
         );
     }
@@ -95,6 +97,8 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 null,
                 null,
                 null,
+                modifyData.startTime,
+                modifyData.endTime,
                 null
         );
     }
