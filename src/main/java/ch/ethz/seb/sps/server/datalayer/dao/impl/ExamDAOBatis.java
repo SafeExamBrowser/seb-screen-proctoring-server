@@ -33,6 +33,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.model.ExamRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
@@ -43,15 +44,18 @@ import ch.ethz.seb.sps.utils.Utils;
 public class ExamDAOBatis implements ExamDAO {
 
     private final ExamRecordMapper examRecordMapper;
+    private final GroupDAO groupDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
     private final UserService userService;
 
     public ExamDAOBatis(
             final ExamRecordMapper examRecordMapper,
+            final GroupDAO groupDAO,
             final EntityPrivilegeDAO entityPrivilegeDAO,
             final UserService userService) {
 
         this.examRecordMapper = examRecordMapper;
+        this.groupDAO = groupDAO;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.userService = userService;
     }
@@ -290,20 +294,22 @@ public class ExamDAOBatis implements ExamDAO {
                 return Collections.emptyList();
             }
 
-            final List<ExamRecord> exams = this.examRecordMapper
-                    .selectByExample()
-                    .where(ExamRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute();
+            // delete all involved groups first
+            final Collection<EntityKey> deletedGroups = this.groupDAO
+                    .deleteAllForExams(ids)
+                    .getOrThrow();
 
+            log.info("Deleted following groups: {} before deleting exams: {}", deletedGroups, all);
+
+            // delete the exams
             this.examRecordMapper
                     .deleteByExample()
                     .where(ExamRecordDynamicSqlSupport.id, isIn(ids))
                     .build()
                     .execute();
 
-            return exams.stream()
-                    .map(rec -> new EntityKey(rec.getId(), EntityType.EXAM))
+            return ids.stream()
+                    .map(pk -> new EntityKey(pk, EntityType.EXAM))
                     .collect(Collectors.toList());
         });
     }

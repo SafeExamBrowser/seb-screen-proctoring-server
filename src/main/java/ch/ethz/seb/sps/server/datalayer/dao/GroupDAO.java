@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.util.Collection;
+import java.util.List;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.FilterMap;
@@ -22,9 +23,12 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Group> createNew(String name);
 
-    Result<Collection<Group>> pksByGroupName(final FilterMap filterMap);
+    Result<Collection<Group>> byGroupName(final FilterMap filterMap);
 
     Result<Collection<GroupViewData>> getGroupsWithExamData(final FilterMap filterMap);
 
     Result<Collection<EntityKey>> applyActivationForAllOfExam(Long examId, boolean activation);
+
+    Result<Collection<EntityKey>> deleteAllForExams(final List<Long> examPKs);
+
 }

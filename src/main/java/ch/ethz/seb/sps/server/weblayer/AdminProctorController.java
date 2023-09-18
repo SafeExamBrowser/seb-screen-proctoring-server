@@ -634,7 +634,7 @@ public class AdminProctorController {
         } else if (StringUtils.isNotBlank(groupName)) {
             final String ids = StringUtils.join(
                     this.groupDAO
-                            .pksByGroupName(filterMap)
+                            .byGroupName(filterMap)
                             .getOrThrow()
                             .stream()
                             .map(this::hasGroupReadAccess)

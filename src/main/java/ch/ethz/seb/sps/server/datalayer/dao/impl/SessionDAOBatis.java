@@ -291,45 +291,46 @@ public class SessionDAOBatis implements SessionDAO {
     @Override
     @Transactional
     public Result<Collection<EntityKey>> delete(final Set<EntityKey> all) {
-        return Result.tryCatch(() -> {
-
-            final List<Long> ids = extractListOfPKs(all);
-            if (ids == null || ids.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            final List<SessionRecord> sessions = this.sessionRecordMapper
-                    .selectByExample()
-                    .where(SessionRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute();
-
-            // delete session data for each session
-            sessions.stream().forEach(this::deleteSessionScreenshots);
-
-            this.sessionRecordMapper
-                    .deleteByExample()
-                    .where(SessionRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute();
-
-            return sessions.stream()
-                    .map(rec -> new EntityKey(rec.getId(), EntityType.SESSION))
-                    .collect(Collectors.toList());
-        });
+        return Result.tryCatch(() -> extractListOfPKs(all))
+                .map(this::delete);
     }
 
     @Override
     @Transactional
-    public Result<Collection<EntityKey>> deleteAllSessionsForGroup(final Long groupPK) {
-        return delete(this.sessionRecordMapper
-                .selectIdsByExample()
-                .where(SessionRecordDynamicSqlSupport.groupId, isEqualTo(groupPK))
+    public Result<Collection<EntityKey>> deleteAllForGroups(final List<Long> groupPKs) {
+        return Result.tryCatch(() -> this.sessionRecordMapper.selectIdsByExample()
+                .where(SessionRecordDynamicSqlSupport.groupId, isIn(groupPKs))
                 .build()
-                .execute()
-                .stream()
-                .map(pk -> new EntityKey(pk, EntityType.SESSION))
-                .collect(Collectors.toSet()));
+                .execute())
+                .map(this::delete);
+    }
+
+    private Collection<EntityKey> delete(final List<Long> pks) {
+
+        if (pks == null || pks.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final List<SessionRecord> sessions = this.sessionRecordMapper
+                .selectByExample()
+                .where(SessionRecordDynamicSqlSupport.id, isIn(pks))
+                .build()
+                .execute();
+
+        // delete session data for each session
+        sessions.stream()
+                .forEach(this::deleteSessionScreenshots);
+
+        this.sessionRecordMapper
+                .deleteByExample()
+                .where(SessionRecordDynamicSqlSupport.id, isIn(pks))
+                .build()
+                .execute();
+
+        return sessions.stream()
+                .map(rec -> new EntityKey(rec.getId(), EntityType.SESSION))
+                .collect(Collectors.toList());
+
     }
 
     @Override

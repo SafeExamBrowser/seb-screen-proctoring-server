@@ -224,7 +224,7 @@ public class GroupDAOBatis implements GroupDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Group>> pksByGroupName(final FilterMap filterMap) {
+    public Result<Collection<Group>> byGroupName(final FilterMap filterMap) {
         return Result.tryCatch(() -> {
             return this.groupRecordMapper
                     .selectByExample()
@@ -367,41 +367,18 @@ public class GroupDAOBatis implements GroupDAO {
     @Override
     @Transactional
     public Result<Collection<EntityKey>> delete(final Set<EntityKey> all) {
-        return Result.tryCatch(() -> {
-
-            final List<Long> ids = extractListOfPKs(all);
-            if (ids == null || ids.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            final List<GroupRecord> groups = this.groupRecordMapper
-                    .selectByExample()
-                    .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute();
-
-            // delete session data for each session
-            groups.stream().forEach(this::deleteSessions);
-
-            this.groupRecordMapper
-                    .deleteByExample()
-                    .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute();
-
-            return groups.stream()
-                    .map(rec -> new EntityKey(rec.getId(), EntityType.SEB_GROUP))
-                    .collect(Collectors.toList());
-        });
+        return Result.tryCatch(() -> extractListOfPKs(all))
+                .map(this::delete);
     }
 
-    private void deleteSessions(final GroupRecord record) {
-
-        final Collection<EntityKey> deleted = this.sessionDAO
-                .deleteAllSessionsForGroup(record.getId())
-                .getOrThrow();
-
-        log.info("Deleted following sessions for group {}, {}", record.getUuid(), deleted);
+    @Override
+    @Transactional
+    public Result<Collection<EntityKey>> deleteAllForExams(final List<Long> examPKs) {
+        return Result.tryCatch(() -> this.groupRecordMapper.selectIdsByExample()
+                .where(GroupRecordDynamicSqlSupport.examId, isIn(examPKs))
+                .build()
+                .execute())
+                .map(this::delete);
     }
 
     private Result<GroupRecord> recordByPK(final Long pk) {
@@ -415,6 +392,31 @@ public class GroupDAOBatis implements GroupDAO {
 
             return selectByPrimaryKey;
         });
+    }
+
+    private Collection<EntityKey> delete(final List<Long> ids) {
+
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // delete all session data for all involved groups first
+        final Collection<EntityKey> deletedSessions = this.sessionDAO
+                .deleteAllForGroups(ids)
+                .getOrThrow();
+
+        log.info("Deleted following sessions: {} before deleting groups: {}", deletedSessions, ids);
+
+        // then the groups
+        this.groupRecordMapper
+                .deleteByExample()
+                .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
+                .build()
+                .execute();
+
+        return ids.stream()
+                .map(pk -> new EntityKey(pk, EntityType.SEB_GROUP))
+                .collect(Collectors.toList());
     }
 
     private Result<GroupRecord> recordByUUID(final String uuid) {
