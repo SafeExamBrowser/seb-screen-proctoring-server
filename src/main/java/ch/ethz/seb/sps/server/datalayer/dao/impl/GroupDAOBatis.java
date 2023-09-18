@@ -258,29 +258,44 @@ public class GroupDAOBatis implements GroupDAO {
 
     @Override
     @Transactional
-    public Result<Collection<EntityKey>> setActive(final Set<EntityKey> all, final boolean active) {
-        return Result.tryCatch(() -> {
+    public Result<EntityKey> setActive(final EntityKey entityKey, final boolean active) {
+        return pkByUUID(entityKey.modelId)
+                .map(pk -> {
 
-            final List<Long> ids = extractListOfPKs(all);
-            if (ids == null || ids.isEmpty()) {
-                return Collections.emptyList();
-            }
+                    final long now = Utils.getMillisecondsNow();
+
+                    UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
+                            .set(lastUpdateTime).equalTo(now)
+                            .set(terminationTime).equalTo(() -> active ? null : now)
+                            .where(id, isEqualTo(pk))
+                            .build()
+                            .execute();
+
+                    return entityKey;
+                });
+    }
+
+    @Override
+    @Transactional
+    public Result<Collection<EntityKey>> applyActivationForAllOfExam(final Long examId, final boolean activation) {
+        return Result.tryCatch(() -> {
 
             final long now = Utils.getMillisecondsNow();
 
-            UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
-                    .set(lastUpdateTime).equalTo(now)
-                    .set(terminationTime).equalTo(() -> active ? null : now)
-                    .where(id, isIn(ids))
+            final List<Long> groupIds = this.groupRecordMapper.selectIdsByExample()
+                    .where(GroupRecordDynamicSqlSupport.examId, isEqualTo(examId))
                     .build()
                     .execute();
 
-            return this.groupRecordMapper.selectByExample()
-                    .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
+            UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
+                    .set(lastUpdateTime).equalTo(now)
+                    .set(terminationTime).equalTo(() -> activation ? null : now)
+                    .where(id, isIn(groupIds))
                     .build()
-                    .execute()
-                    .stream()
-                    .map(record -> new EntityKey(record.getId(), EntityType.SEB_GROUP))
+                    .execute();
+
+            return groupIds.stream()
+                    .map(id -> new EntityKey(id, EntityType.SEB_GROUP))
                     .collect(Collectors.toList());
         });
     }

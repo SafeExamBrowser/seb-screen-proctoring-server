@@ -332,6 +332,38 @@ public class SessionDAOBatis implements SessionDAO {
                 .collect(Collectors.toSet()));
     }
 
+    @Override
+    @Transactional
+    public Result<Collection<EntityKey>> closeAllSessionsForGroup(final Long groupPK) {
+        // TODO Auto-generated method stub
+        return Result.tryCatch(() -> {
+
+            final List<Long> pks = this.sessionRecordMapper
+                    .selectIdsByExample()
+                    .where(SessionRecordDynamicSqlSupport.groupId, isEqualTo(groupPK))
+                    .and(SessionRecordDynamicSqlSupport.terminationTime, isNull())
+                    .build()
+                    .execute();
+
+            if (pks == null || pks.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            final long now = Utils.getMillisecondsNow();
+
+            UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
+                    .set(lastUpdateTime).equalTo(now)
+                    .set(terminationTime).equalTo(now)
+                    .where(groupId, isIn(pks))
+                    .build()
+                    .execute();
+
+            return pks.stream()
+                    .map(pk -> new EntityKey(pk, EntityType.SESSION))
+                    .collect(Collectors.toList());
+        });
+    }
+
     private void deleteSessionScreenshots(final SessionRecord sessionRecord) {
 
         // get all screenshot record ids for the session
@@ -383,20 +415,6 @@ public class SessionDAOBatis implements SessionDAO {
                     .where(id, isEqualTo(pk))
                     .build()
                     .execute();
-
-//            final SessionRecord record = new SessionRecord(
-//                    pk,
-//                    null,
-//                    null,
-//                    (data.imageFormat != null) ? null : data.imageFormat.code,
-//                    data.clientName,
-//                    data.clientIP,
-//                    data.clientMachineName,
-//                    data.clientOSName,
-//                    data.clientVersion,
-//                    null, now, null);
-//
-//            this.sessionRecordMapper.updateByPrimaryKeySelective(record);
 
             return this.sessionRecordMapper.selectByPrimaryKey(pk);
         })

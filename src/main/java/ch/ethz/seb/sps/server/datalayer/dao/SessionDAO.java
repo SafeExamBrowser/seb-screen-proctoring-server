@@ -34,6 +34,8 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
 
     Result<Collection<EntityKey>> deleteAllSessionsForGroup(Long groupPK);
 
+    Result<Collection<EntityKey>> closeAllSessionsForGroup(Long groupPK);
+
     Long getNumberOfScreenshots(String uuid, FilterMap filterMap);
 
 }

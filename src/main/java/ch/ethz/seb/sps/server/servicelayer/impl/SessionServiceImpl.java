@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
+import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
@@ -68,6 +69,15 @@ public class SessionServiceImpl implements SessionService {
                         .getOrThrow();
             }
 
+            // check group still active
+            final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
+            if (activeGroup == null) {
+                throw APIErrorException.ofIllegalState(
+                        "updateSessionData",
+                        "Group is already closed",
+                        groupUUID);
+            }
+
             final Session session = this.sessionDAO
                     .createNew(
                             groupUUID,
@@ -82,7 +92,6 @@ public class SessionServiceImpl implements SessionService {
 
             // caching update
             this.proctoringCacheService.evictSessionTokens(groupUUID);
-
             return session;
         });
     }

@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTimeZone;
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,11 +42,11 @@ import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.domain.model.user.UserMod;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.ClientAccessRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.UserRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
@@ -154,7 +156,7 @@ public class UserDAOBatis implements UserDAO {
                             UserRecordDynamicSqlSupport.language,
                             isLikeWhenPresent(filterMap.getString(Domain.USER.ATTR_LANGUAGE)))
                     .and(
-                            ClientAccessRecordDynamicSqlSupport.creationTime,
+                            UserRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(
                                     filterMap.getLong(Domain.USER.ATTR_CREATION_TIME)))
                     .build()
@@ -312,34 +314,37 @@ public class UserDAOBatis implements UserDAO {
 
     @Override
     @Transactional
-    public Result<Collection<EntityKey>> setActive(final Set<EntityKey> all, final boolean active) {
+    public Result<EntityKey> setActive(final EntityKey entityKey, final boolean active) {
+        return pkByUUID(entityKey.modelId)
+                .map(pk -> {
+
+                    final long now = Utils.getMillisecondsNow();
+
+                    UpdateDSL.updateWithMapper(this.userRecordMapper::update, userRecord)
+                            .set(lastUpdateTime).equalTo(now)
+                            .set(terminationTime).equalTo(() -> active ? null : now)
+                            .where(id, isEqualTo(pk))
+                            .build()
+                            .execute();
+
+                    return entityKey;
+                });
+    }
+
+    private Result<Long> pkByUUID(final String userUUID) {
+
         return Result.tryCatch(() -> {
-
-            final List<Long> ids = extractListOfPKs(all);
-            if (ids == null || ids.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            final long now = Utils.getMillisecondsNow();
-
-            final UserRecord userRecord = new UserRecord(
-                    null, null, null, null, null, null,
-                    null, null, null, null, null,
-                    now,
-                    active ? null : now);
-
-            this.userRecordMapper.updateByExampleSelective(userRecord)
-                    .where(UserRecordDynamicSqlSupport.id, isIn(ids))
+            final List<Long> execute = this.userRecordMapper
+                    .selectIdsByExample()
+                    .where(UserRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(userUUID))
                     .build()
                     .execute();
 
-            return this.userRecordMapper.selectByExample()
-                    .where(UserRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute()
-                    .stream()
-                    .map(record -> new EntityKey(record.getUuid(), EntityType.USER))
-                    .collect(Collectors.toList());
+            if (execute == null || execute.isEmpty()) {
+                throw new NoResourceFoundException(EntityType.USER, userUUID);
+            }
+
+            return execute.get(0);
         });
     }
 

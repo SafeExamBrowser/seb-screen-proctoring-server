@@ -1,20 +1,10 @@
 package ch.ethz.seb.sps.server.weblayer;
 
-import ch.ethz.seb.sps.domain.Domain.EXAM;
-import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.domain.api.POSTMapper;
-import ch.ethz.seb.sps.domain.model.service.Exam;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
-import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
-import ch.ethz.seb.sps.server.servicelayer.PaginationService;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
+import javax.servlet.http.HttpServletRequest;
+
 import org.mybatis.dynamic.sql.SqlTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,20 +12,40 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
+import ch.ethz.seb.sps.domain.Domain.EXAM;
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.POSTMapper;
+import ch.ethz.seb.sps.domain.model.service.Exam;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
+import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
+import ch.ethz.seb.sps.server.servicelayer.PaginationService;
+import ch.ethz.seb.sps.server.servicelayer.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.EXAM_ENDPOINT)
 public class AdminExamController extends ActivatableEntityController<Exam, Exam> {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminExamController.class);
+
+    private final GroupDAO groupDAO;
 
     public AdminExamController(
             final UserService userService,
             final ExamDAO entityDAO,
             final AuditLogDAO auditLogDAO,
             final PaginationService paginationService,
-            final BeanValidationService beanValidationService) {
+            final BeanValidationService beanValidationService,
+            final GroupDAO groupDAO) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
+        this.groupDAO = groupDAO;
     }
 
     @Operation(
@@ -64,6 +74,18 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
         return super.create(formParameter, request);
     }
 
+    @Override
+    protected Exam doBeforeActivation(final Exam entity, final boolean activation) {
+
+        this.groupDAO
+                .applyActivationForAllOfExam(entity.id, activation)
+                .onError(
+                        error -> log.error("Failed to apply activation on all groups of exam: {}", entity, error))
+                .onSuccess(
+                        keys -> log.info("Successfully apply activation to all groups of exam: {}, {}", entity, keys));
+
+        return entity;
+    }
 
     @Override
     protected Exam createNew(final POSTMapper postParams) {
@@ -80,8 +102,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 null,
                 postParams.getLong(EXAM.ATTR_START_TIME),
                 postParams.getLong(EXAM.ATTR_END_TIME),
-                null
-        );
+                null);
     }
 
     @Override
@@ -99,8 +120,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 null,
                 modifyData.startTime,
                 modifyData.endTime,
-                null
-        );
+                null);
     }
 
     @Override

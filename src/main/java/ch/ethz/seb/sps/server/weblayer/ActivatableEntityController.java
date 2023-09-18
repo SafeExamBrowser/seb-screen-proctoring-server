@@ -178,7 +178,9 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
                 .byModelId(modelId)
                 .map(this.userService::checkWrite)
                 .map(entity -> validForActivation(entity, active))
+                .map(entity -> doBeforeActivation(entity, active))
                 .map(entity -> doActivation(entity, active))
+                .map(entity -> doAfterActivation(entity, active))
                 .map(this::notifySaved);
     }
 
@@ -190,6 +192,14 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
                     activation ? "activation" : "deactivation",
                     "Activation argument mismatch. Element is already " + (activation ? "active" : "inactive"));
         }
+    }
+
+    protected T doBeforeActivation(final T entity, final boolean activation) {
+        return entity;
+    }
+
+    protected T doAfterActivation(final T entity, final boolean activation) {
+        return entity;
     }
 
     protected T doActivation(final T entity, final boolean activation) {

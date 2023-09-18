@@ -91,6 +91,22 @@ public class APIErrorException extends RuntimeException {
     public static APIErrorException ofIllegalState(
             final String request,
             final String message,
+            final String entityId) {
+
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("resource-id", entityId);
+
+        return new APIErrorException(new APIError(
+                APIErrorType.INTEGRITY_VIOLATION,
+                request,
+                message,
+                attributes,
+                null));
+    }
+
+    public static APIErrorException ofIllegalState(
+            final String request,
+            final String message,
             final Entity entity) {
 
         final Map<String, String> attributes = new HashMap<>();

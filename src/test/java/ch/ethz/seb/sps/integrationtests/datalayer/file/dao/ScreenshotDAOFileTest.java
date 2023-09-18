@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Order;
 import org.junit.runners.MethodSorters;
@@ -24,6 +25,10 @@ import ch.ethz.seb.sps.server.datalayer.dao.impl.ScreenshotDAOFile;
 import ch.ethz.seb.sps.utils.Result;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Ignore
+// NOTE: this is only working on local win machines since this uses a file path to store files locally
+// Since this screenshot file storage is not used targeted for Protoype, this is just ignored for now
+// In the future we should find a way to run this in an generalized environment
 public class ScreenshotDAOFileTest extends ServiceTest_FILESYS_RDBMS {
 
     @Autowired
