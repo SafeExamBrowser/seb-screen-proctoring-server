@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `exam` (
   `last_update_time` BIGINT NOT NULL,
   `termination_time` BIGINT NULL,
   `start_time` BIGINT NULL,
-  `end_time` BIGINT NULL
+  `end_time` BIGINT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `exam_UNIQUE` (`id` ASC));
 
@@ -119,7 +119,6 @@ CREATE TABLE IF NOT EXISTS `seb_group` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_group` (`id` ASC),
   INDEX `group_uuid_ix` (`uuid` ASC),
-  UNIQUE INDEX `exam_id_UNIQUE` (`exam_id` ASC),
   CONSTRAINT `exam_ref`
     FOREIGN KEY (`exam_id`)
     REFERENCES `exam` (`id`)
