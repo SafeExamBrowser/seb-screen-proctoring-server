@@ -198,7 +198,6 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
     private void addRequestAttributes(final WebRequest request, final Map<String, String> attributes) {
         final Principal userPrincipal = request.getUserPrincipal();
         attributes.put("request-parameter", Utils.toString(request.getParameterMap()));
-        //attributes.put("request-headers", Utils.immutableListOf(request.getHeaderNames()).toString());
         if (userPrincipal != null) {
             attributes.put("request-user", userPrincipal.getName());
         }

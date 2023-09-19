@@ -8,6 +8,24 @@
 
 package ch.ethz.seb.sps.domain.model.service;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.seb.sps.domain.Domain.EXAM;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
@@ -18,21 +36,7 @@ import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.domain.model.WithNameDescription;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.utils.Utils;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
@@ -84,8 +88,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
     @JsonProperty(EXAM.ATTR_END_TIME)
     public final Long endTime;
 
-    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
-    @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES)
+    @JsonIgnore
     public final Collection<EntityPrivilege> entityPrivileges;
 
     @JsonCreator
@@ -102,7 +105,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             @JsonProperty(EXAM.ATTR_TERMINATION_TIME) final Long terminationTime,
             @JsonProperty(EXAM.ATTR_START_TIME) final Long startTime,
             @JsonProperty(EXAM.ATTR_END_TIME) final Long endTime,
-            @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES) final Collection<EntityPrivilege> entityPrivileges) {
+            final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
         this.uuid = uuid;
@@ -124,16 +127,16 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         return (this.uuid != null)
                 ? this.uuid
                 : (this.id != null)
-                ? String.valueOf(this.id)
-                : null;
+                        ? String.valueOf(this.id)
+                        : null;
     }
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     public String getUuid() {
-        return uuid;
+        return this.uuid;
     }
 
     @Override
@@ -143,53 +146,53 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public String getUrl() {
-        return url;
+        return this.url;
     }
 
     public String getType() {
-        return type;
+        return this.type;
     }
 
     @Override
     public String getOwner() {
-        return owner;
+        return this.owner;
     }
 
     @Override
     public Long getCreationTime() {
-        return creationTime;
+        return this.creationTime;
     }
 
     @Override
     public Long getLastUpdateTime() {
-        return lastUpdateTime;
+        return this.lastUpdateTime;
     }
 
     public Long getStartTime() {
-        return startTime;
+        return this.startTime;
     }
 
     public Long getEndTime() {
-        return endTime;
+        return this.endTime;
     }
 
     @Override
     public Long getTerminationTime() {
-        return terminationTime;
+        return this.terminationTime;
     }
 
     @Override
     public Collection<EntityPrivilege> getEntityPrivileges() {
-        return entityPrivileges;
+        return this.entityPrivileges;
     }
 
     @Override

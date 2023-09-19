@@ -22,6 +22,7 @@ import javax.validation.constraints.Size;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -77,8 +78,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
     @JsonProperty(SEB_GROUP.ATTR_EXAM_ID)
     public final Long exam_id;
 
-    @Schema(accessMode = AccessMode.READ_ONLY)
-    @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES)
+    @JsonIgnore
     public final Collection<EntityPrivilege> entityPrivileges;
 
     @JsonCreator
@@ -92,7 +92,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
             @JsonProperty(SEB_GROUP.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
             @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME) final Long terminationTime,
             @JsonProperty(SEB_GROUP.ATTR_EXAM_ID) final Long exam_id,
-            @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES) final Collection<EntityPrivilege> entityPrivileges) {
+            final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
         this.uuid = uuid;

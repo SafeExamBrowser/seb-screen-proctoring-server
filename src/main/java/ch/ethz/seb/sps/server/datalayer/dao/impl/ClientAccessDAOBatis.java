@@ -302,10 +302,10 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                 record.getClientName(),
                 record.getClientSecret(),
                 record.getOwner(),
-                getEntityPrivileges(record.getId()),
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
-                record.getTerminationTime());
+                record.getTerminationTime(),
+                getEntityPrivileges(record.getId()));
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id) {

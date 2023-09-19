@@ -762,7 +762,7 @@ public final class Utils {
 
         parameterMap.entrySet().forEach(entry -> sb.append(entry.getKey())
                 .append(Constants.EQUALITY_SIGN)
-                .append(entry.getValue())
+                .append(Arrays.toString(entry.getValue()))
                 .append(Constants.COMPLEX_VALUE_SEPARATOR));
 
         return sb.toString();
