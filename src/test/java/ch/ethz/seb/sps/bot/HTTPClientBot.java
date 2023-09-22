@@ -8,29 +8,12 @@
 
 package ch.ethz.seb.sps.bot;
 
-import java.awt.Rectangle;
-import java.awt.Robot;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.imageio.ImageIO;
-import javax.net.ssl.HttpsURLConnection;
-
+import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.utils.Constants;
+import ch.ethz.seb.sps.utils.Utils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
@@ -53,13 +36,26 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import ch.ethz.seb.sps.domain.Domain;
-import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.utils.Constants;
-import ch.ethz.seb.sps.utils.Utils;
+import javax.imageio.ImageIO;
+import javax.net.ssl.HttpsURLConnection;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class HTTPClientBot {
 
@@ -257,18 +253,19 @@ public class HTTPClientBot {
 
         private String createMetaData() {
             final Map<String, String> metadata = new HashMap<>();
-            if (HTTPClientBot.this.random.nextBoolean()) {
-                metadata.put(
-                        API.SCREENSHOT_META_DATA_BROWSER_URL,
-                        this.urls.get(HTTPClientBot.this.random.nextInt(this.urls.size())));
-            } else {
-                metadata.put(
-                        API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
-                        this.titles.get(HTTPClientBot.this.random.nextInt(this.titles.size())));
-            }
+
+            metadata.put(
+                    API.SCREENSHOT_META_DATA_BROWSER_URL,
+                    this.urls.get(HTTPClientBot.this.random.nextInt(this.urls.size())));
+
+            metadata.put(
+                    API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
+                    this.titles.get(HTTPClientBot.this.random.nextInt(this.titles.size())));
+
             metadata.put(
                     API.SCREENSHOT_META_DATA_USER_ACTION,
                     this.actions.get(HTTPClientBot.this.random.nextInt(this.actions.size())));
+
 
             try {
                 return HTTPClientBot.this.jsonMapper.writeValueAsString(metadata);

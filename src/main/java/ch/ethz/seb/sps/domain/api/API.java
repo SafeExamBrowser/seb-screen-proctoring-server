@@ -134,7 +134,7 @@ public final class API {
     public static final String SEARCH_ENDPOINT = "/search";
     public static final String SCREENSHOT_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/screenshots";
     public static final String SESSION_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/sessions";
-
+    public static final String TIMELINE_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/timeline";
     public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_ID + "}";
     public static final String SESSION_ID_PATH_SEGMENT = "/{" + PARAM_SESSION_ID + "}";
     public static final String SESSION_ID_TIMESTAMP_PATH_SEGMENT =
