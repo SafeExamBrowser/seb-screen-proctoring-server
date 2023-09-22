@@ -117,6 +117,46 @@ public class AdminUserAccountController extends ActivatableEntityController<User
                 .getOrThrow();
     }
 
+    @RequestMapping(
+            path = API.ENTITY_PRIVILEGE_ENDPOINT,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public EntityPrivilege createEntityPrivilege(
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_TYPE, required = true) final String entityType,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_ID, required = true) final Long entityId,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID, required = true) final String userUUID,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_PRIVILEGES, required = true) final String privilege) {
+
+        checkAdminRole();
+
+        return this.entityPrivilegeDAO.addPrivilege(
+                EntityType.valueOf(entityType),
+                entityId,
+                userUUID,
+                PrivilegeType.byFlag(privilege))
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.ENTITY_PRIVILEGE_ENDPOINT,
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public EntityKey deleteEntityPrivilege(
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_TYPE, required = true) final String entityType,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_ID, required = true) final Long entityId,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID, required = true) final String userUUID) {
+
+        checkAdminRole();
+
+        return this.entityPrivilegeDAO.deletePrivilege(
+                EntityType.valueOf(entityType),
+                entityId,
+                userUUID)
+                .getOrThrow();
+    }
+
     @Override
     protected SqlTable getSQLTableOfEntity() {
         return UserRecordDynamicSqlSupport.userRecord;
@@ -197,46 +237,6 @@ public class AdminUserAccountController extends ActivatableEntityController<User
 
         return info;
 
-    }
-
-    @RequestMapping(
-            path = API.ENTITY_PRIVILEGE_ENDPOINT,
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public EntityPrivilege createEntityPrivilege(
-            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_TYPE, required = true) final String entityType,
-            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_ID, required = true) final Long entityId,
-            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID, required = true) final String userUUID,
-            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_PRIVILEGES, required = true) final String privilege) {
-
-        checkAdminRole();
-
-        return this.entityPrivilegeDAO.addPrivilege(
-                EntityType.valueOf(entityType),
-                entityId,
-                userUUID,
-                PrivilegeType.byFlag(privilege))
-                .getOrThrow();
-    }
-
-    @RequestMapping(
-            path = API.ENTITY_PRIVILEGE_ENDPOINT,
-            method = RequestMethod.DELETE,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public EntityKey deleteEntityPrivilege(
-            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_TYPE, required = true) final String entityType,
-            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_ID, required = true) final Long entityId,
-            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID, required = true) final String userUUID) {
-
-        checkAdminRole();
-
-        return this.entityPrivilegeDAO.deletePrivilege(
-                EntityType.valueOf(entityType),
-                entityId,
-                userUUID)
-                .getOrThrow();
     }
 
     private void checkAdminRole() {

@@ -13,6 +13,7 @@ import java.security.SecureRandom;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ import ch.ethz.seb.sps.server.servicelayer.ClientCredentialService;
 import ch.ethz.seb.sps.utils.Cryptor;
 import ch.ethz.seb.sps.utils.Result;
 
+@Lazy
 @Service
 public class ClientCredentialServiceImpl implements ClientCredentialService {
 
@@ -88,18 +90,18 @@ public class ClientCredentialServiceImpl implements ClientCredentialService {
     }
 
     private final static char[] possibleCharacters =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^*()-_=+[{]}?"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
                     .toCharArray();
 
     public static CharSequence generateClientId() {
         return RandomStringUtils.random(
-                16, 0, possibleCharacters.length - 1, false, false,
+                8, 0, possibleCharacters.length - 1, false, false,
                 possibleCharacters, new SecureRandom());
     }
 
     public static CharSequence generateClientSecret() {
         return RandomStringUtils.random(
-                64, 0, possibleCharacters.length - 1, false, false,
+                16, 0, possibleCharacters.length - 1, false, false,
                 possibleCharacters, new SecureRandom());
     }
 
