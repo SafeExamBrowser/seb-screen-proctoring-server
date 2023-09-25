@@ -1,52 +1,33 @@
 package ch.ethz.seb.sps.domain.model.service;
 
-import java.util.Map;
+import java.util.List;
 
 public class TimelineGroupData {
 
-    public String groupIdentifier;
-    public String groupName;
-    public Long timestamp;
-    public Map<String, String> metaData;
+    public final int groupOrder;
+    public final String groupName;
+    public final List<TimelineScreenshotData> timelineScreenshotDataList;
 
-    public TimelineGroupData(){};
-
-    public TimelineGroupData(String groupIdentifier, String groupName, Long timestamp, Map<String, String> metaData) {
-        this.groupIdentifier = groupIdentifier;
+    public TimelineGroupData(int groupOrder, String groupName, List<TimelineScreenshotData> timelineScreenshotDataList) {
+        this.groupOrder = groupOrder;
         this.groupName = groupName;
-        this.timestamp = timestamp;
-        this.metaData = metaData;
+        this.timelineScreenshotDataList = timelineScreenshotDataList;
     }
 
-    public String getGroupIdentifier() {
-        return groupIdentifier;
+    public int getGroupOrder() {
+        return groupOrder;
     }
 
     public String getGroupName() {
         return groupName;
     }
 
-    public Long getTimestamp() {
-        return timestamp;
+    public List<TimelineScreenshotData> getTimelineScreenshotDataList() {
+        return timelineScreenshotDataList;
     }
 
-    public Map<String, String> getMetaData() {
-        return metaData;
+    public void addItemToScreenshotData(TimelineScreenshotData timelineScreenshotData){
+        this.timelineScreenshotDataList.add(timelineScreenshotData);
     }
 
-    public void setGroupIdentifier(String groupIdentifier) {
-        this.groupIdentifier = groupIdentifier;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
-
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public void setMetaData(Map<String, String> metaData) {
-        this.metaData = metaData;
-    }
 }
