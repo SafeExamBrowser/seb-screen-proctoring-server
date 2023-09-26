@@ -17,15 +17,14 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class GroupingServiceImpl implements GroupingService {
 
-    private static final Logger log = LoggerFactory.getLogger(ProctoringServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(GroupingServiceImpl.class);
 
     private final ScreenshotDataDAO screenshotDataDAO;
-    private ProctoringService proctoringService;
+    private final ProctoringService proctoringService;
 
 
     public GroupingServiceImpl(
@@ -76,9 +75,7 @@ public class GroupingServiceImpl implements GroupingService {
         TimelineGroupData currentGroup = createTimelineGroupData(
                 groupOrder,
                 firstScreenshot.getMetaData().get(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE),
-                firstScreenshot.getSessionUUID(),
-                firstScreenshot.getTimestamp(),
-                firstScreenshot.getMetaData()
+                firstScreenshot
         );
 
 
@@ -100,9 +97,7 @@ public class GroupingServiceImpl implements GroupingService {
                 currentGroup = createTimelineGroupData(
                         groupOrder,
                         metadataWindowTitle,
-                        currentScreenshot.getSessionUUID(),
-                        currentScreenshot.getTimestamp(),
-                        currentScreenshot.getMetaData()
+                        currentScreenshot
                 );
             }
         }
@@ -117,9 +112,8 @@ public class GroupingServiceImpl implements GroupingService {
     private TimelineGroupData createTimelineGroupData(
             int groupOrder,
             String groupName,
-            String sessionUUID,
-            Long timestamp,
-            Map<String, String> metaData) {
+            ScreenshotSearchResult screenshot)
+    {
 
         return new TimelineGroupData(
                 groupOrder,
@@ -127,8 +121,8 @@ public class GroupingServiceImpl implements GroupingService {
                 new ArrayList<>(
                         List.of(
                                 new TimelineScreenshotData(
-                                        timestamp,
-                                        metaData
+                                        screenshot.timestamp,
+                                        screenshot.metaData
                                 )
                         )
                 )

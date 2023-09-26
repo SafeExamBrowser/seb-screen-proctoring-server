@@ -614,8 +614,9 @@ public class AdminProctorController {
 
 
     @Operation(
-            summary = "temp summary",
-            description = "temp desc",
+            summary = "Get grouped screenshot data list for specific session",
+            description = "Groups all the screenshots for a given session. Currently the grouping is done via the Metadata 'WindowTitle'" +
+                            "By providing additional metadata in the form only screenshot data with the given metadata will be returned",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
