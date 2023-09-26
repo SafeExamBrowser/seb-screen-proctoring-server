@@ -8,29 +8,12 @@
 
 package ch.ethz.seb.sps.bot;
 
-import java.awt.Rectangle;
-import java.awt.Robot;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.imageio.ImageIO;
-import javax.net.ssl.HttpsURLConnection;
-
+import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.utils.Constants;
+import ch.ethz.seb.sps.utils.Utils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
@@ -53,13 +36,26 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import ch.ethz.seb.sps.domain.Domain;
-import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.utils.Constants;
-import ch.ethz.seb.sps.utils.Utils;
+import javax.imageio.ImageIO;
+import javax.net.ssl.HttpsURLConnection;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class HTTPClientBot {
 
