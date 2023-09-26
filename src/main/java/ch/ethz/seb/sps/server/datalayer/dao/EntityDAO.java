@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -29,7 +28,6 @@ import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.ModelIdAware;
 import ch.ethz.seb.sps.utils.Result;
-import ch.ethz.seb.sps.utils.Utils;
 
 /** Defines generic interface for all Entity based Data Access Objects
  *
@@ -85,7 +83,8 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
      * @return Result referring the Entity instance with the specified model identifier or refer to an error if
      *         happened */
     default Result<T> byModelId(final String modelId) {
-        return Result.tryCatch(() -> modelIdToPK(modelId))
+        return Result
+                .tryCatch(() -> modelIdToPK(modelId))
                 .flatMap(this::byPK);
     }
 
@@ -164,7 +163,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
      * @param filterMap FilterMap instance containing all the relevant filter criteria
      * @return Result referring to collection of all matching entities or an error if happened */
     default Result<Collection<T>> allMatching(final FilterMap filterMap) {
-        return allMatching(filterMap, Utils.truePredicate());
+        return allMatching(filterMap, Collections.emptyList());
     }
 
     /** Get a (unordered) collection of all Entities that matches a given filter criteria
@@ -176,12 +175,15 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
      * a particular filter criteria the value is extracted from the map and added to the where
      * clause of the SQL select statement.
      *
-     * The predicate is applied after the SQL query by filtering the resulting list with the
-     * predicate after on the SQL query result, before returning.
+     * The prePredicated is used when not empty to use in an isIn statement to only match
+     * and include the given pre predicated id's for the match query.
+     * This is mostly useful for some privilege based pre predication where only entries shall be
+     * involved within the match query that has certain privileges
      *
      * @param filterMap FilterMap instance containing all the relevant filter criteria
+     * @param prePredicated a list of pre predicated id's to include only into the match query
      * @return Result referring to collection of all matching entities or an error if happened */
-    Result<Collection<T>> allMatching(FilterMap filterMap, Predicate<T> predicate);
+    Result<Collection<T>> allMatching(FilterMap filterMap, Collection<Long> prePredicated);
 
     /** Context based utility method to extract an expected single resource entry from a Collection of specified type.
      * Gets a Result refer to an expected single resource entry from a Collection of specified type or refer
@@ -257,6 +259,16 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
             log.error("unexpected error while trying to extract PK's from EntityKey's : ", e);
             return Collections.emptySet();
         }
+    }
+
+    default void deleteAllEntityPrivileges(final List<Long> allPks, final EntityPrivilegeDAO entityPrivilegeDAO) {
+        final EntityType entityType = entityType();
+        allPks.stream()
+                .forEach(pk -> entityPrivilegeDAO.deleteAllPrivileges(entityType, pk)
+                        .onError(error -> log.error(
+                                "Failed to delete all EntityPrivileges for entity type: {} and pk: {}",
+                                entityType,
+                                pk)));
     }
 
 }

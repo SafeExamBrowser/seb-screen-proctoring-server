@@ -11,9 +11,7 @@ package ch.ethz.seb.sps.server.weblayer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -155,9 +154,8 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 
-        // TODO if user has no overall read privilege get list and filter by entity read privilege
-
-        checkReadPrivilege();
+        // NOTE this must be done outside of the paging supplier to do not interfere with Batis paging magic
+        final Collection<Long> readPrivilegedPredication = getReadPrivilegedPredication();
 
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
         final Page<T> page = this.paginationService.getPage(
@@ -165,7 +163,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                 pageSize,
                 sort,
                 getSQLTableOfEntity().tableNameAtRuntime(),
-                () -> getAll(filterMap))
+                () -> getAll(filterMap, readPrivilegedPredication))
                 .getOrThrow();
 
         return page;
@@ -203,11 +201,9 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 
-        // TODO if user has no overall read privilege get list and filter by entity read privilege
-        checkReadPrivilege();
-
+        final Collection<Long> readPrivilegedPredication = getReadPrivilegedPredication();
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
-        final Collection<T> all = getAll(filterMap)
+        final Collection<T> all = getAll(filterMap, readPrivilegedPredication)
                 .getOrThrow();
 
         return all
@@ -463,39 +459,59 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
         return result;
     }
 
-    protected EnumSet<EntityType> convertToEntityType(final boolean addIncludes, final List<String> includes) {
-        final EnumSet<EntityType> includeDependencies = (includes != null)
-                ? (includes.isEmpty())
-                        ? EnumSet.noneOf(EntityType.class)
-                        : EnumSet.copyOf(includes.stream().map(name -> {
-                            try {
-                                return EntityType.valueOf(name);
-                            } catch (final Exception e) {
-                                return null;
-                            }
-                        })
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toSet()))
-                : (addIncludes) ? EnumSet.noneOf(EntityType.class) : null;
-        return includeDependencies;
+    /** This checks first if there is an overall read privilege for the user and type by
+     * using checkReadPrivilege. If true, this returns an empty collection. If the user
+     * has no overall read privilege on the entity type, this returns a list of
+     * all entity id's/pk's that has a EntityPrivilege assigned.
+     * This can then be used for pre predication on a filtered paging call for example.
+     *
+     * @return empty list if user has overall read privileges or a collection of id's/pk's that has entity based read
+     *         privileges */
+    protected Collection<Long> getReadPrivilegedPredication() {
+        if (this.userService.hasGrant(PrivilegeType.READ, getGrantEntityType())) {
+            return Collections.emptyList();
+        }
+
+        return this.userService
+                .getIdsWithReadEntityPrivilege(getGrantEntityType())
+                .getOrThrow();
     }
 
+    /** Checks overall read privilege for the specified entity type
+     *
+     * @throws APIErrorException.ofPermissionDenied if user has no overall read privileges on the entity type */
     protected void checkReadPrivilege() {
         this.userService.check(PrivilegeType.READ, getGrantEntityType());
     }
 
+    /** Checks overall modify privilege for the specified entity type
+     *
+     * @throws APIErrorException.ofPermissionDenied if user has no overall modify privileges on the entity type */
     protected void checkModifyPrivilege() {
         this.userService.check(PrivilegeType.MODIFY, getGrantEntityType());
     }
 
+    /** Checks overall write privilege for the specified entity type
+     *
+     * @throws APIErrorException.ofPermissionDenied if user has no overall write privileges on the entity type */
     protected void checkWritePrivilege() {
         this.userService.check(PrivilegeType.WRITE, getGrantEntityType());
     }
 
-    protected Result<Collection<T>> getAll(final FilterMap filterMap) {
-        return this.entityDAO.allMatching(
-                filterMap,
-                this::hasReadAccess);
+    /** Get all matching entites from the persistent storage by using the DOS's allMatching method
+     *
+     * @param filterMap The filter map containing SQL based filter criteria for the specific entity type
+     * @param prePredicated a list of pre predicated entity id's/pk's that shall be included only within the query.
+     * @return Result refer to the collection of matching entities or to an error when happened */
+    protected Result<Collection<T>> getAll(
+            final FilterMap filterMap,
+            final Collection<Long> prePredicated) {
+
+        if (CollectionUtils.isEmpty(prePredicated)) {
+            return this.entityDAO.allMatching(filterMap);
+        }
+
+        return this.entityDAO.allMatching(filterMap, prePredicated);
     }
 
     protected Result<T> notifyCreated(final T entity) {
@@ -503,7 +519,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     }
 
     protected Result<M> validForCreate(final M entity) {
-        if (entity.getModelId() == null) {
+        if (entity.getId() == null) {
             return this.beanValidationService.validateBean(entity);
         } else {
             return Result.ofError(

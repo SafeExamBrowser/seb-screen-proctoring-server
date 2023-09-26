@@ -136,6 +136,7 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
         return this.description;
     }
 
+    @Override
     public Long getId() {
         return this.id;
     }

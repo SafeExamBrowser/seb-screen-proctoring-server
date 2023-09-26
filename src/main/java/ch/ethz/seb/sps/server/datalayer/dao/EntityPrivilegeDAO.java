@@ -22,6 +22,11 @@ public interface EntityPrivilegeDAO {
             EntityType type,
             Long entityId);
 
+    Result<Collection<Long>> getEntityIdsWithPrivilegeForUser(
+            EntityType type,
+            String userUUID,
+            PrivilegeType privilegeType);
+
     Result<Collection<EntityPrivilege>> savePut(
             EntityType type,
             Long entityId,

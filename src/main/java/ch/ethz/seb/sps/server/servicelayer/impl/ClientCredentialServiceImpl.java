@@ -14,7 +14,6 @@ import java.security.SecureRandom;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import ch.ethz.seb.sps.domain.model.user.ClientCredentials;
@@ -28,8 +27,8 @@ public class ClientCredentialServiceImpl implements ClientCredentialService {
 
     private final Cryptor cryptor;
 
-    protected ClientCredentialServiceImpl(final Environment environment) {
-        this.cryptor = new Cryptor(environment.getProperty("sps.webservice.internalSecret"));
+    protected ClientCredentialServiceImpl(final Cryptor cryptor) {
+        this.cryptor = cryptor;
     }
 
     @Override

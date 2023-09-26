@@ -8,6 +8,24 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
@@ -35,22 +53,6 @@ import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
-import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @Lazy
 @Component
@@ -165,7 +167,7 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             ExamViewData examViewData = ExamViewData.EMPTY_MODEL;
             if (activeGroup.getExam_id() != null) {
-                Exam exam = this.examDAO.byModelId(activeGroup.getExam_id().toString()).get();
+                final Exam exam = this.examDAO.byModelId(activeGroup.getExam_id().toString()).get();
                 examViewData = new ExamViewData(exam.getUuid(), exam.getName());
             }
 

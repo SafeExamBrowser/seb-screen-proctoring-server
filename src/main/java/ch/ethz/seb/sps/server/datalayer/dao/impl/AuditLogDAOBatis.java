@@ -10,7 +10,6 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -65,7 +64,9 @@ public class AuditLogDAOBatis implements AuditLogDAO {
     }
 
     @Override
-    public Result<Collection<AuditLog>> allMatching(final FilterMap filterMap, final Predicate<AuditLog> predicate) {
+    public Result<Collection<AuditLog>> allMatching(
+            final FilterMap filterMap,
+            final Collection<Long> prePredicated) {
         // TODO Auto-generated method stub
         return Result.ofRuntimeError("TODO");
     }

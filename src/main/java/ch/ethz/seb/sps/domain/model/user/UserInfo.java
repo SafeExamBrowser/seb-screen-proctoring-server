@@ -9,9 +9,7 @@
 package ch.ethz.seb.sps.domain.model.user;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -55,6 +53,10 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
     public static final String FILTER_ATTR_USER_NAME = "username";
     public static final String FILTER_ATTR_EMAIL = "email";
     public static final String FILTER_ATTR_LANGUAGE = "language";
+
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonProperty(USER.ATTR_ID)
+    public final Long id;
 
     /** The user's UUID */
     @Schema(accessMode = AccessMode.READ_ONLY)
@@ -115,6 +117,7 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
 
     @JsonCreator
     public UserInfo(
+            @JsonProperty(USER.ATTR_ID) final Long id,
             @JsonProperty(USER.ATTR_UUID) final String uuid,
             @JsonProperty(USER.ATTR_NAME) final String name,
             @JsonProperty(USER.ATTR_SURNAME) final String surname,
@@ -127,6 +130,7 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
             @JsonProperty(USER.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
             @JsonProperty(USER.ATTR_TERMINATION_TIME) final Long terminationTime) {
 
+        this.id = id;
         this.uuid = uuid;
         this.name = name;
         this.surname = surname;
@@ -140,7 +144,6 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
         this.terminationTime = terminationTime;
     }
 
-    @JsonIgnore
     @Override
     public DateTime getCreationDate() {
         return Utils.toDateTimeUTC(this.creationTime);
@@ -149,6 +152,11 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
     @Override
     public EntityType entityType() {
         return EntityType.USER;
+    }
+
+    @Override
+    public Long getId() {
+        return this.id;
     }
 
     @Override
@@ -302,6 +310,7 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
      * @return copied UserInfo instance */
     public static UserInfo of(final UserInfo userInfo) {
         return new UserInfo(
+                userInfo.id,
                 userInfo.uuid,
                 userInfo.name,
                 userInfo.username,
@@ -314,48 +323,4 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
                 userInfo.lastUpdateTime,
                 userInfo.terminationTime);
     }
-
-    /** Use this to create a copy of a given UserInfo by overriding available arguments.
-     *
-     * @param userInfo UserInfo instance to copy
-     * @param name new name or null if the name of given userInfo should be taken
-     * @param surname new surname or null if the name of given userInfo should be taken
-     * @param username new username or null if the username of given userInfo should be taken
-     * @param email new email or null if the email of given userInfo should be taken
-     * @param language new language or null if the language of given userInfo should be taken
-     * @param timeZone new timeZone or null if the timeZone of given userInfo should be taken
-     * @param roles new timeZone or null if the roles of given userInfo should be taken
-     * @return copied UserInfo instance with the given attributes */
-    public static UserInfo of(
-            final UserInfo userInfo,
-            final String name,
-            final String username,
-            final String surname,
-            final String email,
-            final Locale language,
-            final DateTimeZone timeZone,
-            final String... roles) {
-
-        return new UserInfo(
-                userInfo.getUuid(),
-                (name != null) ? name : userInfo.getName(),
-                (surname != null) ? surname : userInfo.getSurname(),
-                (username != null) ? username : userInfo.getUsername(),
-                (email != null) ? email : userInfo.getEmail(),
-                (language != null) ? language : userInfo.getLanguage(),
-                (timeZone != null) ? timeZone : userInfo.getTimeZone(),
-                new HashSet<>(Arrays.asList(roles)),
-                userInfo.creationTime,
-                userInfo.lastUpdateTime,
-                userInfo.terminationTime);
-    }
-
-    public static UserInfo withEMail(final UserInfo userInfo, final String email) {
-        return of(userInfo, null, null, null, email, null, null, (String[]) null);
-    }
-
-    public static UserInfo withRoles(final UserInfo userInfo, final String... roles) {
-        return of(userInfo, null, null, null, null, null, null, roles);
-    }
-
 }

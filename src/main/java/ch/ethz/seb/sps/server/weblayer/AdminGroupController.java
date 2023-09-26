@@ -8,6 +8,11 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.mybatis.dynamic.sql.SqlTable;
@@ -22,10 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.POSTMapper;
+import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
@@ -43,17 +51,20 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
     private static final Logger log = LoggerFactory.getLogger(AdminGroupController.class);
 
     private final SessionDAO sessionDAO;
+    private final ExamDAO examDAO;
 
     public AdminGroupController(
             final UserService userService,
             final GroupDAO entityDAO,
             final SessionDAO sessionDA,
+            final ExamDAO examDAO,
             final AuditLogDAO auditLogDAO,
             final PaginationService paginationService,
             final BeanValidationService beanValidationService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.sessionDAO = sessionDA;
+        this.examDAO = examDAO;
     }
 
     @Operation(
@@ -102,6 +113,10 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
 
     @Override
     protected Group createNew(final POSTMapper postParams) {
+
+        final String examModelId = postParams.getString(Domain.SEB_GROUP.ATTR_EXAM_ID);
+        final Long entityId = (examModelId != null) ? this.examDAO.modelIdToPK(examModelId) : null;
+
         return new Group(
                 null,
                 null,
@@ -111,7 +126,7 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
                 null,
                 null,
                 null,
-                postParams.getLong(Domain.SEB_GROUP.ATTR_EXAM_ID),
+                entityId,
                 null);
     }
 
@@ -133,6 +148,36 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
     @Override
     protected SqlTable getSQLTableOfEntity() {
         return GroupRecordDynamicSqlSupport.groupRecord;
+    }
+
+    @Override
+    protected Collection<Long> getReadPrivilegedPredication() {
+        if (this.userService.hasGrant(PrivilegeType.READ, getGrantEntityType())) {
+            return Collections.emptyList();
+        }
+
+        final Collection<Long> directGrants = this.userService
+                .getIdsWithReadEntityPrivilege(getGrantEntityType())
+                .getOrThrow();
+
+        final Collection<Long> examGrants = this.userService
+                .getIdsWithReadEntityPrivilege(EntityType.EXAM)
+                .getOrThrow();
+
+        if (examGrants == null || examGrants.isEmpty()) {
+            return directGrants;
+        }
+
+        return ((GroupDAO) this.entityDAO).allIdsForExamsIds(examGrants)
+                .map(grants -> {
+                    final Set<Long> result = new HashSet<>(grants);
+                    result.addAll(directGrants);
+                    return (Collection<Long>) result;
+                })
+                .onError(error -> {
+                    log.error("Failed to get Exam based grants for groups: ", error);
+                })
+                .getOr(directGrants);
     }
 
 }

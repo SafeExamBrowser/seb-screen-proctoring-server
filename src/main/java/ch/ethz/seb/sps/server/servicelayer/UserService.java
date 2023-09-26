@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.server.servicelayer;
 
 import java.security.Principal;
+import java.util.Collection;
 
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
@@ -16,6 +17,7 @@ import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
+import ch.ethz.seb.sps.utils.Result;
 
 public interface UserService {
 
@@ -145,5 +147,13 @@ public interface UserService {
                 privilegeType,
                 getCurrentUser().getUserInfo());
     }
+
+    /** Get a collection of entity id's/pk's that has an entity based read privilege (EntityPrivilege).
+     *
+     * @param entityType The type of the entity
+     * @return Result refer to the resulting collection or to an error when happened */
+    Result<Collection<Long>> getIdsWithReadEntityPrivilege(EntityType entityType);
+
+    void applyWriteEntityPrivilegeGrant(EntityType entityType, Long entityId, String userUUID);
 
 }

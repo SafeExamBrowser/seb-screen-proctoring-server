@@ -124,6 +124,11 @@ public class SessionSearchResult implements Entity {
     }
 
     @Override
+    public Long getId() {
+        return null;
+    }
+
+    @Override
     public EntityType entityType() {
         return EntityType.SESSION;
     }

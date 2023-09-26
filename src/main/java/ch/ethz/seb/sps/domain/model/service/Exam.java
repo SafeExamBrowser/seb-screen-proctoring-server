@@ -131,6 +131,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
                         : null;
     }
 
+    @Override
     public Long getId() {
         return this.id;
     }

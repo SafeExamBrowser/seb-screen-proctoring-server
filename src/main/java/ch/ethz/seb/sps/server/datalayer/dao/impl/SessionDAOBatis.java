@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -147,7 +146,7 @@ public class SessionDAOBatis implements SessionDAO {
     @Transactional(readOnly = true)
     public Result<Collection<Session>> allMatching(
             final FilterMap filterMap,
-            final Predicate<Session> predicate) {
+            final Collection<Long> prePredicated) {
 
         return Result.tryCatch(() -> {
 
@@ -188,7 +187,12 @@ public class SessionDAOBatis implements SessionDAO {
                                     SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
                             .and(
                                     SessionRecordDynamicSqlSupport.creationTime,
-                                    SqlBuilder.isLessThanOrEqualToWhenPresent(toTime));
+                                    SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.id,
+                                    SqlBuilder.isInWhenPresent((prePredicated == null)
+                                            ? Collections.emptyList()
+                                            : prePredicated));
 
             // group constraint
             if (groupPKs != null) {

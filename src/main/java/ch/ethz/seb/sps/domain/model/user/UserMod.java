@@ -130,6 +130,11 @@ public final class UserMod implements UserAccount {
     }
 
     @Override
+    public Long getId() {
+        return null;
+    }
+
+    @Override
     public String getModelId() {
         return this.uuid;
     }

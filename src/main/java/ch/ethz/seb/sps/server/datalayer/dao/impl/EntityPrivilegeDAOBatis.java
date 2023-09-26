@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.select.SelectDSL;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +57,28 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<Long>> getEntityIdsWithPrivilegeForUser(
+            final EntityType type,
+            final String userUUID,
+            final PrivilegeType privilegeType) {
+
+        return Result.tryCatch(() -> {
+
+            final List<Long> result = SelectDSL.selectWithMapper(
+                    this.entityPrivilegeRecordMapper::selectIds,
+                    EntityPrivilegeRecordDynamicSqlSupport.entityId)
+                    .from(EntityPrivilegeRecordDynamicSqlSupport.entityPrivilegeRecord)
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .and(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return result;
+        });
+    }
+
+    @Override
     @Transactional
     public Result<Collection<EntityPrivilege>> savePut(
             final EntityType type,
@@ -93,15 +116,6 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
             return result;
 
         }).onError(TransactionHandler::rollback);
-    }
-
-    private EntityPrivilege toDomainObject(final EntityPrivilegeRecord record) {
-        return new EntityPrivilege(
-                record.getId(),
-                EntityType.valueOf(record.getEntityType()),
-                record.getEntityId(),
-                record.getUserUuid(),
-                record.getPrivileges());
     }
 
     @Override
@@ -201,6 +215,15 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                     .map(id -> new EntityKey(id, EntityType.ENTITY_PRIVILEGE))
                     .collect(Collectors.toList());
         });
+    }
+
+    private EntityPrivilege toDomainObject(final EntityPrivilegeRecord record) {
+        return new EntityPrivilege(
+                record.getId(),
+                EntityType.valueOf(record.getEntityType()),
+                record.getEntityId(),
+                record.getUserUuid(),
+                record.getPrivileges());
     }
 
 }

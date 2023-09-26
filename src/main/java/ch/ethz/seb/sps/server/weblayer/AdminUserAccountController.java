@@ -15,6 +15,8 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import org.mybatis.dynamic.sql.SqlTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
@@ -48,6 +50,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
+import ch.ethz.seb.sps.server.servicelayer.EntityService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.server.weblayer.oauth.RevokeTokenEndpoint;
@@ -57,10 +60,13 @@ import ch.ethz.seb.sps.utils.Result;
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.USER_ACCOUNT_ENDPOINT)
 public class AdminUserAccountController extends ActivatableEntityController<UserInfo, UserMod> {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminUserAccountController.class);
+
     private final ApplicationEventPublisher applicationEventPublisher;
     private final UserDAO userDAO;
     private final PasswordEncoder userPasswordEncoder;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
+    private final EntityService entityService;
 
     public AdminUserAccountController(
             final UserDAO userDAO,
@@ -70,12 +76,14 @@ public class AdminUserAccountController extends ActivatableEntityController<User
             final PaginationService paginationService,
             final ApplicationEventPublisher applicationEventPublisher,
             final BeanValidationService beanValidationService,
+            final EntityService entityService,
             @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME) final PasswordEncoder userPasswordEncoder) {
 
         super(userService, userDAO, auditLogDAO, paginationService, beanValidationService);
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.applicationEventPublisher = applicationEventPublisher;
         this.userDAO = userDAO;
+        this.entityService = entityService;
         this.userPasswordEncoder = userPasswordEncoder;
     }
 
@@ -124,15 +132,16 @@ public class AdminUserAccountController extends ActivatableEntityController<User
             produces = MediaType.APPLICATION_JSON_VALUE)
     public EntityPrivilege createEntityPrivilege(
             @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_TYPE, required = true) final String entityType,
-            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_ID, required = true) final Long entityId,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_ID, required = true) final String entityModelId,
             @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID, required = true) final String userUUID,
             @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_PRIVILEGES, required = true) final String privilege) {
 
         checkAdminRole();
 
+        final Long entityPK = this.entityService.getIdForModelId(entityModelId, EntityType.valueOf(entityType));
         return this.entityPrivilegeDAO.addPrivilege(
                 EntityType.valueOf(entityType),
-                entityId,
+                entityPK,
                 userUUID,
                 PrivilegeType.byFlag(privilege))
                 .getOrThrow();
@@ -170,6 +179,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
     @Override
     protected UserInfo merge(final UserMod modifyData, final UserInfo existingEntity) {
         return new UserInfo(
+                existingEntity.id,
                 existingEntity.uuid,
                 modifyData.name,
                 modifyData.surname,
@@ -185,6 +195,24 @@ public class AdminUserAccountController extends ActivatableEntityController<User
     protected Result<UserMod> validForCreate(final UserMod userInfo) {
         return super.validForCreate(userInfo)
                 .flatMap(this::passwordMatch);
+    }
+
+    @Override
+    protected Result<UserInfo> notifyCreated(final UserInfo entity) {
+        return Result.tryCatch(() -> {
+
+            // create a write EntityPrivilege for this user if the user has no write privileges yet
+            if (!this.userService.hasGrant(entity, PrivilegeType.WRITE, entity)) {
+
+                log.info("Apply write EntityPrivilege to new user: {}", entity.username);
+                this.userService.applyWriteEntityPrivilegeGrant(
+                        EntityType.USER,
+                        entity.id,
+                        entity.uuid);
+            }
+
+            return entity;
+        });
     }
 
     private Result<UserInfo> revokeAccessToken(final UserInfo userInfo) {

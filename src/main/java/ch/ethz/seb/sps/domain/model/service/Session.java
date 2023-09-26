@@ -168,6 +168,7 @@ public class Session implements Entity, WithLifeCycle {
         return this.uuid;
     }
 
+    @Override
     public Long getId() {
         return this.id;
     }

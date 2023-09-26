@@ -13,7 +13,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /** Interface for all domain model objects that has a model identifier */
 public interface ModelIdAware {
 
-    /** Get the model identifier of the domain model object
+    /** Get the model identifier of the domain model object.
+     * The model identifier can either by a UUID if one is defined for a specific entity type
+     * or the String representation of the PK (primary key) of the entity record on persistent store
      *
      * @return the model identifier of the domain model object */
     @JsonIgnore

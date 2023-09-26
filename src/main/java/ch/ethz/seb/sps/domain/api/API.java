@@ -8,16 +8,15 @@
 
 package ch.ethz.seb.sps.domain.api;
 
-import ch.ethz.seb.sps.domain.model.Entity;
-
 import java.util.EnumSet;
+
+import ch.ethz.seb.sps.domain.model.Entity;
 
 public final class API {
 
     public enum UserRole {
         ADMIN,
-        PROCTOR,
-        SEBCLIENT
+        PROCTOR
     }
 
     public enum PrivilegeType {

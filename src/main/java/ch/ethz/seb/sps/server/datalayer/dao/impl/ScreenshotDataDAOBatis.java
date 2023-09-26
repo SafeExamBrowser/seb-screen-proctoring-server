@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,7 +64,16 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<ScreenshotData> byPK(final Long id) {
-        return Result.tryCatch(() -> this.screenshotDataRecordMapper.selectByPrimaryKey(id))
+        return Result.tryCatch(() -> {
+            final ScreenshotDataRecord record = this.screenshotDataRecordMapper
+                    .selectByPrimaryKey(id);
+
+            if (record == null) {
+                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, "For id: " + id);
+            }
+
+            return record;
+        })
                 .map(this::toDomainModel);
     }
 
@@ -265,7 +273,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Transactional(readOnly = true)
     public Result<Collection<ScreenshotData>> allMatching(
             final FilterMap filterMap,
-            final Predicate<ScreenshotData> predicate) {
+            final Collection<Long> prePredicated) {
 
         return Result.tryCatch(() -> {
 
@@ -282,6 +290,11 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             ScreenshotDataRecordDynamicSqlSupport.timestamp,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(
                                     filterMap.getLong(Domain.SCREENSHOT_DATA.ATTR_TIMESTAMP)))
+                    .and(
+                            ScreenshotDataRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
                     .build()
                     .execute()
                     .stream()

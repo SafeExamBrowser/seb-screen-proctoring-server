@@ -16,6 +16,12 @@ public interface Entity extends ModelIdAware {
     String FILTER_ATTR_ACTIVE = "active";
     String FILTER_ATTR_NAME = "name";
 
+    /** Get the primary key of the entity record on persistent store if available.
+     *
+     * @return the primary key of the entity record on persistent store if available. */
+    @JsonIgnore
+    Long getId();
+
     /** Get the name of the entity
      *
      * @return the name of the entity */

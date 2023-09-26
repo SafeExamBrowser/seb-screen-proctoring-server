@@ -120,8 +120,10 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
         return EntityType.SEB_GROUP;
     }
 
+    @Override
     public Long getId() {
-        return this.id;
+        // TODO Auto-generated method stub
+        return null;
     }
 
     public String getUuid() {

@@ -162,13 +162,13 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
         attributes.put("entityType", ex.entityType.name());
 
         final APIError apiError = new APIError(
-                APIError.APIErrorType.BAD_REQUEST,
+                APIError.APIErrorType.NO_RESOURCE_FOUND,
                 request.getDescription(false),
                 ex.getMessage(),
                 attributes,
                 null);
 
-        log.error("Error intercepted at API response error handler: {}", apiError);
+        log.info("Resource not found for request: {}", apiError);
 
         return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
