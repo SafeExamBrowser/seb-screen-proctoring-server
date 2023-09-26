@@ -1,5 +1,24 @@
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.examRecord;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.*;
+import static org.mybatis.dynamic.sql.SqlBuilder.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.update.UpdateDSL;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.Domain.EXAM;
 import ch.ethz.seb.sps.domain.api.API;
@@ -14,48 +33,29 @@ import ch.ethz.seb.sps.server.datalayer.batis.model.ExamRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
-import org.apache.commons.lang3.StringUtils;
-import org.mybatis.dynamic.sql.SqlBuilder;
-import org.mybatis.dynamic.sql.update.UpdateDSL;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.examRecord;
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.id;
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.lastUpdateTime;
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.terminationTime;
-import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
-import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
-import static org.mybatis.dynamic.sql.SqlBuilder.isLikeWhenPresent;
-import static org.mybatis.dynamic.sql.SqlBuilder.isNotEqualToWhenPresent;
 
 @Service
 public class ExamDAOBatis implements ExamDAO {
 
     private final ExamRecordMapper examRecordMapper;
+    private final GroupDAO groupDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
     private final UserService userService;
 
     public ExamDAOBatis(
             final ExamRecordMapper examRecordMapper,
+            final GroupDAO groupDAO,
             final EntityPrivilegeDAO entityPrivilegeDAO,
             final UserService userService) {
 
         this.examRecordMapper = examRecordMapper;
+        this.groupDAO = groupDAO;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.userService = userService;
     }
@@ -169,7 +169,6 @@ public class ExamDAOBatis implements ExamDAO {
         });
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public Result<Collection<Exam>> pksByExamName(final FilterMap filterMap) {
@@ -189,7 +188,6 @@ public class ExamDAOBatis implements ExamDAO {
         });
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public boolean isActive(final String modelId) {
@@ -205,56 +203,23 @@ public class ExamDAOBatis implements ExamDAO {
                 .execute() > 0;
     }
 
-
     @Override
     @Transactional
-    public Result<Collection<EntityKey>> setActive(final Set<EntityKey> all, final boolean active) {
-        return Result.tryCatch(() -> {
+    public Result<EntityKey> setActive(final EntityKey entityKey, final boolean active) {
+        return pkByUUID(entityKey.modelId)
+                .map(pk -> {
 
-            final List<Long> ids = extractListOfPKs(all);
-            if (ids == null || ids.isEmpty()) {
-                return Collections.emptyList();
-            }
+                    final long now = Utils.getMillisecondsNow();
 
-            final long now = Utils.getMillisecondsNow();
+                    UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
+                            .set(lastUpdateTime).equalTo(now)
+                            .set(terminationTime).equalTo(() -> active ? null : now)
+                            .where(id, isEqualTo(pk))
+                            .build()
+                            .execute();
 
-            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
-                    .set(lastUpdateTime).equalTo(now)
-                    .set(terminationTime).equalTo(() -> active ? null : now)
-                    .where(id, isIn(ids))
-                    .build()
-                    .execute();
-
-            return this.examRecordMapper.selectByExample()
-                    .where(ExamRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute()
-                    .stream()
-                    .map(record -> new EntityKey(record.getId(), EntityType.EXAM))
-                    .collect(Collectors.toList());
-        });
-    }
-
-    @Override
-    @Transactional
-    public Result<Exam> createNew(final String examUUID) {
-        return createNew(
-                new Exam(
-                        null,
-                        examUUID,
-                        examUUID,
-                        examUUID,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null
-                )
-        );
+                    return entityKey;
+                });
     }
 
     @Override
@@ -262,28 +227,27 @@ public class ExamDAOBatis implements ExamDAO {
     public Result<Exam> createNew(final Exam data) {
         return Result.tryCatch(() -> {
 
-                    checkUniqueName(data);
+            checkUniqueName(data);
 
-                    final long millisecondsNow = Utils.getMillisecondsNow();
-                    final ExamRecord newRecord = new ExamRecord(
-                            null,
-                            (StringUtils.isNotBlank(data.uuid)) ? data.uuid : UUID.randomUUID().toString(),
-                            data.name,
-                            data.description,
-                            data.url,
-                            data.type,
-                            this.userService.getCurrentUserUUIDOrNull(),
-                            millisecondsNow,
-                            millisecondsNow,
-                            null,
-                            data.startTime != null ? data.startTime : millisecondsNow,
-                            data.endTime
-                    );
+            final long millisecondsNow = Utils.getMillisecondsNow();
+            final ExamRecord newRecord = new ExamRecord(
+                    null,
+                    (StringUtils.isNotBlank(data.uuid)) ? data.uuid : UUID.randomUUID().toString(),
+                    data.name,
+                    data.description,
+                    data.url,
+                    data.type,
+                    this.userService.getCurrentUserUUIDOrNull(),
+                    millisecondsNow,
+                    millisecondsNow,
+                    null,
+                    data.startTime != null ? data.startTime : millisecondsNow,
+                    data.endTime);
 
-                    this.examRecordMapper.insert(newRecord);
-                    return this.examRecordMapper.selectByPrimaryKey(newRecord.getId());
+            this.examRecordMapper.insert(newRecord);
+            return this.examRecordMapper.selectByPrimaryKey(newRecord.getId());
 
-                })
+        })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);
     }
@@ -293,34 +257,34 @@ public class ExamDAOBatis implements ExamDAO {
     public Result<Exam> save(final Exam data) {
         return Result.tryCatch(() -> {
 
-                    final long millisecondsNow = Utils.getMillisecondsNow();
+            final long millisecondsNow = Utils.getMillisecondsNow();
 
-                    Long pk = data.id;
-                    if (pk == null && data.uuid != null) {
-                        pk = this.pkByUUID(data.uuid).getOr(null);
-                    }
-                    if (pk == null) {
-                        throw new BadRequestException("exam save", "no exam with uuid: " + data.uuid + "found");
-                    }
+            Long pk = data.id;
+            if (pk == null && data.uuid != null) {
+                pk = this.pkByUUID(data.uuid).getOr(null);
+            }
+            if (pk == null) {
+                throw new BadRequestException("exam save", "no exam with uuid: " + data.uuid + "found");
+            }
 
-                    UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
-                            .set(ExamRecordDynamicSqlSupport.name).equalTo(data.name)
-                            .set(ExamRecordDynamicSqlSupport.description).equalTo(data.description)
-                            .set(ExamRecordDynamicSqlSupport.url).equalTo(data.url)
-                            .set(ExamRecordDynamicSqlSupport.type).equalTo(data.type)
-                            .set(ExamRecordDynamicSqlSupport.lastUpdateTime).equalTo(millisecondsNow)
-                            .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
-                            .build()
-                            .execute();
+            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
+                    .set(ExamRecordDynamicSqlSupport.name).equalTo(data.name)
+                    .set(ExamRecordDynamicSqlSupport.description).equalTo(data.description)
+                    .set(ExamRecordDynamicSqlSupport.url).equalTo(data.url)
+                    .set(ExamRecordDynamicSqlSupport.type).equalTo(data.type)
+                    .set(ExamRecordDynamicSqlSupport.lastUpdateTime).equalTo(millisecondsNow)
+                    .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
+                    .build()
+                    .execute();
 
-                    this.entityPrivilegeDAO.savePut(EntityType.EXAM, pk, data.entityPrivileges);
-                    return this.examRecordMapper.selectByPrimaryKey(pk);
-                })
+            this.entityPrivilegeDAO.savePut(EntityType.EXAM, pk, data.entityPrivileges);
+            return this.examRecordMapper.selectByPrimaryKey(pk);
+        })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);
     }
 
-
+    @Override
     @Transactional
     public Result<Collection<EntityKey>> delete(final Set<EntityKey> all) {
         return Result.tryCatch(() -> {
@@ -330,25 +294,25 @@ public class ExamDAOBatis implements ExamDAO {
                 return Collections.emptyList();
             }
 
-            final List<ExamRecord> exams = this.examRecordMapper
-                    .selectByExample()
-                    .where(ExamRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute();
+            // delete all involved groups first
+            final Collection<EntityKey> deletedGroups = this.groupDAO
+                    .deleteAllForExams(ids)
+                    .getOrThrow();
 
+            log.info("Deleted following groups: {} before deleting exams: {}", deletedGroups, all);
+
+            // delete the exams
             this.examRecordMapper
                     .deleteByExample()
                     .where(ExamRecordDynamicSqlSupport.id, isIn(ids))
                     .build()
                     .execute();
 
-            return exams.stream()
-                    .map(rec -> new EntityKey(rec.getId(), EntityType.EXAM))
+            return ids.stream()
+                    .map(pk -> new EntityKey(pk, EntityType.EXAM))
                     .collect(Collectors.toList());
         });
     }
-
-
 
     private Result<ExamRecord> recordByUUID(final String uuid) {
         return Result.tryCatch(() -> {
@@ -365,7 +329,6 @@ public class ExamDAOBatis implements ExamDAO {
             return execute.get(0);
         });
     }
-
 
     private Result<Long> pkByUUID(final String examUUID) {
 
@@ -414,7 +377,6 @@ public class ExamDAOBatis implements ExamDAO {
                 getEntityPrivileges(record.getId()));
     }
 
-
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id) {
         try {
 
@@ -448,6 +410,5 @@ public class ExamDAOBatis implements ExamDAO {
                     "clientaccess:name:name.notunique");
         }
     }
-
 
 }

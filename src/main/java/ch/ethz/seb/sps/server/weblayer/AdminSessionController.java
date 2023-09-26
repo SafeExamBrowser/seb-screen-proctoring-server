@@ -8,6 +8,13 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.util.UUID;
+
+import org.apache.commons.lang3.StringUtils;
+import org.mybatis.dynamic.sql.SqlTable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
@@ -21,12 +28,6 @@ import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
-import org.apache.commons.lang3.StringUtils;
-import org.mybatis.dynamic.sql.SqlTable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.ADMIN_SESSION_ENDPOINT)

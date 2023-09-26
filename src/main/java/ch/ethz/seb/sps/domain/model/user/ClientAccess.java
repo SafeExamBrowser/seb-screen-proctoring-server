@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -65,10 +66,6 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
     public final String owner;
 
     @Schema(accessMode = AccessMode.READ_ONLY)
-    @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES)
-    public final Collection<EntityPrivilege> entityPrivileges;
-
-    @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(CLIENT_ACCESS.ATTR_CREATION_TIME)
     public final Long creationTime;
 
@@ -80,6 +77,9 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
     @JsonProperty(CLIENT_ACCESS.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 
+    @JsonIgnore
+    public final Collection<EntityPrivilege> entityPrivileges;
+
     @JsonCreator
     public ClientAccess(
             @JsonProperty(CLIENT_ACCESS.ATTR_ID) final Long id,
@@ -89,10 +89,11 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
             @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_NAME) final String clientId,
             @JsonProperty(CLIENT_ACCESS.ATTR_CLIENT_SECRET) final String clientSecret,
             @JsonProperty(CLIENT_ACCESS.ATTR_OWNER) final String owner,
-            @JsonProperty(WithEntityPrivileges.ATTR_ENTITY_PRIVILEGES) final Collection<EntityPrivilege> entityPrivileges,
             @JsonProperty(CLIENT_ACCESS.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(CLIENT_ACCESS.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
-            @JsonProperty(CLIENT_ACCESS.ATTR_TERMINATION_TIME) final Long terminationTime) {
+            @JsonProperty(CLIENT_ACCESS.ATTR_TERMINATION_TIME) final Long terminationTime,
+
+            final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
         this.uuid = uuid;
@@ -101,10 +102,10 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.owner = owner;
-        this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
         this.creationTime = creationTime;
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
+        this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
     }
 
     @Override

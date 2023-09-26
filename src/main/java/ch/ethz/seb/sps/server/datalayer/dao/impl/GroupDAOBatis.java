@@ -224,7 +224,7 @@ public class GroupDAOBatis implements GroupDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Group>> pksByGroupName(final FilterMap filterMap) {
+    public Result<Collection<Group>> byGroupName(final FilterMap filterMap) {
         return Result.tryCatch(() -> {
             return this.groupRecordMapper
                     .selectByExample()
@@ -258,29 +258,44 @@ public class GroupDAOBatis implements GroupDAO {
 
     @Override
     @Transactional
-    public Result<Collection<EntityKey>> setActive(final Set<EntityKey> all, final boolean active) {
-        return Result.tryCatch(() -> {
+    public Result<EntityKey> setActive(final EntityKey entityKey, final boolean active) {
+        return pkByUUID(entityKey.modelId)
+                .map(pk -> {
 
-            final List<Long> ids = extractListOfPKs(all);
-            if (ids == null || ids.isEmpty()) {
-                return Collections.emptyList();
-            }
+                    final long now = Utils.getMillisecondsNow();
+
+                    UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
+                            .set(lastUpdateTime).equalTo(now)
+                            .set(terminationTime).equalTo(() -> active ? null : now)
+                            .where(id, isEqualTo(pk))
+                            .build()
+                            .execute();
+
+                    return entityKey;
+                });
+    }
+
+    @Override
+    @Transactional
+    public Result<Collection<EntityKey>> applyActivationForAllOfExam(final Long examId, final boolean activation) {
+        return Result.tryCatch(() -> {
 
             final long now = Utils.getMillisecondsNow();
 
-            UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
-                    .set(lastUpdateTime).equalTo(now)
-                    .set(terminationTime).equalTo(() -> active ? null : now)
-                    .where(id, isIn(ids))
+            final List<Long> groupIds = this.groupRecordMapper.selectIdsByExample()
+                    .where(GroupRecordDynamicSqlSupport.examId, isEqualTo(examId))
                     .build()
                     .execute();
 
-            return this.groupRecordMapper.selectByExample()
-                    .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
+            UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
+                    .set(lastUpdateTime).equalTo(now)
+                    .set(terminationTime).equalTo(() -> activation ? null : now)
+                    .where(id, isIn(groupIds))
                     .build()
-                    .execute()
-                    .stream()
-                    .map(record -> new EntityKey(record.getId(), EntityType.SEB_GROUP))
+                    .execute();
+
+            return groupIds.stream()
+                    .map(id -> new EntityKey(id, EntityType.SEB_GROUP))
                     .collect(Collectors.toList());
         });
     }
@@ -352,41 +367,18 @@ public class GroupDAOBatis implements GroupDAO {
     @Override
     @Transactional
     public Result<Collection<EntityKey>> delete(final Set<EntityKey> all) {
-        return Result.tryCatch(() -> {
-
-            final List<Long> ids = extractListOfPKs(all);
-            if (ids == null || ids.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            final List<GroupRecord> groups = this.groupRecordMapper
-                    .selectByExample()
-                    .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute();
-
-            // delete session data for each session
-            groups.stream().forEach(this::deleteSessions);
-
-            this.groupRecordMapper
-                    .deleteByExample()
-                    .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute();
-
-            return groups.stream()
-                    .map(rec -> new EntityKey(rec.getId(), EntityType.SEB_GROUP))
-                    .collect(Collectors.toList());
-        });
+        return Result.tryCatch(() -> extractListOfPKs(all))
+                .map(this::delete);
     }
 
-    private void deleteSessions(final GroupRecord record) {
-
-        final Collection<EntityKey> deleted = this.sessionDAO
-                .deleteAllSessionsForGroup(record.getId())
-                .getOrThrow();
-
-        log.info("Deleted following sessions for group {}, {}", record.getUuid(), deleted);
+    @Override
+    @Transactional
+    public Result<Collection<EntityKey>> deleteAllForExams(final List<Long> examPKs) {
+        return Result.tryCatch(() -> this.groupRecordMapper.selectIdsByExample()
+                .where(GroupRecordDynamicSqlSupport.examId, isIn(examPKs))
+                .build()
+                .execute())
+                .map(this::delete);
     }
 
     private Result<GroupRecord> recordByPK(final Long pk) {
@@ -400,6 +392,31 @@ public class GroupDAOBatis implements GroupDAO {
 
             return selectByPrimaryKey;
         });
+    }
+
+    private Collection<EntityKey> delete(final List<Long> ids) {
+
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // delete all session data for all involved groups first
+        final Collection<EntityKey> deletedSessions = this.sessionDAO
+                .deleteAllForGroups(ids)
+                .getOrThrow();
+
+        log.info("Deleted following sessions: {} before deleting groups: {}", deletedSessions, ids);
+
+        // then the groups
+        this.groupRecordMapper
+                .deleteByExample()
+                .where(GroupRecordDynamicSqlSupport.id, isIn(ids))
+                .build()
+                .execute();
+
+        return ids.stream()
+                .map(pk -> new EntityKey(pk, EntityType.SEB_GROUP))
+                .collect(Collectors.toList());
     }
 
     private Result<GroupRecord> recordByUUID(final String uuid) {

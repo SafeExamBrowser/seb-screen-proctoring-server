@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ClientAccessRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -221,34 +223,21 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
 
     @Override
     @Transactional
-    public Result<Collection<EntityKey>> setActive(final Set<EntityKey> all, final boolean active) {
-        return Result.tryCatch(() -> {
+    public Result<EntityKey> setActive(final EntityKey entityKey, final boolean active) {
+        return pkByUUID(entityKey.modelId)
+                .map(pk -> {
 
-            final List<Long> ids = extractListOfPKs(all);
-            if (ids == null || ids.isEmpty()) {
-                return Collections.emptyList();
-            }
+                    final long now = Utils.getMillisecondsNow();
 
-            final long now = Utils.getMillisecondsNow();
+                    UpdateDSL.updateWithMapper(this.clientAccessRecordMapper::update, clientAccessRecord)
+                            .set(lastUpdateTime).equalTo(now)
+                            .set(terminationTime).equalTo(() -> active ? null : now)
+                            .where(id, isEqualTo(pk))
+                            .build()
+                            .execute();
 
-            final ClientAccessRecord newRecord = new ClientAccessRecord(
-                    null, null, null, null, null, null, null, null,
-                    now,
-                    active ? null : now);
-
-            this.clientAccessRecordMapper.updateByExampleSelective(newRecord)
-                    .where(ClientAccessRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute();
-
-            return this.clientAccessRecordMapper.selectByExample()
-                    .where(ClientAccessRecordDynamicSqlSupport.id, isIn(ids))
-                    .build()
-                    .execute()
-                    .stream()
-                    .map(record -> new EntityKey(record.getId(), EntityType.CLIENT_ACCESS))
-                    .collect(Collectors.toList());
-        });
+                    return entityKey;
+                });
     }
 
     @Override
@@ -313,10 +302,10 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                 record.getClientName(),
                 record.getClientSecret(),
                 record.getOwner(),
-                getEntityPrivileges(record.getId()),
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
-                record.getTerminationTime());
+                record.getTerminationTime(),
+                getEntityPrivileges(record.getId()));
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id) {
