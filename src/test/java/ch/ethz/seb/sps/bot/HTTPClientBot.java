@@ -253,19 +253,18 @@ public class HTTPClientBot {
 
         private String createMetaData() {
             final Map<String, String> metadata = new HashMap<>();
-
-            metadata.put(
-                    API.SCREENSHOT_META_DATA_BROWSER_URL,
-                    this.urls.get(HTTPClientBot.this.random.nextInt(this.urls.size())));
-
-            metadata.put(
-                    API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
-                    this.titles.get(HTTPClientBot.this.random.nextInt(this.titles.size())));
-
+            if (HTTPClientBot.this.random.nextBoolean()) {
+                metadata.put(
+                        API.SCREENSHOT_META_DATA_BROWSER_URL,
+                        this.urls.get(HTTPClientBot.this.random.nextInt(this.urls.size())));
+            } else {
+                metadata.put(
+                        API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
+                        this.titles.get(HTTPClientBot.this.random.nextInt(this.titles.size())));
+            }
             metadata.put(
                     API.SCREENSHOT_META_DATA_USER_ACTION,
                     this.actions.get(HTTPClientBot.this.random.nextInt(this.actions.size())));
-
 
             try {
                 return HTTPClientBot.this.jsonMapper.writeValueAsString(metadata);
