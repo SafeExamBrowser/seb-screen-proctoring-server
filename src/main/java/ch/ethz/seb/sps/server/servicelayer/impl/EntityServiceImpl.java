@@ -30,10 +30,10 @@ public class EntityServiceImpl implements EntityService {
     private final Map<EntityType, EntityDAO<?, ?>> daoMapping;
 
     public EntityServiceImpl(final Collection<EntityDAO<?, ?>> daos) {
-        this.daoMapping = new EnumMap<>(
-                daos.stream()
-                        .collect(Collectors
-                                .toMap(entry -> entry.entityType(), Function.identity())));
+        this.daoMapping = new EnumMap<>(EntityType.class);
+        this.daoMapping.putAll(daos.stream()
+                .collect(Collectors
+                        .toMap(entry -> entry.entityType(), Function.identity())));
     }
 
     @SuppressWarnings("unchecked")
