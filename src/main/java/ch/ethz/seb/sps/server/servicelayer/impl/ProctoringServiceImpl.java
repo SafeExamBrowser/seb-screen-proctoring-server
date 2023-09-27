@@ -247,6 +247,83 @@ public class ProctoringServiceImpl implements ProctoringService {
                 .map(this::createScreenshotSearchResult);
     }
 
+    @Override
+    public Collection<ScreenshotSearchResult> createScreenshotSearchResult(
+            final Collection<ScreenshotDataRecord> data) {
+
+        final Map<String, Session> sessionCache = new HashMap<>();
+        final Map<Long, Group> groupCache = new HashMap<>();
+        return data
+                .stream()
+                .map(rec -> toScreenshotSearchResult(rec, groupCache, sessionCache))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ScreenshotSearchResult toScreenshotSearchResult(
+            final ScreenshotDataRecord rec,
+            final Map<Long, Group> groupCache,
+            final Map<String, Session> sessionCache) {
+
+        try {
+
+            // check cache and fill if needed
+            sessionCache.computeIfAbsent(rec.getSessionUuid(), uuid -> {
+                final Session session = this.sessionDAO.byModelId(uuid).getOr(null);
+                groupCache.computeIfAbsent(
+                        session.getGroupId(),
+                        gid -> this.groupDAO.byPK(gid).getOr(null));
+                return session;
+            });
+
+            final Session session = sessionCache.get(rec.getSessionUuid());
+            final Group group = groupCache.get(session.getGroupId());
+
+            ImageFormat imageFormat = session.getImageFormat();
+            if (rec.getImageFormat() != null) {
+                try {
+                    imageFormat = ImageFormat.valueOf(rec.getImageFormat());
+                } catch (final Exception e) {
+                    log.error("Failed to get imageFormat from screenshot: ", e);
+                }
+            }
+
+            return new ScreenshotSearchResult(
+                    rec.getId(),
+                    group,
+                    session,
+                    rec.getTimestamp(),
+                    imageFormat,
+                    this.extractedMetaData(rec));
+
+        } catch (final Exception e) {
+            log.error("Failed to convert ScreenshotDataRecord to ScreenshotViewData for {}", rec, e);
+            return null;
+        }
+    }
+
+    @Override
+    public Map<String, String> extractedMetaData(final ScreenshotDataRecord data) {
+
+        final Map<String, String> metaData = new HashMap<>();
+
+        try {
+
+            metaData.putAll(
+                    this.jsonMapper.readValue(
+                            data.getMetaData(),
+                            new TypeReference<Map<String, String>>() {
+                            }));
+
+        } catch (final Exception e) {
+            log.warn("Failed to parse meta data JSON, add it as single attribute: {}", data.getMetaData());
+            metaData.put("data", data.getMetaData());
+        }
+
+        return metaData;
+    }
+
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
         try {
 
@@ -311,18 +388,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                 .collect(Collectors.toList());
     }
 
-    private Collection<ScreenshotSearchResult> createScreenshotSearchResult(
-            final Collection<ScreenshotDataRecord> data) {
-
-        final Map<String, Session> sessionCache = new HashMap<>();
-        final Map<Long, Group> groupCache = new HashMap<>();
-        return data
-                .stream()
-                .map(rec -> toScreenshotSearchResult(rec, groupCache, sessionCache))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
     private SessionSearchResult toSessionSearchResult(
             final Session session,
             final Map<Long, Group> groupCache,
@@ -345,48 +410,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                 session,
                 group,
                 nrOfScreenshots != null ? nrOfScreenshots.intValue() : -1);
-    }
-
-    private ScreenshotSearchResult toScreenshotSearchResult(
-            final ScreenshotDataRecord rec,
-            final Map<Long, Group> groupCache,
-            final Map<String, Session> sessionCache) {
-
-        try {
-
-            // check cache and fill if needed
-            sessionCache.computeIfAbsent(rec.getSessionUuid(), uuid -> {
-                final Session session = this.sessionDAO.byModelId(uuid).getOr(null);
-                groupCache.computeIfAbsent(
-                        session.getGroupId(),
-                        gid -> this.groupDAO.byPK(gid).getOr(null));
-                return session;
-            });
-
-            final Session session = sessionCache.get(rec.getSessionUuid());
-            final Group group = groupCache.get(session.getGroupId());
-
-            ImageFormat imageFormat = session.getImageFormat();
-            if (rec.getImageFormat() != null) {
-                try {
-                    imageFormat = ImageFormat.valueOf(rec.getImageFormat());
-                } catch (final Exception e) {
-                    log.error("Failed to get imageFormat from screenshot: ", e);
-                }
-            }
-
-            return new ScreenshotSearchResult(
-                    rec.getId(),
-                    group,
-                    session,
-                    rec.getTimestamp(),
-                    imageFormat,
-                    this.extractedMetaData(rec));
-
-        } catch (final Exception e) {
-            log.error("Failed to convert ScreenshotDataRecord to ScreenshotViewData for {}", rec, e);
-            return null;
-        }
     }
 
     private ScreenshotViewData createScreenshotViewData(
@@ -432,24 +455,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                 metaData);
     }
 
-    private Map<String, String> extractedMetaData(final ScreenshotDataRecord data) {
 
-        final Map<String, String> metaData = new HashMap<>();
-
-        try {
-
-            metaData.putAll(
-                    this.jsonMapper.readValue(
-                            data.getMetaData(),
-                            new TypeReference<Map<String, String>>() {
-                            }));
-
-        } catch (final Exception e) {
-            log.warn("Failed to parse meta data JSON, add it as single attribute: {}", data.getMetaData());
-            metaData.put("data", data.getMetaData());
-        }
-
-        return metaData;
-    }
 
 }

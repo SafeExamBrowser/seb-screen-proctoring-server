@@ -10,14 +10,18 @@ package ch.ethz.seb.sps.server.servicelayer;
 
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
+import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
+import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
+import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.utils.Result;
 
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public interface ProctoringService {
@@ -52,6 +56,15 @@ public interface ProctoringService {
             String sortBy,
             PageSortOrder sortOrder,
             FilterMap filterMap);
+
+    Collection<ScreenshotSearchResult> createScreenshotSearchResult(Collection<ScreenshotDataRecord> data);
+
+    ScreenshotSearchResult toScreenshotSearchResult(
+            ScreenshotDataRecord rec,
+            Map<Long, Group> groupCache,
+            Map<String, Session> sessionCache);
+
+    Map<String, String> extractedMetaData(ScreenshotDataRecord data);
 
     void streamScreenshot(
             String sessionUUID,

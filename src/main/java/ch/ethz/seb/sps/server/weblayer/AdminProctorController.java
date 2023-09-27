@@ -22,11 +22,13 @@ import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
+import ch.ethz.seb.sps.domain.model.service.TimelineViewData;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.server.servicelayer.GroupingService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
@@ -73,12 +75,14 @@ public class AdminProctorController {
     private final GroupDAO groupDAO;
     private final ProctoringService proctoringService;
     private final PaginationService paginationService;
+    private final GroupingService groupingService;
 
     public AdminProctorController(
             final UserService userService,
             final GroupDAO groupDAO,
             final ProctoringService proctoringService,
             final PaginationService paginationService,
+            final GroupingService groupingService,
             @Qualifier(value = ServiceConfig.SCREENSHOT_DOWNLOAD_API_EXECUTOR) final Executor downloadExecutor) {
 
         this.downloadExecutor = downloadExecutor;
@@ -86,6 +90,7 @@ public class AdminProctorController {
         this.groupDAO = groupDAO;
         this.paginationService = paginationService;
         this.proctoringService = proctoringService;
+        this.groupingService = groupingService;
     }
 
     @Operation(
@@ -605,6 +610,55 @@ public class AdminProctorController {
                 () -> preProcessGroupCriteria(filterMap),
                 () -> querySessions(filterMap))
                 .getOrThrow();
+    }
+
+
+    @Operation(
+            summary = "Get grouped screenshot data list for specific session",
+            description = "Groups all the screenshots for a given session. Currently the grouping is done via the Metadata 'WindowTitle'. " +
+                            "By providing additional metadata, only screenshot data with the given metadata will be returned",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_SESSION_ID,
+                            description = "The UUID of the session to get the timeline group data for",
+                            required = true
+                    ),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_BROWSER_URL,
+                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false
+                    ),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
+                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false
+                    ),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_USER_ACTION,
+                            description = "The search filter criteria for screenshot user action metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false
+                    )
+            }
+    )
+    @RequestMapping(
+            path = API.TIMELINE_SEARCH_ENDPOINT + API.SESSION_ID_PATH_SEGMENT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public TimelineViewData getTimelineViewData(
+            @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
+            final HttpServletRequest request
+    ){
+        final FilterMap filterMap = new FilterMap(request);
+        filterMap.putIfAbsent(API.PARAM_SESSION_ID, sessionUUID);
+
+        return this.groupingService.groupDataForTimeline(filterMap).getOrThrow();
     }
 
     private boolean hasMetaDataCriteria(final FilterMap filterMap) {
