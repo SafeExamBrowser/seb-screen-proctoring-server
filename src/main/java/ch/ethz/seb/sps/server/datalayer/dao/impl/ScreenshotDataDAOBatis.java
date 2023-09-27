@@ -305,6 +305,12 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.of(Collections.emptySet());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Collection<ScreenshotDataRecord>> searchScreenshotData(final FilterMap filterMap) {
         return Result.tryCatch(() -> {
 

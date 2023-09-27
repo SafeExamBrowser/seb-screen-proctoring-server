@@ -174,6 +174,22 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.tryCatch(() -> {
+            final List<Long> result = this.clientAccessRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            ClientAccessRecordDynamicSqlSupport.owner,
+                            SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return Utils.immutableSetOf(result);
+        });
+    }
+
+    @Override
     @Transactional
     public Result<ClientAccess> createNew(final ClientAccess data) {
         return this.clientCredentialService

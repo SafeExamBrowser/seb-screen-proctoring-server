@@ -11,7 +11,9 @@ package ch.ethz.seb.sps.server.weblayer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -472,9 +474,20 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             return Collections.emptyList();
         }
 
-        return this.userService
+        final Set<Long> privileged = new HashSet<>(this.userService
                 .getIdsWithReadEntityPrivilege(getGrantEntityType())
-                .getOrThrow();
+                .getOr(Collections.emptySet()));
+
+        final Set<Long> owned = this.entityDAO
+                .getAllOwnedIds(this.userService.getCurrentUserUUIDOrNull())
+                .getOr(Collections.emptySet());
+
+        privileged.addAll(owned);
+        if (privileged.isEmpty()) {
+            privileged.add(-1L);
+        }
+
+        return privileged;
     }
 
     /** Checks overall read privilege for the specified entity type

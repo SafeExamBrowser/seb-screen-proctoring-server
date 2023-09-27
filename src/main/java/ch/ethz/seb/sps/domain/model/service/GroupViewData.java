@@ -119,7 +119,7 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
     }
 
     @Override
-    public String getOwner() {
+    public String getOwnerId() {
         return this.owner;
     }
 

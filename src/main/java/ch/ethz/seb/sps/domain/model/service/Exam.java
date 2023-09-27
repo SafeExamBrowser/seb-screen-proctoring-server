@@ -164,7 +164,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
     }
 
     @Override
-    public String getOwner() {
+    public String getOwnerId() {
         return this.owner;
     }
 

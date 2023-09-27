@@ -150,7 +150,7 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
     }
 
     @Override
-    public String getOwner() {
+    public String getOwnerId() {
         return this.owner;
     }
 

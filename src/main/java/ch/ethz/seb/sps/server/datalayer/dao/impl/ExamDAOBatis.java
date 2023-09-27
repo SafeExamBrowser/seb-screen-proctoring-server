@@ -177,6 +177,22 @@ public class ExamDAOBatis implements ExamDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.tryCatch(() -> {
+            final List<Long> result = this.examRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            ExamRecordDynamicSqlSupport.owner,
+                            SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return Utils.immutableSetOf(result);
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Collection<Exam>> pksByExamName(final FilterMap filterMap) {
         return Result.tryCatch(() -> {
             return this.examRecordMapper

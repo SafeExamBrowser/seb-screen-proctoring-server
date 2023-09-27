@@ -9,10 +9,12 @@
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityKey;
@@ -69,6 +71,12 @@ public class AuditLogDAOBatis implements AuditLogDAO {
             final Collection<Long> prePredicated) {
         // TODO Auto-generated method stub
         return Result.ofRuntimeError("TODO");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.of(Collections.emptySet());
     }
 
     @Override

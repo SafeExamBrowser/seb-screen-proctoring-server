@@ -185,6 +185,12 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
      * @return Result referring to collection of all matching entities or an error if happened */
     Result<Collection<T>> allMatching(FilterMap filterMap, Collection<Long> prePredicated);
 
+    /** Get a list id's/pk's of all entities of specified type owned by the specified user.
+     *
+     * @param userUUID UUID of the user
+     * @return Result refer to the set of owned entities id's/pk's or to an error when happened */
+    Result<Set<Long>> getAllOwnedIds(String userUUID);
+
     /** Context based utility method to extract an expected single resource entry from a Collection of specified type.
      * Gets a Result refer to an expected single resource entry from a Collection of specified type or refer
      * to a ResourceNotFoundException if specified collection is null or empty or refer to a

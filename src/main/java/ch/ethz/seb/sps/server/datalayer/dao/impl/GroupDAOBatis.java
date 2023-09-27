@@ -231,6 +231,22 @@ public class GroupDAOBatis implements GroupDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.tryCatch(() -> {
+            final List<Long> result = this.groupRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            GroupRecordDynamicSqlSupport.owner,
+                            SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return Utils.immutableSetOf(result);
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Collection<Group>> byGroupName(final FilterMap filterMap) {
         return Result.tryCatch(() -> {
             return this.groupRecordMapper

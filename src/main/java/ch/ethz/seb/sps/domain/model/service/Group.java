@@ -160,7 +160,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
     }
 
     @Override
-    public String getOwner() {
+    public String getOwnerId() {
         return this.owner;
     }
 

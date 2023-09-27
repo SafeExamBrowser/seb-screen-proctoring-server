@@ -188,31 +188,14 @@ public class AdminUserAccountController extends ActivatableEntityController<User
                 modifyData.language,
                 modifyData.timeZone,
                 modifyData.roles,
-                null, null, null);
+                null, null, null,
+                existingEntity.entityPrivileges);
     }
 
     @Override
     protected Result<UserMod> validForCreate(final UserMod userInfo) {
         return super.validForCreate(userInfo)
                 .flatMap(this::passwordMatch);
-    }
-
-    @Override
-    protected Result<UserInfo> notifyCreated(final UserInfo entity) {
-        return Result.tryCatch(() -> {
-
-            // create a write EntityPrivilege for this user if the user has no write privileges yet
-            if (!this.userService.hasGrant(entity, PrivilegeType.WRITE, entity)) {
-
-                log.info("Apply write EntityPrivilege to new user: {}", entity.username);
-                this.userService.applyWriteEntityPrivilegeGrant(
-                        EntityType.USER,
-                        entity.id,
-                        entity.uuid);
-            }
-
-            return entity;
-        });
     }
 
     private Result<UserInfo> revokeAccessToken(final UserInfo userInfo) {

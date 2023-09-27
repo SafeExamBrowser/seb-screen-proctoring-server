@@ -22,6 +22,7 @@ import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
+import ch.ethz.seb.sps.server.datalayer.batis.EntityPrivilegeIdMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.EntityPrivilegeRecord;
@@ -34,9 +35,14 @@ import ch.ethz.seb.sps.utils.Result;
 public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
     private final EntityPrivilegeRecordMapper entityPrivilegeRecordMapper;
+    private final EntityPrivilegeIdMapper entityPrivilegeIdMapper;
 
-    public EntityPrivilegeDAOBatis(final EntityPrivilegeRecordMapper entityPrivilegeRecordMapper) {
+    public EntityPrivilegeDAOBatis(
+            final EntityPrivilegeRecordMapper entityPrivilegeRecordMapper,
+            final EntityPrivilegeIdMapper entityPrivilegeIdMapper) {
+
         this.entityPrivilegeRecordMapper = entityPrivilegeRecordMapper;
+        this.entityPrivilegeIdMapper = entityPrivilegeIdMapper;
     }
 
     @Override
@@ -66,7 +72,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
         return Result.tryCatch(() -> {
 
             final List<Long> result = SelectDSL.selectWithMapper(
-                    this.entityPrivilegeRecordMapper::selectIds,
+                    this.entityPrivilegeIdMapper::selectIds,
                     EntityPrivilegeRecordDynamicSqlSupport.entityId)
                     .from(EntityPrivilegeRecordDynamicSqlSupport.entityPrivilegeRecord)
                     .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))

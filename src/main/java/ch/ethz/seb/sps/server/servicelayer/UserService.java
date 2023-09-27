@@ -9,7 +9,7 @@
 package ch.ethz.seb.sps.server.servicelayer;
 
 import java.security.Principal;
-import java.util.Collection;
+import java.util.Set;
 
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
@@ -152,7 +152,7 @@ public interface UserService {
      *
      * @param entityType The type of the entity
      * @return Result refer to the resulting collection or to an error when happened */
-    Result<Collection<Long>> getIdsWithReadEntityPrivilege(EntityType entityType);
+    Result<Set<Long>> getIdsWithReadEntityPrivilege(EntityType entityType);
 
     void applyWriteEntityPrivilegeGrant(EntityType entityType, Long entityId, String userUUID);
 

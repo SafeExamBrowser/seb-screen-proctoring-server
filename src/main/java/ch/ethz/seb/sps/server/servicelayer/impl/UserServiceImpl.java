@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Result;
+import ch.ethz.seb.sps.utils.Utils;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -167,12 +169,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Result<Collection<Long>> getIdsWithReadEntityPrivilege(final EntityType entityType) {
+    public Result<Set<Long>> getIdsWithReadEntityPrivilege(final EntityType entityType) {
         return Result.tryCatch(() -> {
             final String userUUID = this.getCurrentUser().uuid();
-            return this.entityPrivilegeDAO
+            return Utils.immutableSetOf(this.entityPrivilegeDAO
                     .getEntityIdsWithPrivilegeForUser(entityType, userUUID, null)
-                    .getOrThrow();
+                    .getOrThrow());
         });
     }
 

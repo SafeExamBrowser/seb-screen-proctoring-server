@@ -221,6 +221,12 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.of(Collections.emptySet());
+    }
+
+    @Override
     @Transactional
     public Result<Session> createNew(final Session data) {
         return Result.tryCatch(() -> {
@@ -340,7 +346,6 @@ public class SessionDAOBatis implements SessionDAO {
     @Override
     @Transactional
     public Result<Collection<EntityKey>> closeAllSessionsForGroup(final Long groupPK) {
-        // TODO Auto-generated method stub
         return Result.tryCatch(() -> {
 
             final List<Long> pks = this.sessionRecordMapper

@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.domain.model.user;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Set;
@@ -33,6 +34,8 @@ import ch.ethz.seb.sps.domain.api.API.UserRole;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityName;
 import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.OwnedEntity;
+import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.utils.Utils;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -45,7 +48,7 @@ import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
  *
  * This domain model is immutable and thread-save */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class UserInfo implements UserAccount, WithLifeCycle, Serializable {
+public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivileges, WithLifeCycle, Serializable {
 
     private static final long serialVersionUID = 4517645738787224836L;
 
@@ -115,6 +118,9 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
     @JsonProperty(USER.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 
+    @JsonIgnore
+    public final Collection<EntityPrivilege> entityPrivileges;
+
     @JsonCreator
     public UserInfo(
             @JsonProperty(USER.ATTR_ID) final Long id,
@@ -128,7 +134,8 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
             @JsonProperty(USER.ATTR_ROLES) final Set<String> roles,
             @JsonProperty(USER.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(USER.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
-            @JsonProperty(USER.ATTR_TERMINATION_TIME) final Long terminationTime) {
+            @JsonProperty(USER.ATTR_TERMINATION_TIME) final Long terminationTime,
+            final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
         this.uuid = uuid;
@@ -142,6 +149,17 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
         this.creationTime = creationTime;
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
+        this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
+    }
+
+    @Override
+    public String getOwnerId() {
+        return this.uuid;
+    }
+
+    @Override
+    public Collection<EntityPrivilege> getEntityPrivileges() {
+        return this.entityPrivileges;
     }
 
     @Override
@@ -321,6 +339,8 @@ public final class UserInfo implements UserAccount, WithLifeCycle, Serializable 
                 userInfo.roles,
                 userInfo.creationTime,
                 userInfo.lastUpdateTime,
-                userInfo.terminationTime);
+                userInfo.terminationTime,
+                userInfo.entityPrivileges);
     }
+
 }

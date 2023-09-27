@@ -37,6 +37,7 @@ import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
@@ -184,6 +185,22 @@ public class UserDAOBatis implements UserDAO {
                     .stream()
                     .map(this::toDomainModel)
                     .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.tryCatch(() -> {
+            final List<Long> result = this.userRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            UserRecordDynamicSqlSupport.uuid,
+                            SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return Utils.immutableSetOf(result);
         });
     }
 
@@ -407,8 +424,26 @@ public class UserDAOBatis implements UserDAO {
                 roles,
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
-                record.getTerminationTime());
+                record.getTerminationTime(),
+                getEntityPrivileges(record.getId()));
 
+    }
+
+    private Collection<EntityPrivilege> getEntityPrivileges(final Long id) {
+        try {
+
+            if (id == null) {
+                return Collections.emptyList();
+            }
+
+            return this.entityPrivilegeDAO
+                    .getEntityPrivileges(EntityType.USER, id)
+                    .getOrThrow();
+
+        } catch (final Exception e) {
+            log.error("Failed to get entity privileges for Exam: {}", id, e);
+            return Collections.emptyList();
+        }
     }
 
     private Set<String> totUserRoles(final UserRecord record) {

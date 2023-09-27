@@ -18,14 +18,9 @@ public interface WithEntityPrivileges {
 
     public static final String ATTR_ENTITY_PRIVILEGES = "entityPrivileges";
 
-    String getOwner();
-
     Collection<EntityPrivilege> getEntityPrivileges();
 
     static boolean hasReadAccess(final WithEntityPrivileges privileges, final String userUUID) {
-        if (Objects.equals(userUUID, privileges.getOwner())) {
-            return true;
-        }
         return hasReadAccess(privileges.getEntityPrivileges(), userUUID);
     }
 
@@ -34,9 +29,6 @@ public interface WithEntityPrivileges {
     }
 
     static boolean hasModifyAccess(final WithEntityPrivileges privileges, final String userUUID) {
-        if (Objects.equals(userUUID, privileges.getOwner())) {
-            return true;
-        }
         return hasModifyAccess(privileges.getEntityPrivileges(), userUUID);
     }
 
@@ -45,9 +37,6 @@ public interface WithEntityPrivileges {
     }
 
     static boolean hasWriteAccess(final WithEntityPrivileges privileges, final String userUUID) {
-        if (Objects.equals(userUUID, privileges.getOwner())) {
-            return true;
-        }
         return hasWriteAccess(privileges.getEntityPrivileges(), userUUID);
     }
 
