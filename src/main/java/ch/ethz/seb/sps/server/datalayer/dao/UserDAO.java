@@ -21,4 +21,14 @@ public interface UserDAO extends ActivatableEntityDAO<UserInfo, UserMod> {
 
     Result<UserInfo> changePassword(String modelId, CharSequence newPassword);
 
+    /** This can be used to synchronize a user account data with given userData.
+     * If the user account with given name exists already on this service, the
+     * given attributes are saved for the user.
+     * If there is no user account yet on the system, it creates a new one with
+     * the given attributes.
+     *
+     * @param userData the user account data to synchronize
+     * @return Result refer to the new user account data or to an error when happened */
+    Result<UserInfo> synchronizeUserAccount(final UserMod userData);
+
 }

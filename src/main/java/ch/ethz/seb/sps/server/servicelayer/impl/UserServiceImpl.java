@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -35,9 +36,13 @@ import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.OwnedEntity;
 import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
+import ch.ethz.seb.sps.domain.model.user.UserMod;
+import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
@@ -49,12 +54,15 @@ public class UserServiceImpl implements UserService {
 
     private final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies;
     private final EnumMap<UserRole, Collection<Privilege>> rolePrivileges = new EnumMap<>(UserRole.class);
+    private final UserDAO userDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
 
     public UserServiceImpl(
+            final UserDAO userDAO,
             final EntityPrivilegeDAO entityPrivilegeDAO,
             final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies) {
 
+        this.userDAO = userDAO;
         this.extractStrategies = extractStrategies;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
 
@@ -198,6 +206,34 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public Result<UserInfo> synchronizeUserAccount(final UserMod userMod) {
+        return this.userDAO.synchronizeUserAccount(userMod);
+    }
+
+    @Override
+    public Result<UserPrivileges> getUserPrivileges(final String userUUID) {
+        return Result.tryCatch(() -> {
+
+            final UserInfo userInfo = this.userDAO
+                    .byModelId(userUUID)
+                    .getOrThrow();
+
+            final Collection<EntityPrivilege> entityPrivileges = this.entityPrivilegeDAO
+                    .getEntityPrivilegesForUser(userUUID)
+                    .getOrThrow();
+
+            final Map<EntityType, PrivilegeType> typePrivileges = new EnumMap<>(EntityType.class);
+            userInfo.roles.stream().forEach(role -> {
+                this.rolePrivileges.get(UserRole.valueOf(role))
+                        .stream()
+                        .forEach(p -> typePrivileges.put(p.entityType, p.getHighest()));
+            });
+
+            return new UserPrivileges(userUUID, typePrivileges, entityPrivileges);
+        });
+    }
+
     public interface ExtractUserFromAuthenticationStrategy {
         ServerUser extract(Principal principal);
     }
@@ -247,6 +283,22 @@ public class UserServiceImpl implements UserService {
         public Privilege(final EntityType entityType, final EnumSet<PrivilegeType> privilegeTypes) {
             this.entityType = entityType;
             this.privilegeTypes = privilegeTypes;
+        }
+
+        public PrivilegeType getHighest() {
+            if (this.privilegeTypes == null) {
+                return null;
+            }
+
+            if (this.privilegeTypes.contains(PrivilegeType.WRITE)) {
+                return PrivilegeType.WRITE;
+            } else if (this.privilegeTypes.contains(PrivilegeType.MODIFY)) {
+                return PrivilegeType.MODIFY;
+            } else if (this.privilegeTypes.contains(PrivilegeType.READ)) {
+                return PrivilegeType.READ;
+            }
+
+            return null;
         }
     }
 

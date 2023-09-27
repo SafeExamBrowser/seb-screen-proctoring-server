@@ -10,7 +10,9 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.mybatis.dynamic.sql.SqlBuilder;
@@ -64,7 +66,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Long>> getEntityIdsWithPrivilegeForUser(
+    public Result<Set<Long>> getEntityIdsWithPrivilegeForUser(
             final EntityType type,
             final String userUUID,
             final PrivilegeType privilegeType) {
@@ -80,7 +82,20 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                     .build()
                     .execute();
 
-            return result;
+            return new HashSet<>(result);
+        });
+    }
+
+    @Override
+    public Result<Collection<EntityPrivilege>> getEntityPrivilegesForUser(final String userUUID) {
+        return Result.tryCatch(() -> {
+            return this.entityPrivilegeRecordMapper.selectByExample()
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute()
+                    .stream()
+                    .map(this::toDomainObject)
+                    .collect(Collectors.toList());
         });
     }
 

@@ -22,6 +22,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -44,10 +46,12 @@ import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.domain.model.user.UserMod;
+import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
 import ch.ethz.seb.sps.server.servicelayer.EntityService;
@@ -126,6 +130,45 @@ public class AdminUserAccountController extends ActivatableEntityController<User
     }
 
     @RequestMapping(
+            path = API.USER_PRIVILEGES_ENDPOINT + API.PARAM_UUID_PATH_SEGMENT,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public UserPrivileges userPrivileges(@PathVariable(Domain.USER.ATTR_UUID) final String userUUID) {
+
+        checkReadPrivilege();
+        checkAdminRoleOrOwner(userUUID);
+
+        return this.userService
+                .getUserPrivileges(userUUID)
+                .getOrThrow();
+    }
+
+    private void checkAdminRoleOrOwner(final String userUUID) {
+        final String uuid = this.userService.getCurrentUser().uuid();
+        if (userUUID.equals(uuid)) {
+            return;
+        }
+
+        this.checkAdminRole();
+    }
+
+    @RequestMapping(
+            path = API.USERSYNC_SEBSERVER_ENDPOINT,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public UserInfo usersyncSEBServer(@RequestBody @Validated final UserMod userMod) {
+
+        checkAdminRole();
+
+        log.info("User synchronization request received for user: {}", userMod);
+
+        return this.userService
+                .synchronizeUserAccount(userMod)
+                .getOrThrow();
+    }
+
+    @RequestMapping(
             path = API.ENTITY_PRIVILEGE_ENDPOINT,
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
@@ -133,14 +176,36 @@ public class AdminUserAccountController extends ActivatableEntityController<User
     public EntityPrivilege createEntityPrivilege(
             @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_TYPE, required = true) final String entityType,
             @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_ENTITY_ID, required = true) final String entityModelId,
-            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID, required = true) final String userUUID,
+            @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID, required = false) final String userUUID,
+            @RequestParam(name = Domain.USER.ATTR_USERNAME, required = false) final String userName,
             @RequestParam(name = Domain.ENTITY_PRIVILEGE.ATTR_PRIVILEGES, required = true) final String privilege) {
 
         checkAdminRole();
 
-        final Long entityPK = this.entityService.getIdForModelId(entityModelId, EntityType.valueOf(entityType));
+        final EntityType type = EntityType.valueOf(entityType);
+        final Long entityPK = this.entityService.getIdForModelId(entityModelId, type);
+
+        if (entityPK == null) {
+            throw new NoResourceFoundException(type, entityModelId);
+        }
+
+        String userId = userUUID;
+        if (userId == null) {
+            if (userName == null) {
+                throw APIErrorException.ofMissingAttribute(
+                        Domain.ENTITY_PRIVILEGE.ATTR_USER_UUID,
+                        "createEntityPrivilege");
+            }
+
+            final Result<ServerUser> byUsername = this.userDAO.byUsername(userName);
+            if (byUsername.hasError()) {
+                throw new NoResourceFoundException(EntityType.USER, userName);
+            }
+            userId = byUsername.get().getUserInfo().uuid;
+        }
+
         return this.entityPrivilegeDAO.addPrivilege(
-                EntityType.valueOf(entityType),
+                type,
                 entityPK,
                 userUUID,
                 PrivilegeType.byFlag(privilege))

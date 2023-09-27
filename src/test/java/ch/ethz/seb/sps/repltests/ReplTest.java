@@ -9,11 +9,24 @@
 package ch.ethz.seb.sps.repltests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.Map;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
+import ch.ethz.seb.sps.domain.api.JSONMapper;
+import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
+import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
 import io.swagger.v3.core.util.Constants;
 
 public class ReplTest {
@@ -57,6 +70,33 @@ public class ReplTest {
         stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 
         assertEquals("", stringBuilder.toString());
+    }
+
+    @Test
+    public void testUserPrivilegesJSON() throws JsonProcessingException {
+        final JSONMapper jsonMapper = new JSONMapper();
+        final Map<EntityType, PrivilegeType> typePrivileges = new EnumMap<>(EntityType.class);
+        typePrivileges.put(EntityType.USER, PrivilegeType.WRITE);
+        typePrivileges.put(EntityType.CLIENT_ACCESS, PrivilegeType.WRITE);
+        typePrivileges.put(EntityType.EXAM, PrivilegeType.WRITE);
+        typePrivileges.put(EntityType.SEB_GROUP, PrivilegeType.MODIFY);
+        typePrivileges.put(EntityType.SCREENSHOT, PrivilegeType.WRITE);
+        typePrivileges.put(EntityType.SESSION, PrivilegeType.READ);
+        typePrivileges.put(EntityType.SCREENSHOT_DATA, PrivilegeType.READ);
+
+        final Collection<EntityPrivilege> entityPrivileges = new ArrayList<>();
+        entityPrivileges.add(new EntityPrivilege(1L, EntityType.EXAM, 1L, "testUser", PrivilegeType.READ.flag));
+
+        final UserPrivileges userPrivileges = new UserPrivileges("testUser", typePrivileges, entityPrivileges);
+
+        final String jsonVal = jsonMapper.writeValueAsString(userPrivileges);
+        assertEquals(
+                "{\"uuid\":\"testUser\",\"typePrivileges\":{\"USER\":\"WRITE\",\"CLIENT_ACCESS\":\"WRITE\",\"EXAM\":\"WRITE\",\"SEB_GROUP\":\"MODIFY\",\"SESSION\":\"READ\",\"SCREENSHOT_DATA\":\"READ\",\"SCREENSHOT\":\"WRITE\"},\"entityPrivileges\":[{\"id\":1,\"entityType\":\"EXAM\",\"entityId\":1,\"userUuid\":\"testUser\",\"privileges\":\"r\"}]}",
+                jsonVal);
+
+        final UserPrivileges readValue = jsonMapper.readValue(jsonVal, UserPrivileges.class);
+        assertNotNull(readValue);
+
     }
 
 }

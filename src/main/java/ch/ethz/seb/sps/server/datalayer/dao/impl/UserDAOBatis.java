@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.API.UserRole;
 import ch.ethz.seb.sps.domain.api.APIError.APIErrorType;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.EntityKey;
@@ -258,6 +259,65 @@ public class UserDAOBatis implements UserDAO {
                     .selectByPrimaryKey(newUserPK);
             return newRecord;
 
+        })
+                .map(this::toDomainModel)
+                .onError(TransactionHandler::rollback);
+    }
+
+    @Override
+    @Transactional
+    public Result<UserInfo> synchronizeUserAccount(final UserMod userData) {
+        return Result.tryCatch(() -> {
+
+            // check if user already exists
+            final Result<UserRecord> recordByUsername = this.recordByUsername(userData.name);
+            if (recordByUsername.hasError() && recordByUsername.getError() instanceof NoResourceFoundException) {
+
+                // user do not exist yet. create new one with the given attributes
+                checkUniqueMailAddress(userData);
+                final long now = Utils.getMillisecondsNow();
+                final UserRecord recordToSave = new UserRecord(
+                        null,
+                        (userData.uuid != null) ? userData.uuid : UUID.randomUUID().toString(),
+                        userData.name,
+                        userData.surname,
+                        userData.username,
+                        userData.getNewPassword().toString(),
+                        userData.email,
+                        userData.language.toLanguageTag(),
+                        userData.timeZone.getID(),
+                        UserRole.PROCTOR.name(),
+                        now,
+                        now,
+                        null);
+
+                this.userRecordMapper.insert(recordToSave);
+                return this.userRecordMapper.selectByPrimaryKey(recordToSave.getId());
+
+            } else {
+
+                // user already exists. do sync user data for existing user
+                final UserRecord record = recordByUsername.getOrThrow();
+                checkUniqueMailAddress(userData);
+
+                final UserRecord newRecord = new UserRecord(
+                        record.getId(),
+                        null,
+                        null,
+                        userData.surname,
+                        userData.username,
+                        userData.getNewPassword().toString(),
+                        userData.email,
+                        userData.language.toLanguageTag(),
+                        userData.timeZone.getID(),
+                        null,
+                        null,
+                        Utils.getMillisecondsNow(),
+                        null);
+
+                this.userRecordMapper.updateByPrimaryKeySelective(newRecord);
+                return this.userRecordMapper.selectByPrimaryKey(record.getId());
+            }
         })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);
