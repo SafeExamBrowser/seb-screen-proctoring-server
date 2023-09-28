@@ -294,12 +294,13 @@ public class ExamDAOBatis implements ExamDAO {
                     .set(ExamRecordDynamicSqlSupport.description).equalTo(data.description)
                     .set(ExamRecordDynamicSqlSupport.url).equalTo(data.url)
                     .set(ExamRecordDynamicSqlSupport.type).equalTo(data.type)
+                    .set(ExamRecordDynamicSqlSupport.startTime).equalTo(data.startTime)
+                    .set(ExamRecordDynamicSqlSupport.endTime).equalTo(data.endTime)
                     .set(ExamRecordDynamicSqlSupport.lastUpdateTime).equalTo(millisecondsNow)
                     .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
                     .build()
                     .execute();
 
-            this.entityPrivilegeDAO.savePut(EntityType.EXAM, pk, data.entityPrivileges);
             return this.examRecordMapper.selectByPrimaryKey(pk);
         })
                 .map(this::toDomainModel)

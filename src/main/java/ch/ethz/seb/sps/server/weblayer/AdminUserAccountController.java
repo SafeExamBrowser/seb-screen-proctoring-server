@@ -207,7 +207,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
         return this.entityPrivilegeDAO.addPrivilege(
                 type,
                 entityPK,
-                userUUID,
+                userId,
                 PrivilegeType.byFlag(privilege))
                 .getOrThrow();
     }

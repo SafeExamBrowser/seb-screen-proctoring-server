@@ -134,7 +134,36 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
             @JsonProperty(USER.ATTR_ROLES) final Set<String> roles,
             @JsonProperty(USER.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(USER.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
-            @JsonProperty(USER.ATTR_TERMINATION_TIME) final Long terminationTime,
+            @JsonProperty(USER.ATTR_TERMINATION_TIME) final Long terminationTime) {
+
+        this.id = id;
+        this.uuid = uuid;
+        this.name = name;
+        this.surname = surname;
+        this.username = username;
+        this.email = email;
+        this.language = language;
+        this.timeZone = timeZone;
+        this.roles = Utils.immutableSetOf(roles);
+        this.creationTime = creationTime;
+        this.lastUpdateTime = lastUpdateTime;
+        this.terminationTime = terminationTime;
+        this.entityPrivileges = null;
+    }
+
+    public UserInfo(
+            final Long id,
+            final String uuid,
+            final String name,
+            final String surname,
+            final String username,
+            final String email,
+            final Locale language,
+            final DateTimeZone timeZone,
+            final Set<String> roles,
+            final Long creationTime,
+            final Long lastUpdateTime,
+            final Long terminationTime,
             final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;

@@ -101,46 +101,6 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
     @Override
     @Transactional
-    public Result<Collection<EntityPrivilege>> savePut(
-            final EntityType type,
-            final Long entityId,
-            final Collection<EntityPrivilege> entityPrivileges) {
-
-        return Result.tryCatch(() -> {
-
-            // first delete all existing
-            this.entityPrivilegeRecordMapper.deleteByExample()
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
-                    .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
-                    .build()
-                    .execute();
-
-            // save new ones
-            entityPrivileges
-                    .stream()
-                    .forEach(p -> this.entityPrivilegeRecordMapper.insert(new EntityPrivilegeRecord(
-                            null,
-                            p.entityType.name(),
-                            entityId,
-                            p.userUUID,
-                            p.privileges)));
-
-            final Collection<EntityPrivilege> result = this.entityPrivilegeRecordMapper.selectByExample()
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
-                    .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
-                    .build()
-                    .execute()
-                    .stream()
-                    .map(this::toDomainObject)
-                    .collect(Collectors.toList());
-
-            return result;
-
-        }).onError(TransactionHandler::rollback);
-    }
-
-    @Override
-    @Transactional
     public Result<EntityPrivilege> addPrivilege(
             final EntityType type,
             final Long entityId,

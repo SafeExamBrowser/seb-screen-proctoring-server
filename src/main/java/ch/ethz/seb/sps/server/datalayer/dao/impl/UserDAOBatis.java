@@ -294,30 +294,33 @@ public class UserDAOBatis implements UserDAO {
                 this.userRecordMapper.insert(recordToSave);
                 return this.userRecordMapper.selectByPrimaryKey(recordToSave.getId());
 
-            } else {
-
-                // user already exists. do sync user data for existing user
-                final UserRecord record = recordByUsername.getOrThrow();
-                checkUniqueMailAddress(userData);
-
-                final UserRecord newRecord = new UserRecord(
-                        record.getId(),
-                        null,
-                        null,
-                        userData.surname,
-                        userData.username,
-                        userData.getNewPassword().toString(),
-                        userData.email,
-                        userData.language.toLanguageTag(),
-                        userData.timeZone.getID(),
-                        null,
-                        null,
-                        Utils.getMillisecondsNow(),
-                        null);
-
-                this.userRecordMapper.updateByPrimaryKeySelective(newRecord);
-                return this.userRecordMapper.selectByPrimaryKey(record.getId());
             }
+//            else {
+//
+//                // user already exists. do sync user data for existing user
+//                final UserRecord record = recordByUsername.getOrThrow();
+//                checkUniqueMailAddress(userData);
+//
+//                final UserRecord newRecord = new UserRecord(
+//                        record.getId(),
+//                        null,
+//                        null,
+//                        userData.surname,
+//                        userData.username,
+//                        userData.getNewPassword().toString(),
+//                        userData.email,
+//                        userData.language.toLanguageTag(),
+//                        userData.timeZone.getID(),
+//                        null,
+//                        null,
+//                        Utils.getMillisecondsNow(),
+//                        null);
+//
+//                this.userRecordMapper.updateByPrimaryKeySelective(newRecord);
+//                return this.userRecordMapper.selectByPrimaryKey(record.getId());
+//            }
+
+            return recordByUsername.getOrThrow();
         })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);

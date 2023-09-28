@@ -38,6 +38,8 @@ import ch.ethz.seb.sps.domain.model.EntityType;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class UserMod implements UserAccount {
 
+    public static final String ATTR_USER_ROLES = "userRoles";
+
     @JsonProperty(USER.ATTR_UUID)
     public final String uuid;
 
@@ -77,7 +79,7 @@ public final class UserMod implements UserAccount {
     /** The users roles in a unmodifiable set */
     @NotNull(message = "user:userRoles:notNull")
     @NotEmpty(message = "user:userRoles:notNull")
-    @JsonProperty(USER.ATTR_ROLES)
+    @JsonProperty(ATTR_USER_ROLES)
     public final Set<String> roles;
 
     @NotNull(message = "user:newPassword:notNull")
@@ -100,7 +102,7 @@ public final class UserMod implements UserAccount {
             @JsonProperty(USER.ATTR_EMAIL) final String email,
             @JsonProperty(USER.ATTR_LANGUAGE) final Locale language,
             @JsonProperty(USER.ATTR_TIMEZONE) final DateTimeZone timeZone,
-            @JsonProperty(USER.ATTR_ROLES) final Set<String> roles) {
+            @JsonProperty(ATTR_USER_ROLES) final Set<String> roles) {
 
         this.uuid = uuid;
         this.newPassword = newPassword;

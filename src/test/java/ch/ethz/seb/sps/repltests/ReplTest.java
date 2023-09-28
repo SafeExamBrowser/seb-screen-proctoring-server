@@ -21,10 +21,12 @@ import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
 import io.swagger.v3.core.util.Constants;
@@ -97,6 +99,24 @@ public class ReplTest {
         final UserPrivileges readValue = jsonMapper.readValue(jsonVal, UserPrivileges.class);
         assertNotNull(readValue);
 
+    }
+
+    @Test
+    public void testJSONCriatorWithNoneProp() throws JsonMappingException, JsonProcessingException {
+        final JSONMapper jsonMapper = new JSONMapper();
+        final String json = "{\r\n"
+                + "  \"name\": \"Demo Quiz 10 (MOCKUP)\",\r\n"
+                + "  \"description\": \"Starts in a minute and ends after five minutes\",\r\n"
+                + "  \"url\": \"http://lms.address.alias/api/\",\r\n"
+                + "  \"type\": \"BYOD\",\r\n"
+                + "  \"startTime\": 1695884353000,\r\n"
+                + "  \"endTime\": 1695884653000\r\n"
+                + "}";
+
+        final Exam exam = jsonMapper.readValue(json, Exam.class);
+        assertEquals(
+                "exam [id=null, uuid=null, name=Demo Quiz 10 (MOCKUP), description=Starts in a minute and ends after five minutes, url=http://lms.address.alias/api/, type=BYOD, owner=null, creationTime=null, lastUpdateTime=null, terminationTime=null, startTime=1695884353000, endTime=1695884653000, entityPrivileges=null]",
+                exam.toString());
     }
 
 }

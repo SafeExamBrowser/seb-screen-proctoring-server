@@ -380,7 +380,6 @@ public class GroupDAOBatis implements GroupDAO {
                     .build()
                     .execute();
 
-            this.entityPrivilegeDAO.savePut(EntityType.SEB_GROUP, pk, data.entityPrivileges);
             return this.groupRecordMapper.selectByPrimaryKey(pk);
         })
                 .map(this::toDomainModel)
@@ -518,8 +517,7 @@ public class GroupDAOBatis implements GroupDAO {
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),
-                new ExamViewData(record.getExamUuid(), record.getExamName()),
-                getEntityPrivileges(record.getId()));
+                new ExamViewData(record.getExamUuid(), record.getExamName()));
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id) {

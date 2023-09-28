@@ -30,12 +30,6 @@ public interface EntityPrivilegeDAO {
 
     Result<Collection<EntityPrivilege>> getEntityPrivilegesForUser(String userUUID);
 
-    Result<Collection<EntityPrivilege>> savePut(
-            EntityType type,
-            Long entityId,
-
-            Collection<EntityPrivilege> entityPrivileges);
-
     Result<EntityPrivilege> addPrivilege(
             EntityType type,
             Long entityId,
