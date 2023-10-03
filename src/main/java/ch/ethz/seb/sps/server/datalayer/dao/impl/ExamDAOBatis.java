@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -78,7 +77,6 @@ public class ExamDAOBatis implements ExamDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<Exam> byPK(final Long id) {
-
         return recordByPK(id)
                 .map(this::toDomainModel);
     }
@@ -134,7 +132,10 @@ public class ExamDAOBatis implements ExamDAO {
     //todo: question: should we remove this function
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Exam>> allMatching(final FilterMap filterMap, final Predicate<Exam> predicate) {
+    public Result<Collection<Exam>> allMatching(
+            final FilterMap filterMap,
+            final Collection<Long> prePredicated) {
+
         return Result.tryCatch(() -> {
 
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
@@ -159,6 +160,11 @@ public class ExamDAOBatis implements ExamDAO {
                     .and(
                             ExamRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                    .and(
+                            ExamRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
                     .build()
                     .execute()
                     .stream()
@@ -166,6 +172,22 @@ public class ExamDAOBatis implements ExamDAO {
                     .collect(Collectors.toList());
 
             return result;
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.tryCatch(() -> {
+            final List<Long> result = this.examRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            ExamRecordDynamicSqlSupport.owner,
+                            SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return Utils.immutableSetOf(result);
         });
     }
 
@@ -272,12 +294,13 @@ public class ExamDAOBatis implements ExamDAO {
                     .set(ExamRecordDynamicSqlSupport.description).equalTo(data.description)
                     .set(ExamRecordDynamicSqlSupport.url).equalTo(data.url)
                     .set(ExamRecordDynamicSqlSupport.type).equalTo(data.type)
+                    .set(ExamRecordDynamicSqlSupport.startTime).equalTo(data.startTime)
+                    .set(ExamRecordDynamicSqlSupport.endTime).equalTo(data.endTime)
                     .set(ExamRecordDynamicSqlSupport.lastUpdateTime).equalTo(millisecondsNow)
                     .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
                     .build()
                     .execute();
 
-            this.entityPrivilegeDAO.savePut(EntityType.EXAM, pk, data.entityPrivileges);
             return this.examRecordMapper.selectByPrimaryKey(pk);
         })
                 .map(this::toDomainModel)
@@ -300,6 +323,9 @@ public class ExamDAOBatis implements ExamDAO {
                     .getOrThrow();
 
             log.info("Deleted following groups: {} before deleting exams: {}", deletedGroups, all);
+
+            // delete all involved entity privileges
+            deleteAllEntityPrivileges(ids, this.entityPrivilegeDAO);
 
             // delete the exams
             this.examRecordMapper

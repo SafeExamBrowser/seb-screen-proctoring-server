@@ -8,16 +8,15 @@
 
 package ch.ethz.seb.sps.domain.api;
 
-import ch.ethz.seb.sps.domain.model.Entity;
-
 import java.util.EnumSet;
+
+import ch.ethz.seb.sps.domain.model.Entity;
 
 public final class API {
 
     public enum UserRole {
         ADMIN,
-        PROCTOR,
-        SEBCLIENT
+        PROCTOR
     }
 
     public enum PrivilegeType {
@@ -86,6 +85,7 @@ public final class API {
     public static final String PARAM_MODEL_PATH_SEGMENT = "/{modelId}";
     public static final String PARAM_TIMESTAMP = "timestamp";
     public static final String PARAM_TIMESTAMP_PATH_SEGMENT = "/{timestamp}";
+    public static final String PARAM_UUID_PATH_SEGMENT = "/{uuid}";
 
     public static final String NAMES_PATH_SEGMENT = "/names";
     public static final String LIST_PATH_SEGMENT = "/list";
@@ -102,6 +102,8 @@ public final class API {
     public static final String LOGIN_PATH_SEGMENT = "/loglogin";
     public static final String LOGOUT_PATH_SEGMENT = "/loglogout";
     public static final String PASSWORD_PATH_SEGMENT = "/password";
+    public static final String USER_PRIVILEGES_ENDPOINT = "privileges";
+    public static final String USERSYNC_SEBSERVER_ENDPOINT = "/usersync/sebserver";
     public static final String ENTITY_PRIVILEGE_ENDPOINT = "/entityprivilege";
 
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";

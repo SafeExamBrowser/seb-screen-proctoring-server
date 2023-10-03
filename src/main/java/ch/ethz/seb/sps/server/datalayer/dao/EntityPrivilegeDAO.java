@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.util.Collection;
+import java.util.Set;
 
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.model.EntityKey;
@@ -22,11 +23,12 @@ public interface EntityPrivilegeDAO {
             EntityType type,
             Long entityId);
 
-    Result<Collection<EntityPrivilege>> savePut(
+    Result<Set<Long>> getEntityIdsWithPrivilegeForUser(
             EntityType type,
-            Long entityId,
+            String userUUID,
+            PrivilegeType privilegeType);
 
-            Collection<EntityPrivilege> entityPrivileges);
+    Result<Collection<EntityPrivilege>> getEntityPrivilegesForUser(String userUUID);
 
     Result<EntityPrivilege> addPrivilege(
             EntityType type,

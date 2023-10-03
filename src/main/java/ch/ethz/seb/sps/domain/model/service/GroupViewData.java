@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -22,7 +21,6 @@ import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import ch.ethz.seb.sps.domain.model.WithLifeCycle;
 import ch.ethz.seb.sps.domain.model.WithNameDescription;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
-import ch.ethz.seb.sps.utils.Utils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
@@ -53,11 +51,9 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
 
     @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
+
     @JsonProperty(ATTR_EXAM)
     public final ExamViewData examViewData;
-
-    @JsonIgnore
-    public final Collection<EntityPrivilege> entityPrivileges;
 
     public GroupViewData(
             final Long id,
@@ -67,8 +63,8 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
             final String owner,
             final Long creationTime,
             final Long lastUpdateTime, final Long terminationTime,
-            final ExamViewData examViewData,
-            final Collection<EntityPrivilege> entityPrivileges) {
+            final ExamViewData examViewData) {
+
         this.id = id;
         this.uuid = uuid;
         this.name = name;
@@ -78,7 +74,6 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
         this.examViewData = examViewData;
-        this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
     }
 
     @Override
@@ -100,6 +95,7 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
                         : null;
     }
 
+    @Override
     public Long getId() {
         return this.id;
     }
@@ -119,7 +115,7 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
     }
 
     @Override
-    public String getOwner() {
+    public String getOwnerId() {
         return this.owner;
     }
 

@@ -126,7 +126,7 @@ public class POSTMapper {
         try {
             return Long.parseLong(value);
         } catch (final Exception e) {
-            log.error("Failed to parse long value for attribute: {}", name, e.getMessage());
+            log.error("Failed to parse long value for attribute: {}", name, e.getMessage(), e);
             return null;
         }
     }

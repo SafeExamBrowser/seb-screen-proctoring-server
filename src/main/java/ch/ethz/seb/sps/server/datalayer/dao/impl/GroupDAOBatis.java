@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -187,7 +186,10 @@ public class GroupDAOBatis implements GroupDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Group>> allMatching(final FilterMap filterMap, final Predicate<Group> predicate) {
+    public Result<Collection<Group>> allMatching(
+            final FilterMap filterMap,
+            final Collection<Long> prePredicated) {
+
         return Result.tryCatch(() -> {
 
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
@@ -212,6 +214,11 @@ public class GroupDAOBatis implements GroupDAO {
                     .and(
                             GroupRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                    .and(
+                            GroupRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
                     .build()
                     .execute()
                     .stream()
@@ -219,6 +226,22 @@ public class GroupDAOBatis implements GroupDAO {
                     .collect(Collectors.toList());
 
             return result;
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.tryCatch(() -> {
+            final List<Long> result = this.groupRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            GroupRecordDynamicSqlSupport.owner,
+                            SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return Utils.immutableSetOf(result);
         });
     }
 
@@ -357,7 +380,6 @@ public class GroupDAOBatis implements GroupDAO {
                     .build()
                     .execute();
 
-            this.entityPrivilegeDAO.savePut(EntityType.SEB_GROUP, pk, data.entityPrivileges);
             return this.groupRecordMapper.selectByPrimaryKey(pk);
         })
                 .map(this::toDomainModel)
@@ -374,11 +396,27 @@ public class GroupDAOBatis implements GroupDAO {
     @Override
     @Transactional
     public Result<Collection<EntityKey>> deleteAllForExams(final List<Long> examPKs) {
-        return Result.tryCatch(() -> this.groupRecordMapper.selectIdsByExample()
+        return Result.tryCatch(() -> this.groupRecordMapper
+                .selectIdsByExample()
                 .where(GroupRecordDynamicSqlSupport.examId, isIn(examPKs))
                 .build()
                 .execute())
                 .map(this::delete);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<Long>> allIdsForExamsIds(final Collection<Long> examPKs) {
+        return Result.tryCatch(() -> {
+
+            final List<Long> result = this.groupRecordMapper
+                    .selectIdsByExample()
+                    .where(GroupRecordDynamicSqlSupport.examId, isIn(examPKs))
+                    .build()
+                    .execute();
+
+            return result;
+        });
     }
 
     private Result<GroupRecord> recordByPK(final Long pk) {
@@ -406,6 +444,9 @@ public class GroupDAOBatis implements GroupDAO {
                 .getOrThrow();
 
         log.info("Deleted following sessions: {} before deleting groups: {}", deletedSessions, ids);
+
+        // delete all involved entity privileges
+        deleteAllEntityPrivileges(ids, this.entityPrivilegeDAO);
 
         // then the groups
         this.groupRecordMapper
@@ -476,8 +517,7 @@ public class GroupDAOBatis implements GroupDAO {
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),
-                new ExamViewData(record.getExamUuid(), record.getExamName()),
-                getEntityPrivileges(record.getId()));
+                new ExamViewData(record.getExamUuid(), record.getExamName()));
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id) {

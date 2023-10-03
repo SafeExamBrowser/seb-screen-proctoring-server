@@ -91,8 +91,32 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
             @JsonProperty(CLIENT_ACCESS.ATTR_OWNER) final String owner,
             @JsonProperty(CLIENT_ACCESS.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(CLIENT_ACCESS.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
-            @JsonProperty(CLIENT_ACCESS.ATTR_TERMINATION_TIME) final Long terminationTime,
+            @JsonProperty(CLIENT_ACCESS.ATTR_TERMINATION_TIME) final Long terminationTime) {
 
+        this.id = id;
+        this.uuid = uuid;
+        this.name = name;
+        this.description = description;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.owner = owner;
+        this.creationTime = creationTime;
+        this.lastUpdateTime = lastUpdateTime;
+        this.terminationTime = terminationTime;
+        this.entityPrivileges = null;
+    }
+
+    public ClientAccess(
+            final Long id,
+            final String uuid,
+            final String name,
+            final String description,
+            final String clientId,
+            final String clientSecret,
+            final String owner,
+            final Long creationTime,
+            final Long lastUpdateTime,
+            final Long terminationTime,
             final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
@@ -136,6 +160,7 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
         return this.description;
     }
 
+    @Override
     public Long getId() {
         return this.id;
     }
@@ -149,7 +174,7 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
     }
 
     @Override
-    public String getOwner() {
+    public String getOwnerId() {
         return this.owner;
     }
 

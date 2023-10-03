@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,11 +32,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.API.UserRole;
 import ch.ethz.seb.sps.domain.api.APIError.APIErrorType;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
@@ -46,6 +47,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.UserRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
+import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.utils.Constants;
@@ -57,14 +59,17 @@ public class UserDAOBatis implements UserDAO {
 
     private final UserRecordMapper userRecordMapper;
     private final PasswordEncoder userPasswordEncoder;
+    private final EntityPrivilegeDAO entityPrivilegeDAO;
 
     public UserDAOBatis(
             final UserRecordMapper userRecordMapper,
-            final PasswordEncoder userPasswordEncoder) {
+            final PasswordEncoder userPasswordEncoder,
+            final EntityPrivilegeDAO entityPrivilegeDAO) {
 
         super();
         this.userRecordMapper = userRecordMapper;
         this.userPasswordEncoder = userPasswordEncoder;
+        this.entityPrivilegeDAO = entityPrivilegeDAO;
     }
 
     @Override
@@ -82,8 +87,16 @@ public class UserDAOBatis implements UserDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<UserInfo> byPK(final Long id) {
-        return Result.tryCatch(() -> this.userRecordMapper
-                .selectByPrimaryKey(id))
+        return Result.tryCatch(() -> {
+            final UserRecord record = this.userRecordMapper
+                    .selectByPrimaryKey(id);
+
+            if (record == null) {
+                throw new NoResourceFoundException(EntityType.USER, "For id: " + id);
+            }
+
+            return record;
+        })
                 .map(this::toDomainModel);
     }
 
@@ -99,13 +112,19 @@ public class UserDAOBatis implements UserDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Long modelIdToPK(final String modelId) {
+        final Long pk = isPK(modelId);
+        if (pk != null) {
+            return pk;
+        } else {
+            return pkByUUID(modelId).getOr(null);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Long> getUserIdByUUID(final String userUUID) {
-        return Result.tryCatch(() -> this.userRecordMapper
-                .selectIdsByExample()
-                .where(UserRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(userUUID))
-                .build()
-                .execute()
-                .get(0));
+        return pkByUUID(userUUID);
     }
 
     @Override
@@ -124,13 +143,11 @@ public class UserDAOBatis implements UserDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<UserInfo>> allMatching(final FilterMap filterMap, final Predicate<UserInfo> predicate) {
-        return Result.tryCatch(() -> {
-            final String userRoles = filterMap.getString(Domain.USER.ATTR_ROLES);
-            final Predicate<UserInfo> _predicate = (StringUtils.isNotBlank(userRoles))
-                    ? predicate.and(ui -> ui.roles.contains(userRoles))
-                    : predicate;
+    public Result<Collection<UserInfo>> allMatching(
+            final FilterMap filterMap,
+            final Collection<Long> prePredicated) {
 
+        return Result.tryCatch(() -> {
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
 
             return this.userRecordMapper
@@ -159,12 +176,32 @@ public class UserDAOBatis implements UserDAO {
                             UserRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(
                                     filterMap.getLong(Domain.USER.ATTR_CREATION_TIME)))
+                    .and(
+                            UserRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
                     .build()
                     .execute()
                     .stream()
                     .map(this::toDomainModel)
-                    .filter(_predicate)
                     .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.tryCatch(() -> {
+            final List<Long> result = this.userRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            UserRecordDynamicSqlSupport.uuid,
+                            SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return Utils.immutableSetOf(result);
         });
     }
 
@@ -229,6 +266,68 @@ public class UserDAOBatis implements UserDAO {
 
     @Override
     @Transactional
+    public Result<UserInfo> synchronizeUserAccount(final UserMod userData) {
+        return Result.tryCatch(() -> {
+
+            // check if user already exists
+            final Result<UserRecord> recordByUsername = this.recordByUsername(userData.name);
+            if (recordByUsername.hasError() && recordByUsername.getError() instanceof NoResourceFoundException) {
+
+                // user do not exist yet. create new one with the given attributes
+                checkUniqueMailAddress(userData);
+                final long now = Utils.getMillisecondsNow();
+                final UserRecord recordToSave = new UserRecord(
+                        null,
+                        (userData.uuid != null) ? userData.uuid : UUID.randomUUID().toString(),
+                        userData.name,
+                        userData.surname,
+                        userData.username,
+                        userData.getNewPassword().toString(),
+                        userData.email,
+                        userData.language.toLanguageTag(),
+                        userData.timeZone.getID(),
+                        UserRole.PROCTOR.name(),
+                        now,
+                        now,
+                        null);
+
+                this.userRecordMapper.insert(recordToSave);
+                return this.userRecordMapper.selectByPrimaryKey(recordToSave.getId());
+
+            }
+//            else {
+//
+//                // user already exists. do sync user data for existing user
+//                final UserRecord record = recordByUsername.getOrThrow();
+//                checkUniqueMailAddress(userData);
+//
+//                final UserRecord newRecord = new UserRecord(
+//                        record.getId(),
+//                        null,
+//                        null,
+//                        userData.surname,
+//                        userData.username,
+//                        userData.getNewPassword().toString(),
+//                        userData.email,
+//                        userData.language.toLanguageTag(),
+//                        userData.timeZone.getID(),
+//                        null,
+//                        null,
+//                        Utils.getMillisecondsNow(),
+//                        null);
+//
+//                this.userRecordMapper.updateByPrimaryKeySelective(newRecord);
+//                return this.userRecordMapper.selectByPrimaryKey(record.getId());
+//            }
+
+            return recordByUsername.getOrThrow();
+        })
+                .map(this::toDomainModel)
+                .onError(TransactionHandler::rollback);
+    }
+
+    @Override
+    @Transactional
     public Result<UserInfo> save(final UserInfo data) {
         return recordByUUID(data.uuid)
                 .map(record -> {
@@ -273,6 +372,9 @@ public class UserDAOBatis implements UserDAO {
                     .where(UserRecordDynamicSqlSupport.id, isIn(ids))
                     .build()
                     .execute();
+
+            // delete all involved entity privileges
+            deleteAllEntityPrivileges(ids, this.entityPrivilegeDAO);
 
             // then delete the user account
             this.userRecordMapper.deleteByExample()
@@ -374,6 +476,7 @@ public class UserDAOBatis implements UserDAO {
         final Set<String> roles = totUserRoles(record);
 
         return new UserInfo(
+                record.getId(),
                 record.getUuid(),
                 record.getName(),
                 record.getSurname(),
@@ -384,8 +487,26 @@ public class UserDAOBatis implements UserDAO {
                 roles,
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
-                record.getTerminationTime());
+                record.getTerminationTime(),
+                getEntityPrivileges(record.getId()));
 
+    }
+
+    private Collection<EntityPrivilege> getEntityPrivileges(final Long id) {
+        try {
+
+            if (id == null) {
+                return Collections.emptyList();
+            }
+
+            return this.entityPrivilegeDAO
+                    .getEntityPrivileges(EntityType.USER, id)
+                    .getOrThrow();
+
+        } catch (final Exception e) {
+            log.error("Failed to get entity privileges for Exam: {}", id, e);
+            return Collections.emptyList();
+        }
     }
 
     private Set<String> totUserRoles(final UserRecord record) {

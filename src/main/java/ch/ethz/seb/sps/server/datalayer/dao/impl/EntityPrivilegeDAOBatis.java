@@ -10,10 +10,13 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.select.SelectDSL;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,7 @@ import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
+import ch.ethz.seb.sps.server.datalayer.batis.EntityPrivilegeIdMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.EntityPrivilegeRecord;
@@ -33,9 +37,14 @@ import ch.ethz.seb.sps.utils.Result;
 public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
     private final EntityPrivilegeRecordMapper entityPrivilegeRecordMapper;
+    private final EntityPrivilegeIdMapper entityPrivilegeIdMapper;
 
-    public EntityPrivilegeDAOBatis(final EntityPrivilegeRecordMapper entityPrivilegeRecordMapper) {
+    public EntityPrivilegeDAOBatis(
+            final EntityPrivilegeRecordMapper entityPrivilegeRecordMapper,
+            final EntityPrivilegeIdMapper entityPrivilegeIdMapper) {
+
         this.entityPrivilegeRecordMapper = entityPrivilegeRecordMapper;
+        this.entityPrivilegeIdMapper = entityPrivilegeIdMapper;
     }
 
     @Override
@@ -56,52 +65,38 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
     }
 
     @Override
-    @Transactional
-    public Result<Collection<EntityPrivilege>> savePut(
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getEntityIdsWithPrivilegeForUser(
             final EntityType type,
-            final Long entityId,
-            final Collection<EntityPrivilege> entityPrivileges) {
+            final String userUUID,
+            final PrivilegeType privilegeType) {
 
         return Result.tryCatch(() -> {
 
-            // first delete all existing
-            this.entityPrivilegeRecordMapper.deleteByExample()
+            final List<Long> result = SelectDSL.selectWithMapper(
+                    this.entityPrivilegeIdMapper::selectIds,
+                    EntityPrivilegeRecordDynamicSqlSupport.entityId)
+                    .from(EntityPrivilegeRecordDynamicSqlSupport.entityPrivilegeRecord)
                     .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
-                    .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
+                    .and(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
                     .build()
                     .execute();
 
-            // save new ones
-            entityPrivileges
-                    .stream()
-                    .forEach(p -> this.entityPrivilegeRecordMapper.insert(new EntityPrivilegeRecord(
-                            null,
-                            p.entityType.name(),
-                            entityId,
-                            p.userUUID,
-                            p.privileges)));
+            return new HashSet<>(result);
+        });
+    }
 
-            final Collection<EntityPrivilege> result = this.entityPrivilegeRecordMapper.selectByExample()
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
-                    .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
+    @Override
+    public Result<Collection<EntityPrivilege>> getEntityPrivilegesForUser(final String userUUID) {
+        return Result.tryCatch(() -> {
+            return this.entityPrivilegeRecordMapper.selectByExample()
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
                     .build()
                     .execute()
                     .stream()
                     .map(this::toDomainObject)
                     .collect(Collectors.toList());
-
-            return result;
-
-        }).onError(TransactionHandler::rollback);
-    }
-
-    private EntityPrivilege toDomainObject(final EntityPrivilegeRecord record) {
-        return new EntityPrivilege(
-                record.getId(),
-                EntityType.valueOf(record.getEntityType()),
-                record.getEntityId(),
-                record.getUserUuid(),
-                record.getPrivileges());
+        });
     }
 
     @Override
@@ -201,6 +196,15 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                     .map(id -> new EntityKey(id, EntityType.ENTITY_PRIVILEGE))
                     .collect(Collectors.toList());
         });
+    }
+
+    private EntityPrivilege toDomainObject(final EntityPrivilegeRecord record) {
+        return new EntityPrivilege(
+                record.getId(),
+                EntityType.valueOf(record.getEntityType()),
+                record.getEntityId(),
+                record.getUserUuid(),
+                record.getPrivileges());
     }
 
 }

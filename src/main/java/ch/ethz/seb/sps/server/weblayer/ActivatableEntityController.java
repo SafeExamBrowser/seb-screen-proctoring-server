@@ -8,6 +8,8 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.util.Collection;
+
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -77,8 +79,7 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sort) {
 
-        checkReadPrivilege();
-
+        final Collection<Long> readPrivilegedPredication = getReadPrivilegedPredication();
         final FilterMap filterMap = new FilterMap()
                 .putIfAbsent(Entity.FILTER_ATTR_ACTIVE, "true");
 
@@ -87,7 +88,7 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
                 pageSize,
                 sort,
                 getSQLTableOfEntity().tableNameAtRuntime(),
-                () -> getAll(filterMap)).getOrThrow();
+                () -> getAll(filterMap, readPrivilegedPredication)).getOrThrow();
     }
 
     @Operation(
@@ -120,8 +121,7 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sort) {
 
-        checkReadPrivilege();
-
+        final Collection<Long> readPrivilegedPredication = getReadPrivilegedPredication();
         final FilterMap filterMap = new FilterMap()
                 .putIfAbsent(Entity.FILTER_ATTR_ACTIVE, "false");
 
@@ -130,7 +130,7 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
                 pageSize,
                 sort,
                 getSQLTableOfEntity().tableNameAtRuntime(),
-                () -> getAll(filterMap)).getOrThrow();
+                () -> getAll(filterMap, readPrivilegedPredication)).getOrThrow();
     }
 
     @Operation(

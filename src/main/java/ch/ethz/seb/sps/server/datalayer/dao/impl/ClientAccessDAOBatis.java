@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -84,8 +83,16 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<ClientAccess> byPK(final Long id) {
-        return Result.tryCatch(() -> this.clientAccessRecordMapper
-                .selectByPrimaryKey(id))
+        return Result.tryCatch(() -> {
+            final ClientAccessRecord record = this.clientAccessRecordMapper
+                    .selectByPrimaryKey(id);
+
+            if (record == null) {
+                throw new NoResourceFoundException(EntityType.CLIENT_ACCESS, "For id: " + id);
+            }
+
+            return record;
+        })
                 .map(this::toDomainModel);
     }
 
@@ -128,7 +135,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
     @Transactional(readOnly = true)
     public Result<Collection<ClientAccess>> allMatching(
             final FilterMap filterMap,
-            final Predicate<ClientAccess> predicate) {
+            final Collection<Long> prePredicated) {
 
         return Result.tryCatch(() -> {
 
@@ -153,12 +160,32 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                             ClientAccessRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(
                                     filterMap.getLong(Domain.CLIENT_ACCESS.ATTR_CREATION_TIME)))
-
+                    .and(
+                            ClientAccessRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
                     .build()
                     .execute()
                     .stream()
                     .map(this::toDomainModel)
                     .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
+        return Result.tryCatch(() -> {
+            final List<Long> result = this.clientAccessRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            ClientAccessRecordDynamicSqlSupport.owner,
+                            SqlBuilder.isEqualTo(userUUID))
+                    .build()
+                    .execute();
+
+            return Utils.immutableSetOf(result);
         });
     }
 
@@ -279,6 +306,9 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                     .where(ClientAccessRecordDynamicSqlSupport.id, isIn(ids))
                     .build()
                     .execute();
+
+            // delete all involved entity privileges
+            deleteAllEntityPrivileges(ids, this.entityPrivilegeDAO);
 
             // then delete the client access
             this.clientAccessRecordMapper

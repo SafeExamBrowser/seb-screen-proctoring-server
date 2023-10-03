@@ -31,4 +31,6 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Collection<EntityKey>> deleteAllForExams(final List<Long> examPKs);
 
+    Result<Collection<Long>> allIdsForExamsIds(Collection<Long> examPKs);
+
 }

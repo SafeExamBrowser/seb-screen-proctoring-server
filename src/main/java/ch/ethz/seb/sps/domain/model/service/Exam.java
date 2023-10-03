@@ -104,7 +104,36 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             @JsonProperty(EXAM.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
             @JsonProperty(EXAM.ATTR_TERMINATION_TIME) final Long terminationTime,
             @JsonProperty(EXAM.ATTR_START_TIME) final Long startTime,
-            @JsonProperty(EXAM.ATTR_END_TIME) final Long endTime,
+            @JsonProperty(EXAM.ATTR_END_TIME) final Long endTime) {
+
+        this.id = id;
+        this.uuid = uuid;
+        this.name = name;
+        this.description = description;
+        this.url = url;
+        this.type = type;
+        this.owner = owner;
+        this.creationTime = creationTime;
+        this.lastUpdateTime = lastUpdateTime;
+        this.terminationTime = terminationTime;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.entityPrivileges = null;
+    }
+
+    public Exam(
+            final Long id,
+            final String uuid,
+            final String name,
+            final String description,
+            final String url,
+            final String type,
+            final String owner,
+            final Long creationTime,
+            final Long lastUpdateTime,
+            final Long terminationTime,
+            final Long startTime,
+            final Long endTime,
             final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
@@ -131,6 +160,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
                         : null;
     }
 
+    @Override
     public Long getId() {
         return this.id;
     }
@@ -163,7 +193,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
     }
 
     @Override
-    public String getOwner() {
+    public String getOwnerId() {
         return this.owner;
     }
 

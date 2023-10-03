@@ -93,6 +93,11 @@ public class AuditLog implements Entity {
     }
 
     @Override
+    public Long getId() {
+        return this.id;
+    }
+
+    @Override
     public String getName() {
         return this.username;
     }

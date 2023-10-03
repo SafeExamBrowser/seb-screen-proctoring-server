@@ -56,6 +56,11 @@ public class PasswordChange implements Entity {
         this.confirmNewPassword = confirmNewPassword;
     }
 
+    @Override
+    public Long getId() {
+        return null;
+    }
+
     public CharSequence getPassword() {
         return this.password;
     }

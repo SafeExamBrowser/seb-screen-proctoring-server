@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 
 @SpringBootApplication(exclude = {
         UserDetailsServiceAutoConfiguration.class,
-})
+}, scanBasePackages = { "ch.ethz.seb.sps" })
 public class ScreenProctoringServer {
 
     public static void main(final String[] args) {

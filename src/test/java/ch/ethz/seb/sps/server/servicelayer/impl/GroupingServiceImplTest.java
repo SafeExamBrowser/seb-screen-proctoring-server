@@ -1,6 +1,7 @@
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.Session;
@@ -11,7 +12,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.impl.ScreenshotDataDAOBatis;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import ch.ethz.seb.sps.utils.Result;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -33,7 +34,8 @@ import static org.mockito.Mockito.when;
 public class GroupingServiceImplTest {
 
     private static final Logger log = LoggerFactory.getLogger(GroupingServiceImplTest.class);
-    
+    private final JSONMapper jsonMapper = new JSONMapper();
+
     private static String SESSION_UUID = "SESSION_UUID";
     private static Long TIMESTAMP = 123456789L;
     private static String GROUP_NAME1 = "Moodle Page 1";
@@ -53,30 +55,30 @@ public class GroupingServiceImplTest {
     private GroupingServiceImpl groupingService;
 
     @Test
-    public void testGroupDataForTimelineWithoutMetadata(){
+    public void testGroupDataForTimelineWithoutMetadata() throws JsonProcessingException {
         //GIVEN
         FilterMap filterMap = filterMapWithOnlySessionUUID();
         Result<TimelineViewData> expectedTimelineViewData = genericTimelineViewData();
 
         //WHEN
         when(this.screenshotDataDAO.searchScreenshotData(filterMap))
-                .thenReturn(createScreenshotDataRecord());
-        when(this.proctoringService.createScreenshotSearchResult(createScreenshotDataRecord().get()))
-                .thenReturn(createScreenshotSearchResultCollection());
+                .thenReturn(screenshotDataRecord());
+        when(this.proctoringService.createScreenshotSearchResult(screenshotDataRecord().get()))
+                .thenReturn(screenshotSearchResultCollection());
 
         Result<TimelineViewData> timelineViewData = this.groupingService.groupDataForTimeline(filterMap);
 
         //print results as json
 //        log.info("expected result:");
-//        log.info(new Gson().toJson(expectedTimelineViewData.get()));
+//        log.info(this.jsonMapper.writeValueAsString(expectedTimelineViewData.get()));
 //        log.info("----------------");
 //
 //        log.info("actual result:");
-//        log.info(new Gson().toJson(timelineViewData.get()));
+//        log.info(this.jsonMapper.writeValueAsString(timelineViewData.get()));
 //        log.info("----------------");
 
         //THEN
-        assertEquals(new Gson().toJson(expectedTimelineViewData.get()), new Gson().toJson(timelineViewData.get()));
+        assertEquals(this.jsonMapper.writeValueAsString(expectedTimelineViewData.get()), this.jsonMapper.writeValueAsString(timelineViewData.get()));
     }
 
 
@@ -159,7 +161,7 @@ public class GroupingServiceImplTest {
     //-------------------------------//
 
     //-------mock data from db---------//
-    private Result<Collection<ScreenshotDataRecord>> createScreenshotDataRecord(){
+    private Result<Collection<ScreenshotDataRecord>> screenshotDataRecord(){
         return Result.tryCatch(() -> {
             return new ArrayList<>(
                     List.of(
@@ -176,7 +178,7 @@ public class GroupingServiceImplTest {
     }
 
 
-    private Collection<ScreenshotSearchResult> createScreenshotSearchResultCollection(){
+    private Collection<ScreenshotSearchResult> screenshotSearchResultCollection(){
         return new ArrayList<>(
                 List.of(
                         createScreenshotSearchResult(GROUP_NAME1, METADATA_WINDOW_TITLE_VALUE1),

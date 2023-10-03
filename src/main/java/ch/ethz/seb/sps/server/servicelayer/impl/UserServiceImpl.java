@@ -8,16 +8,16 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
-import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
-import ch.ethz.seb.sps.domain.api.API.UserRole;
-import ch.ethz.seb.sps.domain.model.Entity;
-import ch.ethz.seb.sps.domain.model.EntityType;
-import ch.ethz.seb.sps.domain.model.OwnedEntity;
-import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
-import ch.ethz.seb.sps.domain.model.user.ServerUser;
-import ch.ethz.seb.sps.domain.model.user.UserInfo;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -29,12 +29,23 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Objects;
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
+import ch.ethz.seb.sps.domain.api.API.UserRole;
+import ch.ethz.seb.sps.domain.model.Entity;
+import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.OwnedEntity;
+import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
+import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
+import ch.ethz.seb.sps.domain.model.user.ServerUser;
+import ch.ethz.seb.sps.domain.model.user.UserInfo;
+import ch.ethz.seb.sps.domain.model.user.UserMod;
+import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
+import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
+import ch.ethz.seb.sps.server.servicelayer.UserService;
+import ch.ethz.seb.sps.utils.Result;
+import ch.ethz.seb.sps.utils.Utils;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -43,9 +54,18 @@ public class UserServiceImpl implements UserService {
 
     private final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies;
     private final EnumMap<UserRole, Collection<Privilege>> rolePrivileges = new EnumMap<>(UserRole.class);
+    private final UserDAO userDAO;
+    private final EntityPrivilegeDAO entityPrivilegeDAO;
 
-    public UserServiceImpl(final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies) {
+    public UserServiceImpl(
+            final UserDAO userDAO,
+            final EntityPrivilegeDAO entityPrivilegeDAO,
+            final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies) {
+
+        this.userDAO = userDAO;
         this.extractStrategies = extractStrategies;
+        this.entityPrivilegeDAO = entityPrivilegeDAO;
+
         // admin privileges
         this.rolePrivileges.put(
                 UserRole.ADMIN,
@@ -57,6 +77,9 @@ public class UserServiceImpl implements UserService {
                         new Privilege(EntityType.SCREENSHOT, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.SESSION, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.SCREENSHOT_DATA, API.PRIVILEGES_WRITE)));
+
+        // proctor only has dedicated entity privileges
+        this.rolePrivileges.put(UserRole.PROCTOR, Collections.emptyList());
 
         // TODO other roles...
     }
@@ -132,12 +155,83 @@ public class UserServiceImpl implements UserService {
         if (hasGrant(privilegeType, entity.entityType())) {
             return true;
         }
+
         // then check owner grant if owned entity
         if (this.hasOwnerPrivilege(user, entity)) {
             return true;
         }
 
+        // then check entity based privileges
+        if (entity instanceof WithEntityPrivileges) {
+            switch (privilegeType) {
+                case READ:
+                    return WithEntityPrivileges.hasReadAccess((WithEntityPrivileges) entity, user.uuid);
+                case MODIFY:
+                    return WithEntityPrivileges.hasModifyAccess((WithEntityPrivileges) entity, user.uuid);
+                case WRITE:
+                    return WithEntityPrivileges.hasWriteAccess((WithEntityPrivileges) entity, user.uuid);
+            }
+        }
+
         return false;
+    }
+
+    @Override
+    public Result<Set<Long>> getIdsWithReadEntityPrivilege(final EntityType entityType) {
+        return Result.tryCatch(() -> {
+            final String userUUID = this.getCurrentUser().uuid();
+            return Utils.immutableSetOf(this.entityPrivilegeDAO
+                    .getEntityIdsWithPrivilegeForUser(entityType, userUUID, null)
+                    .getOrThrow());
+        });
+    }
+
+    @Override
+    public void applyWriteEntityPrivilegeGrant(
+            final EntityType entityType,
+            final Long entityId,
+            final String userUUID) {
+
+        try {
+
+            this.entityPrivilegeDAO
+                    .addPrivilege(entityType, entityId, userUUID, PrivilegeType.WRITE)
+                    .getOrThrow();
+
+        } catch (final Exception e) {
+            log.error("Failed to apply write entity grant to entity tyoe: {} id: {} for user: {}",
+                    entityType,
+                    entityId,
+                    userUUID);
+        }
+    }
+
+    @Override
+    public Result<UserInfo> synchronizeUserAccount(final UserMod userMod) {
+        return this.userDAO.synchronizeUserAccount(userMod);
+    }
+
+    @Override
+    public Result<UserPrivileges> getUserPrivileges(final String userUUID) {
+        return Result.tryCatch(() -> {
+
+            final UserInfo userInfo = this.userDAO
+                    .byModelId(userUUID)
+                    .getOrThrow();
+
+            final Collection<EntityPrivilege> entityPrivileges = this.entityPrivilegeDAO
+                    .getEntityPrivilegesForUser(userUUID)
+                    .getOrThrow();
+
+            final Map<EntityType, PrivilegeType> typePrivileges = new EnumMap<>(EntityType.class);
+            userInfo.roles.stream().forEach(role -> {
+                this.rolePrivileges.get(UserRole.valueOf(role))
+                        .stream()
+                        .forEach(p -> typePrivileges.put(p.entityType, p.getHighest()));
+            });
+
+            return new UserPrivileges(userUUID, typePrivileges, entityPrivileges);
+        });
     }
 
     public interface ExtractUserFromAuthenticationStrategy {
@@ -154,7 +248,8 @@ public class UserServiceImpl implements UserService {
             if (principal instanceof OAuth2Authentication) {
                 final Authentication userAuthentication = ((OAuth2Authentication) principal).getUserAuthentication();
                 //UsernamePasswordAuthenticationToken == initial request with username & password | PreAuthenticatedAuthenticationToken == request with refresh token
-                if (userAuthentication instanceof UsernamePasswordAuthenticationToken || userAuthentication instanceof PreAuthenticatedAuthenticationToken) {
+                if (userAuthentication instanceof UsernamePasswordAuthenticationToken
+                        || userAuthentication instanceof PreAuthenticatedAuthenticationToken) {
                     final Object userPrincipal = userAuthentication.getPrincipal();
                     if (userPrincipal instanceof ServerUser) {
                         return (ServerUser) userPrincipal;
@@ -188,6 +283,22 @@ public class UserServiceImpl implements UserService {
         public Privilege(final EntityType entityType, final EnumSet<PrivilegeType> privilegeTypes) {
             this.entityType = entityType;
             this.privilegeTypes = privilegeTypes;
+        }
+
+        public PrivilegeType getHighest() {
+            if (this.privilegeTypes == null) {
+                return null;
+            }
+
+            if (this.privilegeTypes.contains(PrivilegeType.WRITE)) {
+                return PrivilegeType.WRITE;
+            } else if (this.privilegeTypes.contains(PrivilegeType.MODIFY)) {
+                return PrivilegeType.MODIFY;
+            } else if (this.privilegeTypes.contains(PrivilegeType.READ)) {
+                return PrivilegeType.READ;
+            }
+
+            return null;
         }
     }
 
