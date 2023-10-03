@@ -145,8 +145,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
 
     @Override
     public Long getId() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.id;
     }
 
     public String getUuid() {

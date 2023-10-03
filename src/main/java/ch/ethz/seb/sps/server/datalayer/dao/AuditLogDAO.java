@@ -14,6 +14,7 @@ import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.user.AuditLog;
 import ch.ethz.seb.sps.domain.model.user.AuditLog.AuditLogType;
+import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.utils.Result;
 
@@ -32,5 +33,11 @@ public interface AuditLogDAO extends EntityDAO<AuditLog, AuditLog> {
     void logLogin(UserInfo userInfo);
 
     void logLogout(UserInfo userInfo);
+
+    /** Create a user activity log entry for a user registration event
+     *
+     * @param account the UserAccount
+     * @return Result of the UserAccount or referring to an Error if happened */
+    Result<UserAccount> logRegisterAccount(UserAccount account);
 
 }

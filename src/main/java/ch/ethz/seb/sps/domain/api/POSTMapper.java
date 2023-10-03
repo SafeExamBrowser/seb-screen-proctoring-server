@@ -36,9 +36,14 @@ public class POSTMapper {
 
     private static final Logger log = LoggerFactory.getLogger(POSTMapper.class);
 
-    public static final POSTMapper EMPTY_MAP = new POSTMapper(null, null);
+    public static final POSTMapper EMPTY_MAP = new POSTMapper();
 
     protected final MultiValueMap<String, String> params;
+
+    private POSTMapper() {
+        super();
+        this.params = new LinkedMultiValueMap<>();
+    }
 
     public POSTMapper(final MultiValueMap<String, String> params, final String uriQueryString) {
         super();
@@ -49,6 +54,14 @@ public class POSTMapper {
         if (uriQueryString != null) {
             handleEncodedURIParams(uriQueryString);
         }
+    }
+
+    public POSTMapper(final Map<String, String[]> params, final String uriQueryString) {
+        this(
+                new LinkedMultiValueMap<>(params.entrySet().stream()
+                        .collect(Collectors.toMap(e -> e.getKey(), e -> Arrays.asList(e.getValue())))),
+                uriQueryString);
+
     }
 
     // NOTE: this is a workaround since URI parameter are not automatically decoded in the HTTPServletRequest
@@ -235,6 +248,12 @@ public class POSTMapper {
     @SuppressWarnings("unchecked")
     public <T extends POSTMapper> T putIfAbsent(final String name, final String value) {
         this.params.putIfAbsent(name, Arrays.asList(value));
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends POSTMapper> T put(final String key, final String name) {
+        this.params.put(key, Arrays.asList(name));
         return (T) this;
     }
 }

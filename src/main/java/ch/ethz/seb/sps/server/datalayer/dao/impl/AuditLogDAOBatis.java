@@ -22,6 +22,7 @@ import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.user.AuditLog;
 import ch.ethz.seb.sps.domain.model.user.AuditLog.AuditLogType;
+import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
 import ch.ethz.seb.sps.utils.Result;
@@ -119,6 +120,12 @@ public class AuditLogDAOBatis implements AuditLogDAO {
     public void logLogin(final UserInfo userInfo) {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public Result<UserAccount> logRegisterAccount(final UserAccount account) {
+        // TODO Auto-generated method stub
+        return Result.of(account);
     }
 
 }
