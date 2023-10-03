@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS `exam` (
 ALTER TABLE `seb_group`
 ADD COLUMN IF NOT EXISTS `exam_id` BIGINT UNSIGNED;
 
+
 ALTER TABLE `seb_group`
-ADD UNIQUE INDEX `exam_id_UNIQUE` (`exam_id` ASC),
+ADD INDEX `exam_id` (`exam_id` ASC),
 ADD CONSTRAINT `exam_ref`
 FOREIGN KEY (`exam_id`) REFERENCES `exam` (`id`);
