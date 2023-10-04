@@ -12,7 +12,6 @@ import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSq
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -20,12 +19,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.utils.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
-import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
-import org.mybatis.dynamic.sql.select.QueryExpressionDSL;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +38,7 @@ import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.server.datalayer.batis.GroupViewMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.customrecords.GroupViewRecord;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.GroupRecord;
@@ -181,9 +177,11 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
         });
     }
 
-
     @Override
-    public Result<Collection<GroupViewData>> getGroupsWithExamData(final FilterMap filterMap) {
+    public Result<Collection<GroupViewData>> getGroupsWithExamData(
+            final FilterMap filterMap,
+            final Collection<Long> prePredicated) {
+
         return Result.tryCatch(() -> {
 
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
@@ -212,6 +210,11 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                     .and(
                             GroupRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                    .and(
+                            GroupRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
 
                     .build()
                     .execute()
