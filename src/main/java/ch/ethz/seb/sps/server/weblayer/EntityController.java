@@ -483,6 +483,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                 .getOr(Collections.emptySet());
 
         privileged.addAll(owned);
+        // no privileges at all, return never matching PK in list
         if (privileged.isEmpty()) {
             privileged.add(-1L);
         }
