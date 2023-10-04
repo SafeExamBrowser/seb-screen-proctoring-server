@@ -96,7 +96,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 postParams.getString(EXAM.ATTR_DESCRIPTION),
                 postParams.getString(EXAM.ATTR_URL),
                 postParams.getString(EXAM.ATTR_TYPE),
-                null,
+                this.userService.getCurrentUserUUIDOrNull(),
                 null,
                 null,
                 null,

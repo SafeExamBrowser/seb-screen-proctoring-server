@@ -14,9 +14,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +37,7 @@ import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.API.UserRole;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.ModelIdAware;
 import ch.ethz.seb.sps.domain.model.OwnedEntity;
 import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
@@ -41,8 +45,11 @@ import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.domain.model.user.UserMod;
 import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
+import ch.ethz.seb.sps.server.datalayer.dao.EntityDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.OwnedEntityDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
+import ch.ethz.seb.sps.server.servicelayer.EntityService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
@@ -56,15 +63,18 @@ public class UserServiceImpl implements UserService {
     private final EnumMap<UserRole, Collection<Privilege>> rolePrivileges = new EnumMap<>(UserRole.class);
     private final UserDAO userDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
+    private final EntityService entityService;
 
     public UserServiceImpl(
             final UserDAO userDAO,
             final EntityPrivilegeDAO entityPrivilegeDAO,
+            final EntityService entityService,
             final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies) {
 
         this.userDAO = userDAO;
         this.extractStrategies = extractStrategies;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
+        this.entityService = entityService;
 
         // admin privileges
         this.rolePrivileges.put(
@@ -180,9 +190,25 @@ public class UserServiceImpl implements UserService {
     public Result<Set<Long>> getIdsWithReadEntityPrivilege(final EntityType entityType) {
         return Result.tryCatch(() -> {
             final String userUUID = this.getCurrentUser().uuid();
-            return Utils.immutableSetOf(this.entityPrivilegeDAO
+
+            // if owned entity type. get all owned entity id's if owned entity
+            final Set<Long> onedEntityIds = new HashSet<>();
+            final EntityDAO<Entity, ModelIdAware> entityDAO = this.entityService.getEntityDAOForType(entityType);
+            if (entityDAO instanceof OwnedEntityDAO) {
+                onedEntityIds.addAll(((OwnedEntityDAO) entityDAO)
+                        .getAllOwnedEntityPKs(userUUID)
+                        .getOr(Collections.emptySet()));
+            }
+
+            // all entity id's with entity grant
+            final Set<Long> grantedEntityIds = this.entityPrivilegeDAO
                     .getEntityIdsWithPrivilegeForUser(entityType, userUUID, null)
-                    .getOrThrow());
+                    .getOrThrow();
+
+            return Utils.immutableSetOf(Stream
+                    .of(onedEntityIds, grantedEntityIds)
+                    .flatMap(Set::stream)
+                    .collect(Collectors.toSet()));
         });
     }
 
