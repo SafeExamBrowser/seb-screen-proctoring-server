@@ -34,12 +34,13 @@ import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.server.datalayer.dao.OwnedEntityDAO;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
 @Service
-public class ExamDAOBatis implements ExamDAO {
+public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     private final ExamRecordMapper examRecordMapper;
     private final GroupDAO groupDAO;
@@ -107,6 +108,19 @@ public class ExamDAOBatis implements ExamDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedEntityPKs(final String userUUID) {
+        return Result.tryCatch(() -> {
+            return Utils.immutableSetOf(this.examRecordMapper
+                    .selectIdsByExample()
+                    .where(ExamRecordDynamicSqlSupport.owner, isEqualTo(userUUID))
+                    .build()
+                    .execute());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Collection<Exam>> allOf(final Set<Long> pks) {
         return Result.tryCatch(() -> {
 
@@ -125,7 +139,6 @@ public class ExamDAOBatis implements ExamDAO {
         });
     }
 
-    //todo: question: should we remove this function
     @Override
     @Transactional(readOnly = true)
     public Result<Collection<Exam>> allMatching(

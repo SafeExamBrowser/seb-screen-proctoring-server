@@ -9,9 +9,6 @@
 package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,9 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.POSTMapper;
-import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
@@ -37,6 +32,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
+import ch.ethz.seb.sps.server.servicelayer.GroupService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,12 +48,14 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
 
     private final SessionDAO sessionDAO;
     private final ExamDAO examDAO;
+    private final GroupService groupService;
 
     public AdminGroupController(
             final UserService userService,
             final GroupDAO entityDAO,
             final SessionDAO sessionDA,
             final ExamDAO examDAO,
+            final GroupService groupService,
             final AuditLogDAO auditLogDAO,
             final PaginationService paginationService,
             final BeanValidationService beanValidationService) {
@@ -65,6 +63,7 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.sessionDAO = sessionDA;
         this.examDAO = examDAO;
+        this.groupService = groupService;
     }
 
     @Operation(
@@ -152,32 +151,7 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
 
     @Override
     protected Collection<Long> getReadPrivilegedPredication() {
-        if (this.userService.hasGrant(PrivilegeType.READ, getGrantEntityType())) {
-            return Collections.emptyList();
-        }
-
-        final Collection<Long> directGrants = this.userService
-                .getIdsWithReadEntityPrivilege(getGrantEntityType())
-                .getOrThrow();
-
-        final Collection<Long> examGrants = this.userService
-                .getIdsWithReadEntityPrivilege(EntityType.EXAM)
-                .getOrThrow();
-
-        if (examGrants == null || examGrants.isEmpty()) {
-            return directGrants;
-        }
-
-        return ((GroupDAO) this.entityDAO).allIdsForExamsIds(examGrants)
-                .map(grants -> {
-                    final Set<Long> result = new HashSet<>(grants);
-                    result.addAll(directGrants);
-                    return (Collection<Long>) result;
-                })
-                .onError(error -> {
-                    log.error("Failed to get Exam based grants for groups: ", error);
-                })
-                .getOr(directGrants);
+        return this.groupService.getReadPrivilegedPredication();
     }
 
 }

@@ -40,12 +40,13 @@ import ch.ethz.seb.sps.server.datalayer.dao.ClientAccessDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.server.datalayer.dao.OwnedEntityDAO;
 import ch.ethz.seb.sps.server.servicelayer.ClientCredentialService;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
 @Service
-public class ClientAccessDAOBatis implements ClientAccessDAO {
+public class ClientAccessDAOBatis implements ClientAccessDAO, OwnedEntityDAO {
 
     private final ClientAccessRecordMapper clientAccessRecordMapper;
     private final ClientCredentialService clientCredentialService;
@@ -67,6 +68,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Long modelIdToPK(final String modelId) {
         final Long pk = isPK(modelId);
         if (pk != null) {
@@ -105,6 +107,18 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                 .and(ClientAccessRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                 .build()
                 .execute() > 0;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedEntityPKs(final String userUUID) {
+        return Result.tryCatch(() -> {
+            return Utils.immutableSetOf(this.clientAccessRecordMapper
+                    .selectIdsByExample()
+                    .where(ClientAccessRecordDynamicSqlSupport.owner, isEqualTo(userUUID))
+                    .build()
+                    .execute());
+        });
     }
 
     @Override
