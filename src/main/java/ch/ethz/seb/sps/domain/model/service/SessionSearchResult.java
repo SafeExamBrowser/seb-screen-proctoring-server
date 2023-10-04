@@ -24,9 +24,10 @@ import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 public class SessionSearchResult implements Entity {
 
     public static final String ATTR_GROUP_CREATION_TIME = "groupCreationTime";
-
     public static final String ATTR_START_TIME = "startTime";
     public static final String ATTR_END_TIME = "endTime";
+    public static final String ATTR_EXAM = "exam";
+
 
     @JsonProperty(API.PARAM_GROUP_ID)
     public final String groupUUID;
@@ -67,6 +68,9 @@ public class SessionSearchResult implements Entity {
     @JsonProperty("nrOfScreenshots")
     public final Integer nrOfScreenshots;
 
+    @JsonProperty(ATTR_EXAM)
+    public final ExamViewData examViewData;
+
     @JsonCreator
     public SessionSearchResult(
             @JsonProperty(API.PARAM_GROUP_ID) final String groupUUID,
@@ -81,7 +85,8 @@ public class SessionSearchResult implements Entity {
             @JsonProperty(SESSION.ATTR_CLIENT_OS_NAME) final String clientOSName,
             @JsonProperty(SESSION.ATTR_CLIENT_VERSION) final String clientVersion,
             @JsonProperty(SESSION.ATTR_IMAGE_FORMAT) final ImageFormat imageFormat,
-            @JsonProperty("nrOfScreenshots") final Integer nrOfScreenshots) {
+            @JsonProperty("nrOfScreenshots") final Integer nrOfScreenshots,
+            @JsonProperty(ATTR_EXAM) final ExamViewData examViewData) {
 
         this.groupUUID = groupUUID;
         this.groupName = groupName;
@@ -96,11 +101,12 @@ public class SessionSearchResult implements Entity {
         this.clientVersion = clientVersion;
         this.imageFormat = imageFormat;
         this.nrOfScreenshots = nrOfScreenshots;
+        this.examViewData = examViewData;
     }
 
     public SessionSearchResult(
             final Session session,
-            final Group group,
+            final GroupViewData group,
             final int nrOfScreenshots) {
 
         this.groupUUID = group.uuid;
@@ -116,6 +122,7 @@ public class SessionSearchResult implements Entity {
         this.clientVersion = session.clientVersion;
         this.imageFormat = session.imageFormat;
         this.nrOfScreenshots = nrOfScreenshots;
+        this.examViewData = group.examViewData;
     }
 
     @Override

@@ -25,6 +25,8 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Collection<Group>> byGroupName(final FilterMap filterMap);
 
+    Result<GroupViewData> getGroupWithExamData(final Long groupId);
+
     Result<Collection<GroupViewData>> getGroupsWithExamData(final FilterMap filterMap);
 
     Result<Collection<EntityKey>> applyActivationForAllOfExam(Long examId, boolean activation);

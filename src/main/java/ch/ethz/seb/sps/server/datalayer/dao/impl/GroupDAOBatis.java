@@ -12,6 +12,7 @@ import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSq
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -19,8 +20,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.utils.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
+import org.mybatis.dynamic.sql.select.QueryExpressionDSL;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,6 +152,26 @@ public class GroupDAOBatis implements GroupDAO {
     }
 
     @Override
+    public Result<GroupViewData> getGroupWithExamData(final Long groupId) {
+        return Result.tryCatch(() -> {
+            final GroupViewRecord groupViewRecord = this.groupViewMapper
+                    .getGroupWithExamData()
+
+                    .where(
+                            GroupRecordDynamicSqlSupport.id,
+                            SqlBuilder.isEqualTo(groupId)
+
+                    )
+
+                    .build()
+                    .execute();
+
+            return toGroupWithExamDomainModel(groupViewRecord);
+        });
+    }
+
+
+    @Override
     public Result<Collection<GroupViewData>> getGroupsWithExamData(final FilterMap filterMap) {
         return Result.tryCatch(() -> {
 
@@ -168,6 +193,9 @@ public class GroupDAOBatis implements GroupDAO {
                             GroupRecordDynamicSqlSupport.description,
                             isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_DESCRIPTION)))
                     .and(
+                            ExamRecordDynamicSqlSupport.name,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_EXAM_NAME)))
+                    .and(
                             GroupRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
                     .and(
@@ -177,7 +205,7 @@ public class GroupDAOBatis implements GroupDAO {
                     .build()
                     .execute()
                     .stream()
-                    .map(this::toGroupsWithExamDomainModel)
+                    .map(this::toGroupWithExamDomainModel)
                     .collect(Collectors.toList());
 
             return result;
@@ -507,7 +535,7 @@ public class GroupDAOBatis implements GroupDAO {
                 getEntityPrivileges(record.getId()));
     }
 
-    private GroupViewData toGroupsWithExamDomainModel(final GroupViewRecord record) {
+    private GroupViewData toGroupWithExamDomainModel(final GroupViewRecord record) {
         return new GroupViewData(
                 record.getId(),
                 record.getUuid(),

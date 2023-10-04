@@ -677,29 +677,29 @@ public class AdminProctorController {
 
         // TODO add exam name search criteria and access filter
 
-        if (StringUtils.isNotBlank(groupUUID)) {
-            final String groupId = this.groupDAO
-                    .byModelId(groupUUID)
-                    .map(this::hasGroupReadAccess)
-                    .map(Group::getId)
-                    .map(String::valueOf)
-                    .getOr(StringUtils.EMPTY);
-            filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, groupId);
-        } else if (StringUtils.isNotBlank(groupName)) {
+//        if (StringUtils.isNotBlank(groupUUID)) {
+//            final String groupId = this.groupDAO
+//                    .byModelId(groupUUID)
+//                    .map(this::hasGroupReadAccess)
+//                    .map(Group::getId)
+//                    .map(String::valueOf)
+//                    .getOr(StringUtils.EMPTY);
+//            filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, groupId);
+//        } else if (StringUtils.isNotBlank(groupName) ) {
             final String ids = StringUtils.join(
                     this.groupDAO
-                            .byGroupName(filterMap)
+                            .getGroupsWithExamData(filterMap)
                             .getOrThrow()
                             .stream()
-                            .map(this::hasGroupReadAccess)
+//                            .map(this::hasGroupReadAccess)
                             .filter(Objects::nonNull)
-                            .map(Group::getId)
+                            .map(GroupViewData::getId)
                             .map(String::valueOf)
                             .collect(Collectors.toList()),
                     Constants.LIST_SEPARATOR);
 
             filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, ids);
-        }
+//        }
     }
 
     private Group hasGroupReadAccess(final Group group) {
