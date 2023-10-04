@@ -41,7 +41,6 @@ import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.servicelayer.ClientCredentialService;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
@@ -51,18 +50,15 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
     private final ClientAccessRecordMapper clientAccessRecordMapper;
     private final ClientCredentialService clientCredentialService;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
-    private final UserService userService;
 
     public ClientAccessDAOBatis(
             final ClientAccessRecordMapper clientAccessRecordMapper,
             final ClientCredentialService clientCredentialService,
-            final EntityPrivilegeDAO entityPrivilegeDAO,
-            final UserService userService) {
+            final EntityPrivilegeDAO entityPrivilegeDAO) {
 
         this.clientAccessRecordMapper = clientAccessRecordMapper;
         this.clientCredentialService = clientCredentialService;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
-        this.userService = userService;
     }
 
     @Override
@@ -209,7 +205,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO {
                             data.description,
                             cc.clientIdAsString(),
                             cc.secretAsString(),
-                            this.userService.getCurrentUserUUIDOrNull(),
+                            data.owner,
                             millisecondsNow,
                             millisecondsNow,
                             null);

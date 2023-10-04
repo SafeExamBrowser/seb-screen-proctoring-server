@@ -34,7 +34,6 @@ import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
@@ -45,18 +44,15 @@ public class ExamDAOBatis implements ExamDAO {
     private final ExamRecordMapper examRecordMapper;
     private final GroupDAO groupDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
-    private final UserService userService;
 
     public ExamDAOBatis(
             final ExamRecordMapper examRecordMapper,
             final GroupDAO groupDAO,
-            final EntityPrivilegeDAO entityPrivilegeDAO,
-            final UserService userService) {
+            final EntityPrivilegeDAO entityPrivilegeDAO) {
 
         this.examRecordMapper = examRecordMapper;
         this.groupDAO = groupDAO;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
-        this.userService = userService;
     }
 
     @Override
@@ -259,7 +255,7 @@ public class ExamDAOBatis implements ExamDAO {
                     data.description,
                     data.url,
                     data.type,
-                    this.userService.getCurrentUserUUIDOrNull(),
+                    data.owner,
                     millisecondsNow,
                     millisecondsNow,
                     null,

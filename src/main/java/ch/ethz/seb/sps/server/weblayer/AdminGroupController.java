@@ -122,7 +122,7 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
                 null,
                 postParams.getString(Domain.SEB_GROUP.ATTR_NAME),
                 postParams.getString(Domain.SEB_GROUP.ATTR_DESCRIPTION),
-                null,
+                this.userService.getCurrentUserUUIDOrNull(),
                 null,
                 null,
                 null,

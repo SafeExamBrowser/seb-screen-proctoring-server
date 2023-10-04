@@ -56,7 +56,9 @@ public class AdminClientAccessController extends ActivatableEntityController<Cli
                 existingEntity.uuid,
                 modifyData.name,
                 modifyData.description,
-                null, null, null, null, null, null, null);
+                null, null,
+                this.userService.getCurrentUserUUIDOrNull(),
+                null, null, null, null);
     }
 
     @Override
