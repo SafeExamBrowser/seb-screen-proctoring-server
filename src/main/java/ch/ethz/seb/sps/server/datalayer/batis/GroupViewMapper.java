@@ -19,6 +19,23 @@ import java.util.Collection;
 
 @Mapper
 public interface GroupViewMapper {
+
+    @SelectProvider(type = SqlProviderAdapter.class, method = "select")
+    @ConstructorArgs({
+            @Arg(column = "id", javaType = Long.class, jdbcType = JdbcType.BIGINT, id = true),
+            @Arg(column = "uuid", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Arg(column = "name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Arg(column = "description", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Arg(column = "owner", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Arg(column = "creation_time", javaType = Long.class, jdbcType = JdbcType.BIGINT),
+            @Arg(column = "last_update_time", javaType = Long.class, jdbcType = JdbcType.BIGINT),
+            @Arg(column = "termination_time", javaType = Long.class, jdbcType = JdbcType.BIGINT),
+
+            @Arg(column = "exam_uuid", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Arg(column = "exam_name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+    })
+    GroupViewRecord selectOne(SelectStatementProvider selectStatement);
+
     @SelectProvider(type = SqlProviderAdapter.class, method = "select")
     @ConstructorArgs({
             @Arg(column = "id", javaType = Long.class, jdbcType = JdbcType.BIGINT, id = true),
@@ -35,6 +52,35 @@ public interface GroupViewMapper {
     })
     Collection<GroupViewRecord> selectMany(SelectStatementProvider selectStatement);
 
+    @SelectProvider(type = SqlProviderAdapter.class, method = "select")
+    @ConstructorArgs({
+            @Arg(column = "id", javaType = Long.class, jdbcType = JdbcType.BIGINT, id = true),
+    })
+    Collection<Long> selectIds(SelectStatementProvider selectStatement);
+
+    default QueryExpressionDSL<MyBatis3SelectModelAdapter<GroupViewRecord>>.JoinSpecificationFinisher getGroupWithExamData() {
+        return SelectDSL.selectWithMapper(
+                        this::selectOne,
+
+                        GroupRecordDynamicSqlSupport.id,
+                        GroupRecordDynamicSqlSupport.uuid,
+                        GroupRecordDynamicSqlSupport.name,
+                        GroupRecordDynamicSqlSupport.description,
+                        GroupRecordDynamicSqlSupport.owner,
+                        GroupRecordDynamicSqlSupport.creationTime,
+                        GroupRecordDynamicSqlSupport.lastUpdateTime,
+                        GroupRecordDynamicSqlSupport.terminationTime,
+
+                        ExamRecordDynamicSqlSupport.uuid.as("exam_uuid"),
+                        ExamRecordDynamicSqlSupport.name.as("exam_name"))
+
+                .from(GroupRecordDynamicSqlSupport.groupRecord)
+                .leftJoin(ExamRecordDynamicSqlSupport.examRecord)
+                .on(
+                        GroupRecordDynamicSqlSupport.examId,
+                        SqlBuilder.equalTo(ExamRecordDynamicSqlSupport.id));
+    }
+
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Collection<GroupViewRecord>>>.JoinSpecificationFinisher getGroupsWithExamData() {
         return SelectDSL.selectWithMapper(
                         this::selectMany,
@@ -50,6 +96,18 @@ public interface GroupViewMapper {
 
                         ExamRecordDynamicSqlSupport.uuid.as("exam_uuid"),
                         ExamRecordDynamicSqlSupport.name.as("exam_name"))
+
+                .from(GroupRecordDynamicSqlSupport.groupRecord)
+                .leftJoin(ExamRecordDynamicSqlSupport.examRecord)
+                .on(
+                        GroupRecordDynamicSqlSupport.examId,
+                        SqlBuilder.equalTo(ExamRecordDynamicSqlSupport.id));
+    }
+
+    default QueryExpressionDSL<MyBatis3SelectModelAdapter<Collection<Long>>>.JoinSpecificationFinisher getGroupIdsWithExamData() {
+        return SelectDSL.selectWithMapper(
+                        this::selectIds,
+                        GroupRecordDynamicSqlSupport.id)
 
                 .from(GroupRecordDynamicSqlSupport.groupRecord)
                 .leftJoin(ExamRecordDynamicSqlSupport.examRecord)
