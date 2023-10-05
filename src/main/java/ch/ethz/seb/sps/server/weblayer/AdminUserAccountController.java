@@ -135,7 +135,6 @@ public class AdminUserAccountController extends ActivatableEntityController<User
             produces = MediaType.APPLICATION_JSON_VALUE)
     public UserPrivileges userPrivileges(@PathVariable(Domain.USER.ATTR_UUID) final String userUUID) {
 
-        checkReadPrivilege();
         checkAdminRoleOrOwner(userUUID);
 
         return this.userService

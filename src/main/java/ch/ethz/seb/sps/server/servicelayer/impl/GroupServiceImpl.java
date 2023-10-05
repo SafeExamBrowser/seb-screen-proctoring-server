@@ -45,30 +45,34 @@ public class GroupServiceImpl implements GroupService {
         }
 
         // list of group id's with users entity read privileges
-        final Collection<Long> directGrants = this.userService
+        final Set<Long> directGrants = this.userService
                 .getIdsWithReadEntityPrivilege(EntityType.SEB_GROUP)
                 .getOrThrow();
 
         // list of exam id's with users entity read privileges
-        final Collection<Long> examGrants = this.userService
+        final Set<Long> examGrants = this.userService
                 .getIdsWithReadEntityPrivilege(EntityType.EXAM)
                 .getOrThrow();
 
-        if (examGrants == null || examGrants.isEmpty()) {
-            return directGrants;
-        }
+        final Set<Long> privileged = new HashSet<>((examGrants == null || examGrants.isEmpty())
+                ? directGrants
+                : this.groupDAO
+                        .allIdsForExamsIds(examGrants)
+                        .map(grants -> {
+                            final Set<Long> result = new HashSet<>(grants);
+                            result.addAll(directGrants);
+                            return result;
+                        })
+                        .onError(error -> {
+                            log.error("Failed to get Exam based grants for groups: ", error);
+                        })
+                        .getOr(directGrants));
 
-        return this.groupDAO
-                .allIdsForExamsIds(examGrants)
-                .map(grants -> {
-                    final Set<Long> result = new HashSet<>(grants);
-                    result.addAll(directGrants);
-                    return (Collection<Long>) result;
-                })
-                .onError(error -> {
-                    log.error("Failed to get Exam based grants for groups: ", error);
-                })
-                .getOr(directGrants);
+        // no privileges at all, return never matching PK in list
+        if (privileged.isEmpty()) {
+            privileged.add(-1L);
+        }
+        return privileged;
     }
 
 }
