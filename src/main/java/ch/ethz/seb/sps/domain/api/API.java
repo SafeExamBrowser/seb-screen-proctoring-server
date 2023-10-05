@@ -105,6 +105,7 @@ public final class API {
     public static final String USER_PRIVILEGES_ENDPOINT = "privileges";
     public static final String USERSYNC_SEBSERVER_ENDPOINT = "/usersync/sebserver";
     public static final String ENTITY_PRIVILEGE_ENDPOINT = "/entityprivilege";
+    public static final String REGISTER_ENDPOINT = "/register";
 
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 

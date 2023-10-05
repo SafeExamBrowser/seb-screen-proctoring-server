@@ -34,29 +34,26 @@ import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
+import ch.ethz.seb.sps.server.datalayer.dao.OwnedEntityDAO;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
 @Service
-public class ExamDAOBatis implements ExamDAO {
+public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     private final ExamRecordMapper examRecordMapper;
     private final GroupDAO groupDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
-    private final UserService userService;
 
     public ExamDAOBatis(
             final ExamRecordMapper examRecordMapper,
             final GroupDAO groupDAO,
-            final EntityPrivilegeDAO entityPrivilegeDAO,
-            final UserService userService) {
+            final EntityPrivilegeDAO entityPrivilegeDAO) {
 
         this.examRecordMapper = examRecordMapper;
         this.groupDAO = groupDAO;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
-        this.userService = userService;
     }
 
     @Override
@@ -111,6 +108,19 @@ public class ExamDAOBatis implements ExamDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedEntityPKs(final String userUUID) {
+        return Result.tryCatch(() -> {
+            return Utils.immutableSetOf(this.examRecordMapper
+                    .selectIdsByExample()
+                    .where(ExamRecordDynamicSqlSupport.owner, isEqualTo(userUUID))
+                    .build()
+                    .execute());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Collection<Exam>> allOf(final Set<Long> pks) {
         return Result.tryCatch(() -> {
 
@@ -129,7 +139,6 @@ public class ExamDAOBatis implements ExamDAO {
         });
     }
 
-    //todo: question: should we remove this function
     @Override
     @Transactional(readOnly = true)
     public Result<Collection<Exam>> allMatching(
@@ -259,7 +268,7 @@ public class ExamDAOBatis implements ExamDAO {
                     data.description,
                     data.url,
                     data.type,
-                    this.userService.getCurrentUserUUIDOrNull(),
+                    data.owner,
                     millisecondsNow,
                     millisecondsNow,
                     null,

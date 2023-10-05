@@ -45,14 +45,14 @@ import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.server.datalayer.dao.OwnedEntityDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 
 @Service
-public class GroupDAOBatis implements GroupDAO {
+public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
 
     private static final Logger log = LoggerFactory.getLogger(GroupDAOBatis.class);
 
@@ -60,20 +60,17 @@ public class GroupDAOBatis implements GroupDAO {
     private final GroupViewMapper groupViewMapper;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
     private final SessionDAO sessionDAO;
-    private final UserService userService;
 
     public GroupDAOBatis(
             final GroupRecordMapper groupRecordMapper,
             final EntityPrivilegeDAO entityPrivilegeDAO,
             final SessionDAO sessionDAO,
-            final UserService userService,
             final GroupViewMapper groupViewMapper) {
 
         this.groupRecordMapper = groupRecordMapper;
         this.groupViewMapper = groupViewMapper;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.sessionDAO = sessionDAO;
-        this.userService = userService;
     }
 
     @Override
@@ -99,6 +96,7 @@ public class GroupDAOBatis implements GroupDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<Group> byModelId(final String id) {
         try {
             final long pk = Long.parseLong(id);
@@ -128,6 +126,19 @@ public class GroupDAOBatis implements GroupDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Result<Set<Long>> getAllOwnedEntityPKs(final String userUUID) {
+        return Result.tryCatch(() -> {
+            return Utils.immutableSetOf(this.groupRecordMapper
+                    .selectIdsByExample()
+                    .where(GroupRecordDynamicSqlSupport.owner, isEqualTo(userUUID))
+                    .build()
+                    .execute());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Collection<Group>> allOf(final Set<Long> pks) {
         return Result.tryCatch(() -> {
 
@@ -342,7 +353,7 @@ public class GroupDAOBatis implements GroupDAO {
                     (StringUtils.isNotBlank(data.uuid)) ? data.uuid : UUID.randomUUID().toString(),
                     data.name,
                     data.description,
-                    this.userService.getCurrentUserUUIDOrNull(),
+                    data.owner,
                     millisecondsNow,
                     millisecondsNow,
                     null,
