@@ -41,6 +41,7 @@ public class ServiceInfo {
     private static final String WEB_SERVICE_HTTP_SCHEME_KEY = "sps.webservice.http.external.scheme";
     private static final String WEB_SERVICE_HTTP_PORT = "sps.webservice.http.external.port";
     private static final String WEB_SERVICE_CONTEXT_PATH = "server.servlet.context-path";
+    private static final String GUI_REDIRECT_URL = "sps.gui.redirect.url";
 
     public static final String VERSION_KEY = "seb.sps.version";
     public static final String STORE_ADAPTER_KEY = "sps.data.store.adapter";
@@ -76,6 +77,7 @@ public class ServiceInfo {
     private final String webserverName; // external
     private final String webserverPort; // external
     private final String externalServiceURI;
+    private final String guiRedirectURL;
     private final String screenshotRequestURI;
 
     public ServiceInfo(
@@ -121,6 +123,7 @@ public class ServiceInfo {
             log.warn("NOTE: External server name, property : 'sps.webservice.http.external.servername' "
                     + "is set to localhost. This is only for local development setups.");
         }
+        this.guiRedirectURL = environment.getRequiredProperty(GUI_REDIRECT_URL);
 
         final UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
                 .scheme(this.httpScheme)
@@ -225,6 +228,10 @@ public class ServiceInfo {
 
     public String getExternalServiceURI() {
         return this.externalServiceURI;
+    }
+
+    public String getGuiRedirectURL() {
+        return this.guiRedirectURL;
     }
 
     public void setMaster(final boolean isMaster) {
