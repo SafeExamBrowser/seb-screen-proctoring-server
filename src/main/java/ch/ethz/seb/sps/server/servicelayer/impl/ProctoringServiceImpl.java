@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,8 +168,8 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             ExamViewData examViewData = ExamViewData.EMPTY_MODEL;
             if (activeGroup.getExam_id() != null) {
-                final Exam exam = this.examDAO.byModelId(activeGroup.getExam_id().toString()).get();
-                examViewData = new ExamViewData(exam.getUuid(), exam.getName());
+                final Exam exam = this.examDAO.byModelId(activeGroup.exam_id.toString()).getOr(null);
+                examViewData = new ExamViewData(exam.uuid, exam.name);
             }
 
             return new MonitoringPageData(
@@ -378,29 +379,29 @@ public class ProctoringServiceImpl implements ProctoringService {
 
     private Collection<SessionSearchResult> createSessionSearchResult(
             final Collection<Session> data,
-            final FilterMap metaData) {
+            final FilterMap filterMap) {
 
-        final Map<Long, Group> groupCache = new HashMap<>();
+        final Map<Long, GroupViewData> groupCache = new HashMap<>();
         return data
                 .stream()
-                .map(session -> toSessionSearchResult(session, groupCache, metaData))
+                .map(session -> toSessionSearchResult(session, groupCache, filterMap))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
     private SessionSearchResult toSessionSearchResult(
             final Session session,
-            final Map<Long, Group> groupCache,
-            final FilterMap metaData) {
+            final Map<Long, GroupViewData> groupCache,
+            final FilterMap filterMap) {
 
         groupCache.computeIfAbsent(
                 session.getGroupId(),
-                gid -> this.groupDAO.byPK(gid).getOr(null));
+                gid -> this.groupDAO.getGroupWithExamData(gid).getOr(null));
 
-        final Group group = groupCache.get(session.getGroupId());
+        final GroupViewData group = groupCache.get(session.getGroupId());
         final Long nrOfScreenshots = this.sessionDAO.getNumberOfScreenshots(
                 session.uuid,
-                metaData);
+                filterMap);
 
         if (nrOfScreenshots.longValue() <= 0) {
             return null;
@@ -409,7 +410,8 @@ public class ProctoringServiceImpl implements ProctoringService {
         return new SessionSearchResult(
                 session,
                 group,
-                nrOfScreenshots != null ? nrOfScreenshots.intValue() : -1);
+                nrOfScreenshots != null ? nrOfScreenshots.intValue() : -1
+        );
     }
 
     private ScreenshotViewData createScreenshotViewData(

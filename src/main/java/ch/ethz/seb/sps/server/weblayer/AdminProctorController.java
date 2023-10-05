@@ -8,6 +8,30 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
@@ -28,6 +52,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamic
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.server.servicelayer.GroupService;
 import ch.ethz.seb.sps.server.servicelayer.GroupingService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
@@ -40,28 +65,6 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.PROCTORING_ENDPOINT)
@@ -73,6 +76,7 @@ public class AdminProctorController {
     private final Executor downloadExecutor;
     private final UserService userService;
     private final GroupDAO groupDAO;
+    private final GroupService groupService;
     private final ProctoringService proctoringService;
     private final PaginationService paginationService;
     private final GroupingService groupingService;
@@ -80,6 +84,7 @@ public class AdminProctorController {
     public AdminProctorController(
             final UserService userService,
             final GroupDAO groupDAO,
+            final GroupService groupService,
             final ProctoringService proctoringService,
             final PaginationService paginationService,
             final GroupingService groupingService,
@@ -88,6 +93,7 @@ public class AdminProctorController {
         this.downloadExecutor = downloadExecutor;
         this.userService = userService;
         this.groupDAO = groupDAO;
+        this.groupService = groupService;
         this.paginationService = paginationService;
         this.proctoringService = proctoringService;
         this.groupingService = groupingService;
@@ -141,8 +147,9 @@ public class AdminProctorController {
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
         filterMap.putIfAbsent(Group.FILTER_ATTR_ACTIVE, Constants.TRUE_STRING);
 
+        final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();
         final Collection<GroupViewData> groups = this.groupDAO
-                .getGroupsWithExamData(filterMap)
+                .getGroupsWithExamData(filterMap, readPrivilegedPredication)
                 .getOrThrow()
                 .stream()
                 .filter(group -> this.userService.hasGrant(PrivilegeType.READ, group))
@@ -612,49 +619,42 @@ public class AdminProctorController {
                 .getOrThrow();
     }
 
-
     @Operation(
             summary = "Get grouped screenshot data list for specific session",
-            description = "Groups all the screenshots for a given session. Currently the grouping is done via the Metadata 'WindowTitle'. " +
-                            "By providing additional metadata, only screenshot data with the given metadata will be returned",
+            description = "Groups all the screenshots for a given session. Currently the grouping is done via the Metadata 'WindowTitle'. "
+                    +
+                    "By providing additional metadata, only screenshot data with the given metadata will be returned",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_SESSION_ID,
                             description = "The UUID of the session to get the timeline group data for",
-                            required = true
-                    ),
+                            required = true),
                     @Parameter(
                             name = API.SCREENSHOT_META_DATA_BROWSER_URL,
                             description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
-                            required = false
-                    ),
+                            required = false),
                     @Parameter(
                             name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
                             description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
-                            required = false
-                    ),
+                            required = false),
                     @Parameter(
                             name = API.SCREENSHOT_META_DATA_USER_ACTION,
                             description = "The search filter criteria for screenshot user action metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
-                            required = false
-                    )
-            }
-    )
+                            required = false)
+            })
     @RequestMapping(
             path = API.TIMELINE_SEARCH_ENDPOINT + API.SESSION_ID_PATH_SEGMENT,
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public TimelineViewData getTimelineViewData(
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
-            final HttpServletRequest request
-    ){
+            final HttpServletRequest request) {
         final FilterMap filterMap = new FilterMap(request);
         filterMap.putIfAbsent(API.PARAM_SESSION_ID, sessionUUID);
 
@@ -672,41 +672,18 @@ public class AdminProctorController {
     }
 
     private void preProcessGroupCriteria(final FilterMap filterMap) {
-        final String groupUUID = filterMap.getString(API.PARAM_GROUP_ID);
-        final String groupName = filterMap.getString(API.PARAM_GROUP_NAME);
+        final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();
+        final String ids = StringUtils.join(
+                this.groupDAO
+                        .getGroupIdsWithExamData(filterMap, readPrivilegedPredication)
+                        .getOrThrow()
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .map(String::valueOf)
+                        .collect(Collectors.toList()),
+                Constants.LIST_SEPARATOR);
 
-        // TODO add exam name search criteria and access filter
-
-        if (StringUtils.isNotBlank(groupUUID)) {
-            final String groupId = this.groupDAO
-                    .byModelId(groupUUID)
-                    .map(this::hasGroupReadAccess)
-                    .map(Group::getId)
-                    .map(String::valueOf)
-                    .getOr(StringUtils.EMPTY);
-            filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, groupId);
-        } else if (StringUtils.isNotBlank(groupName)) {
-            final String ids = StringUtils.join(
-                    this.groupDAO
-                            .byGroupName(filterMap)
-                            .getOrThrow()
-                            .stream()
-                            .map(this::hasGroupReadAccess)
-                            .filter(Objects::nonNull)
-                            .map(Group::getId)
-                            .map(String::valueOf)
-                            .collect(Collectors.toList()),
-                    Constants.LIST_SEPARATOR);
-
-            filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, ids);
-        }
-    }
-
-    private Group hasGroupReadAccess(final Group group) {
-        if (!this.userService.hasReadGrant(group)) {
-            return null;
-        }
-        return group;
+        filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, ids);
     }
 
     private Result<Collection<ScreenshotSearchResult>> queryScreenShots(final FilterMap filterMap) {

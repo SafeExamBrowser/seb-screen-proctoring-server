@@ -23,13 +23,21 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Group> createNew(String name);
 
-    Result<Collection<Group>> byGroupName(final FilterMap filterMap);
+    Result<Collection<Group>> byGroupName(FilterMap filterMap);
 
-    Result<Collection<GroupViewData>> getGroupsWithExamData(final FilterMap filterMap);
+    Result<GroupViewData> getGroupWithExamData(Long groupId);
+
+    Result<Collection<Long>> getGroupIdsWithExamData(
+            FilterMap filterMap,
+            Collection<Long> prePredicated);
+
+    Result<Collection<GroupViewData>> getGroupsWithExamData(
+            FilterMap filterMap,
+            Collection<Long> prePredicated);
 
     Result<Collection<EntityKey>> applyActivationForAllOfExam(Long examId, boolean activation);
 
-    Result<Collection<EntityKey>> deleteAllForExams(final List<Long> examPKs);
+    Result<Collection<EntityKey>> deleteAllForExams(List<Long> examPKs);
 
     Result<Collection<Long>> allIdsForExamsIds(Collection<Long> examPKs);
 

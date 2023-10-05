@@ -38,6 +38,7 @@ import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.server.datalayer.batis.GroupViewMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.customrecords.GroupViewRecord;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.GroupRecord;
@@ -158,7 +159,84 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     }
 
     @Override
-    public Result<Collection<GroupViewData>> getGroupsWithExamData(final FilterMap filterMap) {
+    public Result<GroupViewData> getGroupWithExamData(final Long groupId) {
+        return Result.tryCatch(() -> {
+            final GroupViewRecord groupViewRecord = this.groupViewMapper
+                    .getGroupWithExamData()
+
+                    .where(
+                            GroupRecordDynamicSqlSupport.id,
+                            SqlBuilder.isEqualTo(groupId)
+
+                    )
+
+                    .build()
+                    .execute();
+
+            return toGroupWithExamDomainModel(groupViewRecord);
+        });
+    }
+
+    @Override
+    public Result<Collection<Long>> getGroupIdsWithExamData(
+            final FilterMap filterMap,
+            final Collection<Long> prePredicated){
+
+        return Result.tryCatch(() -> {
+
+            final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
+            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
+            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
+
+            final List<Long> result = this.groupViewMapper
+                    .getGroupIdsWithExamData()
+
+                    .where(
+                            GroupRecordDynamicSqlSupport.terminationTime,
+                            (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
+                                    : SqlBuilder.isEqualToWhenPresent(() -> null))
+                    .and(
+                            GroupRecordDynamicSqlSupport.name,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_NAME)))
+                    .and(
+                            GroupRecordDynamicSqlSupport.description,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_DESCRIPTION)))
+                    .and(
+                            ExamRecordDynamicSqlSupport.name,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_EXAM_NAME)))
+                    .and(
+                            GroupRecordDynamicSqlSupport.name,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_GROUP_NAME)))
+                    .and(
+                            GroupRecordDynamicSqlSupport.creationTime,
+                            SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                    .and(
+                            GroupRecordDynamicSqlSupport.creationTime,
+                            SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                    .and(
+                            GroupRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
+
+                    .build()
+                    .execute()
+                    .stream()
+                    .collect(Collectors.toList());
+
+            return result;
+        });
+
+
+
+
+    }
+
+    @Override
+    public Result<Collection<GroupViewData>> getGroupsWithExamData(
+            final FilterMap filterMap,
+            final Collection<Long> prePredicated) {
+
         return Result.tryCatch(() -> {
 
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
@@ -179,16 +257,24 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                             GroupRecordDynamicSqlSupport.description,
                             isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_DESCRIPTION)))
                     .and(
+                            ExamRecordDynamicSqlSupport.name,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_EXAM_NAME)))
+                    .and(
                             GroupRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
                     .and(
                             GroupRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                    .and(
+                            GroupRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
 
                     .build()
                     .execute()
                     .stream()
-                    .map(this::toGroupsWithExamDomainModel)
+                    .map(this::toGroupWithExamDomainModel)
                     .collect(Collectors.toList());
 
             return result;
@@ -518,7 +604,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                 getEntityPrivileges(record.getId()));
     }
 
-    private GroupViewData toGroupsWithExamDomainModel(final GroupViewRecord record) {
+    private GroupViewData toGroupWithExamDomainModel(final GroupViewRecord record) {
         return new GroupViewData(
                 record.getId(),
                 record.getUuid(),
