@@ -52,6 +52,12 @@ public interface GroupViewMapper {
     })
     Collection<GroupViewRecord> selectMany(SelectStatementProvider selectStatement);
 
+    @SelectProvider(type = SqlProviderAdapter.class, method = "select")
+    @ConstructorArgs({
+            @Arg(column = "id", javaType = Long.class, jdbcType = JdbcType.BIGINT, id = true),
+    })
+    Collection<Long> selectIds(SelectStatementProvider selectStatement);
+
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<GroupViewRecord>>.JoinSpecificationFinisher getGroupWithExamData() {
         return SelectDSL.selectWithMapper(
                         this::selectOne,
@@ -90,6 +96,18 @@ public interface GroupViewMapper {
 
                         ExamRecordDynamicSqlSupport.uuid.as("exam_uuid"),
                         ExamRecordDynamicSqlSupport.name.as("exam_name"))
+
+                .from(GroupRecordDynamicSqlSupport.groupRecord)
+                .leftJoin(ExamRecordDynamicSqlSupport.examRecord)
+                .on(
+                        GroupRecordDynamicSqlSupport.examId,
+                        SqlBuilder.equalTo(ExamRecordDynamicSqlSupport.id));
+    }
+
+    default QueryExpressionDSL<MyBatis3SelectModelAdapter<Collection<Long>>>.JoinSpecificationFinisher getGroupIdsWithExamData() {
+        return SelectDSL.selectWithMapper(
+                        this::selectIds,
+                        GroupRecordDynamicSqlSupport.id)
 
                 .from(GroupRecordDynamicSqlSupport.groupRecord)
                 .leftJoin(ExamRecordDynamicSqlSupport.examRecord)

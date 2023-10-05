@@ -178,6 +178,58 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     }
 
     @Override
+    public Result<Collection<Long>> getGroupIdsWithExamData(
+            final FilterMap filterMap,
+            final Collection<Long> prePredicated){
+
+        return Result.tryCatch(() -> {
+
+            final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
+            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
+            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
+
+            final List<Long> result = this.groupViewMapper
+                    .getGroupIdsWithExamData()
+
+                    .where(
+                            GroupRecordDynamicSqlSupport.terminationTime,
+                            (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
+                                    : SqlBuilder.isEqualToWhenPresent(() -> null))
+                    .and(
+                            GroupRecordDynamicSqlSupport.name,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_NAME)))
+                    .and(
+                            GroupRecordDynamicSqlSupport.description,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_DESCRIPTION)))
+                    .and(
+                            ExamRecordDynamicSqlSupport.name,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_EXAM_NAME)))
+                    .and(
+                            GroupRecordDynamicSqlSupport.creationTime,
+                            SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                    .and(
+                            GroupRecordDynamicSqlSupport.creationTime,
+                            SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                    .and(
+                            GroupRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
+
+                    .build()
+                    .execute()
+                    .stream()
+                    .collect(Collectors.toList());
+
+            return result;
+        });
+
+
+
+
+    }
+
+    @Override
     public Result<Collection<GroupViewData>> getGroupsWithExamData(
             final FilterMap filterMap,
             final Collection<Long> prePredicated) {

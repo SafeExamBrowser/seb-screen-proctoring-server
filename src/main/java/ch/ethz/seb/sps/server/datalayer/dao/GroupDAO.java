@@ -27,6 +27,10 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<GroupViewData> getGroupWithExamData(Long groupId);
 
+    Result<Collection<Long>> getGroupIdsWithExamData(
+            FilterMap filterMap,
+            Collection<Long> prePredicated);
+
     Result<Collection<GroupViewData>> getGroupsWithExamData(
             FilterMap filterMap,
             Collection<Long> prePredicated);

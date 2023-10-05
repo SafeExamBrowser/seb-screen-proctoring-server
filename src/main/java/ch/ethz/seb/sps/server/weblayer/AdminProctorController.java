@@ -672,35 +672,18 @@ public class AdminProctorController {
     }
 
     private void preProcessGroupCriteria(final FilterMap filterMap) {
-//        final String groupUUID = filterMap.getString(API.PARAM_GROUP_ID);
-//        final String groupName = filterMap.getString(API.PARAM_GROUP_NAME);
-
-        // TODO add exam name search criteria and access filter
-
-//        if (StringUtils.isNotBlank(groupUUID)) {
-//            final String groupId = this.groupDAO
-//                    .byModelId(groupUUID)
-//                    .map(this::hasGroupReadAccess)
-//                    .map(Group::getId)
-//                    .map(String::valueOf)
-//                    .getOr(StringUtils.EMPTY);
-//            filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, groupId);
-//        } else if (StringUtils.isNotBlank(groupName) ) {
         final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();
         final String ids = StringUtils.join(
                 this.groupDAO
-                        // TODO: create new function to only retrieve ids
-                        .getGroupsWithExamData(filterMap, readPrivilegedPredication)
+                        .getGroupIdsWithExamData(filterMap, readPrivilegedPredication)
                         .getOrThrow()
                         .stream()
                         .filter(Objects::nonNull)
-                        .map(GroupViewData::getId)
                         .map(String::valueOf)
                         .collect(Collectors.toList()),
                 Constants.LIST_SEPARATOR);
 
         filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, ids);
-//        }
     }
 
     private Result<Collection<ScreenshotSearchResult>> queryScreenShots(final FilterMap filterMap) {
