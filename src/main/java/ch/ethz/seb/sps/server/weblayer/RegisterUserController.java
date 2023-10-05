@@ -8,13 +8,17 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,6 +39,7 @@ import ch.ethz.seb.sps.domain.model.user.PasswordChange;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.domain.model.user.UserMod;
 import ch.ethz.seb.sps.server.ServiceConfig;
+import ch.ethz.seb.sps.server.ServiceInfo;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
@@ -46,21 +51,26 @@ import io.swagger.v3.oas.annotations.media.Content;
 @RequestMapping(API.REGISTER_ENDPOINT)
 public class RegisterUserController {
 
+    private static final Logger log = LoggerFactory.getLogger(RegisterUserController.class);
+
     private final AuditLogDAO auditLogDAO;
     private final UserDAO userDAO;
     private final BeanValidationService beanValidationService;
     private final LocalBucket requestRateLimitBucket;
     private final LocalBucket createRateLimitBucket;
+    private final ServiceInfo serviceInfo;
 
     protected RegisterUserController(
             final AuditLogDAO auditLogDAO,
             final UserDAO userDAO,
+            final ServiceInfo serviceInfo,
             final BeanValidationService beanValidationService,
             final RateLimitService rateLimitService,
             @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME) final PasswordEncoder userPasswordEncoder) {
 
         this.auditLogDAO = auditLogDAO;
         this.userDAO = userDAO;
+        this.serviceInfo = serviceInfo;
         this.beanValidationService = beanValidationService;
 
         this.requestRateLimitBucket = rateLimitService.createRequestLimitBucker();
@@ -131,7 +141,15 @@ public class RegisterUserController {
                 .flatMap(this.auditLogDAO::logRegisterAccount)
                 .flatMap(account -> this.userDAO.byModelId(account.getModelId()))
                 .getOrThrow();
+    }
 
+    @RequestMapping(path = API.LOGIN_REDIRECT_ENDPOINT, method = RequestMethod.GET)
+    public void guiRedirectURL(final HttpServletResponse response) {
+        try {
+            response.sendRedirect(this.serviceInfo.getGuiRedirectURL());
+        } catch (final IOException e) {
+            log.error("Failed to send GUI redirect: ", e);
+        }
     }
 
 }

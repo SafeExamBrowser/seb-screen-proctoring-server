@@ -241,7 +241,6 @@ public class WebServiceConfig
                         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         log.warn("Unauthorized Request: {}", request, exception);
-                        log.info("Redirect to login after unauthorized request");
                         response.getOutputStream().println("{ \"error\": \"" + exception.getMessage() + "\" }");
                     },
                     SESSION_API_RESOURCE_ID,
