@@ -205,6 +205,9 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                             ExamRecordDynamicSqlSupport.name,
                             isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_EXAM_NAME)))
                     .and(
+                            GroupRecordDynamicSqlSupport.name,
+                            isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_GROUP_NAME)))
+                    .and(
                             GroupRecordDynamicSqlSupport.creationTime,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
                     .and(
