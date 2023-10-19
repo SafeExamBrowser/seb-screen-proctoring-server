@@ -17,7 +17,7 @@ public final class Profile {
     @JsonProperty("webserviceAddress")
     String webserviceAddress =
             "http://localhost:8090";
-    //"http://ralph.ethz.ch:8090";
+//    "http://ralph.ethz.ch:8090";
     //"https://sebserver-test-sps.let.ethz.ch";
     @JsonProperty("websocketAddress")
     String websocketAddress =
@@ -29,7 +29,7 @@ public final class Profile {
     String accessTokenEndpoint = "/oauth/token";
 
     @JsonProperty("groupId")
-    String groupId = "testgroup100";
+    String groupId = "group20";
     @JsonProperty("sessionId")
     String sessionId = null;
     @JsonProperty("clientId")
@@ -38,7 +38,7 @@ public final class Profile {
     String clientSecret = "test";
 
     @JsonProperty("runtime")
-    int runtime = 1 * 60000;
+    int runtime = 20 * 60000;
     @JsonProperty("numberOfConnections")
     int numberOfConnections = 10;
     @JsonProperty("spawnDelay")
