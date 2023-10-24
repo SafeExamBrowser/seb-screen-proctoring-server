@@ -404,8 +404,8 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
         return this.entityDAO.byModelId(modelId)
                 .flatMap(this::checkWriteAccess)
                 .flatMap(this::validForDelete)
+                .flatMap(this::logDelete)
                 .flatMap(entity -> this.entityDAO.delete(modelId))
-                .flatMap(this::logDeleted)
                 .flatMap(this::notifyDeleted)
                 .getOrThrow();
     }
@@ -450,7 +450,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                         .map(modelId -> new EntityKey(this.entityDAO.modelIdToPK(modelId), entityType))
                         .collect(Collectors.toSet()))
                 .flatMap(this.entityDAO::delete)
-                .flatMap(this::logDeleted)
+//                .flatMap(this::logDeleted)
                 .flatMap(this::notifyDeleted)
                 .getOrThrow();
 
@@ -635,7 +635,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
      * @param entity the Entity instance
      * @return Result of entity */
     protected Result<T> logCreate(final T entity) {
-        return this.auditLogDAO.logCreate(entity);
+        return this.auditLogDAO.logCreate(userService.getCurrentUser().getUserInfo(), entity);
     }
 
     /** Makes a MODIFY user activity log for the specified entity.
@@ -644,11 +644,21 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
      * @param entity the Entity instance
      * @return Result refer to the logged Entity instance or to an error if happened */
     protected Result<T> logModify(final T entity) {
-        return this.auditLogDAO.logModify(entity);
+        return this.auditLogDAO.logModify(userService.getCurrentUser().getUserInfo(), entity);
+    }
+
+    protected Result<T> logDelete(final T entity) {
+        return this.auditLogDAO.logDelete(userService.getCurrentUser().getUserInfo(), entity);
     }
 
     protected Result<Collection<EntityKey>> logDeleted(final Collection<EntityKey> entities) {
-        return this.auditLogDAO.logDeleted(entities);
+
+        List<EntityKey> entitiesList = entities.stream().toList();
+        for(int i = 0; i < entitiesList.size(); i++){
+            this.auditLogDAO.logDelete(userService.getCurrentUser().getUserInfo(), entityDAO.byModelId(entitiesList.get(i).getModelId()).getOrThrow());
+        }
+
+        return this.auditLogDAO.logDeleted(userService.getCurrentUser().getUserInfo(), entities);
     }
 
     /** Implements the creation of a new entity from the post parameters given within the POSTMapper

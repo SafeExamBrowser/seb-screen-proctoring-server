@@ -14,21 +14,14 @@ import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.user.AuditLog;
 import ch.ethz.seb.sps.domain.model.user.AuditLog.AuditLogType;
+import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.utils.Result;
 
 public interface AuditLogDAO extends EntityDAO<AuditLog, AuditLog> {
 
-    <T extends Entity> Result<T> log(AuditLogType logType, T entity);
-
-    <T extends Entity> Result<T> logCreate(T entity);
-
-    <T extends Entity> Result<T> logModify(T entity);
-
-    <T extends Entity> Result<T> logDelete(T entity);
-
-    Result<Collection<EntityKey>> logDeleted(Collection<EntityKey> entities);
+    <T extends Entity> Result<T> log(final UserInfo userInfo, AuditLogType logType, T entity);
 
     void logLogin(UserInfo userInfo);
 
@@ -38,6 +31,13 @@ public interface AuditLogDAO extends EntityDAO<AuditLog, AuditLog> {
      *
      * @param account the UserAccount
      * @return Result of the UserAccount or referring to an Error if happened */
-    Result<UserAccount> logRegisterAccount(UserAccount account);
+    Result<UserAccount> logRegisterAccount(UserInfo userInfo);
 
+    <T extends Entity> Result<T> logCreate(UserInfo userInfo, T entity);
+
+    <T extends Entity> Result<T> logModify(UserInfo userInfo, T entity);
+
+    <T extends Entity> Result<T> logDelete(UserInfo userInfo, T entity);
+
+    Result<Collection<EntityKey>> logDeleted(UserInfo userInfo, Collection<EntityKey> entities);
 }

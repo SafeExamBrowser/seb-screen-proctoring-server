@@ -8,10 +8,25 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.JSONMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.AuditLogRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.AuditLogRecordMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.model.AuditLogRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.utils.Constants;
+import ch.ethz.seb.sps.utils.Utils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.lang3.StringUtils;
+import org.mybatis.dynamic.sql.SqlBuilder;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +42,66 @@ import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
 import ch.ethz.seb.sps.utils.Result;
 
+import static org.mybatis.dynamic.sql.SqlBuilder.isEqualToWhenPresent;
+import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
+import static org.mybatis.dynamic.sql.SqlBuilder.isInCaseInsensitiveWhenPresent;
+
 @Lazy
 @Component
 public class AuditLogDAOBatis implements AuditLogDAO {
+
+    private final AuditLogRecordMapper auditLogRecordMapper;
+    private final JSONMapper jsonMapper;
+
+    public AuditLogDAOBatis(
+            final AuditLogRecordMapper auditLogRecordMapper,
+            final JSONMapper jsonMapper
+    ){
+        this.auditLogRecordMapper = auditLogRecordMapper;
+        this.jsonMapper = jsonMapper;
+    }
+
+
+    @Override
+    public <T extends Entity> Result<T> log(final UserInfo userInfo, final AuditLogType logType, final T entity) {
+        return prepareLog(userInfo, logType, entity, toMessage(entity));
+    }
+
+    @Override
+    public void logLogin(final UserInfo userInfo) {
+        log(userInfo, AuditLogType.LOGIN, userInfo);
+    }
+
+    @Override
+    public void logLogout(final UserInfo userInfo) {
+        log(userInfo, AuditLogType.LOGOUT, userInfo);
+    }
+
+    @Override
+    public Result<UserAccount> logRegisterAccount(final UserInfo userInfo) {
+        return log(userInfo, AuditLogType.REGISTER, userInfo);
+    }
+
+    @Override
+    public <T extends Entity> Result<T> logCreate(final UserInfo userInfo, final T entity) {
+        return log(userInfo, AuditLogType.CREATE, entity);
+    }
+
+    @Override
+    public <T extends Entity> Result<T> logModify(final UserInfo userInfo, final T entity) {
+        return log(userInfo, AuditLogType.MODIFY, entity);
+    }
+
+    @Override
+    public <T extends Entity> Result<T> logDelete(final UserInfo userInfo, final T entity) {
+        return log(userInfo, AuditLogType.DELETE, entity);
+    }
+
+    @Override
+    public Result<Collection<EntityKey>> logDeleted(final UserInfo userInfo, final Collection<EntityKey> entities) {
+        return Result.of(entities);
+    }
+
 
     @Override
     public EntityType entityType() {
@@ -38,40 +110,110 @@ public class AuditLogDAOBatis implements AuditLogDAO {
 
     @Override
     public Result<AuditLog> byPK(final Long id) {
-        // TODO Auto-generated method stub
-        return Result.ofRuntimeError("TODO");
+        return Result.tryCatch(() -> {
+            final AuditLogRecord auditLogRecord = this.auditLogRecordMapper.selectByPrimaryKey(id);
+
+            if(auditLogRecord == null){
+                throw new NoResourceFoundException(EntityType.AUDIT_LOG, String.valueOf(id));
+            }
+
+           return toDomainModel(auditLogRecord);
+        });
     }
 
     @Override
     public Result<Collection<AuditLog>> allOf(final Set<Long> pks) {
-        // TODO Auto-generated method stub
-        return Result.ofRuntimeError("TODO");
+        return Result.tryCatch(() -> {
+            final List<AuditLog> result = pks
+                    .stream()
+                    .map(pk -> this.auditLogRecordMapper.selectByPrimaryKey(pk))
+                    .map(this::toDomainModel)
+                    .collect(Collectors.toList());
+
+            return result;
+        });
     }
 
     @Override
     public Result<AuditLog> createNew(final AuditLog data) {
-        // TODO Auto-generated method stub
-        return Result.ofRuntimeError("TODO");
+        return Result.tryCatch(() -> {
+            writeLogIntoDB(
+                    data.userUUID,
+                    AuditLogType.CREATE,
+                    data.entityType,
+                    data.getId(),
+                    data.message
+            );
+
+            return data;
+        });
     }
 
     @Override
     public Result<AuditLog> save(final AuditLog data) {
-        // TODO Auto-generated method stub
-        return Result.ofRuntimeError("TODO");
+        throw new UnsupportedOperationException();
     }
+
 
     @Override
     public Result<Collection<EntityKey>> delete(final Set<EntityKey> all) {
-        // TODO Auto-generated method stub
-        return Result.ofRuntimeError("TODO");
+        return Result.tryCatch(() -> {
+
+            final List<Long> ids = extractListOfPKs(all);
+            if (ids == null || ids.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            this.auditLogRecordMapper.deleteByExample()
+                    .where(AuditLogRecordDynamicSqlSupport.id, isIn(ids))
+                    .build()
+                    .execute();
+
+            return ids.stream()
+                    .map(id -> new EntityKey(id, EntityType.AUDIT_LOG))
+                    .collect(Collectors.toList());
+        });
     }
 
     @Override
     public Result<Collection<AuditLog>> allMatching(
             final FilterMap filterMap,
             final Collection<Long> prePredicated) {
-        // TODO Auto-generated method stub
-        return Result.ofRuntimeError("TODO");
+
+        return Result.tryCatch(() -> {
+
+            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
+            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
+
+            final List<String> _activityTypes = getActivityTypes(filterMap);
+            final List<String> _entityTypes = getEntityTypes(filterMap);
+
+
+            final List<AuditLog> result = this.auditLogRecordMapper
+                    .selectByExample()
+                    .where(
+                            AuditLogRecordDynamicSqlSupport.timestamp,
+                            SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                    .and(
+                            AuditLogRecordDynamicSqlSupport.timestamp,
+                            SqlBuilder.isLessThanWhenPresent(toTime))
+                    .and(
+                            AuditLogRecordDynamicSqlSupport.userUuid,
+                            isEqualToWhenPresent(filterMap.getSQLWildcard(Domain.AUDIT_LOG.ATTR_USER_UUID)))
+                    .and(
+                            AuditLogRecordDynamicSqlSupport.activityType,
+                            isInCaseInsensitiveWhenPresent(_activityTypes))
+                    .and(
+                            AuditLogRecordDynamicSqlSupport.entityType,
+                            isInCaseInsensitiveWhenPresent(_entityTypes))
+                    .build()
+                    .execute()
+                    .stream()
+                    .map(this::toDomainModel)
+                    .collect(Collectors.toList());
+
+            return result;
+        });
     }
 
     @Override
@@ -80,52 +222,97 @@ public class AuditLogDAOBatis implements AuditLogDAO {
         return Result.of(Collections.emptySet());
     }
 
-    @Override
-    public void logLogout(final UserInfo userInfo) {
-        // TODO Auto-generated method stub
+    private <E extends Entity> Result<E> prepareLog(
+            final UserInfo userInfo,
+            final AuditLogType logType,
+            final E entity,
+            final String message){
 
+        return Result.tryCatch(() -> {
+                    String _message = message;
+                    if (message == null) {
+                        _message = "Entity details: " + entity;
+                    }
+
+                    //writes log into DB
+                    writeLogIntoDB(userInfo.uuid, logType, entity.entityType(), entity.getId(), _message);
+
+                    return entity;
+                })
+                .onError(TransactionHandler::rollback)
+                .onError(transaction -> log.error(
+                        "Unexpected error while trying to log user activity for user {}, action-type: {} entity-type: {} entity-id: {}",
+                        userInfo.uuid,
+                        logType,
+                        entity.entityType().name(),
+                        entity.getModelId(),
+                        transaction));
     }
 
-    @Override
-    public <T extends Entity> Result<T> log(final AuditLogType logType, final T entity) {
-        // TODO Auto-generated method stub
-        return Result.of(entity);
+
+    private void writeLogIntoDB(
+            final String userUUID,
+            final AuditLogType logType,
+            final EntityType entityType,
+            final Long entityId,
+            final String message) {
+
+        this.auditLogRecordMapper.insertSelective(
+                new AuditLogRecord(
+                        null,
+                        userUUID,
+                        System.currentTimeMillis(),
+                        logType.name(),
+                        entityType.name(),
+                        entityId,
+                        Utils.truncateText(message, 4000)
+                )
+        );
     }
 
-    @Override
-    public <T extends Entity> Result<T> logCreate(final T entity) {
-        // TODO Auto-generated method stub
-        return Result.of(entity);
+    private String toMessage(final Entity entity) {
+        if (entity == null) {
+            return Constants.EMPTY_NOTE;
+        }
+
+        String entityAsString;
+        try {
+            entityAsString = entity.getName() + " = " + this.jsonMapper
+                    .writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(entity.printSecureCopy());
+        } catch (final JsonProcessingException e) {
+            entityAsString = entity.toString();
+        }
+
+        if (entityAsString != null && entityAsString.length() > 4000) {
+            return Utils.truncateText(entityAsString, 4000);
+        }
+        return entityAsString;
     }
 
-    @Override
-    public <T extends Entity> Result<T> logModify(final T entity) {
-        // TODO Auto-generated method stub
-        return Result.of(entity);
+    private AuditLog toDomainModel(final AuditLogRecord auditLogRecord){
+        return new AuditLog(
+                auditLogRecord.getId(),
+                auditLogRecord.getUserUuid(),
+                "",
+                auditLogRecord.getTimestamp(),
+                AuditLogType.valueOf(auditLogRecord.getActivityType()),
+                EntityType.valueOf(auditLogRecord.getEntityType()),
+                auditLogRecord.getEntityId().toString(),
+                auditLogRecord.getMessage()
+        );
     }
 
-    @Override
-    public <T extends Entity> Result<T> logDelete(final T entity) {
-        // TODO Auto-generated method stub
-        return Result.of(entity);
+    private List<String> getActivityTypes(final FilterMap filterMap) {
+        return (filterMap.getString(AuditLog.FILTER_ATTR_ACTIVITY_TYPES) != null)
+                ? Arrays.asList(StringUtils.split(AuditLog.FILTER_ATTR_ACTIVITY_TYPES, Constants.LIST_SEPARATOR))
+                : null;
     }
 
-    @Override
-    public Result<Collection<EntityKey>> logDeleted(final Collection<EntityKey> entities) {
-        // TODO Auto-generated method stub
-        return Result.of(entities);
-    }
-
-    @Override
-    public void logLogin(final UserInfo userInfo) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public Result<UserAccount> logRegisterAccount(final UserAccount account) {
-        // TODO Auto-generated method stub
-        return Result.of(account);
+    private List<String> getEntityTypes(final FilterMap filterMap) {
+        return (AuditLog.FILTER_ATTR_ENTITY_TYPES != null)
+                ? Arrays.asList(StringUtils.split(AuditLog.FILTER_ATTR_ENTITY_TYPES, Constants.LIST_SEPARATOR))
+                : null;
     }
 
 }

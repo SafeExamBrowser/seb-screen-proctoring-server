@@ -100,16 +100,12 @@ public class AdminUserAccountController extends ActivatableEntityController<User
 
     @RequestMapping(path = API.LOGIN_PATH_SEGMENT, method = RequestMethod.POST)
     public void logLogin() {
-        this.auditLogDAO.logLogin(this.userService
-                .getCurrentUser()
-                .getUserInfo());
+        this.auditLogDAO.logLogin(this.userService.getCurrentUser().getUserInfo());
     }
 
     @RequestMapping(path = API.LOGOUT_PATH_SEGMENT, method = RequestMethod.POST)
     public void logLogout() {
-        this.auditLogDAO.logLogout(this.userService
-                .getCurrentUser()
-                .getUserInfo());
+        this.auditLogDAO.logLogout(this.userService.getCurrentUser().getUserInfo());
     }
 
     @RequestMapping(
@@ -125,7 +121,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
                 .map(ui -> checkPasswordChange(ui, passwordChange))
                 .flatMap(e -> this.userDAO.changePassword(modelId, passwordChange.getNewPassword()))
                 .flatMap(this::revokeAccessToken)
-                .flatMap(e -> this.auditLogDAO.log(AuditLog.AuditLogType.PASSWORD_CHANGE, e))
+                .flatMap(e -> this.auditLogDAO.log(this.userService.getCurrentUser().getUserInfo(), AuditLog.AuditLogType.PASSWORD_CHANGE, e))
                 .getOrThrow();
     }
 
