@@ -29,7 +29,7 @@ public final class Profile {
     String accessTokenEndpoint = "/oauth/token";
 
     @JsonProperty("groupId")
-    String groupId = "group20";
+    String groupId = "new group test";
     @JsonProperty("sessionId")
     String sessionId = null;
     @JsonProperty("clientId")
@@ -38,9 +38,9 @@ public final class Profile {
     String clientSecret = "test";
 
     @JsonProperty("runtime")
-    int runtime = 20 * 60000;
+    int runtime = 2 * 60000;
     @JsonProperty("numberOfConnections")
-    int numberOfConnections = 10;
+    int numberOfConnections = 80;
     @JsonProperty("spawnDelay")
     long spawnDelay = 1000;
     @JsonProperty("screenshotIntervall")

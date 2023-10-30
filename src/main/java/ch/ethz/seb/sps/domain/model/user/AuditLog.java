@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.domain.model.user;
 
+import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -15,7 +16,14 @@ import ch.ethz.seb.sps.domain.Domain.AUDIT_LOG;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
 
-public class AuditLog implements Entity {
+import java.util.Collection;
+
+public class AuditLog implements Entity, WithEntityPrivileges {
+
+    @Override
+    public Collection<EntityPrivilege> getEntityPrivileges() {
+        return null;
+    }
 
     public enum AuditLogType {
         REGISTER,

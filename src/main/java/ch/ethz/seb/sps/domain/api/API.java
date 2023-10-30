@@ -136,6 +136,9 @@ public final class API {
     public static final String SESSION_ENDPOINT = "/session";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
     public static final String SEARCH_ENDPOINT = "/search";
+
+    public static final String LOG_ENDPOINT = "/log";
+
     public static final String SCREENSHOT_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/screenshots";
     public static final String SESSION_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/sessions";
     public static final String TIMELINE_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/timeline";

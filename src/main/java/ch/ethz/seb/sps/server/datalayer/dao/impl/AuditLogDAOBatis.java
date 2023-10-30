@@ -136,13 +136,16 @@ public class AuditLogDAOBatis implements AuditLogDAO {
 
     @Override
     public Result<AuditLog> createNew(final AuditLog data) {
+
+        final String message = toMessage(data);;
+
         return Result.tryCatch(() -> {
             writeLogIntoDB(
                     data.userUUID,
                     AuditLogType.CREATE,
                     data.entityType,
-                    data.getId(),
-                    data.message
+                    data.id,
+                    message
             );
 
             return data;
@@ -185,10 +188,6 @@ public class AuditLogDAOBatis implements AuditLogDAO {
             final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
             final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
-            final List<String> _activityTypes = getActivityTypes(filterMap);
-            final List<String> _entityTypes = getEntityTypes(filterMap);
-
-
             final List<AuditLog> result = this.auditLogRecordMapper
                     .selectByExample()
                     .where(
@@ -200,12 +199,6 @@ public class AuditLogDAOBatis implements AuditLogDAO {
                     .and(
                             AuditLogRecordDynamicSqlSupport.userUuid,
                             isEqualToWhenPresent(filterMap.getSQLWildcard(Domain.AUDIT_LOG.ATTR_USER_UUID)))
-                    .and(
-                            AuditLogRecordDynamicSqlSupport.activityType,
-                            isInCaseInsensitiveWhenPresent(_activityTypes))
-                    .and(
-                            AuditLogRecordDynamicSqlSupport.entityType,
-                            isInCaseInsensitiveWhenPresent(_entityTypes))
                     .build()
                     .execute()
                     .stream()
@@ -301,18 +294,6 @@ public class AuditLogDAOBatis implements AuditLogDAO {
                 auditLogRecord.getEntityId().toString(),
                 auditLogRecord.getMessage()
         );
-    }
-
-    private List<String> getActivityTypes(final FilterMap filterMap) {
-        return (filterMap.getString(AuditLog.FILTER_ATTR_ACTIVITY_TYPES) != null)
-                ? Arrays.asList(StringUtils.split(AuditLog.FILTER_ATTR_ACTIVITY_TYPES, Constants.LIST_SEPARATOR))
-                : null;
-    }
-
-    private List<String> getEntityTypes(final FilterMap filterMap) {
-        return (AuditLog.FILTER_ATTR_ENTITY_TYPES != null)
-                ? Arrays.asList(StringUtils.split(AuditLog.FILTER_ATTR_ENTITY_TYPES, Constants.LIST_SEPARATOR))
-                : null;
     }
 
 }
