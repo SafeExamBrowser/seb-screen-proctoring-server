@@ -47,6 +47,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
@@ -231,6 +232,8 @@ public class SessionDAOBatis implements SessionDAO {
     public Result<Session> createNew(final Session data) {
         return Result.tryCatch(() -> {
 
+            checkUniqueUUID(data.uuid);
+
             final long now = Utils.getMillisecondsNow();
             final SessionRecord record = new SessionRecord(
                     null,
@@ -252,7 +255,7 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
-    //@Transactional
+    @Transactional
     public Result<Session> createNew(
             final String groupId,
             final String uuid,
@@ -264,6 +267,8 @@ public class SessionDAOBatis implements SessionDAO {
             final ImageFormat imageFormat) {
 
         return Result.tryCatch(() -> {
+
+            checkUniqueUUID(uuid);
 
             Long groupPK = isPK(groupId);
             if (groupPK == null) {
@@ -549,6 +554,20 @@ public class SessionDAOBatis implements SessionDAO {
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime());
+    }
+
+    private void checkUniqueUUID(final String uuid) {
+        if (uuid != null) {
+            final Long count = this.sessionRecordMapper.countByExample()
+                    .where(SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(uuid))
+                    .build()
+                    .execute();
+
+            if (count != null && count.longValue() > 0) {
+                throw new DuplicateEntityException(EntityType.SESSION, Domain.SESSION.ATTR_UUID,
+                        "UUID exists already");
+            }
+        }
     }
 
 }
