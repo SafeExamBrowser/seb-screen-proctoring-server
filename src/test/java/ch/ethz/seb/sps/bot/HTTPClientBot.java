@@ -165,27 +165,9 @@ public class HTTPClientBot {
                 long currentTime = startTime;
                 long lastScreenshotTime = startTime;
 
-                long totalDuration = endTime - startTime;
-                long oneThirdTime = startTime + totalDuration / 3;
-                long twoThirdTime = startTime + 2 * totalDuration / 3;
-
                 while (currentTime < endTime) {
                     if (currentTime - lastScreenshotTime >= HTTPClientBot.this.profile.screenshotInterval) {
-
-                        if (currentTime < oneThirdTime) {
-                            screenshot(sessionUUID, 0);
-                            System.out.println("00000000");
-
-                        } else if (currentTime >= oneThirdTime && currentTime < twoThirdTime) {
-                            screenshot(sessionUUID, 1);
-                            System.out.println("111111111");
-
-                        } else {
-                            screenshot(sessionUUID, 2);
-                            System.out.println("222222222");
-
-                        }
-
+                        screenshot(sessionUUID);
                         lastScreenshotTime = currentTime;
                     }
 
@@ -200,7 +182,7 @@ public class HTTPClientBot {
             }
         }
 
-        private void screenshot(final String sessionUUID,int index) {
+        private void screenshot(final String sessionUUID) {
 
             if (log.isTraceEnabled()) {
                 log.debug("ConnectionBot {} : take screenshot...", this.name);
@@ -211,7 +193,7 @@ public class HTTPClientBot {
             final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             takeScreenshot(byteArrayOutputStream);
 
-            final String metaData = createMetaData(index);
+            final String metaData = createMetaData();
 
             final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
@@ -255,40 +237,32 @@ public class HTTPClientBot {
                 "https://safeexambrowser.org")
                 .collect(Collectors.toList());
         private final List<String> titles = Stream.of(
-//                "Firefox",
-//                "Zoom",
-//                "Calculator",
-//                "Teams",
-//                "Excel"
-                        "Safe Exam Browser.Client",
-                        "Web-Browser",
-                        "Safe Exam Browser.Client"
-                )
+                "Firefox",
+                "Zoom",
+                "Calculator",
+                "Teams",
+                "Excel")
                 .collect(Collectors.toList());
         private final List<String> actions = Stream.of(
-                    "Moodle Page 1",
-                    "Moodle Page 2",
-                    "Moodle Page 3"
-
-//                        "Text Input",
-//                "Right Mouse Button",
-//                "Left Mouse Button",
-//                "Touch",
-//                "Selection (Double Click)"
-                )
+                "Text Input",
+                "Right Mouse Button",
+                "Left Mouse Button",
+                "Touch",
+                "Selection (Double Click)")
                 .collect(Collectors.toList());
 
-        private String createMetaData(int index) {
+        private String createMetaData() {
             final Map<String, String> metadata = new HashMap<>();
+            if (HTTPClientBot.this.random.nextBoolean()) {
                 metadata.put(
                         API.SCREENSHOT_META_DATA_BROWSER_URL,
                         this.urls.get(HTTPClientBot.this.random.nextInt(this.urls.size())));
-
+            } else {
                 metadata.put(
                         API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
-                        this.titles.get(index));
-
-                metadata.put(
+                        this.titles.get(HTTPClientBot.this.random.nextInt(this.titles.size())));
+            }
+            metadata.put(
                     API.SCREENSHOT_META_DATA_USER_ACTION,
                     this.actions.get(HTTPClientBot.this.random.nextInt(this.actions.size())));
 
@@ -342,7 +316,7 @@ public class HTTPClientBot {
         }
     }
 
-    private final Rectangle screenRect = new Rectangle(0, 0, 2560, 1440);
+    private final Rectangle screenRect = new Rectangle(0, 0, 800, 600);
 
     private BufferedImage singleScreenshot = null;
 
