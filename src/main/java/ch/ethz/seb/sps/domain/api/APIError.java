@@ -32,7 +32,8 @@ public final class APIError {
         BAD_REQUEST(HttpStatus.BAD_REQUEST),
         INTEGRITY_VIOLATION(HttpStatus.BAD_REQUEST),
         FIELD_VALIDATION(HttpStatus.BAD_REQUEST),
-        PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST);
+        PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST),
+        METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED);
 
         public final HttpStatus httpStatus;
 

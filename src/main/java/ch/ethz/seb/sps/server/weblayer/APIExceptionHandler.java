@@ -195,6 +195,23 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
 
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<Object> handleUnsupportedOperationException(
+            final UnsupportedOperationException ex,
+            final WebRequest request) {
+
+        final APIError apiError = new APIError(
+                APIError.APIErrorType.METHOD_NOT_ALLOWED,
+                request.getDescription(false),
+                ex.getMessage(),
+                null,
+                null);
+
+        log.warn("Error intercepted at API response error handler: {}", apiError);
+
+        return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
+    }
+
     private void addRequestAttributes(final WebRequest request, final Map<String, String> attributes) {
         final Principal userPrincipal = request.getUserPrincipal();
         attributes.put("request-parameter", Utils.toString(request.getParameterMap()));
