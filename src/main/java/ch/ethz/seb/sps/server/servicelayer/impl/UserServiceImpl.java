@@ -86,7 +86,8 @@ public class UserServiceImpl implements UserService {
                         new Privilege(EntityType.SEB_GROUP, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.SCREENSHOT, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.SESSION, API.PRIVILEGES_WRITE),
-                        new Privilege(EntityType.SCREENSHOT_DATA, API.PRIVILEGES_WRITE)));
+                        new Privilege(EntityType.SCREENSHOT_DATA, API.PRIVILEGES_WRITE),
+                        new Privilege(EntityType.AUDIT_LOG, API.PRIVILEGES_WRITE)));
 
         // proctor only has dedicated entity privileges
         this.rolePrivileges.put(UserRole.PROCTOR, Collections.emptyList());

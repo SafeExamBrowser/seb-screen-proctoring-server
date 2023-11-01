@@ -12,9 +12,9 @@ import java.util.Collection;
 
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityKey;
+import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.user.AuditLog;
 import ch.ethz.seb.sps.domain.model.user.AuditLog.AuditLogType;
-import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.utils.Result;
@@ -39,5 +39,5 @@ public interface AuditLogDAO extends EntityDAO<AuditLog, AuditLog> {
 
     <T extends Entity> Result<T> logDelete(UserInfo userInfo, T entity);
 
-    Result<Collection<EntityKey>> logDeleted(UserInfo userInfo, Collection<EntityKey> entities);
+    Result<Collection<EntityKey>> logDeleted(UserInfo userInfo, Collection<EntityKey> entities, EntityType entityType);
 }

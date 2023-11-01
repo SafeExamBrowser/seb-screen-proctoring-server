@@ -450,7 +450,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                         .map(modelId -> new EntityKey(this.entityDAO.modelIdToPK(modelId), entityType))
                         .collect(Collectors.toSet()))
                 .flatMap(this.entityDAO::delete)
-//                .flatMap(this::logDeleted)
+                .flatMap(this::logDeleted)
                 .flatMap(this::notifyDeleted)
                 .getOrThrow();
 
@@ -652,13 +652,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     }
 
     protected Result<Collection<EntityKey>> logDeleted(final Collection<EntityKey> entities) {
-
-        List<EntityKey> entitiesList = entities.stream().toList();
-        for(int i = 0; i < entitiesList.size(); i++){
-            this.auditLogDAO.logDelete(userService.getCurrentUser().getUserInfo(), entityDAO.byModelId(entitiesList.get(i).getModelId()).getOrThrow());
-        }
-
-        return this.auditLogDAO.logDeleted(userService.getCurrentUser().getUserInfo(), entities);
+        return this.auditLogDAO.logDeleted(userService.getCurrentUser().getUserInfo(), entities, this.entityDAO.entityType());
     }
 
     /** Implements the creation of a new entity from the post parameters given within the POSTMapper

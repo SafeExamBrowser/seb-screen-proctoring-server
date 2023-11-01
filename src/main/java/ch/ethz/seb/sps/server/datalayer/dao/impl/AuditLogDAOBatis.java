@@ -8,10 +8,12 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -98,8 +100,27 @@ public class AuditLogDAOBatis implements AuditLogDAO {
     }
 
     @Override
-    public Result<Collection<EntityKey>> logDeleted(final UserInfo userInfo, final Collection<EntityKey> entities) {
-        return Result.of(entities);
+    public Result<Collection<EntityKey>> logDeleted(final UserInfo userInfo, final Collection<EntityKey> entities, final EntityType entityType) {
+
+        return Result.tryCatch(() -> {
+                    if(entities == null || entities.isEmpty()){
+                        return Collections.<EntityKey>emptyList();
+                    }
+
+                    String _message = this.jsonMapper.writeValueAsString(entities);
+
+                    //writes log into DB
+                    writeLogIntoDB(userInfo.uuid, AuditLogType.DELETE, entityType, -1L, _message);
+
+                    return entities;
+                })
+                .onError(TransactionHandler::rollback)
+                .onError(transaction -> log.error(
+                        "Unexpected error while trying to log user activity for user {}, action-type: {} entity-id: {}",
+                        userInfo.uuid,
+                        AuditLogType.DELETE,
+                        entities,
+                        transaction));
     }
 
 
@@ -127,6 +148,7 @@ public class AuditLogDAOBatis implements AuditLogDAO {
             final List<AuditLog> result = pks
                     .stream()
                     .map(pk -> this.auditLogRecordMapper.selectByPrimaryKey(pk))
+                    .filter(Objects::nonNull)
                     .map(this::toDomainModel)
                     .collect(Collectors.toList());
 

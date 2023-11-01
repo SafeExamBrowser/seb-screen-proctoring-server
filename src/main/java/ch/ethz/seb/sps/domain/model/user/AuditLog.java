@@ -16,14 +16,7 @@ import ch.ethz.seb.sps.domain.Domain.AUDIT_LOG;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
 
-import java.util.Collection;
-
-public class AuditLog implements Entity, WithEntityPrivileges {
-
-    @Override
-    public Collection<EntityPrivilege> getEntityPrivileges() {
-        return null;
-    }
+public class AuditLog implements Entity {
 
     public enum AuditLogType {
         REGISTER,

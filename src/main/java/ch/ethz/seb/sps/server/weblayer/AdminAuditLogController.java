@@ -50,26 +50,15 @@ public class AdminAuditLogController extends EntityController<AuditLog, AuditLog
 
 
     @Override
-    protected AuditLog createNew(POSTMapper postParams) {
-
-        final String auditLogModelId = postParams.getString(Domain.AUDIT_LOG.ATTR_ID);
-        final Long entityId = (auditLogModelId != null) ? this.auditLogDAO.modelIdToPK(auditLogModelId) : null;
-
-        return this.auditLogDAO.createNew(
-                new AuditLog(
-                        parseLong(auditLogModelId),
-                        this.userService.getCurrentUserUUIDOrNull(),
-                        this.userService.getCurrentUser().getUsername(),
-                        null,
-                        AuditLog.AuditLogType.CREATE,
-                        EntityType.AUDIT_LOG,
-                        entityId.toString(),
-                        null
-                )
-        ).getOrThrow();
+    public AuditLog savePut(String modelId, AuditLog modifyData) {
+        throw new UnsupportedOperationException();
     }
 
-    //implementing merge does not make sense --> logs should not mbe modified
+    @Override
+    protected AuditLog createNew(POSTMapper postParams) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     protected AuditLog merge(AuditLog modifyData, AuditLog existingEntity) {
         return null;
