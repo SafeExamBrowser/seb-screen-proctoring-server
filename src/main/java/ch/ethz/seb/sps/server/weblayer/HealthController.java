@@ -17,15 +17,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.server.ServiceInfo;
 import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
 
 @RestController
 public class HealthController {
 
     private final SessionServiceHealthControl sessionServiceHealthControl;
+    private final ServiceInfo serviceInfo;
 
-    public HealthController(final SessionServiceHealthControl sessionServiceHealthControl) {
+    public HealthController(
+            final SessionServiceHealthControl sessionServiceHealthControl,
+            final ServiceInfo serviceInfo) {
+
         this.sessionServiceHealthControl = sessionServiceHealthControl;
+        this.serviceInfo = serviceInfo;
     }
 
     @RequestMapping(
@@ -39,6 +45,11 @@ public class HealthController {
                 String.valueOf(this.sessionServiceHealthControl.getOverallLoadIndicator()));
         response.setHeader(HttpHeaders.CONNECTION, "close");
 
+    }
+
+    @RequestMapping(path = API.GUI_REDIRECT_ENDPOINT, method = RequestMethod.GET)
+    public String guiRedirectURL() {
+        return this.serviceInfo.getGuiRedirectURL();
     }
 
 }

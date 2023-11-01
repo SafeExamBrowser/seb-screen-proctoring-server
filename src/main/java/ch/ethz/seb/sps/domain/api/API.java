@@ -77,6 +77,7 @@ public final class API {
     public static final String OAUTH_REVOKE_TOKEN_ENDPOINT = OAUTH_ENDPOINT + "/revoke-token";
     public static final String HEALTH_ENDPOINT = "/health";
     public static final String WEBSOCKET_SESSION_ENDPOINT = "/wsock";
+    public static final String GUI_REDIRECT_ENDPOINT = "/gui-redirect-location";
 
     public static final String PARAM_MODEL_ID = "modelId";
 
@@ -106,7 +107,6 @@ public final class API {
     public static final String USERSYNC_SEBSERVER_ENDPOINT = "/usersync/sebserver";
     public static final String ENTITY_PRIVILEGE_ENDPOINT = "/entityprivilege";
     public static final String REGISTER_ENDPOINT = "/register";
-    public static final String LOGIN_REDIRECT_ENDPOINT = "/guilogin";
 
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 
