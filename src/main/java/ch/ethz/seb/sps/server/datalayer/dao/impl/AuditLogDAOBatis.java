@@ -8,8 +8,9 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import static org.mybatis.dynamic.sql.SqlBuilder.isEqualToWhenPresent;
+import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -17,22 +18,16 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ch.ethz.seb.sps.domain.Domain;
-import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.domain.api.JSONMapper;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.AuditLogRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.AuditLogRecordMapper;
-import ch.ethz.seb.sps.server.datalayer.batis.model.AuditLogRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
-import ch.ethz.seb.sps.utils.Constants;
-import ch.ethz.seb.sps.utils.Utils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
@@ -41,12 +36,14 @@ import ch.ethz.seb.sps.domain.model.user.AuditLog;
 import ch.ethz.seb.sps.domain.model.user.AuditLog.AuditLogType;
 import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.AuditLogRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.AuditLogRecordMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.model.AuditLogRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
+import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
-
-import static org.mybatis.dynamic.sql.SqlBuilder.isEqualToWhenPresent;
-import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
-import static org.mybatis.dynamic.sql.SqlBuilder.isInCaseInsensitiveWhenPresent;
+import ch.ethz.seb.sps.utils.Utils;
 
 @Lazy
 @Component
@@ -57,12 +54,10 @@ public class AuditLogDAOBatis implements AuditLogDAO {
 
     public AuditLogDAOBatis(
             final AuditLogRecordMapper auditLogRecordMapper,
-            final JSONMapper jsonMapper
-    ){
+            final JSONMapper jsonMapper) {
         this.auditLogRecordMapper = auditLogRecordMapper;
         this.jsonMapper = jsonMapper;
     }
-
 
     @Override
     public <T extends Entity> Result<T> log(final UserInfo userInfo, final AuditLogType logType, final T entity) {
@@ -100,20 +95,21 @@ public class AuditLogDAOBatis implements AuditLogDAO {
     }
 
     @Override
-    public Result<Collection<EntityKey>> logDeleted(final UserInfo userInfo, final Collection<EntityKey> entities, final EntityType entityType) {
+    public Result<Collection<EntityKey>> logDeleted(final UserInfo userInfo, final Collection<EntityKey> entities,
+            final EntityType entityType) {
 
         return Result.tryCatch(() -> {
-                    if(entities == null || entities.isEmpty()){
-                        return Collections.<EntityKey>emptyList();
-                    }
+            if (entities == null || entities.isEmpty()) {
+                return Collections.<EntityKey> emptyList();
+            }
 
-                    String _message = this.jsonMapper.writeValueAsString(entities);
+            final String _message = this.jsonMapper.writeValueAsString(entities);
 
-                    //writes log into DB
-                    writeLogIntoDB(userInfo.uuid, AuditLogType.DELETE, entityType, -1L, _message);
+            //writes log into DB
+            writeLogIntoDB(userInfo.uuid, AuditLogType.DELETE, entityType, -1L, _message);
 
-                    return entities;
-                })
+            return entities;
+        })
                 .onError(TransactionHandler::rollback)
                 .onError(transaction -> log.error(
                         "Unexpected error while trying to log user activity for user {}, action-type: {} entity-id: {}",
@@ -122,7 +118,6 @@ public class AuditLogDAOBatis implements AuditLogDAO {
                         entities,
                         transaction));
     }
-
 
     @Override
     public EntityType entityType() {
@@ -134,11 +129,11 @@ public class AuditLogDAOBatis implements AuditLogDAO {
         return Result.tryCatch(() -> {
             final AuditLogRecord auditLogRecord = this.auditLogRecordMapper.selectByPrimaryKey(id);
 
-            if(auditLogRecord == null){
+            if (auditLogRecord == null) {
                 throw new NoResourceFoundException(EntityType.AUDIT_LOG, String.valueOf(id));
             }
 
-           return toDomainModel(auditLogRecord);
+            return toDomainModel(auditLogRecord);
         });
     }
 
@@ -159,7 +154,8 @@ public class AuditLogDAOBatis implements AuditLogDAO {
     @Override
     public Result<AuditLog> createNew(final AuditLog data) {
 
-        final String message = toMessage(data);;
+        final String message = toMessage(data);
+        ;
 
         return Result.tryCatch(() -> {
             writeLogIntoDB(
@@ -167,8 +163,7 @@ public class AuditLogDAOBatis implements AuditLogDAO {
                     AuditLogType.CREATE,
                     data.entityType,
                     data.id,
-                    message
-            );
+                    message);
 
             return data;
         });
@@ -178,7 +173,6 @@ public class AuditLogDAOBatis implements AuditLogDAO {
     public Result<AuditLog> save(final AuditLog data) {
         throw new UnsupportedOperationException();
     }
-
 
     @Override
     public Result<Collection<EntityKey>> delete(final Set<EntityKey> all) {
@@ -241,19 +235,19 @@ public class AuditLogDAOBatis implements AuditLogDAO {
             final UserInfo userInfo,
             final AuditLogType logType,
             final E entity,
-            final String message){
+            final String message) {
 
         return Result.tryCatch(() -> {
-                    String _message = message;
-                    if (message == null) {
-                        _message = "Entity details: " + entity;
-                    }
+            String _message = message;
+            if (message == null) {
+                _message = "Entity details: " + entity;
+            }
 
-                    //writes log into DB
-                    writeLogIntoDB(userInfo.uuid, logType, entity.entityType(), entity.getId(), _message);
+            //writes log into DB
+            writeLogIntoDB(userInfo.uuid, logType, entity.entityType(), entity.getId(), _message);
 
-                    return entity;
-                })
+            return entity;
+        })
                 .onError(TransactionHandler::rollback)
                 .onError(transaction -> log.error(
                         "Unexpected error while trying to log user activity for user {}, action-type: {} entity-type: {} entity-id: {}",
@@ -263,7 +257,6 @@ public class AuditLogDAOBatis implements AuditLogDAO {
                         entity.getModelId(),
                         transaction));
     }
-
 
     private void writeLogIntoDB(
             final String userUUID,
@@ -280,9 +273,7 @@ public class AuditLogDAOBatis implements AuditLogDAO {
                         logType.name(),
                         entityType.name(),
                         entityId,
-                        Utils.truncateText(message, 4000)
-                )
-        );
+                        Utils.truncateText(message, 4000)));
     }
 
     private String toMessage(final Entity entity) {
@@ -305,7 +296,7 @@ public class AuditLogDAOBatis implements AuditLogDAO {
         return entityAsString;
     }
 
-    private AuditLog toDomainModel(final AuditLogRecord auditLogRecord){
+    private AuditLog toDomainModel(final AuditLogRecord auditLogRecord) {
         return new AuditLog(
                 auditLogRecord.getId(),
                 auditLogRecord.getUserUuid(),
@@ -314,8 +305,7 @@ public class AuditLogDAOBatis implements AuditLogDAO {
                 AuditLogType.valueOf(auditLogRecord.getActivityType()),
                 EntityType.valueOf(auditLogRecord.getEntityType()),
                 auditLogRecord.getEntityId().toString(),
-                auditLogRecord.getMessage()
-        );
+                auditLogRecord.getMessage());
     }
 
 }

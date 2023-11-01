@@ -283,14 +283,11 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                     " or incorrect form parameter. The needed form parameter " +
                     "can be verified within the specific entity object.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    required = true,
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
-
             parameters = {
                     @Parameter(
                             name = "formParameter",
                             required = false,
-                            hidden = true,
                             description = "The from parameter value map that is been used to create a new entity object.",
                             example = "{\"name\":\"new entity\"}")
             })
@@ -635,7 +632,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
      * @param entity the Entity instance
      * @return Result of entity */
     protected Result<T> logCreate(final T entity) {
-        return this.auditLogDAO.logCreate(userService.getCurrentUser().getUserInfo(), entity);
+        return this.auditLogDAO.logCreate(this.userService.getCurrentUser().getUserInfo(), entity);
     }
 
     /** Makes a MODIFY user activity log for the specified entity.
@@ -644,15 +641,16 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
      * @param entity the Entity instance
      * @return Result refer to the logged Entity instance or to an error if happened */
     protected Result<T> logModify(final T entity) {
-        return this.auditLogDAO.logModify(userService.getCurrentUser().getUserInfo(), entity);
+        return this.auditLogDAO.logModify(this.userService.getCurrentUser().getUserInfo(), entity);
     }
 
     protected Result<T> logDelete(final T entity) {
-        return this.auditLogDAO.logDelete(userService.getCurrentUser().getUserInfo(), entity);
+        return this.auditLogDAO.logDelete(this.userService.getCurrentUser().getUserInfo(), entity);
     }
 
     protected Result<Collection<EntityKey>> logDeleted(final Collection<EntityKey> entities) {
-        return this.auditLogDAO.logDeleted(userService.getCurrentUser().getUserInfo(), entities, this.entityDAO.entityType());
+        return this.auditLogDAO.logDeleted(this.userService.getCurrentUser().getUserInfo(), entities,
+                this.entityDAO.entityType());
     }
 
     /** Implements the creation of a new entity from the post parameters given within the POSTMapper
