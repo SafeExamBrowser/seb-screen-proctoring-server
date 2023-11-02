@@ -125,7 +125,7 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
         INIT_LOGGER.info("----> ");
 
         // Create an initial admin account if requested and not already in the data-base
-        this.adminUserInitializer.initAdminAccount();
+        this.adminUserInitializer.initAccounts();
 
         INIT_LOGGER.info("----> *********************************************************");
         INIT_LOGGER.info("----> *** Webservice Info:                                  ***");
