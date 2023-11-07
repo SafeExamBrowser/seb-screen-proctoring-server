@@ -49,6 +49,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 @SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_SEBSEVER_ADMIN)
 public class AdminJWTAccess {
 
+    private static final String SUBJECT_CLAIM_NAME = "sub";
     private static final String PASSWORD_CLAIM = "pwd";
     private static final String USERNAME_CLAIM = "usr";
     private static final String REDIRECT_CLAIM = "redirect";
@@ -118,24 +119,7 @@ public class AdminJWTAccess {
 
         try {
 
-            // decode given JWT
-            final Claims claims = Jwts.parser()
-                    .setSigningKey(this.cyptor.getInternalPWD().toString())
-                    .parseClaimsJws(logintoken)
-                    .getBody();
-
-            // check validity
-            final long expirationTime = claims.getExpiration().getTime();
-            final long now = Utils.getMillisecondsNow();
-            if (expirationTime < now) {
-                throw new BadRequestException(API.OAUTH_JWTTOKEN_VERIFY_ENDPOINT, "Token expired");
-            }
-
-            final String subject = claims.get("sub", String.class);
-            if (!SUBJECT_CLAIM.equals(subject)) {
-                throw new BadRequestException(API.OAUTH_JWTTOKEN_VERIFY_ENDPOINT, "Token subject mismatch");
-            }
-
+            final Claims claims = checkJWTValid(logintoken);
             final String username = claims.get(USERNAME_CLAIM, String.class);
             final String password = claims.get(PASSWORD_CLAIM, String.class);
             final String redirect = claims.get(REDIRECT_CLAIM, String.class);
@@ -162,11 +146,33 @@ public class AdminJWTAccess {
 
             final LoginInfo loginInfo = new LoginInfo(username, user.uuid(), redirect, token);
             return loginInfo;
-
+        } catch (final BadRequestException bre) {
+            throw bre;
         } catch (final Exception e) {
             throw new RuntimeException("Unexpected error while trying to verify login JWT: ", e);
         }
+    }
 
+    private Claims checkJWTValid(final String logintoken) {
+        // decode given JWT
+        final Claims claims = Jwts.parser()
+                .setSigningKey(this.cyptor.getInternalPWD().toString())
+                .parseClaimsJws(logintoken)
+                .getBody();
+
+        // check expiration date
+        final long expirationTime = claims.getExpiration().getTime();
+        final long now = Utils.getMillisecondsNow();
+        if (expirationTime < now) {
+            throw new BadRequestException(API.OAUTH_JWTTOKEN_VERIFY_ENDPOINT, "Token expired");
+        }
+
+        // check subject
+        final String subject = claims.get(SUBJECT_CLAIM_NAME, String.class);
+        if (!SUBJECT_CLAIM.equals(subject)) {
+            throw new BadRequestException(API.OAUTH_JWTTOKEN_VERIFY_ENDPOINT, "Token subject mismatch");
+        }
+        return claims;
     }
 
     // NOTE Token is expires in one minute and is signed with internal secret
