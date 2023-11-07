@@ -141,26 +141,17 @@ public class AdminProctorController {
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 
-        // at least current user must have read access for specified entity type within its own institution
-        this.userService.check(PrivilegeType.READ, EntityType.SEB_GROUP);
-
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
         filterMap.putIfAbsent(Group.FILTER_ATTR_ACTIVE, Constants.TRUE_STRING);
 
         final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();
-        final Collection<GroupViewData> groups = this.groupDAO
-                .getGroupsWithExamData(filterMap, readPrivilegedPredication)
-                .getOrThrow()
-                .stream()
-                .filter(group -> this.userService.hasGrant(PrivilegeType.READ, group))
-                .collect(Collectors.toList());
-
-        return this.paginationService.buildPageFromList(
+        return this.paginationService.getPageOf(
                 pageNumber,
                 pageSize,
                 sort,
-                groups,
-                GroupViewData.groupSort(sort));
+                ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
+                () -> this.groupDAO.getGroupsWithExamData(filterMap, readPrivilegedPredication))
+                .getOrThrow();
     }
 
     @Operation(

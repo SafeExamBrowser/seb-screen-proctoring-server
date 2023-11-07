@@ -73,6 +73,8 @@ public class ServiceInfo {
     private final String webserviceUUID;
     private boolean isMaster = false;
 
+    private final boolean isSEBServerBundle;
+
     private final String httpScheme; // external
     private final String webserverName; // external
     private final String webserverPort; // external
@@ -83,6 +85,7 @@ public class ServiceInfo {
     public ServiceInfo(
             final Environment environment,
             final WebserviceInfoDAO webserviceInfoDAO) {
+
         this.version = environment.getRequiredProperty(VERSION_KEY);
         this.activeProfiles = new HashSet<>(Arrays.asList(environment.getActiveProfiles()));
         this.storeAdapter = environment.getRequiredProperty(STORE_ADAPTER_KEY);
@@ -154,6 +157,10 @@ public class ServiceInfo {
                 "sps.webservice.distributed.updateInterval",
                 Long.class,
                 2000L);
+
+        this.isSEBServerBundle = BooleanUtils.toBoolean(environment.getProperty(
+                "sps.webservice.sebserver.bundle",
+                Constants.TRUE_STRING));
     }
 
     public boolean isMaster() {
@@ -180,6 +187,10 @@ public class ServiceInfo {
 
     public boolean isDistributed() {
         return this.isDistributed;
+    }
+
+    public boolean isSEBServerBundle() {
+        return this.isSEBServerBundle;
     }
 
     public long getDistributedUpdateInterval() {

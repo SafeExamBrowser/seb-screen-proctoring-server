@@ -28,15 +28,15 @@ import ch.ethz.seb.sps.utils.Result;
  * - Exam API for SEB-Client connections on running exams using client_credential grant type */
 @Lazy
 @Component
-public class SEBClientDetailsService implements ClientDetailsService {
+public class SPSClientDetailsService implements ClientDetailsService {
 
-    private static final Logger log = LoggerFactory.getLogger(SEBClientDetailsService.class);
+    private static final Logger log = LoggerFactory.getLogger(SPSClientDetailsService.class);
 
     private final ClientAccessService clientAccessService;
     private final GUIClientAPIClientDetails guiClientAPIClientDetails;
     private final SEBServerAPIClientDetails sebServerAPIClientDetails;
 
-    public SEBClientDetailsService(
+    public SPSClientDetailsService(
             final GUIClientAPIClientDetails guiClientAPIClientDetails,
             final ClientAccessService clientAccessService,
             final SEBServerAPIClientDetails sebServerAPIClientDetails) {

@@ -48,7 +48,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Autowired
     private WebServiceUserDetails webServiceUserDetails;
     @Autowired
-    private SEBClientDetailsService sebClientDetailsService;
+    private SPSClientDetailsService sebClientDetailsService;
     @Autowired
     @Qualifier(ServiceConfig.CLIENT_PASSWORD_ENCODER_BEAN_NAME)
     private PasswordEncoder clientPasswordEncoder;

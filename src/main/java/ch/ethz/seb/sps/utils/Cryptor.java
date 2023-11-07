@@ -37,6 +37,10 @@ public class Cryptor {
         this.internalPWD = environment.getProperty("sps.webservice.internalSecret");
     }
 
+    public CharSequence getInternalPWD() {
+        return this.internalPWD;
+    }
+
     /** Use this to encrypt a text with the internal password
      *
      * @param text The text to encrypt with the internal password

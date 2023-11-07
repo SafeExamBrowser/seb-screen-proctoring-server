@@ -154,6 +154,12 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
         INIT_LOGGER.info("----> Remote-Host name: {}", this.serviceInfo.getLoopbackHostName());
 
         INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> Setup: {}",
+                this.serviceInfo.isDistributed() ? "distributed / cloud setup" : "single host setup");
+        INIT_LOGGER.info("----> Bundle: {}",
+                this.serviceInfo.isSEBServerBundle() ? "SEB Server bundle" : "stand alone");
+
+        INIT_LOGGER.info("---->");
         INIT_LOGGER.info("----> *********************************************************");
         INIT_LOGGER.info("----> *** Webservice successfully started up!               ***");
         INIT_LOGGER.info("----> *********************************************************");

@@ -8,7 +8,6 @@
 
 package ch.ethz.seb.sps.domain.model.user;
 
-import ch.ethz.seb.sps.domain.model.WithEntityPrivileges;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

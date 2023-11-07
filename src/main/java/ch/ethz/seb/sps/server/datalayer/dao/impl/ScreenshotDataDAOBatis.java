@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -218,20 +219,28 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Transactional(readOnly = true)
     public Result<ScreenshotDataRecord> getLatest(final String sessionUUID) {
         return Result.tryCatch(() -> {
-            return SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
-                            id,
-                            sessionUuid,
-                            timestamp,
-                            imageFormat,
-                            metaData)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .orderBy(timestamp.descending())
-                    .limit(1)
-                    .build()
-                    .execute();
+            final ScreenshotDataRecord latestScreenshotDataRec = getLatestScreenshotDataRec(sessionUUID);
+            if (latestScreenshotDataRec == null) {
+                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+            }
+            return latestScreenshotDataRec;
         });
+    }
+
+    private ScreenshotDataRecord getLatestScreenshotDataRec(final String sessionUUID) {
+        return SelectDSL
+                .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
+                        id,
+                        sessionUuid,
+                        timestamp,
+                        imageFormat,
+                        metaData)
+                .from(screenshotDataRecord)
+                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                .orderBy(timestamp.descending())
+                .limit(1)
+                .build()
+                .execute();
     }
 
     @Override
@@ -263,8 +272,8 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
             // NOTE: For now we use a less efficient version that uses getLatest(final String sessionUUID) for
             //       all requested sessions but in the future we should solve this problem on DB layer
             return sessionUUIDs.stream()
-                    .map(this::getLatest)
-                    .flatMap(Result::onErrorLogAndSkip)
+                    .map(this::getLatestScreenshotDataRec)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toMap(r -> r.getSessionUuid(), Function.identity()));
         });
     }

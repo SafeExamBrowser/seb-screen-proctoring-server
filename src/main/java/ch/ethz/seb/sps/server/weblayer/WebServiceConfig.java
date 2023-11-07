@@ -41,9 +41,11 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.UserAuthenticationConverter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
+import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.server.ServiceConfig;
+import ch.ethz.seb.sps.server.weblayer.oauth.BasicAuthUserDetailService;
 import ch.ethz.seb.sps.server.weblayer.oauth.PreAuthProvider;
-import ch.ethz.seb.sps.server.weblayer.oauth.SEBClientDetailsService;
+import ch.ethz.seb.sps.server.weblayer.oauth.SPSClientDetailsService;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebServiceUserDetails;
 import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
 import io.swagger.v3.oas.models.Components;
@@ -81,7 +83,9 @@ public class WebServiceConfig
     @Autowired
     private TokenStore tokenStore;
     @Autowired
-    private SEBClientDetailsService webServiceClientDetails;
+    private SPSClientDetailsService webServiceClientDetails;
+    @Autowired
+    private BasicAuthUserDetailService basicAuthUserDetailService;
     @Autowired
     private PreAuthProvider preAuthProvider;
 
@@ -160,6 +164,10 @@ public class WebServiceConfig
                 .userDetailsService(this.webServiceUserDetails)
                 .passwordEncoder(this.userPasswordEncoder);
 
+        auth
+                .userDetailsService(this.basicAuthUserDetailService)
+                .passwordEncoder(this.userPasswordEncoder);
+
         auth.authenticationProvider(this.preAuthProvider);
     }
 
@@ -174,7 +182,15 @@ public class WebServiceConfig
                 .logout().disable()
                 .headers().frameOptions().disable()
                 .and()
-                .csrf().disable();
+                .csrf()
+                .disable();
+
+        http
+                .antMatcher(API.OAUTH_JWTTOKEN_ENDPOINT + "/**")
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .httpBasic();
     }
 
     @Bean
@@ -203,7 +219,7 @@ public class WebServiceConfig
 
         public AdminAPIResourceServerConfiguration(
                 final TokenStore tokenStore,
-                final SEBClientDetailsService webServiceClientDetails,
+                final SPSClientDetailsService webServiceClientDetails,
                 final AuthenticationManager authenticationManager,
                 final String apiEndpoint,
                 final String redirect,
@@ -228,7 +244,7 @@ public class WebServiceConfig
 
         public SessionAPIClientResourceServerConfiguration(
                 final TokenStore tokenStore,
-                final SEBClientDetailsService webServiceClientDetails,
+                final SPSClientDetailsService webServiceClientDetails,
                 final AuthenticationManager authenticationManager,
                 final String apiEndpoint,
                 final int adminAccessTokenValSec) {
