@@ -180,7 +180,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     @Override
     public Result<Collection<Long>> getGroupIdsWithExamData(
             final FilterMap filterMap,
-            final Collection<Long> prePredicated){
+            final Collection<Long> prePredicated) {
 
         return Result.tryCatch(() -> {
 
@@ -226,9 +226,6 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
 
             return result;
         });
-
-
-
 
     }
 
@@ -601,7 +598,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),
                 record.getExamId(),
-                getEntityPrivileges(record.getId()));
+                getEntityPrivileges(record.getId(), record.getExamId()));
     }
 
     private GroupViewData toGroupWithExamDomainModel(final GroupViewRecord record) {
@@ -617,16 +614,30 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                 new ExamViewData(record.getExamUuid(), record.getExamName()));
     }
 
-    private Collection<EntityPrivilege> getEntityPrivileges(final Long id) {
+    private Collection<EntityPrivilege> getEntityPrivileges(final Long id, final Long examId) {
         try {
 
             if (id == null) {
                 return Collections.emptyList();
             }
 
-            return this.entityPrivilegeDAO
+            final Collection<EntityPrivilege> groupPrivileges = this.entityPrivilegeDAO
                     .getEntityPrivileges(EntityType.SEB_GROUP, id)
                     .getOrThrow();
+
+            if (examId != null) {
+                final Collection<EntityPrivilege> examPrivileges = this.entityPrivilegeDAO
+                        .getEntityPrivileges(EntityType.EXAM, examId)
+                        .getOrThrow();
+
+                if (examPrivileges != null && !examPrivileges.isEmpty()) {
+                    final Collection<EntityPrivilege> result = new ArrayList<>(groupPrivileges);
+                    result.addAll(examPrivileges);
+                    return result;
+                }
+            }
+
+            return groupPrivileges;
 
         } catch (final Exception e) {
             log.error("Failed to get entity privileges for Group: {}", id, e);
