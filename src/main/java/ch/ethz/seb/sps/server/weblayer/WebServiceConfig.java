@@ -132,7 +132,17 @@ public class WebServiceConfig
                                 .in(In.HEADER)
                                 .flows(new OAuthFlows().clientCredentials(new OAuthFlow()
                                         .tokenUrl("/oauth/token")
-                                        .scopes(new Scopes().addString("read", "read").addString("write", "write"))))));
+                                        .scopes(new Scopes().addString("read", "read").addString("write", "write")))))
+
+                        .addSecuritySchemes("testSecurity", new SecurityScheme()
+                                .type(Type.OAUTH2)
+                                .scheme("basic")
+                                .in(In.HEADER)
+                                .flows(new OAuthFlows().clientCredentials(new OAuthFlow()
+                                        .tokenUrl("/oauth/token")
+                                        .scopes(new Scopes().addString("read", "read").addString("write", "write")))))
+
+                        );
 
     }
 
@@ -191,6 +201,12 @@ public class WebServiceConfig
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();
+
+        http
+                .antMatcher(API.REGISTER_ENDPOINT)
+                .authorizeRequests()
+                .and()
+                .httpBasic();
     }
 
     @Bean
@@ -214,6 +230,16 @@ public class WebServiceConfig
                 this.sessionAPIEndpoint,
                 this.sessionAccessTokenValSec);
     }
+
+//    @Bean
+//    protected ResourceServerConfiguration sebServerRegisterAPIResources() throws Exception {
+//        return new RegisterAPIClientResourceServerConfiguration(
+//                this.tokenStore,
+//                this.webServiceClientDetails,
+//                authenticationManagerBean(),
+//                this.sessionAPIEndpoint,
+//                this.sessionAccessTokenValSec);
+//    }
 
     private static final class AdminAPIResourceServerConfiguration extends WebserviceResourceConfiguration {
 
@@ -243,6 +269,34 @@ public class WebServiceConfig
     private static final class SessionAPIClientResourceServerConfiguration extends WebserviceResourceConfiguration {
 
         public SessionAPIClientResourceServerConfiguration(
+                final TokenStore tokenStore,
+                final SPSClientDetailsService webServiceClientDetails,
+                final AuthenticationManager authenticationManager,
+                final String apiEndpoint,
+                final int adminAccessTokenValSec) {
+
+            super(
+                    tokenStore,
+                    webServiceClientDetails,
+                    authenticationManager,
+                    (request, response, exception) -> {
+                        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        log.warn("Unauthorized Request: {}", request, exception);
+                        response.getOutputStream().println("{ \"error\": \"" + exception.getMessage() + "\" }");
+                    },
+                    SESSION_API_RESOURCE_ID,
+                    apiEndpoint,
+                    true,
+                    3,
+                    adminAccessTokenValSec,
+                    1);
+        }
+    }
+
+    private static final class RegisterAPIClientResourceServerConfiguration extends WebserviceResourceConfiguration {
+
+        public RegisterAPIClientResourceServerConfiguration(
                 final TokenStore tokenStore,
                 final SPSClientDetailsService webServiceClientDetails,
                 final AuthenticationManager authenticationManager,

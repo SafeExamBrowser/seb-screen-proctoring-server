@@ -14,6 +14,7 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -44,6 +45,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 
 @RestController
 @RequestMapping(API.REGISTER_ENDPOINT)
+@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_SEB_CLIENT)
 public class RegisterUserController {
 
     private final AuditLogDAO auditLogDAO;
@@ -52,7 +54,7 @@ public class RegisterUserController {
     private final LocalBucket requestRateLimitBucket;
     private final LocalBucket createRateLimitBucket;
 
-    protected RegisterUserController(
+    public RegisterUserController(
             final AuditLogDAO auditLogDAO,
             final UserDAO userDAO,
             final BeanValidationService beanValidationService,
