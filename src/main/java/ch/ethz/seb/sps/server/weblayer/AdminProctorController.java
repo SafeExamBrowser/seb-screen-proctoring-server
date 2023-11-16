@@ -228,7 +228,7 @@ public class AdminProctorController {
                             description = "The UUID of the session to get the latest screenshot for")
             })
     @RequestMapping(
-            path = API.SESSION_ENDPOINT + API.SESSION_ID_PATH_SEGMENT,
+            path = API.SCREENSHOT_DATA_ENDPOINT + API.SESSION_ID_PATH_SEGMENT,
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -255,7 +255,7 @@ public class AdminProctorController {
                             description = "The unix time-stamp (UTC) in milliseconds")
             })
     @RequestMapping(
-            path = API.SESSION_ENDPOINT + API.SESSION_ID_TIMESTAMP_PATH_SEGMENT,
+            path = API.SCREENSHOT_DATA_ENDPOINT + API.SESSION_ID_TIMESTAMP_PATH_SEGMENT,
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
