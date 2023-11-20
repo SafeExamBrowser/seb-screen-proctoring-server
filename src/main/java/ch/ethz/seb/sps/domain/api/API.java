@@ -136,6 +136,7 @@ public final class API {
     public static final String EXAM_ENDPOINT = "/exam";
     public static final String GROUP_ENDPOINT = "/group";
     public static final String SESSION_ENDPOINT = "/session";
+    public static final String SCREENSHOT_DATA_ENDPOINT = "/screenshot-data";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
     public static final String SEARCH_ENDPOINT = "/search";
 
