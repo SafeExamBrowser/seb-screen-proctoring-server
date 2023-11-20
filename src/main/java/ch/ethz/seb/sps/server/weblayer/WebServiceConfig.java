@@ -191,6 +191,12 @@ public class WebServiceConfig
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();
+
+        http
+                .antMatcher(API.REGISTER_ENDPOINT)
+                .authorizeRequests()
+                .and()
+                .httpBasic();
     }
 
     @Bean
