@@ -45,7 +45,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 
 @RestController
 @RequestMapping(API.REGISTER_ENDPOINT)
-@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_SEB_CLIENT)
 public class RegisterUserController {
 
     private final AuditLogDAO auditLogDAO;
