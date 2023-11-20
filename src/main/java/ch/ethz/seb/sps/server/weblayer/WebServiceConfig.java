@@ -132,9 +132,7 @@ public class WebServiceConfig
                                 .in(In.HEADER)
                                 .flows(new OAuthFlows().clientCredentials(new OAuthFlow()
                                         .tokenUrl("/oauth/token")
-                                        .scopes(new Scopes().addString("read", "read").addString("write", "write")))))
-
-                        );
+                                        .scopes(new Scopes().addString("read", "read").addString("write", "write"))))));
 
     }
 

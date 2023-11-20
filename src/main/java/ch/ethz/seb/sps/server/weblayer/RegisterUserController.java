@@ -14,7 +14,6 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -53,7 +52,7 @@ public class RegisterUserController {
     private final LocalBucket requestRateLimitBucket;
     private final LocalBucket createRateLimitBucket;
 
-    public RegisterUserController(
+    protected RegisterUserController(
             final AuditLogDAO auditLogDAO,
             final UserDAO userDAO,
             final BeanValidationService beanValidationService,
