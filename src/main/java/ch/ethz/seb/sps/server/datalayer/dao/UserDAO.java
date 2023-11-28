@@ -15,7 +15,7 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface UserDAO extends ActivatableEntityDAO<UserInfo, UserMod> {
 
-    Result<Long> getUserIdByUUID(final String userUUID);
+    Result<Long> getUserIdByUUID(String userUUID);
 
     Result<ServerUser> byUsername(String adminName);
 
@@ -29,6 +29,6 @@ public interface UserDAO extends ActivatableEntityDAO<UserInfo, UserMod> {
      *
      * @param userData the user account data to synchronize
      * @return Result refer to the new user account data or to an error when happened */
-    Result<UserInfo> synchronizeUserAccount(final UserMod userData);
+    Result<UserInfo> synchronizeUserAccount(UserMod userData);
 
 }

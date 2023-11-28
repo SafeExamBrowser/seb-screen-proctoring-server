@@ -40,10 +40,10 @@ public interface UserService {
     }
 
     /** Extracts the internal UserInfo from a given Principal.
-     *
+     * <p>
      * This is attended to apply some known strategies to extract the internal user from Principal. If there is no
      * internal user found on the given Principal, a IllegalArgumentException is thrown.
-     *
+     * <p>
      * If there is certainly a internal user within the given Principal but no strategy that finds it, this method can
      * be extended with the needed strategy.
      *
@@ -137,8 +137,7 @@ public interface UserService {
      * on deny.
      *
      * @param privilegeType the privilege type to check
-     * @param userInfo the the user
-     * @param grantEntity the entity */
+     * @param entity the entity */
     default <T extends Entity> T check(final PrivilegeType privilegeType, final T entity) {
         if (hasGrant(privilegeType, entity)) {
             return entity;

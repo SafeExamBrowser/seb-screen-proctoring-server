@@ -269,12 +269,15 @@ public class UserDAOBatis implements UserDAO {
     public Result<UserInfo> synchronizeUserAccount(final UserMod userData) {
         return Result.tryCatch(() -> {
 
+            checkUniqueMailAddress(userData);
+            checkUniqueUsername(userData);
             // check if user already exists
-            final Result<UserRecord> recordByUsername = this.recordByUsername(userData.name);
-            if (recordByUsername.hasError() && recordByUsername.getError() instanceof NoResourceFoundException) {
+            final Result<UserRecord> userRecord = this
+                    .recordByUUID(userData.uuid)
+                    .onErrorDo(error -> this.recordByUsername(userData.username).getOrThrow());
 
+            if (userRecord.hasError() && userRecord.getError() instanceof NoResourceFoundException) {
                 // user do not exist yet. create new one with the given attributes
-                checkUniqueMailAddress(userData);
                 final long now = Utils.getMillisecondsNow();
                 final UserRecord recordToSave = new UserRecord(
                         null,
@@ -286,7 +289,7 @@ public class UserDAOBatis implements UserDAO {
                         userData.email,
                         userData.language.toLanguageTag(),
                         userData.timeZone.getID(),
-                        UserRole.PROCTOR.name(),
+                        fromUserRoles(userData.roles),
                         now,
                         now,
                         null);
@@ -294,33 +297,28 @@ public class UserDAOBatis implements UserDAO {
                 this.userRecordMapper.insert(recordToSave);
                 return this.userRecordMapper.selectByPrimaryKey(recordToSave.getId());
 
-            }
-//            else {
-//
-//                // user already exists. do sync user data for existing user
-//                final UserRecord record = recordByUsername.getOrThrow();
-//                checkUniqueMailAddress(userData);
-//
-//                final UserRecord newRecord = new UserRecord(
-//                        record.getId(),
-//                        null,
-//                        null,
-//                        userData.surname,
-//                        userData.username,
-//                        userData.getNewPassword().toString(),
-//                        userData.email,
-//                        userData.language.toLanguageTag(),
-//                        userData.timeZone.getID(),
-//                        null,
-//                        null,
-//                        Utils.getMillisecondsNow(),
-//                        null);
-//
-//                this.userRecordMapper.updateByPrimaryKeySelective(newRecord);
-//                return this.userRecordMapper.selectByPrimaryKey(record.getId());
-//            }
+            } else {
+                // user already exists. do sync user data for existing user
+                final UserRecord record = userRecord.getOrThrow();
 
-            return recordByUsername.getOrThrow();
+                final UserRecord newRecord = new UserRecord(
+                        record.getId(),
+                        null,
+                        userData.name,
+                        userData.surname,
+                        userData.username,
+                        userData.getNewPassword().toString(),
+                        userData.email,
+                        userData.language.toLanguageTag(),
+                        userData.timeZone.getID(),
+                        fromUserRoles(userData.roles),
+                        null,
+                        Utils.getMillisecondsNow(),
+                        null);
+
+                this.userRecordMapper.updateByPrimaryKeySelective(newRecord);
+                return this.userRecordMapper.selectByPrimaryKey(record.getId());
+            }
         })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);
