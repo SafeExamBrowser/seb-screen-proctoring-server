@@ -16,6 +16,7 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 import java.util.List;
 
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord;
+import static org.mybatis.dynamic.sql.SqlBuilder.isGreaterThanWhenPresent;
 
 @Mapper
 public interface ScreenshotDataMapper {
@@ -24,9 +25,10 @@ public interface ScreenshotDataMapper {
     @ConstructorArgs({@Arg(column="timestamp", javaType=Long.class, jdbcType= JdbcType.BIGINT, id=true)})
     List<Long> selectTimestamps(SelectStatementProvider select);
 
-    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>>.QueryExpressionWhereBuilder selectScreenshotTimestamps(final String sessionUUID) {
+    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>>.QueryExpressionWhereBuilder selectScreenshotTimestamps(final String sessionUUID, final Long timestamp) {
         return SelectDSL.selectWithMapper(this::selectTimestamps, ScreenshotDataRecordDynamicSqlSupport.timestamp)
                 .from(screenshotDataRecord)
-                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionUUID));
+                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionUUID))
+                .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, isGreaterThanWhenPresent(timestamp));
     }
 }
