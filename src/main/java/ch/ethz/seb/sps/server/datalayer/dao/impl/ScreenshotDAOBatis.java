@@ -20,8 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.seb.sps.server.ServiceInit;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
-import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper;
-import ch.ethz.seb.sps.server.datalayer.batis.ScreenshotMapper.BlobContent;
+import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper.BlobContent;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;

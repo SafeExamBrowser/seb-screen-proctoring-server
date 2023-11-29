@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotDataMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -53,8 +54,12 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
 
-    public ScreenshotDataDAOBatis(final ScreenshotDataRecordMapper screenshotDataRecordMapper) {
+    private final ScreenshotDataMapper screenshotDataMapper;
+
+
+    public ScreenshotDataDAOBatis(final ScreenshotDataRecordMapper screenshotDataRecordMapper, final ScreenshotDataMapper screenshotDataMapper) {
         this.screenshotDataRecordMapper = screenshotDataRecordMapper;
+        this.screenshotDataMapper = screenshotDataMapper;
     }
 
     @Override
@@ -227,22 +232,6 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
         });
     }
 
-    private ScreenshotDataRecord getLatestScreenshotDataRec(final String sessionUUID) {
-        return SelectDSL
-                .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
-                        id,
-                        sessionUuid,
-                        timestamp,
-                        imageFormat,
-                        metaData)
-                .from(screenshotDataRecord)
-                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                .orderBy(timestamp.descending())
-                .limit(1)
-                .build()
-                .execute();
-    }
-
     @Override
     @Transactional(readOnly = true)
     public Result<Map<String, ScreenshotDataRecord>> allLatestIn(final List<String> sessionUUIDs) {
@@ -405,6 +394,20 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<Long>> getScreenshotTimestamps(final String sessionUUID, final Long timestamp){
+        return Result.tryCatch(() -> {
+            final List<Long> result = this.screenshotDataMapper
+                    .selectScreenshotTimestamps(sessionUUID, timestamp)
+                    .build()
+                    .execute();
+
+           return result;
+        });
+    }
+
+
+    @Override
     @Transactional
     public Result<ScreenshotData> createNew(final ScreenshotData data) {
         return save(data);
@@ -468,6 +471,22 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                     .map(rec -> new EntityKey(rec.getId(), EntityType.SCREENSHOT_DATA))
                     .collect(Collectors.toList());
         });
+    }
+
+    private ScreenshotDataRecord getLatestScreenshotDataRec(final String sessionUUID) {
+        return SelectDSL
+                .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
+                        id,
+                        sessionUuid,
+                        timestamp,
+                        imageFormat,
+                        metaData)
+                .from(screenshotDataRecord)
+                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                .orderBy(timestamp.descending())
+                .limit(1)
+                .build()
+                .execute();
     }
 
     private ScreenshotData toDomainModel(final ScreenshotDataRecord record) {

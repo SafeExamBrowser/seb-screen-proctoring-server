@@ -24,7 +24,7 @@ import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
-import ch.ethz.seb.sps.server.datalayer.batis.EntityPrivilegeIdMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.custommappers.EntityPrivilegeIdMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.EntityPrivilegeRecord;

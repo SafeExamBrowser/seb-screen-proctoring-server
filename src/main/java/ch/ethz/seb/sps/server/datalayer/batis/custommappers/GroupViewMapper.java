@@ -1,4 +1,4 @@
-package ch.ethz.seb.sps.server.datalayer.batis;
+package ch.ethz.seb.sps.server.datalayer.batis.custommappers;
 
 import ch.ethz.seb.sps.server.datalayer.batis.customrecords.GroupViewRecord;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
