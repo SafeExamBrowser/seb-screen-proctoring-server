@@ -300,7 +300,6 @@ public class UserDAOBatis implements UserDAO {
             } else {
                 // user already exists. do sync user data for existing user
                 final UserRecord record = userRecord.getOrThrow();
-
                 final UserRecord newRecord = new UserRecord(
                         record.getId(),
                         null,
