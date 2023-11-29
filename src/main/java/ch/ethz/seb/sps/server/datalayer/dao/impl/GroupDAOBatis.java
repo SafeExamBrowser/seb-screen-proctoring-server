@@ -36,7 +36,7 @@ import ch.ethz.seb.sps.domain.model.service.ExamViewData;
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
-import ch.ethz.seb.sps.server.datalayer.batis.GroupViewMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.custommappers.GroupViewMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.customrecords.GroupViewRecord;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;

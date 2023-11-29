@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,7 @@ public class AdminProctorController {
     private final Executor downloadExecutor;
     private final UserService userService;
     private final GroupDAO groupDAO;
+    private final ScreenshotDataDAO screenshotDataDAO;
     private final GroupService groupService;
     private final ProctoringService proctoringService;
     private final PaginationService paginationService;
@@ -84,6 +86,7 @@ public class AdminProctorController {
     public AdminProctorController(
             final UserService userService,
             final GroupDAO groupDAO,
+            final ScreenshotDataDAO screenshotDataDAO,
             final GroupService groupService,
             final ProctoringService proctoringService,
             final PaginationService paginationService,
@@ -93,6 +96,7 @@ public class AdminProctorController {
         this.downloadExecutor = downloadExecutor;
         this.userService = userService;
         this.groupDAO = groupDAO;
+        this.screenshotDataDAO = screenshotDataDAO;
         this.groupService = groupService;
         this.paginationService = paginationService;
         this.proctoringService = proctoringService;
@@ -650,6 +654,35 @@ public class AdminProctorController {
         filterMap.putIfAbsent(API.PARAM_SESSION_ID, sessionUUID);
 
         return this.groupingService.groupDataForTimeline(filterMap).getOrThrow();
+    }
+
+    @Operation(
+            summary = "Get a list of timestamps of a sessions",
+            description = "Returns a list of session timestamps that were captured later than the specified timestamp.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_SESSION_ID,
+                            description = "UUID of the session",
+                            required = true),
+                    @Parameter(
+                            name = API.PARAM_TIMESTAMP,
+                            description = "UUID of the session",
+                            required = true),
+            })
+    @RequestMapping(
+            path = API.SCREENSHOT_TIMESTAMPS_ENDPOINT + API.SESSION_ID_TIMESTAMP_PATH_SEGMENT,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Long> getScreenshotTimestamps(
+            @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
+            @PathVariable(name = API.PARAM_TIMESTAMP, required = true) final String timestamp) {
+        return this.screenshotDataDAO
+                .getScreenshotTimestamps(sessionUUID, (StringUtils.isNotBlank(timestamp)) ? Long.parseLong(timestamp) : null)
+                .getOrThrow()
+                .stream()
+                .collect(Collectors.toList());
     }
 
     private boolean hasMetaDataCriteria(final FilterMap filterMap) {
