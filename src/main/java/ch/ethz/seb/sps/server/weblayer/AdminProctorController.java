@@ -658,7 +658,7 @@ public class AdminProctorController {
 
     @Operation(
             summary = "Get a list of timestamps of a sessions",
-            description = "Returns a list of session timestamps that were captured later than the specified timestamp.",
+            description = "Returns a list of session timestamps that were captured later or earlier than the specified timestamp.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -668,18 +668,23 @@ public class AdminProctorController {
                             required = true),
                     @Parameter(
                             name = API.PARAM_TIMESTAMP,
-                            description = "UUID of the session",
+                            description = "start timestamp",
+                            required = true),
+                    @Parameter(
+                            name = API.PARAM_DIRECTION,
+                            description = "Direction in which the list of timestamps is being returned",
                             required = true),
             })
     @RequestMapping(
-            path = API.SCREENSHOT_TIMESTAMPS_ENDPOINT + API.SESSION_ID_TIMESTAMP_PATH_SEGMENT,
+            path = API.SCREENSHOT_TIMESTAMPS_ENDPOINT + API.SESSION_ID_TIMESTAMP_PATH_SEGMENT + API.DIRECTION_PATH_SEGMENT,
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Long> getScreenshotTimestamps(
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
-            @PathVariable(name = API.PARAM_TIMESTAMP, required = true) final String timestamp) {
+            @PathVariable(name = API.PARAM_TIMESTAMP, required = true) final String timestamp,
+            @PathVariable(name = API.PARAM_DIRECTION, required = true) final PageSortOrder sortOrder){
         return this.screenshotDataDAO
-                .getScreenshotTimestamps(sessionUUID, (StringUtils.isNotBlank(timestamp)) ? Long.parseLong(timestamp) : null)
+                .getScreenshotTimestamps(sessionUUID, (StringUtils.isNotBlank(timestamp)) ? Long.parseLong(timestamp) : null, sortOrder)
                 .getOrThrow()
                 .stream()
                 .collect(Collectors.toList());

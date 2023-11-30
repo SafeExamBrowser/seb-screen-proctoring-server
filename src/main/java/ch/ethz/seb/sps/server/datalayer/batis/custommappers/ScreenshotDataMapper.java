@@ -1,5 +1,6 @@
 package ch.ethz.seb.sps.server.datalayer.batis.custommappers;
 
+import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord;
 import static org.mybatis.dynamic.sql.SqlBuilder.isGreaterThanWhenPresent;
+import static org.mybatis.dynamic.sql.SqlBuilder.isLessThanWhenPresent;
 
 @Mapper
 public interface ScreenshotDataMapper {
@@ -25,7 +27,18 @@ public interface ScreenshotDataMapper {
     @ConstructorArgs({@Arg(column="timestamp", javaType=Long.class, jdbcType= JdbcType.BIGINT, id=true)})
     List<Long> selectTimestamps(SelectStatementProvider select);
 
-    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>>.QueryExpressionWhereBuilder selectScreenshotTimestamps(final String sessionUUID, final Long timestamp) {
+    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>>.QueryExpressionWhereBuilder selectScreenshotTimestamps(
+            final String sessionUUID,
+            final Long timestamp,
+            final PageSortOrder sortOrder ) {
+
+        if(sortOrder.equals(PageSortOrder.DESCENDING)){
+            return SelectDSL.selectWithMapper(this::selectTimestamps, ScreenshotDataRecordDynamicSqlSupport.timestamp)
+                    .from(screenshotDataRecord)
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionUUID))
+                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, isLessThanWhenPresent(timestamp));
+        }
+
         return SelectDSL.selectWithMapper(this::selectTimestamps, ScreenshotDataRecordDynamicSqlSupport.timestamp)
                 .from(screenshotDataRecord)
                 .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionUUID))

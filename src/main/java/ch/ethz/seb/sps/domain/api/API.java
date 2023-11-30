@@ -131,7 +131,7 @@ public final class API {
     public static final String PARAM_SESSION_ID = "sessionUUID";
     public static final String PARAM_FROM_TIME = "fromTime";
     public static final String PARAM_TO_TIME = "toTime";
-
+    public static final String PARAM_DIRECTION = "direction";
     public static final String PROCTORING_ENDPOINT = "/proctoring";
     public static final String EXAM_ENDPOINT = "/exam";
     public static final String GROUP_ENDPOINT = "/group";
@@ -148,6 +148,7 @@ public final class API {
     public static final String TIMELINE_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/timeline";
     public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_ID + "}";
     public static final String SESSION_ID_PATH_SEGMENT = "/{" + PARAM_SESSION_ID + "}";
+    public static final String DIRECTION_PATH_SEGMENT = "/{" + PARAM_DIRECTION + "}";
     public static final String SESSION_ID_TIMESTAMP_PATH_SEGMENT =
             "/{" + PARAM_SESSION_ID + "}" + PARAM_TIMESTAMP_PATH_SEGMENT;
 

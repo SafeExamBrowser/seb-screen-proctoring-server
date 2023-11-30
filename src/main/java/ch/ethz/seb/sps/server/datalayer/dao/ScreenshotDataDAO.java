@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,7 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
 
     Result<Long> getLatestImageId(String sessionUUID);
 
-    Result<Collection<Long>> getScreenshotTimestamps(String sessionUUID, Long timestamp);
+    Result<Collection<Long>> getScreenshotTimestamps(String sessionUUID, Long timestamp, PageSortOrder sortOrder);
 
     Result<ScreenshotDataRecord> getLatest(String sessionUUID);
 
