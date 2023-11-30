@@ -267,7 +267,7 @@ public class AdminProctorController {
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
             @PathVariable(name = API.PARAM_TIMESTAMP, required = true) final String timestamp) {
 
-        this.proctoringService.checkMonitroingSessionAccess(sessionUUID);
+        this.proctoringService.checkMonitoringSessionAccess(sessionUUID);
 
         Long ts = null;
         if (StringUtils.isNotBlank(timestamp)) {
@@ -338,8 +338,8 @@ public class AdminProctorController {
             @PathVariable(name = API.PARAM_TIMESTAMP, required = false) final String timestamp,
             final HttpServletResponse response) {
 
-        this.userService.check(PrivilegeType.READ, EntityType.SESSION);
-        this.proctoringService.checkMonitroingSessionAccess(sessionUUID);
+        //this.userService.check(PrivilegeType.READ, EntityType.SESSION);
+        this.proctoringService.checkMonitoringSessionAccess(sessionUUID);
 
         return CompletableFuture.runAsync(
                 () -> {

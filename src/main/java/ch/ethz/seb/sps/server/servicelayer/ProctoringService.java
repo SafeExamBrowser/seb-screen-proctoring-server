@@ -34,7 +34,7 @@ public interface ProctoringService {
     /** Check current users monitoring access for given sessionUUID
      *
      * @param sessionUUID */
-    void checkMonitroingSessionAccess(String sessionUUID);
+    void checkMonitoringSessionAccess(String sessionUUID);
 
     /** Get the recorded image data and metadata at a given point of time.
      *
