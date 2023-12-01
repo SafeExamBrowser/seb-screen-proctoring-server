@@ -104,7 +104,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public void checkMonitroingSessionAccess(final String sessionUUID) {
+    public void checkMonitoringSessionAccess(final String sessionUUID) {
         final Session session = this.proctoringCacheService.getSession(sessionUUID);
         if (session == null) {
             throw APIErrorException.notFound(EntityType.SESSION, sessionUUID, "Session doesn't exist or is not active");
