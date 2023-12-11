@@ -15,10 +15,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class Profile {
 
     @JsonProperty("webserviceAddress")
-    String webserviceAddress =
-            "http://localhost:8090";
-    //"http://ralph.ethz.ch:8090";
-    //"https://sebserver-test-sps.let.ethz.ch";
+    //local
+    String webserviceAddress = "http://localhost:8090";
+    //ralph
+//    String webserviceAddress = "http://ralph.ethz.ch:8090";
+    //kubernetes
+//    String webserviceAddress = "https://sps-webservice-test.let.ethz.ch";
+
     @JsonProperty("websocketAddress")
     String websocketAddress =
             "ws://localhost:8090";
@@ -29,7 +32,7 @@ public final class Profile {
     String accessTokenEndpoint = "/oauth/token";
 
     @JsonProperty("groupId")
-    String groupId = "testgroup700";
+    String groupId = "live feature test";
     @JsonProperty("sessionId")
     String sessionId = null;
     @JsonProperty("clientId")

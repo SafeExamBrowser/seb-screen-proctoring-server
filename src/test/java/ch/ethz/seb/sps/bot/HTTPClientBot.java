@@ -328,10 +328,10 @@ public class HTTPClientBot {
 
     //to change the display where the bot takes the screenshots --> change main display
     //monitor
-    private final Rectangle screenRect = new Rectangle(0, 0, 2560, 1440);
+//    private final Rectangle screenRect = new Rectangle(0, 0, 2560, 1440);
 
     //mac display
-    //private final Rectangle screenRect = new Rectangle(0, 0, 3546, 2234);
+    private final Rectangle screenRect = new Rectangle(0, 0, 3456, 2234);
 
     private BufferedImage singleScreenshot = null;
 
