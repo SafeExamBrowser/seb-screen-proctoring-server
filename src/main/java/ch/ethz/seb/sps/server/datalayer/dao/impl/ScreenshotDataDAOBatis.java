@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotDataMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
@@ -395,12 +396,16 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Long>> getScreenshotTimestamps(final String sessionUUID, final Long timestamp){
+    public Result<Collection<Long>> getScreenshotTimestamps(final String sessionUUID, final Long timestamp, final PageSortOrder sortOrder){
         return Result.tryCatch(() -> {
             final List<Long> result = this.screenshotDataMapper
-                    .selectScreenshotTimestamps(sessionUUID, timestamp)
+                    .selectScreenshotTimestamps(sessionUUID, timestamp, sortOrder)
                     .build()
                     .execute();
+
+            if(sortOrder.equals(PageSortOrder.DESCENDING)){
+                Collections.reverse(result);
+            }
 
            return result;
         });
