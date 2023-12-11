@@ -174,16 +174,10 @@ public class HTTPClientBot {
 
                         if (currentTime < oneThirdTime) {
                             screenshot(sessionUUID, 0);
-                            System.out.println("00000000");
-
                         } else if (currentTime >= oneThirdTime && currentTime < twoThirdTime) {
                             screenshot(sessionUUID, 1);
-                            System.out.println("111111111");
-
                         } else {
                             screenshot(sessionUUID, 2);
-                            System.out.println("222222222");
-
                         }
 
                         lastScreenshotTime = currentTime;
@@ -252,31 +246,21 @@ public class HTTPClientBot {
                 "https://zoom.com",
                 "https://chat.com",
                 "https://moodle.com",
-                "https://safeexambrowser.org")
-                .collect(Collectors.toList());
+                "https://safeexambrowser.org"
+        )
+        .collect(Collectors.toList());
         private final List<String> titles = Stream.of(
-//                "Firefox",
-//                "Zoom",
-//                "Calculator",
-//                "Teams",
-//                "Excel"
-                        "Safe Exam Browser.Client",
-                        "Web-Browser",
-                        "Safe Exam Browser.Client"
-                )
-                .collect(Collectors.toList());
+                "Safe Exam Browser.Client",
+                "Web-Browser",
+                "Safe Exam Browser.Client"
+        )
+        .collect(Collectors.toList());
         private final List<String> actions = Stream.of(
-                    "Moodle Page 1",
-                    "Moodle Page 2",
-                    "Moodle Page 3"
-
-//                        "Text Input",
-//                "Right Mouse Button",
-//                "Left Mouse Button",
-//                "Touch",
-//                "Selection (Double Click)"
-                )
-                .collect(Collectors.toList());
+                "Moodle Page 1",
+                "Moodle Page 2",
+                "Moodle Page 3"
+        )
+        .collect(Collectors.toList());
 
         private String createMetaData(int index) {
             final Map<String, String> metadata = new HashMap<>();
@@ -342,7 +326,12 @@ public class HTTPClientBot {
         }
     }
 
+    //to change the display where the bot takes the screenshots --> change main display
+    //monitor
     private final Rectangle screenRect = new Rectangle(0, 0, 2560, 1440);
+
+    //mac display
+    //private final Rectangle screenRect = new Rectangle(0, 0, 3546, 2234);
 
     private BufferedImage singleScreenshot = null;
 
