@@ -30,6 +30,7 @@ import ch.ethz.seb.sps.utils.Utils;
 
 @Service
 @ConditionalOnExpression("'${sps.data.store.strategy}'.equals('SINGLE_STREAMING')")
+//maybe change name here
 public class StreamingScreenshotServiceImpl implements ScreenshotStoreService {
 
     private static final Logger log = LoggerFactory.getLogger(StreamingScreenshotServiceImpl.class);

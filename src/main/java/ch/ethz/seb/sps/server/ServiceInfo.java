@@ -48,6 +48,8 @@ public class ServiceInfo {
     public static final String STORE_STRATEGY_KEY = "sps.data.store.strategy";
     public static final String FILE_STORE = "FILESYS_RDBMS";
     public static final String FULL_RDBMS_STORE = "FULL_RDBMS";
+    public static final String S3_STORE = "FULL_RDBMS";
+
 
     private final String version;
     private final Set<String> activeProfiles;
@@ -293,6 +295,10 @@ public class ServiceInfo {
 
     public boolean isFullRDBMSStore() {
         return FULL_RDBMS_STORE.equals(this.storeAdapter);
+    }
+
+    public boolean isS3Store() {
+        return S3_STORE.equals(this.storeAdapter);
     }
 
     public String getHostAddress() {

@@ -37,7 +37,7 @@ public class HealthController {
     @RequestMapping(
             path = API.HEALTH_ENDPOINT,
             method = RequestMethod.GET)
-    public void getServerHealth(final HttpServletResponse response) {
+    public String getServerHealth(final HttpServletResponse response) {
 
         response.setStatus(HttpStatus.OK.value());
         response.setHeader(
@@ -45,6 +45,7 @@ public class HealthController {
                 String.valueOf(this.sessionServiceHealthControl.getOverallLoadIndicator()));
         response.setHeader(HttpHeaders.CONNECTION, "close");
 
+        return "Health number: " + this.sessionServiceHealthControl.getOverallLoadIndicator();
     }
 
     @RequestMapping(path = API.GUI_REDIRECT_ENDPOINT, method = RequestMethod.GET)
