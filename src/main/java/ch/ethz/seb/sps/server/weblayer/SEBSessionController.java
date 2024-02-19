@@ -299,10 +299,8 @@ public class SEBSessionController {
 
                         response.setStatus(HttpStatus.OK.value());
 
-                        final int overalLoadIndicator = this.sessionServiceHealthControl.getOverallLoadIndicator();
-                        if (overalLoadIndicator > 0) {
-                            response.setHeader(API.SPS_SERVER_HEALTH, String.valueOf(overalLoadIndicator));
-                        }
+                        final int overallLoadIndicator = this.sessionServiceHealthControl.getOverallLoadIndicator();
+                        response.setHeader(API.SPS_SERVER_HEALTH, String.valueOf(overallLoadIndicator));
 
                     } catch (final Exception e) {
                         log.error("Failed to store screenshot: ", e);
