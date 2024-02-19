@@ -20,6 +20,7 @@ import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,16 +35,18 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
 
     private final ScreenshotMapper screenshotMapper;
     private final ScreenshotRecordMapper screenshotRecordMapper;
-
+    private final Environment environment;
     private MinioClient minioClient;
 
 
     public ScreenshotDAOS3(
             final ScreenshotMapper screenshotMapper,
-            final ScreenshotRecordMapper screenshotRecordMapper) {
+            final ScreenshotRecordMapper screenshotRecordMapper,
+            final Environment environment) {
 
         this.screenshotMapper = screenshotMapper;
         this.screenshotRecordMapper = screenshotRecordMapper;
+        this.environment = environment;
     }
 
     @EventListener(ServiceInitEvent.class)
@@ -52,8 +55,8 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
 
         this.minioClient =
                 MinioClient.builder()
-                        .endpoint("http://shelbyville:9000")
-                        .credentials("sebserver_dev", "0fYJ07yoRe7EqImiEb10XmOZYVoKoSPS")
+                        .endpoint(this.environment.getProperty("sps.s3.endpointUrl"))
+                        .credentials(this.environment.getProperty("sps.s3.accessKey"), this.environment.getProperty("sps.s3.secretKey"))
                         .build();
 
     }
