@@ -43,15 +43,14 @@ public class S3DAO {
 
     @EventListener(ServiceInitEvent.class)
     public void init() {
+
+        //todo: maybe add error handling so the server does not start app when connection to S3 service cannot be granted
         this.minioClient =
                 MinioClient.builder()
                         .endpoint(this.environment.getProperty("sps.s3.endpointUrl"))
                         .credentials(this.environment.getProperty("sps.s3.accessKey"), this.environment.getProperty("sps.s3.secretKey"))
                         .build();
-
-        printAllBucketsInService();
     }
-
 
 
     public Result<InputStream> getItem(final String sessionUUID, final Long pk) {
