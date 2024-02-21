@@ -62,7 +62,7 @@ public class ScreenshotSingleStore_S3 implements ScreenshotStoreService {
 
     @Override
     public void init() {
-        ServiceInit.INIT_LOGGER.info("----> Screenshot Store Strategy SINGLE_STREAMING: initialized");
+        ServiceInit.INIT_LOGGER.info("----> Screenshot Store Strategy SINGLE_STORE: initialized");
 
         this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
 

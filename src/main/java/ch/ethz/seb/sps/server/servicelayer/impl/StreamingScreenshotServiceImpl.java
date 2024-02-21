@@ -29,8 +29,7 @@ import ch.ethz.seb.sps.server.servicelayer.ScreenshotStoreService;
 import ch.ethz.seb.sps.utils.Utils;
 
 @Service
-@ConditionalOnExpression("'${sps.data.store.strategy}'.equals('SINGLE_STREAMING')")
-//maybe change name here
+@ConditionalOnExpression("'${sps.data.store.strategy}'.equals('SINGLE_STORE')")
 public class StreamingScreenshotServiceImpl implements ScreenshotStoreService {
 
     private static final Logger log = LoggerFactory.getLogger(StreamingScreenshotServiceImpl.class);
@@ -51,7 +50,7 @@ public class StreamingScreenshotServiceImpl implements ScreenshotStoreService {
 
     @Override
     public void init() {
-        ServiceInit.INIT_LOGGER.info("----> Screenshot Store Strategy SINGLE_STREAMING: initialized");
+        ServiceInit.INIT_LOGGER.info("----> Screenshot Store Strategy SINGLE_STORE: initialized");
     }
 
     @Override
