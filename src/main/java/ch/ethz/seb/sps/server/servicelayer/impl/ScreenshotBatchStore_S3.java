@@ -12,19 +12,11 @@ import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
+import ch.ethz.seb.sps.server.datalayer.dao.impl.S3DAO;
 import ch.ethz.seb.sps.server.servicelayer.ScreenshotStoreService;
 import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
-import io.minio.MinioClient;
+import ch.ethz.seb.sps.utils.Constants;
 import io.minio.SnowballObject;
-import io.minio.UploadObjectArgs;
-import io.minio.UploadSnowballObjectsArgs;
-import io.minio.errors.ErrorResponseException;
-import io.minio.errors.InsufficientDataException;
-import io.minio.errors.InternalException;
-import io.minio.errors.InvalidResponseException;
-import io.minio.errors.ServerException;
-import io.minio.errors.XmlParserException;
-import io.minio.messages.Bucket;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.session.ExecutorType;
@@ -38,7 +30,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.env.Environment;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -47,10 +38,7 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -60,16 +48,15 @@ import java.util.concurrent.LinkedBlockingDeque;
 @Lazy
 @Component
 @ConditionalOnExpression("'${sps.data.store.strategy}'.equals('BATCH_STORE') and '${sps.data.store.adapter}'.equals('S3')")
-public class ScreenshotBatchStore_S3 extends ScreenshotS3 implements ScreenshotStoreService{
+public class ScreenshotBatchStore_S3 implements ScreenshotStoreService{
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotBatchStore_S3.class);
 
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
-    private final WebsocketDataExtractor websocketDataExtractor;
     private final TaskScheduler taskScheduler;
     private final long batchInterval;
-
+    private final S3DAO s3DAO;
     private SqlSessionTemplate sqlSessionTemplate;
     private ScreenshotDataRecordMapper screenshotDataRecordMapper;
 
@@ -79,19 +66,16 @@ public class ScreenshotBatchStore_S3 extends ScreenshotS3 implements ScreenshotS
     public ScreenshotBatchStore_S3(
             final SqlSessionFactory sqlSessionFactory,
             final PlatformTransactionManager transactionManager,
-            final WebsocketDataExtractor websocketDataExtractor,
-            final Environment environment,
+            final S3DAO s3DAO,
             @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler,
             @Value("${sps.data.store.batch.interval:1000}") final long batchInterval) {
-
-        super(environment);
 
         this.sqlSessionFactory = sqlSessionFactory;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        this.websocketDataExtractor = websocketDataExtractor;
         this.taskScheduler = taskScheduler;
         this.batchInterval = batchInterval;
+        this.s3DAO = s3DAO;
     }
 
     @Override
@@ -121,30 +105,6 @@ public class ScreenshotBatchStore_S3 extends ScreenshotS3 implements ScreenshotS
                 DateTime.now(DateTimeZone.UTC).plus(500).toDate(),
                 this.batchInterval);
 
-//        try {
-//            printBuckets();
-//            testUploadFile();
-//        } catch (final Exception e) {
-//        }
-
-
-    }
-
-    private void printBuckets() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        List<Bucket> bucketList = this.minioClient.listBuckets();
-        for (Bucket bucket : bucketList) {
-            System.out.println(bucket.creationDate() + ", " + bucket.name());
-        }
-    }
-
-    private void testUploadFile() throws IOException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-
-        this.minioClient.uploadObject(
-                UploadObjectArgs.builder()
-                        .bucket("sebserver-dev")
-                        .object("testId")
-                        .filename("src/main/java/ch/ethz/seb/sps/server/servicelayer/impl/testFile.txt")
-                        .build());
     }
 
     @Override
@@ -154,10 +114,6 @@ public class ScreenshotBatchStore_S3 extends ScreenshotS3 implements ScreenshotS
             return 10;
         }
         return (int) (size / (float) SessionServiceHealthControl.BATCH_STORE_SIZE_INDICATOR_MAP_MAX * 10);
-    }
-
-    public void processOneTime() {
-        processBatchStore(new ArrayList<>());
     }
 
     @Override
@@ -183,7 +139,6 @@ public class ScreenshotBatchStore_S3 extends ScreenshotS3 implements ScreenshotS
 
     @Override
     public void storeScreenshot(final String sessionUUID, final InputStream in) {
-//        this.websocketDataExtractor.storeScreenshot(sessionUUID, in, this);
     }
 
     private void processBatchStore(final Collection<ScreenshotQueueData> batch) {
@@ -204,38 +159,11 @@ public class ScreenshotBatchStore_S3 extends ScreenshotS3 implements ScreenshotS
                 batch.stream().forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
                 this.sqlSessionTemplate.flushStatements();
 
-                //==================================================//
-                //there are two ways to store data in a bucket
-
-                //upload single object: https://min.io/docs/minio/linux/developers/java/API.html#uploadobject-uploadobjectargs-args
-                //multiple calls --> iterates through the batch and calls the bucket for each item
-//                batch.stream().forEach(data -> {
-//                    try {
-//                        String fileName = data.record.getSessionUuid() + "_" + data.record.getId();
-//                        this.minioClient.putObject(
-//                                PutObjectArgs.builder()
-//                                        .bucket("sebserver-dev")
-//                                        .object(fileName)
-////                                        .stream(data.screenshotIn, data.screenshotIn.readAllBytes().length, -1)
-//                                        .stream(data.screenshotIn, -1, 10485760)
-//                                        .build());
-//
-//                    } catch (Exception e) {
-//                        log.error("error" + e);
-//                    }
-//                });
-//                this.sqlSessionTemplate.flushStatements();
-
-
-                //upload multiple objects in one call: https://min.io/docs/minio/linux/developers/java/API.html#uploadsnowballobjects-uploadsnowballobjectsargs-args
+                // now store all screenshots within respective generated ids in batch
                 List<SnowballObject> batchItems = new ArrayList<SnowballObject>();
                 batch.stream().forEach(data -> {
-//                ScreenshotQueueData testSingleItem = batch.stream().collect(Collectors.toList()).get(0);
-//                    String fileName = testSingleItem.record.getSessionUuid() + "_" + testSingleItem.record.getId();
-                    String fileName = data.record.getSessionUuid() + "_" + data.record.getId();
-
+                    String fileName = data.record.getSessionUuid() + Constants.UNDERLINE + data.record.getId();
                     byte[] screenshotBytes = data.screenshotIn.readAllBytes();
-                    System.out.println(screenshotBytes.length);
 
                     batchItems.add(
                             new SnowballObject(
@@ -246,21 +174,19 @@ public class ScreenshotBatchStore_S3 extends ScreenshotS3 implements ScreenshotS
                 });
 
                 try {
-                    minioClient.uploadSnowballObjects(
-                            UploadSnowballObjectsArgs.builder()
-                                    .bucket("sebserver-dev")
-                                    .objects(batchItems)
-                                    .build());
+                    //upload batch to s3 store
+                    this.s3DAO.uploadItemBatch(batchItems);
 
                 } catch (Exception e) {
-                    log.error("error: " + e);
+                    log.error("Failed to upload batch to S3 service. Transaction has failed... put data back to queue. Cause: ", e);
+                    this.screenshotDataQueue.addAll(batch);
                 }
-                this.sqlSessionTemplate.flushStatements();
 
             });
 
         } catch (final TransactionException te) {
             log.error("Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: ", te);
+            this.screenshotDataQueue.addAll(batch);
         }
     }
 

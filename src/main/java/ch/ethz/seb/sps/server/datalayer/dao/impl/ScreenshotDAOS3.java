@@ -8,19 +8,15 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
-import ch.ethz.seb.sps.server.ServiceInit;
-import ch.ethz.seb.sps.server.ServiceInitEvent;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper.BlobContent;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.utils.Result;
-import io.minio.GetObjectArgs;
-import io.minio.MinioClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.context.event.EventListener;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,32 +29,21 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 @ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3')")
 public class ScreenshotDAOS3 implements ScreenshotDAO {
 
+    private static final Logger log = LoggerFactory.getLogger(ScreenshotDAOS3.class);
+
     private final ScreenshotMapper screenshotMapper;
     private final ScreenshotRecordMapper screenshotRecordMapper;
-    private final Environment environment;
-    private MinioClient minioClient;
+    private final S3DAO s3DAO;
 
 
     public ScreenshotDAOS3(
             final ScreenshotMapper screenshotMapper,
             final ScreenshotRecordMapper screenshotRecordMapper,
-            final Environment environment) {
+            final S3DAO s3DAO) {
 
         this.screenshotMapper = screenshotMapper;
         this.screenshotRecordMapper = screenshotRecordMapper;
-        this.environment = environment;
-    }
-
-    @EventListener(ServiceInitEvent.class)
-    public void init() {
-        ServiceInit.INIT_LOGGER.info("----> Screenshot S3 Store: initialized");
-
-        this.minioClient =
-                MinioClient.builder()
-                        .endpoint(this.environment.getProperty("sps.s3.endpointUrl"))
-                        .credentials(this.environment.getProperty("sps.s3.accessKey"), this.environment.getProperty("sps.s3.secretKey"))
-                        .build();
-
+        this.s3DAO = s3DAO;
     }
 
     @Override
@@ -67,20 +52,8 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
             final Long pk,
             final String sessionUUID) {
 
-        //sessionUUID, timestamp
-        //d7080e42-3e7a-4b80-b523-fccaadbafcc8_1707488185984
-
-        System.out.println(sessionUUID + "_" + pk);
-
-        return Result.tryCatch(() -> {
-            return minioClient.getObject(
-                    GetObjectArgs
-                            .builder()
-                            .bucket("sebserver-dev")
-                            .object(sessionUUID + "_" + pk)
-                            .build()
-            );
-        });
+        return this.s3DAO.getItem(sessionUUID, pk)
+                .onError(error -> log.error("Failed to retrieve screenshot from S3 service: ", error));
     }
 
     @Override

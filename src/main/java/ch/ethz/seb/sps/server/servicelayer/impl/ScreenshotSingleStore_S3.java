@@ -13,9 +13,8 @@ import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.ServiceInit;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
+import ch.ethz.seb.sps.server.datalayer.dao.impl.S3DAO;
 import ch.ethz.seb.sps.server.servicelayer.ScreenshotStoreService;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.session.ExecutorType;
@@ -35,39 +34,30 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 
 @Lazy
 @Component
 @ConditionalOnExpression("'${sps.data.store.strategy}'.equals('SINGLE_STORE') and '${sps.data.store.adapter}'.equals('S3')")
-public class ScreenshotSingleStore_S3 extends ScreenshotS3 implements ScreenshotStoreService {
+public class ScreenshotSingleStore_S3 implements ScreenshotStoreService {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotSingleStore_S3.class);
-
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
-    private final WebsocketDataExtractor websocketDataExtractor;
+    private final S3DAO s3DAO;
     private SqlSessionTemplate sqlSessionTemplate;
     private ScreenshotDataRecordMapper screenshotDataRecordMapper;
-    private MinioClient minioClient;
-
-
-    private final BlockingDeque<ScreenshotQueueData> screenshotDataQueue = new LinkedBlockingDeque<>();
 
     public ScreenshotSingleStore_S3(
             final SqlSessionFactory sqlSessionFactory,
             final PlatformTransactionManager transactionManager,
-            final WebsocketDataExtractor websocketDataExtractor,
             final Environment environment,
+            final S3DAO s3DAO,
             @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler){
-
-        super(environment);
 
         this.sqlSessionFactory = sqlSessionFactory;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        this.websocketDataExtractor = websocketDataExtractor;
+        this.s3DAO = s3DAO;
     }
 
     @Override
@@ -122,19 +112,12 @@ public class ScreenshotSingleStore_S3 extends ScreenshotS3 implements Screenshot
         this.sqlSessionTemplate.flushStatements();
 
         try {
-            String fileName = data.record.getSessionUuid() + "_" + data.record.getId();
-            this.minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket("sebserver-dev")
-                            .object(fileName)
-//                                        .stream(data.screenshotIn, data.screenshotIn.readAllBytes().length, -1)
-                            .stream(data.screenshotIn, -1, 10485760)
-                            .build());
+            s3DAO.uploadItem(data.screenshotIn, data.record.getSessionUuid(), data.record.getId());
 
         } catch (Exception e) {
-            log.error("error" + e);
+            log.error("Failed to upload item to S3 service. Transaction has failed... Cause: ", e);
+
         }
-        this.sqlSessionTemplate.flushStatements();
     }
 
     private ScreenshotQueueData createDataObject(
