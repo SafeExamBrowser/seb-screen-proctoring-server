@@ -11,5 +11,5 @@ package ch.ethz.seb.sps.server.datalayer.dao;
 public enum DAOAdapterType {
     FULL_RDBMS,
     FILESYS_RDBMS,
-    S3
+    S3_RDBMS
 }

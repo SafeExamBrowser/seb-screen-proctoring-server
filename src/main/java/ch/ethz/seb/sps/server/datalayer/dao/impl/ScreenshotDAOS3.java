@@ -26,7 +26,7 @@ import java.util.List;
 import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 
 @Service
-@ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3')")
+@ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3_RDBMS')")
 public class ScreenshotDAOS3 implements ScreenshotDAO {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotDAOS3.class);

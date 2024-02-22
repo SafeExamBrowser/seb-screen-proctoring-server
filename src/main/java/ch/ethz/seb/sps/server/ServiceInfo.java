@@ -48,7 +48,7 @@ public class ServiceInfo {
     public static final String STORE_STRATEGY_KEY = "sps.data.store.strategy";
     public static final String FILE_STORE = "FILESYS_RDBMS";
     public static final String FULL_RDBMS_STORE = "FULL_RDBMS";
-    public static final String S3_STORE = "S3";
+    public static final String S3_STORE = "S3_RDBMS";
 
 
     private final String version;

@@ -47,7 +47,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 @Lazy
 @Component
-@ConditionalOnExpression("'${sps.data.store.strategy}'.equals('BATCH_STORE') and '${sps.data.store.adapter}'.equals('S3')")
+@ConditionalOnExpression("'${sps.data.store.strategy}'.equals('BATCH_STORE') and '${sps.data.store.adapter}'.equals('S3_RDBMS')")
 public class ScreenshotBatchStore_S3 implements ScreenshotStoreService{
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotBatchStore_S3.class);

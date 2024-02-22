@@ -37,7 +37,7 @@ import java.util.Collection;
 
 @Lazy
 @Component
-@ConditionalOnExpression("'${sps.data.store.strategy}'.equals('SINGLE_STORE') and '${sps.data.store.adapter}'.equals('S3')")
+@ConditionalOnExpression("'${sps.data.store.strategy}'.equals('SINGLE_STORE') and '${sps.data.store.adapter}'.equals('S3_RDBMS')")
 public class ScreenshotSingleStore_S3 implements ScreenshotStoreService {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotSingleStore_S3.class);

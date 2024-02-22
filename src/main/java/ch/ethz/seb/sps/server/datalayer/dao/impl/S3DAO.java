@@ -25,7 +25,7 @@ import java.util.List;
 
 @Lazy
 @Service
-@ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3')")
+@ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3_RDBMS')")
 public class S3DAO {
 
     //todo: specify bucket logic: https://jira.let.ethz.ch/browse/SEBSP-108
