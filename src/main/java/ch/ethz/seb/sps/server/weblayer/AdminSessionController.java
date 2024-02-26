@@ -10,8 +10,12 @@ package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.UUID;
 
+import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringCacheService;
+import ch.ethz.seb.sps.utils.Result;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,7 +37,10 @@ import ch.ethz.seb.sps.server.servicelayer.UserService;
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.ADMIN_SESSION_ENDPOINT)
 public class AdminSessionController extends EntityController<Session, Session> {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminSessionController.class);
+
     private final GroupDAO groupDAO;
+    private final ProctoringCacheService proctoringCacheService;
 
     public AdminSessionController(
             final GroupDAO groupDAO,
@@ -41,10 +48,12 @@ public class AdminSessionController extends EntityController<Session, Session> {
             final SessionDAO entityDAO,
             final AuditLogDAO auditLogDAO,
             final PaginationService paginationService,
-            final BeanValidationService beanValidationService) {
+            final BeanValidationService beanValidationService,
+            final ProctoringCacheService proctoringCacheService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.groupDAO = groupDAO;
+        this.proctoringCacheService = proctoringCacheService;
     }
 
     @Override
@@ -78,6 +87,16 @@ public class AdminSessionController extends EntityController<Session, Session> {
                 postParams.getString(Domain.SESSION.ATTR_CLIENT_VERSION),
                 postParams.getEnum(Domain.SESSION.ATTR_IMAGE_FORMAT, ImageFormat.class),
                 null, null, null);
+    }
+
+    @Override
+    protected Result<Session> notifyCreated(Session entity) {
+        try {
+            proctoringCacheService.evictSessionTokens(groupDAO.byPK(entity.groupId).getOrThrow().uuid);
+        } catch (Exception e) {
+            log.error("Failed to evict session token cache: ", e);
+        }
+        return super.notifyCreated(entity);
     }
 
     @Override
