@@ -137,7 +137,9 @@ public class ProctoringServiceImpl implements ProctoringService {
 
         return Result.tryCatch(() -> {
 
-            // TODO filter?
+            if (serviceInfo.isDistributed()) {
+                updateSessionCache(groupUUID);
+            }
 
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             final Collection<String> sessionTokens = this.proctoringCacheService
@@ -152,7 +154,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .stream()
                     .map(this.proctoringCacheService::getSession)
                     .sorted(Session.getComparator(sortBy, sortOrder == PageSortOrder.DESCENDING))
-                    .skip((pnum - 1) * pSize)
+                    .skip((long) (pnum - 1) * pSize)
                     .limit(pSize)
                     .map(Session::getUuid)
                     .collect(Collectors.toList());
@@ -186,6 +188,8 @@ public class ProctoringServiceImpl implements ProctoringService {
         });
     }
 
+
+
     @Override
     public void streamScreenshot(
             final String sessionUUID,
@@ -196,9 +200,7 @@ public class ProctoringServiceImpl implements ProctoringService {
         final Session session = this.proctoringCacheService.getSession(sessionUUID);
         if (session != null) {
 
-            mimeTypePropagation.accept((session.imageFormat != null)
-                    ? session.imageFormat.mimeType
-                    : ImageFormat.PNG.mimeType);
+            mimeTypePropagation.accept(session.imageFormat.mimeType);
 
             if (timestamp != null) {
                 streamScreenshotAt(sessionUUID, timestamp, out);
@@ -213,14 +215,14 @@ public class ProctoringServiceImpl implements ProctoringService {
 
     @Override
     public void streamScreenshot(
-            final Long screenhotId,
+            final Long screenshotId,
             final String sessionUUID,
             final OutputStream out) {
 
         try {
 
             final InputStream screenshotIn = this.screenshotDAO
-                    .getImage(screenhotId, sessionUUID)
+                    .getImage(screenshotId, sessionUUID)
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
@@ -403,14 +405,14 @@ public class ProctoringServiceImpl implements ProctoringService {
                 session.uuid,
                 filterMap);
 
-        if (nrOfScreenshots.longValue() <= 0) {
+        if (nrOfScreenshots == null || nrOfScreenshots <= 0) {
             return null;
         }
 
         return new SessionSearchResult(
                 session,
                 group,
-                nrOfScreenshots != null ? nrOfScreenshots.intValue() : -1
+                nrOfScreenshots.intValue()
         );
     }
 
@@ -457,6 +459,14 @@ public class ProctoringServiceImpl implements ProctoringService {
                 metaData);
     }
 
-
+    private long lastUpdateTime = 0;
+    private void updateSessionCache(String groupUUID) {
+        long now = Utils.getMillisecondsNow();
+        if (now - lastUpdateTime > this.serviceInfo.getDistributedUpdateInterval()) {
+            // TODO instead of evict the while cache, check updates on session and make it per outdated session
+            this.clearGroupCache(groupUUID, true);
+            lastUpdateTime = now;
+        }
+    }
 
 }
