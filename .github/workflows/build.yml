@@ -18,16 +18,16 @@ jobs:
     steps:
     -
       name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4.1.1
     -
       name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4.1.0
       with:
         java-version: '17'
         distribution: 'adopt'
     -
       name: Cache Maven packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4.0.0
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -44,7 +44,7 @@ jobs:
     steps:
     -
       name: Get short SHA
-      uses: benjlevesque/short-sha@v2.2
+      uses: benjlevesque/short-sha@v3.0
       id: short-sha
     -
       name: Store short SHA as environment variable
@@ -61,16 +61,16 @@ jobs:
         echo ${{ env.TAG_NAME }}
     -
       name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4.1.1
     -
       name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4.1.0
       with:
         java-version: '17'
         distribution: 'adopt'
     -
       name: Cache Maven packages
-      uses: actions/cache@v2
+      uses: actions/cache@v4.0.0
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -84,7 +84,7 @@ jobs:
       name: Simplify package name
       run: mv target/seb-screen-proctoring-service-${{ env.TAG_NAME }}-${{ env.SHA }}.jar target/seb-sps.jar
     -
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4.3.1
       with:
         name: Package
         path: target/seb-sps.jar
@@ -105,28 +105,28 @@ jobs:
         echo ${{ env.TAG_NAME }}
     -
       name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v3.0.0
     -
       name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v3.1.0
     -
       name: Login to DockerHub
-      uses: docker/login-action@v1 
+      uses: docker/login-action@v3.0.0
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     -
       name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4.1.1
     -
       name: Download a single artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4.1.4
       with:
           name: Package
     -
       name: Build and push
       id: docker_build
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v5.1.0
       with:
         context: .
         file: ./docker/Dockerfile
@@ -142,6 +142,6 @@ jobs:
     steps:
     -
       name: Delete Artifacts
-      uses: geekyeggo/delete-artifact@v2
+      uses: geekyeggo/delete-artifact@v4.1.0
       with:
           name: Package
