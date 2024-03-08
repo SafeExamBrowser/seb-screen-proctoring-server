@@ -56,6 +56,7 @@ public interface Domain {
         String ATTR_TERMINATION_TIME = "terminationTime";
         String ATTR_START_TIME = "startTime";
         String ATTR_END_TIME = "endTime";
+        String ATTR_IS_RUNNING = "isRunning";
     }
 
     interface SEB_GROUP {

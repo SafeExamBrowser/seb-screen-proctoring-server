@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,15 +36,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.API.ScreenshotMetadataType;
-import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.GroupViewData;
-import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
@@ -138,7 +136,7 @@ public class AdminProctorController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<GroupViewData> getPage(
+    public Page<GroupViewData> getGroup(
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sort,
@@ -176,16 +174,16 @@ public class AdminProctorController {
                             name = API.PARAM_GROUP_ID,
                             description = "The UUID of the group to get a page of session for"),
                     @Parameter(
-                            name = MonitoringPageData.ATTR_PAGE_NUMBER,
+                            name = ScreenshotsInGroupData.ATTR_PAGE_NUMBER,
                             description = "The number of the page to get from the whole list. If the page does not exists, the API retruns with the first page."),
                     @Parameter(
-                            name = MonitoringPageData.ATTR_PAGE_SIZE,
+                            name = ScreenshotsInGroupData.ATTR_PAGE_SIZE,
                             description = "The size of the page to get."),
                     @Parameter(
-                            name = MonitoringPageData.ATTR_SORT_BY,
+                            name = ScreenshotsInGroupData.ATTR_SORT_BY,
                             description = "the sort parameter to sort the list of entities before paging"),
                     @Parameter(
-                            name = MonitoringPageData.ATTR_SORT_ORDER,
+                            name = ScreenshotsInGroupData.ATTR_SORT_ORDER,
                             description = "The sorting order"),
                     @Parameter(
                             name = "filterCriteria",
@@ -204,12 +202,12 @@ public class AdminProctorController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public MonitoringPageData getMonitoringPageData(
+    public ScreenshotsInGroupData getSessionsByGroup(
             @PathVariable(name = API.PARAM_GROUP_ID) final String groupUUID,
-            @RequestParam(name = MonitoringPageData.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
-            @RequestParam(name = MonitoringPageData.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
-            @RequestParam(name = MonitoringPageData.ATTR_SORT_BY, required = false) final String sortBy,
-            @RequestParam(name = MonitoringPageData.ATTR_SORT_ORDER, required = false) final PageSortOrder sortOrder,
+            @RequestParam(name = ScreenshotsInGroupData.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
+            @RequestParam(name = ScreenshotsInGroupData.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
+            @RequestParam(name = ScreenshotsInGroupData.ATTR_SORT_BY, required = false) final String sortBy,
+            @RequestParam(name = ScreenshotsInGroupData.ATTR_SORT_ORDER, required = false) final PageSortOrder sortOrder,
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 

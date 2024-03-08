@@ -36,7 +36,7 @@ import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.service.ExamViewData;
 import ch.ethz.seb.sps.domain.model.service.Group;
-import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.domain.model.service.Session;
@@ -127,7 +127,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public Result<MonitoringPageData> getMonitoringPageData(
+    public Result<ScreenshotsInGroupData> getMonitoringPageData(
             final String groupUUID,
             final Integer pageNumber,
             final Integer pageSize,
@@ -171,10 +171,10 @@ public class ProctoringServiceImpl implements ProctoringService {
             ExamViewData examViewData = ExamViewData.EMPTY_MODEL;
             if (activeGroup.getExam_id() != null) {
                 final Exam exam = this.examDAO.byModelId(activeGroup.exam_id.toString()).getOr(null);
-                examViewData = new ExamViewData(exam.uuid, exam.name);
+                examViewData = new ExamViewData(exam.uuid, exam.name, this.groupDAO.isExamRunning(exam.endTime));
             }
 
-            return new MonitoringPageData(
+            return new ScreenshotsInGroupData(
                     groupUUID,
                     activeGroup.name,
                     activeGroup.description,

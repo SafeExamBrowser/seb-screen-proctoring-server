@@ -33,6 +33,7 @@ public interface GroupViewMapper {
 
             @Arg(column = "exam_uuid", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Arg(column = "exam_name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Arg(column = "exam_end_time", javaType = Long.class, jdbcType = JdbcType.BIGINT)
     })
     GroupViewRecord selectOne(SelectStatementProvider selectStatement);
 
@@ -49,6 +50,7 @@ public interface GroupViewMapper {
 
             @Arg(column = "exam_uuid", javaType = String.class, jdbcType = JdbcType.VARCHAR),
             @Arg(column = "exam_name", javaType = String.class, jdbcType = JdbcType.VARCHAR),
+            @Arg(column = "exam_end_time", javaType = Long.class, jdbcType = JdbcType.BIGINT)
     })
     Collection<GroupViewRecord> selectMany(SelectStatementProvider selectStatement);
 
@@ -72,7 +74,8 @@ public interface GroupViewMapper {
                         GroupRecordDynamicSqlSupport.terminationTime,
 
                         ExamRecordDynamicSqlSupport.uuid.as("exam_uuid"),
-                        ExamRecordDynamicSqlSupport.name.as("exam_name"))
+                        ExamRecordDynamicSqlSupport.name.as("exam_name"),
+                        ExamRecordDynamicSqlSupport.endTime.as("exam_end_time"))
 
                 .from(GroupRecordDynamicSqlSupport.groupRecord)
                 .leftJoin(ExamRecordDynamicSqlSupport.examRecord)
@@ -95,7 +98,8 @@ public interface GroupViewMapper {
                         GroupRecordDynamicSqlSupport.terminationTime,
 
                         ExamRecordDynamicSqlSupport.uuid.as("exam_uuid"),
-                        ExamRecordDynamicSqlSupport.name.as("exam_name"))
+                        ExamRecordDynamicSqlSupport.name.as("exam_name"),
+                        ExamRecordDynamicSqlSupport.endTime.as("exam_end_time"))
 
                 .from(GroupRecordDynamicSqlSupport.groupRecord)
                 .leftJoin(ExamRecordDynamicSqlSupport.examRecord)
