@@ -521,7 +521,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
             return null;
         }
 
-        if(examEndTime > Utils.getMillisecondsNow()){
+        if(examEndTime >= Utils.getMillisecondsNow()){
             return true;
         }
 
@@ -626,7 +626,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),
-                new ExamViewData(record.getExamUuid(), record.getExamName(), isExamRunning(record.getExamEndTime())));
+                new ExamViewData(record.getExamUuid(), record.getExamName(), isExamRunning(record.getExamEndTime()), record.getExamStartTime(), record.getExamEndTime()));
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id, final Long examId) {

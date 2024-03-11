@@ -171,7 +171,7 @@ public class ProctoringServiceImpl implements ProctoringService {
             ExamViewData examViewData = ExamViewData.EMPTY_MODEL;
             if (activeGroup.getExam_id() != null) {
                 final Exam exam = this.examDAO.byModelId(activeGroup.exam_id.toString()).getOr(null);
-                examViewData = new ExamViewData(exam.uuid, exam.name, this.groupDAO.isExamRunning(exam.endTime));
+                examViewData = new ExamViewData(exam.uuid, exam.name, this.groupDAO.isExamRunning(exam.endTime), exam.startTime, exam.endTime);
             }
 
             return new ScreenshotsInGroupData(

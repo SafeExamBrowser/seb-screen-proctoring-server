@@ -12,6 +12,7 @@ public class GroupViewRecord {
     private final Long terminationTime;
     private final String examUuid;
     private final String examName;
+    private final Long examStartTime;
     private final Long examEndTime;
 
     public GroupViewRecord(
@@ -24,6 +25,7 @@ public class GroupViewRecord {
             final Long lastUpdateTime, Long terminationTime,
             final String examUuid,
             final String examName,
+            final Long examStartTime,
             final Long examEndTime
     ) {
         this.id = id;
@@ -36,6 +38,7 @@ public class GroupViewRecord {
         this.terminationTime = terminationTime;
         this.examUuid = examUuid;
         this.examName = examName;
+        this.examStartTime = examStartTime;
         this.examEndTime = examEndTime;
     }
 
@@ -78,7 +81,9 @@ public class GroupViewRecord {
     public String getExamName() {
         return examName;
     }
-
+    public Long getExamStartTime() {
+        return examStartTime;
+    }
     public Long getExamEndTime() {
         return examEndTime;
     }
