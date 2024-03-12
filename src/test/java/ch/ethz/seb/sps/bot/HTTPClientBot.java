@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 ETH Zürich, Educational Development and Technology (LET)
+ * Copyright (c) 2024 ETH Zürich, IT Services
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -331,7 +331,7 @@ public class HTTPClientBot {
 //    private final Rectangle screenRect = new Rectangle(0, 0, 2560, 1440);
 
     //mac display
-    private final Rectangle screenRect = new Rectangle(0, 0, 3456, 2234);
+    private final Rectangle screenRect = new Rectangle(0, 0, 1920, 1080);
 
     private BufferedImage singleScreenshot = null;
 
