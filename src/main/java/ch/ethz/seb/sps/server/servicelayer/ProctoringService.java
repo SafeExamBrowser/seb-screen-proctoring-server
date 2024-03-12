@@ -11,7 +11,7 @@ package ch.ethz.seb.sps.server.servicelayer;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Group;
-import ch.ethz.seb.sps.domain.model.service.MonitoringPageData;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.domain.model.service.Session;
@@ -49,7 +49,7 @@ public interface ProctoringService {
      * @return Result refer to the screenshot data or to an error when happened */
     Result<ScreenshotViewData> getRecordedImageDataAt(String sessionUUID, Long timestamp);
 
-    Result<MonitoringPageData> getMonitoringPageData(
+    Result<ScreenshotsInGroupData> getMonitoringPageData(
             String groupUUID,
             Integer pageNumber,
             Integer pageSize,

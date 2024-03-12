@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MonitoringPageData {
+public class ScreenshotsInGroupData {
 
     public static final String ATTR_EXAM = "exam";
     public static final String ATTR_NUM_OF_SESSIONS = "numberOfSessions";
@@ -64,7 +64,7 @@ public class MonitoringPageData {
     @JsonProperty(ATTR_EXAM)
     public final ExamViewData examViewData;
 
-    public MonitoringPageData(
+    public ScreenshotsInGroupData(
             @JsonProperty(SEB_GROUP.ATTR_UUID) final String groupUUID,
             @JsonProperty(SEB_GROUP.ATTR_NAME) final String groupName,
             @JsonProperty(SEB_GROUP.ATTR_DESCRIPTION) final String groupDescription,
@@ -137,14 +137,14 @@ public class MonitoringPageData {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        final MonitoringPageData other = (MonitoringPageData) obj;
+        final ScreenshotsInGroupData other = (ScreenshotsInGroupData) obj;
         return Objects.equals(this.groupUUID, other.groupUUID);
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        builder.append("MonitoringPageData [groupUUID=");
+        builder.append("ScreenshotsInGroupData [groupUUID=");
         builder.append(this.groupUUID);
         builder.append(", groupName=");
         builder.append(this.groupName);
