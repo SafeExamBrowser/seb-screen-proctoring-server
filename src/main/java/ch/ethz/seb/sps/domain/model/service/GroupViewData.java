@@ -62,7 +62,8 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
             final String description,
             final String owner,
             final Long creationTime,
-            final Long lastUpdateTime, final Long terminationTime,
+            final Long lastUpdateTime,
+            final Long terminationTime,
             final ExamViewData examViewData) {
 
         this.id = id;

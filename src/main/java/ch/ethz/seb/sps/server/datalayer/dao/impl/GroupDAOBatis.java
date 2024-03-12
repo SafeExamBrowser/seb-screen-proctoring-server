@@ -20,6 +20,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.slf4j.Logger;
@@ -513,6 +515,19 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
         });
     }
 
+    @Override
+    public Boolean isExamRunning(final Long examEndTime){
+        if(examEndTime == null){
+            return null;
+        }
+
+        if(examEndTime >= Utils.getMillisecondsNow()){
+            return true;
+        }
+
+        return false;
+    }
+
     private Result<GroupRecord> recordByPK(final Long pk) {
         return Result.tryCatch(() -> {
 
@@ -611,7 +626,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),
-                new ExamViewData(record.getExamUuid(), record.getExamName()));
+                new ExamViewData(record.getExamUuid(), record.getExamName(), isExamRunning(record.getExamEndTime()), record.getExamStartTime(), record.getExamEndTime()));
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id, final Long examId) {

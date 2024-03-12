@@ -317,6 +317,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
             final String sessionUUID = filterMap.getString(API.PARAM_SESSION_ID);
             final String sessionUserName = filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_NAME);
+            final String sessionIpAddress = filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_IP);
             final String machineName = filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_MACHINE_NAME);
             final String osName = filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_OS_NAME);
             final String sebVersion = filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_VERSION);
@@ -338,6 +339,8 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             // session data constraint
                             .and(SessionRecordDynamicSqlSupport.clientName,
                                     SqlBuilder.isLikeWhenPresent(sessionUserName))
+                            .and(SessionRecordDynamicSqlSupport.clientIp,
+                                    SqlBuilder.isLikeWhenPresent(sessionIpAddress))
                             .and(SessionRecordDynamicSqlSupport.clientMachineName,
                                     SqlBuilder.isLikeWhenPresent(machineName))
                             .and(SessionRecordDynamicSqlSupport.clientOsName, SqlBuilder.isLikeWhenPresent(osName))
