@@ -53,7 +53,9 @@ public class AdminJWTAccess {
     private static final String PASSWORD_CLAIM = "pwd";
     private static final String USERNAME_CLAIM = "usr";
     private static final String REDIRECT_CLAIM = "redirect";
-    private static final String SUBJECT_CLAIM = "logintoken_" + UUID.randomUUID().toString();
+
+    // TODO This is a problem for scaled environments!
+
 
     @Autowired
     @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME)
@@ -62,18 +64,20 @@ public class AdminJWTAccess {
     private final UserDAO userDAO;
     private final TokenEndpoint tokenEndpoint;
     private final BasicAuthUserDetailService basicAuthUserDetailService;
-    private final Cryptor cyptor;
+    private final Cryptor cryptor;
+    private final String subjectClaim;
 
     public AdminJWTAccess(
             final UserDAO userDAO,
             final TokenEndpoint tokenEndpoint,
             final BasicAuthUserDetailService basicAuthUserDetailService,
-            final Cryptor cyptor) {
+            final Cryptor cryptor) {
 
         this.userDAO = userDAO;
         this.tokenEndpoint = tokenEndpoint;
         this.basicAuthUserDetailService = basicAuthUserDetailService;
-        this.cyptor = cyptor;
+        this.cryptor = cryptor;
+        subjectClaim = "logintoken_" + Utils.hash_SHA_256_Base_16(cryptor.getInternalPWD());
     }
 
     @RequestMapping(
@@ -103,7 +107,7 @@ public class AdminJWTAccess {
             claims.put(PASSWORD_CLAIM, password);
             claims.put(REDIRECT_CLAIM, redirect != null ? redirect : StringUtils.EMPTY);
 
-            return createToken(claims, SUBJECT_CLAIM);
+            return createToken(claims, subjectClaim);
 
         } catch (final Exception e) {
             throw new RuntimeException("Unexpected error while trying to generate login JWT: ", e);
@@ -156,7 +160,7 @@ public class AdminJWTAccess {
     private Claims checkJWTValid(final String logintoken) {
         // decode given JWT
         final Claims claims = Jwts.parser()
-                .setSigningKey(this.cyptor.getInternalPWD().toString())
+                .setSigningKey(this.cryptor.getInternalPWD().toString())
                 .parseClaimsJws(logintoken)
                 .getBody();
 
@@ -169,7 +173,7 @@ public class AdminJWTAccess {
 
         // check subject
         final String subject = claims.get(SUBJECT_CLAIM_NAME, String.class);
-        if (!SUBJECT_CLAIM.equals(subject)) {
+        if (!subjectClaim.equals(subject)) {
             throw new BadRequestException(API.OAUTH_JWTTOKEN_VERIFY_ENDPOINT, "Token subject mismatch");
         }
         return claims;
@@ -183,7 +187,7 @@ public class AdminJWTAccess {
                 .setSubject(subject)
                 .setIssuedAt(new Date(millisecondsNow))
                 .setExpiration(new Date(millisecondsNow + Constants.MINUTE_IN_MILLIS))
-                .signWith(SignatureAlgorithm.HS256, this.cyptor.getInternalPWD().toString())
+                .signWith(SignatureAlgorithm.HS256, this.cryptor.getInternalPWD().toString())
                 .compact();
     }
 
