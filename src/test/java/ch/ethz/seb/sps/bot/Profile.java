@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 ETH Zürich, Educational Development and Technology (LET)
+ * Copyright (c) 2024 ETH Zürich, IT Services
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -32,7 +32,7 @@ public final class Profile {
     String accessTokenEndpoint = "/oauth/token";
 
     @JsonProperty("groupId")
-    String groupId = "live feature test";
+    String groupId = "debug test 2";
     @JsonProperty("sessionId")
     String sessionId = null;
     @JsonProperty("clientId")
@@ -41,9 +41,11 @@ public final class Profile {
     String clientSecret = "test";
 
     @JsonProperty("runtime")
-    int runtime = 5 * 60000;
+//    int runtime = 3 * 60000;
+    int runtime = 20 * 1000;
+
     @JsonProperty("numberOfConnections")
-    int numberOfConnections = 25;
+    int numberOfConnections = 1;
     @JsonProperty("spawnDelay")
     long spawnDelay = 1000;
     @JsonProperty("screenshotIntervall")
