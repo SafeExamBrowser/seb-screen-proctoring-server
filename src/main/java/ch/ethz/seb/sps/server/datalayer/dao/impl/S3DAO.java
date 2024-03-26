@@ -28,6 +28,10 @@ import java.util.List;
 @ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3_RDBMS')")
 public class S3DAO {
 
+    private static final String PROPERTY_SPS_S_3_ENDPOINT_URL = "sps.s3.endpointUrl";
+    private static final String PROPERTY_SPS_S_3_ACCESS_KEY = "sps.s3.accessKey";
+    private static final String PROPERTY_SPS_S_3_SECRET_KEY = "sps.s3.secretKey";
+
     //todo: specify bucket logic: https://jira.let.ethz.ch/browse/SEBSP-108
     private final String BUCKET_NAME = "sebserver-dev";
 
@@ -47,8 +51,10 @@ public class S3DAO {
         //todo: maybe add error handling so the server does not start app when connection to S3 service cannot be granted
         this.minioClient =
                 MinioClient.builder()
-                        .endpoint(this.environment.getProperty("sps.s3.endpointUrl"))
-                        .credentials(this.environment.getProperty("sps.s3.accessKey"), this.environment.getProperty("sps.s3.secretKey"))
+                        .endpoint(this.environment.getProperty(PROPERTY_SPS_S_3_ENDPOINT_URL))
+                        .credentials(
+                                this.environment.getProperty(PROPERTY_SPS_S_3_ACCESS_KEY),
+                                this.environment.getProperty(PROPERTY_SPS_S_3_SECRET_KEY))
                         .build();
     }
 
