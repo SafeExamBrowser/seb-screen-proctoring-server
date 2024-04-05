@@ -47,10 +47,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 @Lazy
 @Component
-@ConditionalOnExpression("'${sps.data.store.strategy}'.equals('BATCH_STORE') and '${sps.data.store.adapter}'.equals('S3_RDBMS')")
-public class ScreenshotBatchStore_S3 implements ScreenshotStoreService{
+@ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3_RDBMS')")
+public class ScreenshotStore_S3 implements ScreenshotStoreService{
 
-    private static final Logger log = LoggerFactory.getLogger(ScreenshotBatchStore_S3.class);
+    private static final Logger log = LoggerFactory.getLogger(ScreenshotStore_S3.class);
 
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
@@ -63,7 +63,7 @@ public class ScreenshotBatchStore_S3 implements ScreenshotStoreService{
 
     private final BlockingDeque<ScreenshotQueueData> screenshotDataQueue = new LinkedBlockingDeque<>();
 
-    public ScreenshotBatchStore_S3(
+    public ScreenshotStore_S3(
             final SqlSessionFactory sqlSessionFactory,
             final PlatformTransactionManager transactionManager,
             final S3DAO s3DAO,
@@ -110,10 +110,10 @@ public class ScreenshotBatchStore_S3 implements ScreenshotStoreService{
     @Override
     public int getStoreHealthIndicator() {
         final int size = this.screenshotDataQueue.size();
-        if (size >= SessionServiceHealthControl.BATCH_STORE_SIZE_INDICATOR_MAP_MAX) {
+        if (size >= SessionServiceHealthControl.BATCH_SIZE_INDICATOR_MAP_MAX) {
             return 10;
         }
-        return (int) (size / (float) SessionServiceHealthControl.BATCH_STORE_SIZE_INDICATOR_MAP_MAX * 10);
+        return (int) (size / (float) SessionServiceHealthControl.BATCH_SIZE_INDICATOR_MAP_MAX * 10);
     }
 
     @Override

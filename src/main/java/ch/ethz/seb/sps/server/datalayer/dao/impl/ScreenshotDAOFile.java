@@ -56,7 +56,6 @@ public class ScreenshotDAOFile implements ScreenshotDAO {
         });
     }
 
-    @Override
     public Result<Long> storeImage(
             final Long pk,
             final String sessionUUID,

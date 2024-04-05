@@ -8,12 +8,10 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
-import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper;
-import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper.BlobContent;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
+import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
+import io.minio.messages.DeleteObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -21,28 +19,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.List;
-
-import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 
 @Service
 @ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3_RDBMS')")
 public class ScreenshotDAOS3 implements ScreenshotDAO {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotDAOS3.class);
-
-    private final ScreenshotMapper screenshotMapper;
-    private final ScreenshotRecordMapper screenshotRecordMapper;
     private final S3DAO s3DAO;
 
-
-    public ScreenshotDAOS3(
-            final ScreenshotMapper screenshotMapper,
-            final ScreenshotRecordMapper screenshotRecordMapper,
-            final S3DAO s3DAO) {
-
-        this.screenshotMapper = screenshotMapper;
-        this.screenshotRecordMapper = screenshotRecordMapper;
+    public ScreenshotDAOS3(final S3DAO s3DAO) {
         this.s3DAO = s3DAO;
     }
 
@@ -58,36 +45,24 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
 
     @Override
     @Transactional
-    public Result<Long> storeImage(
-            final Long pk,
-            final String sessionUUID,
-            final InputStream in) {
-
-        return Result.tryCatch(() -> {
-            final BlobContent blobContent = new BlobContent(pk, in);
-            this.screenshotMapper.insert(blobContent);
-            return blobContent.getId();
-        });
-    }
-
-    @Override
-    @Transactional
     public Result<List<Long>> deleteAllForSession(
             final String sessionId,
             final List<Long> screenShotPKs) {
 
         return Result.tryCatch(() -> {
-
-            this.screenshotRecordMapper
-                    .deleteByExample()
-                    .where(ScreenshotRecordDynamicSqlSupport.id, isIn(screenShotPKs))
-                    .build()
-                    .execute();
-
+            this.s3DAO.deleteItemBatch(createItemListForDeletion(sessionId, screenShotPKs));
             return screenShotPKs;
-        })
-                .onError(TransactionHandler::rollback);
 
+        }).onError(error -> log.error("Failed to delete items.....", error));
     }
 
+    private List<DeleteObject> createItemListForDeletion(final String sessionId, final List<Long> screenShotPKs){
+        List<DeleteObject> objects = new LinkedList<>();
+
+        for (Long screenShotPK : screenShotPKs) {
+            objects.add(new DeleteObject(sessionId + Constants.UNDERLINE + screenShotPK));
+        }
+
+        return objects;
+    }
 }
