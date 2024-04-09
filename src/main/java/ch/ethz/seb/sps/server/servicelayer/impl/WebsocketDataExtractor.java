@@ -29,7 +29,7 @@ import ch.ethz.seb.sps.utils.Utils;
 
 @Lazy
 @Component
-public class WebsocketDataExtractor {
+public class        WebsocketDataExtractor {
 
     private static final Logger log = LoggerFactory.getLogger(WebsocketDataExtractor.class);
 

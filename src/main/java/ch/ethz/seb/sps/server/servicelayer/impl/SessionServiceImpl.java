@@ -52,8 +52,7 @@ public class SessionServiceImpl implements SessionService {
             final String clientMachineName,
             final String clientOSName,
             final String clientVersion,
-            final ImageFormat imageFormat,
-            final boolean createGroup) {
+            final ImageFormat imageFormat) {
 
         return Result.tryCatch(() -> {
             if (groupUUID == null) {

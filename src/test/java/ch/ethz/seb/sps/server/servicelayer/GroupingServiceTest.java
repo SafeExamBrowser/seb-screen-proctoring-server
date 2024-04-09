@@ -1,4 +1,4 @@
-package ch.ethz.seb.sps.server.servicelayer.impl;
+package ch.ethz.seb.sps.server.servicelayer;
 
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
@@ -9,8 +9,9 @@ import ch.ethz.seb.sps.domain.model.service.TimelineGroupData;
 import ch.ethz.seb.sps.domain.model.service.TimelineScreenshotData;
 import ch.ethz.seb.sps.domain.model.service.TimelineViewData;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.impl.ScreenshotDataDAOBatis;
-import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
+import ch.ethz.seb.sps.server.servicelayer.impl.GroupingServiceImpl;
 import ch.ethz.seb.sps.utils.Result;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Test;
@@ -29,24 +30,23 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-
 @RunWith(MockitoJUnitRunner.class)
-public class GroupingServiceImplTest {
+public class GroupingServiceTest {
 
-    private static final Logger log = LoggerFactory.getLogger(GroupingServiceImplTest.class);
+    private static final Logger log = LoggerFactory.getLogger(GroupingServiceTest.class);
     private final JSONMapper jsonMapper = new JSONMapper();
 
-    private static String SESSION_UUID = "SESSION_UUID";
-    private static Long TIMESTAMP = 123456789L;
-    private static String GROUP_NAME1 = "Moodle Page 1";
-    private static String GROUP_NAME2 = "Moodle Page 2";
-    private static String METADATA_KEY = "screenProctoringMetadataWindowTitle";
-    private static String METADATA_WINDOW_TITLE_VALUE1 = "Moodle Page 1";
-    private static String METADATA_WINDOW_TITLE_VALUE2 = "Moodle Page 2";
+    private static final String SESSION_UUID = "SESSION_UUID";
+    private static final Long TIMESTAMP = 123456789L;
+    private static final String GROUP_NAME1 = "Moodle Page 1";
+    private static final String GROUP_NAME2 = "Moodle Page 2";
+    private static final String METADATA_KEY = "screenProctoringMetadataWindowTitle";
+    private static final String METADATA_WINDOW_TITLE_VALUE1 = "Moodle Page 1";
+    private static final String METADATA_WINDOW_TITLE_VALUE2 = "Moodle Page 2";
 
 
     @Mock
-    private ScreenshotDataDAOBatis screenshotDataDAO;
+    private ScreenshotDataDAO screenshotDataDAO;
 
     @Mock
     private ProctoringService proctoringService;
@@ -57,8 +57,8 @@ public class GroupingServiceImplTest {
     @Test
     public void testGroupDataForTimelineWithoutMetadata() throws JsonProcessingException {
         //GIVEN
-        FilterMap filterMap = filterMapWithOnlySessionUUID();
-        Result<TimelineViewData> expectedTimelineViewData = genericTimelineViewData();
+        FilterMap filterMap = createFilterMapWithOnlySessionUUID();
+        Result<TimelineViewData> expectedTimelineViewData = createGenericTimelineViewData();
 
         //WHEN
         when(this.screenshotDataDAO.searchScreenshotData(filterMap))
@@ -72,7 +72,7 @@ public class GroupingServiceImplTest {
 //        log.info("expected result:");
 //        log.info(this.jsonMapper.writeValueAsString(expectedTimelineViewData.get()));
 //        log.info("----------------");
-//
+//§
 //        log.info("actual result:");
 //        log.info(this.jsonMapper.writeValueAsString(timelineViewData.get()));
 //        log.info("----------------");
@@ -81,15 +81,14 @@ public class GroupingServiceImplTest {
         assertEquals(this.jsonMapper.writeValueAsString(expectedTimelineViewData.get()), this.jsonMapper.writeValueAsString(timelineViewData.get()));
     }
 
-
-    private FilterMap filterMapWithOnlySessionUUID(){
+    private FilterMap createFilterMapWithOnlySessionUUID(){
         FilterMap filterMap = new FilterMap();
         filterMap.putIfAbsent(API.PARAM_SESSION_ID, SESSION_UUID);
 
         return filterMap;
     }
-    
-    private HashMap<String, String> metadataHashMap(String metadataValue){
+
+    private HashMap<String, String> createMetadataHashMap(String metadataValue){
         return new HashMap<String, String>() {
             {
                 put(METADATA_KEY, metadataValue);
@@ -98,13 +97,13 @@ public class GroupingServiceImplTest {
     }
 
     //-------expected result---------//
-    private Result<TimelineViewData> genericTimelineViewData(){
-        return Result.tryCatch(() -> {
-            return new TimelineViewData(
-                    SESSION_UUID,
-                    createGroupDataList()
-            );
-        });
+    private Result<TimelineViewData> createGenericTimelineViewData() {
+        return Result.of(
+                new TimelineViewData(
+                        SESSION_UUID,
+                        createGroupDataList()
+                )
+        );
     }
 
     private List<TimelineGroupData> createGroupDataList(){
@@ -148,11 +147,11 @@ public class GroupingServiceImplTest {
                 List.of(
                         new TimelineScreenshotData(
                                 TIMESTAMP,
-                                metadataHashMap(metadataValue)
+                                createMetadataHashMap(metadataValue)
                         ),
                         new TimelineScreenshotData(
                                 TIMESTAMP,
-                                metadataHashMap(metadataValue)
+                                createMetadataHashMap(metadataValue)
                         )
                 )
         );
@@ -161,20 +160,20 @@ public class GroupingServiceImplTest {
     //-------------------------------//
 
     //-------mock data from db---------//
-    private Result<Collection<ScreenshotDataRecord>> screenshotDataRecord(){
-        return Result.tryCatch(() -> {
-            return new ArrayList<>(
-                    List.of(
-                            new ScreenshotDataRecord(
-                                    1L,
-                                    SESSION_UUID,
-                                    TIMESTAMP,
-                                    1,
-                                    ""
-                            )
-                    )
-            );
-        });
+    private Result<Collection<ScreenshotDataRecord>>  screenshotDataRecord() {
+        return Result.of(
+                new ArrayList<>(
+                        List.of(
+                                new ScreenshotDataRecord(
+                                        1L,
+                                        SESSION_UUID,
+                                        TIMESTAMP,
+                                        1,
+                                        ""
+                                )
+                        )
+                )
+        );
     }
 
 
@@ -209,9 +208,7 @@ public class GroupingServiceImplTest {
                 1L,
                 TIMESTAMP,
                 Session.ImageFormat.PNG,
-                metadataHashMap(metadataValue)
+                createMetadataHashMap(metadataValue)
         );
     }
-    //-------------------------------//
-
 }
