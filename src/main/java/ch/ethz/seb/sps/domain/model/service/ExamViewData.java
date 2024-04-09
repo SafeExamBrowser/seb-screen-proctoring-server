@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExamViewData {
 
+    public static final String ATTR_IS_RUNNING = "isRunning";
+
     public static final ExamViewData EMPTY_MODEL = new ExamViewData(null, null, null, null, null);
 
     @JsonProperty(EXAM.ATTR_UUID)
@@ -15,7 +17,7 @@ public class ExamViewData {
 
     @JsonProperty(EXAM.ATTR_NAME)
     public final String name;
-    @JsonProperty(EXAM.ATTR_IS_RUNNING)
+    @JsonProperty(ATTR_IS_RUNNING)
     public final Boolean isRunning;
 
     @JsonProperty(EXAM.ATTR_START_TIME)
@@ -28,7 +30,7 @@ public class ExamViewData {
     public ExamViewData(
         @JsonProperty(EXAM.ATTR_UUID) final String uuid,
         @JsonProperty(EXAM.ATTR_NAME) final String name,
-        @JsonProperty(EXAM.ATTR_IS_RUNNING) final Boolean isRunning,
+        @JsonProperty(ATTR_IS_RUNNING) final Boolean isRunning,
         @JsonProperty(EXAM.ATTR_START_TIME) final Long startTime,
         @JsonProperty(EXAM.ATTR_END_TIME) final Long endTime
     ){
