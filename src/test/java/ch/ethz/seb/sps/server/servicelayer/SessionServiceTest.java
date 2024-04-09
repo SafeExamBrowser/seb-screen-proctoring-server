@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -76,6 +77,7 @@ public class SessionServiceTest {
         Result<Session> session = this.sessionService.createNewSession(EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, IMAGE_FORMAT_PNG);
 
         //THEN
+        assertFalse(session.hasError());
         assertEquals(this.jsonMapper.writeValueAsString(expectedSession), this.jsonMapper.writeValueAsString(session.get()));
     }
 
@@ -95,6 +97,7 @@ public class SessionServiceTest {
         Result<Session> session = this.sessionService.createNewSession(EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, IMAGE_FORMAT_PNG);
 
         //THEN
+        assertFalse(session.hasError());
         assertEquals(this.jsonMapper.writeValueAsString(expectedSession), this.jsonMapper.writeValueAsString(session.get()));
     }
 
