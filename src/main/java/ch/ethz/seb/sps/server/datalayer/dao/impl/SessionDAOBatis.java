@@ -345,7 +345,6 @@ public class SessionDAOBatis implements SessionDAO {
         return sessions.stream()
                 .map(rec -> new EntityKey(rec.getId(), EntityType.SESSION))
                 .collect(Collectors.toList());
-
     }
 
     @Override
