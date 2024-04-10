@@ -41,6 +41,8 @@ public final class API {
 
     }
 
+
+    //Note - do not change the value of those strings as they are used in the API!
     public static final String SCREENSHOT_META_DATA_BROWSER_URL = "screenProctoringMetadataURL";
     public static final String SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE = "screenProctoringMetadataWindowTitle";
     public static final String SCREENSHOT_META_DATA_USER_ACTION = "screenProctoringMetadataUserAction";

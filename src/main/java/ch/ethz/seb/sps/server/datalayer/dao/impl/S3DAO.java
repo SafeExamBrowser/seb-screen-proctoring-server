@@ -8,6 +8,7 @@ import io.minio.GetBucketLifecycleArgs;
 import io.minio.GetObjectArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
+import io.minio.ObjectWriteResponse;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectsArgs;
 import io.minio.SetBucketLifecycleArgs;
@@ -60,8 +61,6 @@ public class S3DAO {
 
         BUCKET_NAME = this.environment.getProperty("sps.s3.bucketName", "sps.s3.defaultBucketName");
 
-        BUCKET_NAME = "nadim-test-bucket-1";
-
         this.minioClient =
                 MinioClient.builder()
                         .endpoint(this.environment.getRequiredProperty("sps.s3.endpointUrl"))
@@ -74,7 +73,7 @@ public class S3DAO {
         if(!isBucketExisting()){
             createBucket();
             setBucketLifecycle();
-            getBucketLifecycle();
+//            getBucketLifecycle();
         }
     }
 
@@ -90,22 +89,26 @@ public class S3DAO {
         );
     }
 
-    public void uploadItem(final ByteArrayInputStream screenshotInputStream, final String sessionUUID, final Long pk) throws Exception{
+    public Result<ObjectWriteResponse> uploadItem(final ByteArrayInputStream screenshotInputStream, final String sessionUUID, final Long pk){
+        return Result.tryCatch(() ->
             this.minioClient.putObject(
                         PutObjectArgs.builder()
                                 .bucket(BUCKET_NAME)
                                 .object(sessionUUID + Constants.UNDERLINE + pk)
                                 .stream(screenshotInputStream, -1, 10485760)
-                                .build());
+                                .build())
+        );
     }
 
-    public void uploadItemBatch(final List<SnowballObject> batchItems) throws Exception{
-                this.minioClient.uploadSnowballObjects(
-                        UploadSnowballObjectsArgs
-                                .builder()
-                                .bucket(BUCKET_NAME)
-                                .objects(batchItems)
-                                .build());
+    public Result<ObjectWriteResponse> uploadItemBatch(final List<SnowballObject> batchItems){
+        return Result.tryCatch(() ->
+            this.minioClient.uploadSnowballObjects(
+                    UploadSnowballObjectsArgs
+                            .builder()
+                            .bucket(BUCKET_NAME)
+                            .objects(batchItems)
+                            .build())
+        );
     }
 
     public void deleteItemBatch(final List<DeleteObject> batchItems) throws Exception{

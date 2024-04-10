@@ -60,7 +60,6 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
     private SqlSessionTemplate sqlSessionTemplate;
     private ScreenshotDataRecordMapper screenshotDataRecordMapper;
 
-
     private final BlockingDeque<ScreenshotQueueData> screenshotDataQueue = new LinkedBlockingDeque<>();
 
     public ScreenshotStore_S3(
@@ -173,14 +172,11 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
                                     null));
                 });
 
-                try {
-                    //upload batch to s3 store
-                    this.s3DAO.uploadItemBatch(batchItems);
-
-                } catch (Exception e) {
+                //upload batch to s3 store
+                this.s3DAO.uploadItemBatch(batchItems).onError(e -> {
                     log.error("Failed to upload batch to S3 service. Transaction has failed... put data back to queue. Cause: ", e);
                     this.screenshotDataQueue.addAll(batch);
-                }
+                });
 
             });
 

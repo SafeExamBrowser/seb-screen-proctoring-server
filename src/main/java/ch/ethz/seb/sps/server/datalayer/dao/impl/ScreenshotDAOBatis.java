@@ -53,11 +53,10 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
             final Long pk,
             final String sessionUUID) {
 
-        return Result.tryCatch(() -> {
-            return this.screenshotMapper
+        return Result.tryCatch(() ->
+                this.screenshotMapper
                     .selectScreenshotByPK(pk)
-                    .getImage();
-        });
+                    .getImage());
     }
 
     //todo: discuss if we have to remove this method

@@ -53,7 +53,11 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
             this.s3DAO.deleteItemBatch(createItemListForDeletion(sessionId, screenShotPKs));
             return screenShotPKs;
 
-        }).onError(error -> log.error("Failed to delete items.....", error));
+        })
+        .onError(error -> {
+            log.error("Failed to delete items...", error);
+        })
+        .onError(TransactionHandler::rollback);
     }
 
     private List<DeleteObject> createItemListForDeletion(final String sessionId, final List<Long> screenShotPKs){
