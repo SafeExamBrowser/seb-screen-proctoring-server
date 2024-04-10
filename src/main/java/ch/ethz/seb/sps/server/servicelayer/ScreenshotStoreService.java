@@ -30,5 +30,4 @@ public interface ScreenshotStoreService {
     void init();
 
     int getStoreHealthIndicator();
-
 }

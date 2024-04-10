@@ -45,7 +45,6 @@ public class ServiceInfo {
 
     public static final String VERSION_KEY = "seb.sps.version";
     public static final String STORE_ADAPTER_KEY = "sps.data.store.adapter";
-    public static final String STORE_STRATEGY_KEY = "sps.data.store.strategy";
     public static final String FILE_STORE = "FILESYS_RDBMS";
     public static final String FULL_RDBMS_STORE = "FULL_RDBMS";
     public static final String S3_STORE = "S3_RDBMS";
@@ -54,8 +53,6 @@ public class ServiceInfo {
     private final String version;
     private final Set<String> activeProfiles;
     private final String storeAdapter;
-    private final String storeStrategy;
-
     private final String hostAddress; // internal
     private final String serverPort; // internal
     private final String contextPath;
@@ -91,7 +88,6 @@ public class ServiceInfo {
         this.version = environment.getRequiredProperty(VERSION_KEY);
         this.activeProfiles = new HashSet<>(Arrays.asList(environment.getActiveProfiles()));
         this.storeAdapter = environment.getRequiredProperty(STORE_ADAPTER_KEY);
-        this.storeStrategy = environment.getRequiredProperty(STORE_STRATEGY_KEY);
         this.webserviceInfoDAO = webserviceInfoDAO;
 
         this.adminAPIEndpoint = environment.getProperty("sps.api.admin.endpoint");
@@ -283,10 +279,6 @@ public class ServiceInfo {
 
     public String getStoreAdapter() {
         return this.storeAdapter;
-    }
-
-    public String getStoreStrategy() {
-        return this.storeStrategy;
     }
 
     public boolean isFileStore() {

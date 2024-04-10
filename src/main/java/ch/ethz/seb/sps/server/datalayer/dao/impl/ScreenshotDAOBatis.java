@@ -53,14 +53,13 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
             final Long pk,
             final String sessionUUID) {
 
-        return Result.tryCatch(() -> {
-            return this.screenshotMapper
+        return Result.tryCatch(() ->
+                this.screenshotMapper
                     .selectScreenshotByPK(pk)
-                    .getImage();
-        });
+                    .getImage());
     }
 
-    @Override
+    //todo: discuss if we have to remove this method
     @Transactional
     public Result<Long> storeImage(
             final Long pk,
@@ -89,9 +88,8 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
                     .execute();
 
             return screenShotPKs;
-        })
-                .onError(TransactionHandler::rollback);
 
+        }).onError(TransactionHandler::rollback);
     }
 
 }

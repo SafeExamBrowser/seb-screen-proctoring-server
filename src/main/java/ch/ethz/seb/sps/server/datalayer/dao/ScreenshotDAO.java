@@ -19,11 +19,6 @@ public interface ScreenshotDAO {
             Long pk,
             String sessionUUID);
 
-    Result<Long> storeImage(
-            Long pk,
-            String sessionUUID,
-            InputStream in);
-
     Result<List<Long>> deleteAllForSession(
             String sessionUUID,
             List<Long> screenShotPKs);
