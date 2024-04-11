@@ -14,26 +14,6 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface SessionService {
 
-    default Result<Session> createNewSession(
-            final String groupUUID,
-            final String userSessionName,
-            final String clientIP,
-            final String clientMachineName,
-            final String clientOSName,
-            final String clientVersion,
-            final ImageFormat imageFormat) {
-
-        return createNewSession(
-                groupUUID,
-                userSessionName,
-                clientIP,
-                clientMachineName,
-                clientOSName,
-                clientVersion,
-                imageFormat,
-                false);
-    }
-
     Result<Session> createNewSession(
             String groupUUID,
             String userSessionName,
@@ -41,8 +21,7 @@ public interface SessionService {
             String clientMachineName,
             String clientOSName,
             String clientVersion,
-            ImageFormat imageFormat,
-            boolean createGroup);
+            ImageFormat imageFormat);
 
     Result<Session> updateSessionData(
             String sessionUUID,

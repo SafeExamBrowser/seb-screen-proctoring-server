@@ -20,7 +20,7 @@ public final class Profile {
     //ralph
 //    String webserviceAddress = "http://ralph.ethz.ch:8090";
     //kubernetes
-//    String webserviceAddress = "https://sps-webservice-test.let.ethz.ch";
+//    String webserviceAddress = "https://sps-test.let.ethz.ch";
 
     @JsonProperty("websocketAddress")
     String websocketAddress =
@@ -32,7 +32,7 @@ public final class Profile {
     String accessTokenEndpoint = "/oauth/token";
 
     @JsonProperty("groupId")
-    String groupId = "debug test 2";
+    String groupId = "nadim-test-bucket-1-new";
     @JsonProperty("sessionId")
     String sessionId = null;
     @JsonProperty("clientId")
@@ -41,7 +41,7 @@ public final class Profile {
     String clientSecret = "test";
 
     @JsonProperty("runtime")
-//    int runtime = 3 * 60000;
+//    int runtime = 1 * 60000;
     int runtime = 20 * 1000;
 
     @JsonProperty("numberOfConnections")
