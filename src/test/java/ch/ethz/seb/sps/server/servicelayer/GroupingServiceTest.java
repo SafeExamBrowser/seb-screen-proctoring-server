@@ -55,27 +55,18 @@ public class GroupingServiceTest {
     private GroupingServiceImpl groupingService;
 
     @Test
-    public void testGroupDataForTimelineWithoutMetadata() throws JsonProcessingException {
+    public void groupDataForTimelineWithoutMetadata() throws JsonProcessingException {
         //GIVEN
         FilterMap filterMap = createFilterMapWithOnlySessionUUID();
         Result<TimelineViewData> expectedTimelineViewData = createGenericTimelineViewData();
 
-        //WHEN
         when(this.screenshotDataDAO.searchScreenshotData(filterMap))
                 .thenReturn(screenshotDataRecord());
         when(this.proctoringService.createScreenshotSearchResult(screenshotDataRecord().get()))
                 .thenReturn(screenshotSearchResultCollection());
 
+        //WHEN
         Result<TimelineViewData> timelineViewData = this.groupingService.groupDataForTimeline(filterMap);
-
-        //print results as json
-//        log.info("expected result:");
-//        log.info(this.jsonMapper.writeValueAsString(expectedTimelineViewData.get()));
-//        log.info("----------------");
-//§
-//        log.info("actual result:");
-//        log.info(this.jsonMapper.writeValueAsString(timelineViewData.get()));
-//        log.info("----------------");
 
         //THEN
         assertEquals(this.jsonMapper.writeValueAsString(expectedTimelineViewData.get()), this.jsonMapper.writeValueAsString(timelineViewData.get()));

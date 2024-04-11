@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -39,7 +40,6 @@ public class SessionServiceTest {
     private static final Long GROUP_ID = 999L;
     private static final String GROUP_UUID = "e7555417-382c-4200-99bb-7f80023cfeaf";
     private static final String UUID = "be481b6a-bf1e-490e-9d18-c97355b01bfd";
-//    private static final String USER_SESSION_NAME = "USER_SESSION_NAME";
     private static final String CLIENT_NAME = "seb_0d03539e-699d-48a3-8335-853800c5a1ff_3";
     private static final String CLIENT_IP = "127.0.0.1";
     private static final String CLIENT_MACHINE_NAME = "3.7.0 BETA (x64)";
@@ -61,10 +61,12 @@ public class SessionServiceTest {
     @InjectMocks
     private SessionServiceImpl sessionService;
 
+
+    //-------sessions creation tests---------//
     @Test
-    public void testCreateGenericSession() throws JsonProcessingException {
+    public void createSessionSucceedsWithGenericData() throws JsonProcessingException {
         //GIVEN
-        Session expectedSession = createGenericSession();
+        Session expectedSession = createGenericSession(false);
 
         //WHEN
         when(this.groupDAO.existsByUUID(any()))
@@ -72,19 +74,19 @@ public class SessionServiceTest {
         when(this.proctoringCacheService.getActiveGroup(any()))
                 .thenReturn(createGenericGroup());
         when(this.sessionDAO.createNew(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
-                .thenReturn(createGenericSessionResult());
+                .thenReturn(createGenericSessionResult(false));
 
-        Result<Session> session = this.sessionService.createNewSession(EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, IMAGE_FORMAT_PNG);
+        Result<Session> newSession = this.sessionService.createNewSession(EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, IMAGE_FORMAT_PNG);
 
         //THEN
-        assertFalse(session.hasError());
-        assertEquals(this.jsonMapper.writeValueAsString(expectedSession), this.jsonMapper.writeValueAsString(session.get()));
+        assertFalse(newSession.hasError());
+        assertEquals(this.jsonMapper.writeValueAsString(expectedSession), this.jsonMapper.writeValueAsString(newSession.get()));
     }
 
     @Test
-    public void testCreateRealisticSession() throws JsonProcessingException {
+    public void createSessionSucceedsWithRealisticData() throws JsonProcessingException {
         //GIVEN
-        Session expectedSession = createRealisticSession();
+        Session expectedSession = createRealisticSession(false, null, null);
 
         //WHEN
         when(this.groupDAO.existsByUUID(any()))
@@ -92,16 +94,85 @@ public class SessionServiceTest {
         when(this.proctoringCacheService.getActiveGroup(any()))
                 .thenReturn(createGenericGroup());
         when(this.sessionDAO.createNew(anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), any()))
-                .thenReturn(createRealisticSessionResult());
+                .thenReturn(createRealisticSessionResult(false, null, null));
 
-        Result<Session> session = this.sessionService.createNewSession(EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, IMAGE_FORMAT_PNG);
+        Result<Session> newSession = this.sessionService.createNewSession(EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, IMAGE_FORMAT_PNG);
 
         //THEN
-        assertFalse(session.hasError());
-        assertEquals(this.jsonMapper.writeValueAsString(expectedSession), this.jsonMapper.writeValueAsString(session.get()));
+        assertFalse(newSession.hasError());
+        assertEquals(this.jsonMapper.writeValueAsString(expectedSession), this.jsonMapper.writeValueAsString(newSession.get()));
+    }
+    //-------------------------------//
+
+
+    //-------session update tests---------//
+    @Test
+    public void updateSessionSucceedsWithGenericData() throws JsonProcessingException {
+        //GIVEN
+        Session expectedSession = createGenericSession(true);
+
+        when(this.sessionDAO.byModelId(any()))
+                .thenReturn(createGenericSessionResult(true));
+        when(this.sessionDAO.save(any()))
+                .thenReturn(createGenericSessionResult(true));
+
+        //WHEN
+        Result<Session> updatedSession = this.sessionService.updateSessionData(EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING);
+
+        //THEN
+        assertEquals(this.jsonMapper.writeValueAsString(expectedSession), this.jsonMapper.writeValueAsString(updatedSession.get()));
     }
 
-    private Session createGenericSession(){
+    @Test
+    public void updateSessionSucceedsWithRealisticData() throws JsonProcessingException {
+        //GIVEN
+        final String newClientIp = "127.0.0.2";
+        final String newClientVersion = "7.0";
+
+        Session expectedSession = createRealisticSession(true, newClientIp, newClientVersion);
+        Result<Session> mockSession = createRealisticSessionResult(true, null, null);
+        Result<Session> mockSessionUpdated = createRealisticSessionResult(true, newClientIp, newClientVersion);
+
+
+        when(this.sessionDAO.byModelId(any()))
+                .thenReturn(mockSession);
+        when(this.sessionDAO.save(any()))
+                .thenReturn(mockSessionUpdated);
+
+        //WHEN
+        Result<Session> updatedSession = this.sessionService.updateSessionData(EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING);
+
+        //THEN
+        assertEquals(this.jsonMapper.writeValueAsString(expectedSession), this.jsonMapper.writeValueAsString(updatedSession.get()));
+    }
+
+    @Test
+    public void updateSessionFailsWithRealisticData() throws JsonProcessingException {
+        //GIVEN
+        final String newClientIp = "127.0.0.2";
+        final String newClientVersion = "7.0";
+
+        Session expectedSession = createRealisticSession(true, null, null);
+        Result<Session> mockSession = createRealisticSessionResult(true, null, null);
+        Result<Session> mockSessionUpdated = createRealisticSessionResult(true, newClientIp, newClientVersion);
+
+
+        when(this.sessionDAO.byModelId(any()))
+                .thenReturn(mockSession);
+        when(this.sessionDAO.save(any()))
+                .thenReturn(mockSessionUpdated);
+
+        //WHEN
+        Result<Session> updatedSession = this.sessionService.updateSessionData(EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING);
+
+        //THEN
+        assertNotEquals(this.jsonMapper.writeValueAsString(expectedSession), this.jsonMapper.writeValueAsString(updatedSession.get()));
+    }
+    //-------------------------------//
+
+
+    //-------generic data---------//
+    private Session createGenericSession(boolean isActive){
        return new Session(
                GENERIC_LONG,
                GENERIC_LONG,
@@ -114,28 +185,11 @@ public class SessionServiceTest {
                IMAGE_FORMAT_PNG,
                GENERIC_LONG,
                GENERIC_LONG,
-               GENERIC_LONG
+               isActive ? null : GENERIC_LONG
        );
     }
 
-    private Session createRealisticSession(){
-        return new Session(
-                ID,
-                GROUP_ID,
-                UUID,
-                CLIENT_NAME,
-                CLIENT_IP,
-                CLIENT_MACHINE_NAME,
-                CLIENT_OS_NAME,
-                CLIENT_VERSION,
-                IMAGE_FORMAT_PNG,
-                CREATION_TIME,
-                LAST_UPDATE_TIME,
-                TERMINATION_TIME
-        );
-    }
-
-    private Result<Session> createGenericSessionResult(){
+    private Result<Session> createGenericSessionResult(boolean isActive){
         return Result.of(new Session(
                 GENERIC_LONG,
                 GENERIC_LONG,
@@ -148,24 +202,7 @@ public class SessionServiceTest {
                 IMAGE_FORMAT_PNG,
                 GENERIC_LONG,
                 GENERIC_LONG,
-                GENERIC_LONG
-        ));
-    }
-
-    private Result<Session> createRealisticSessionResult(){
-        return Result.of(new Session(
-                ID,
-                GROUP_ID,
-                UUID,
-                CLIENT_NAME,
-                CLIENT_IP,
-                CLIENT_MACHINE_NAME,
-                CLIENT_OS_NAME,
-                CLIENT_VERSION,
-                IMAGE_FORMAT_PNG,
-                CREATION_TIME,
-                LAST_UPDATE_TIME,
-                TERMINATION_TIME
+                isActive ? null : GENERIC_LONG
         ));
     }
 
@@ -183,6 +220,42 @@ public class SessionServiceTest {
                 null
         );
     }
+    //-------------------------------//
 
+    //-------realistic data---------//
+    private Session createRealisticSession(boolean isActive, String newClientIp, String newClientVersion){
+        return new Session(
+                ID,
+                GROUP_ID,
+                UUID,
+                CLIENT_NAME,
+                newClientIp!=null ? newClientIp : CLIENT_IP,
+                newClientVersion!=null ? newClientVersion : CLIENT_VERSION,
+                CLIENT_OS_NAME,
+                CLIENT_VERSION,
+                IMAGE_FORMAT_PNG,
+                CREATION_TIME,
+                LAST_UPDATE_TIME,
+                isActive ? null : TERMINATION_TIME
+        );
+    }
+
+    private Result<Session> createRealisticSessionResult(boolean isActive, String newClientIp, String newClientVersion){
+        return Result.of(new Session(
+                ID,
+                GROUP_ID,
+                UUID,
+                CLIENT_NAME,
+                newClientIp!=null ? newClientIp : CLIENT_IP,
+                newClientVersion!=null ? newClientVersion : CLIENT_VERSION,
+                CLIENT_OS_NAME,
+                CLIENT_VERSION,
+                IMAGE_FORMAT_PNG,
+                CREATION_TIME,
+                LAST_UPDATE_TIME,
+                isActive ? null : TERMINATION_TIME
+        ));
+    }
+    //-------------------------------//
 
 }
