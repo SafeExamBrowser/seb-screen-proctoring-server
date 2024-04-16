@@ -77,6 +77,21 @@ public class ProctoringCacheService {
         }
     }
 
+//    @Cacheable(
+//            cacheNames = SESSION_TOKENS_CACHE,
+//            key = "#groupUUID",
+//            unless = "#result == null")
+    public Collection<String> getLiveSessionTokens(final String groupUUID, final Long groupId) {
+
+        final Result<Collection<String>> liveSessions = this.sessionDAO.allLiveSessionUUIDs(groupId);
+        if (liveSessions.hasError()) {
+            log.error("Failed to load live session for group: {}", groupUUID, liveSessions.getError());
+            return null;
+        } else {
+            return liveSessions.get();
+        }
+    }
+
     @Cacheable(
             cacheNames = SESSION_TOKENS_CACHE,
             key = "#groupUUID",

@@ -29,6 +29,8 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
             String clientVersion,
             ImageFormat imageFormat);
 
+    Result<Collection<String>> allLiveSessionUUIDs(Long groupId);
+
     Result<Collection<String>> allSessionUUIDs(Long groupId);
 
     Result<String> closeSession(String sessionUUID);
