@@ -142,6 +142,8 @@ public class ProctoringServiceImpl implements ProctoringService {
             }
 
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
+            final Collection<String> liveSessionTokens = this.proctoringCacheService
+                    .getLiveSessionTokens(activeGroup.uuid, activeGroup.id);
             final Collection<String> sessionTokens = this.proctoringCacheService
                     .getSessionTokens(activeGroup.uuid, activeGroup.id);
 
@@ -178,6 +180,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     groupUUID,
                     activeGroup.name,
                     activeGroup.description,
+                    liveSessionTokens.size(),
                     sessionTokens.size(),
                     pnum,
                     pSize,
