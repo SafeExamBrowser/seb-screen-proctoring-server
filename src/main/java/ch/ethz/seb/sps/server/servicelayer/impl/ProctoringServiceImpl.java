@@ -144,18 +144,19 @@ public class ProctoringServiceImpl implements ProctoringService {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             final Collection<String> liveSessionTokens = this.proctoringCacheService
                     .getLiveSessionTokens(activeGroup.uuid, activeGroup.id);
-            final Collection<String> sessionTokens = this.proctoringCacheService
-                    .getSessionTokens(activeGroup.uuid, activeGroup.id);
+
+            final Integer liveSessionCount = this.proctoringCacheService.getLiveSessionsCount(activeGroup.uuid, activeGroup.id);
+            final Integer sessionCount = this.proctoringCacheService.getSessionsCount(activeGroup.uuid, activeGroup.id);
 
             final long millisecondsNow = Utils.getMillisecondsNow();
             final int pSize = (pageSize != null && pageSize < 20) ? pageSize : 9;
             final int pnum = (pageNumber == null || pageNumber < 1) ? 1
-                    : ((pageNumber - 1) * pSize > sessionTokens.size()) ? 1 : pageNumber;
+                    : ((pageNumber - 1) * pSize > liveSessionTokens.size()) ? 1 : pageNumber;
 
-            final List<String> sessionIdsInOrder = sessionTokens
+            //todo: properly implemented sort: SEBSP-131
+            final List<String> sessionIdsInOrder = liveSessionTokens
                     .stream()
                     .map(this.proctoringCacheService::getSession)
-                    .sorted(Session.getComparator(sortBy, sortOrder == PageSortOrder.DESCENDING))
                     .skip((long) (pnum - 1) * pSize)
                     .limit(pSize)
                     .map(Session::getUuid)
@@ -180,8 +181,8 @@ public class ProctoringServiceImpl implements ProctoringService {
                     groupUUID,
                     activeGroup.name,
                     activeGroup.description,
-                    liveSessionTokens.size(),
-                    sessionTokens.size(),
+                    liveSessionCount,
+                    sessionCount,
                     pnum,
                     pSize,
                     sortBy,
@@ -375,7 +376,7 @@ public class ProctoringServiceImpl implements ProctoringService {
         if (fully) {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             this.proctoringCacheService
-                    .getSessionTokens(groupUUID, activeGroup.id)
+                    .getLiveSessionTokens(groupUUID, activeGroup.id)
                     .stream()
                     .forEach(this.proctoringCacheService::evictSession);
         }

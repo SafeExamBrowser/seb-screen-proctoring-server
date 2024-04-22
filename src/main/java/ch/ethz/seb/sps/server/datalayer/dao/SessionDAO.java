@@ -31,7 +31,9 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
 
     Result<Collection<String>> allLiveSessionUUIDs(Long groupId);
 
-    Result<Collection<String>> allSessionUUIDs(Long groupId);
+    Result<Long> allLiveSessionCount(Long groupId);
+
+    Result<Long> allSessionCount(Long groupId);
 
     Result<String> closeSession(String sessionUUID);
 
