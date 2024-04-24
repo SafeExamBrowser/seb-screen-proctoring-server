@@ -145,8 +145,16 @@ public class ProctoringServiceImpl implements ProctoringService {
             final Collection<String> liveSessionTokens = this.proctoringCacheService
                     .getLiveSessionTokens(activeGroup.uuid, activeGroup.id);
 
-            final Integer liveSessionCount = this.proctoringCacheService.getLiveSessionsCount(activeGroup.uuid, activeGroup.id);
-            final Integer sessionCount = this.proctoringCacheService.getSessionsCount(activeGroup.uuid, activeGroup.id);
+            final int liveSessionCount = this.sessionDAO
+                    .allLiveSessionCount(activeGroup.id)
+                    .onError(error -> log.warn("Failed to count live sessions for group: {} message {}", groupUUID, error.getMessage()))
+                    .getOr(-1L)
+                    .intValue();
+
+            final int sessionCount = this.sessionDAO.allSessionCount(activeGroup.id)
+                    .onError(error -> log.warn("Failed to count sessions for group: {} message {}", groupUUID, error.getMessage()))
+                    .getOr(-1L)
+                    .intValue();
 
             final long millisecondsNow = Utils.getMillisecondsNow();
             final int pSize = (pageSize != null && pageSize < 20) ? pageSize : 9;

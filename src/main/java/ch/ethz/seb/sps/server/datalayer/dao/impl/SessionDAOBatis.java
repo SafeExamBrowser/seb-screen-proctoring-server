@@ -141,7 +141,7 @@ public class SessionDAOBatis implements SessionDAO {
                     .build()
                     .execute()
                     .stream()
-                    .map(rec -> rec.getUuid())
+                    .map(SessionRecord::getUuid)
                     .collect(Collectors.toList());
         });
     }
@@ -149,13 +149,12 @@ public class SessionDAOBatis implements SessionDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<Long> allLiveSessionCount(final Long groupId) {
-        return Result.tryCatch(() -> {
-            return this.sessionRecordMapper.countByExample()
-                    .where(SessionRecordDynamicSqlSupport.groupId, SqlBuilder.isEqualTo(groupId))
-                    .and(SessionRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
-                    .build()
-                    .execute();
-        });
+        return Result.tryCatch(() -> this.sessionRecordMapper
+                .countByExample()
+                .where(SessionRecordDynamicSqlSupport.groupId, SqlBuilder.isEqualTo(groupId))
+                .and(SessionRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
+                .build()
+                .execute());
     }
 
     @Override
