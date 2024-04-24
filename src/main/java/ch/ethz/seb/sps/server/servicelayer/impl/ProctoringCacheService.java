@@ -81,14 +81,33 @@ public class ProctoringCacheService {
             cacheNames = SESSION_TOKENS_CACHE,
             key = "#groupUUID",
             unless = "#result == null")
-    public Collection<String> getSessionTokens(final String groupUUID, final Long groupId) {
-
-        final Result<Collection<String>> activeSessions = this.sessionDAO.allSessionUUIDs(groupId);
-        if (activeSessions.hasError()) {
-            log.error("Failed to load active session for group: {}", groupUUID, activeSessions.getError());
+    public Collection<String> getLiveSessionTokens(final String groupUUID, final Long groupId) {
+        final Result<Collection<String>> liveSessions = this.sessionDAO.allLiveSessionUUIDs(groupId);
+        if (liveSessions.hasError()) {
+            log.error("Failed to load live sessions for group: {}", groupUUID, liveSessions.getError());
             return null;
         } else {
-            return activeSessions.get();
+            return liveSessions.get();
+        }
+    }
+
+    public Integer getLiveSessionsCount(final String groupUUID, final Long groupId) {
+        final Result<Long> liveSessionsCount = this.sessionDAO.allLiveSessionCount(groupId);
+        if (liveSessionsCount.hasError()) {
+            log.error("Failed to count live sessions for group: {}", groupUUID, liveSessionsCount.getError());
+            return null;
+        } else {
+            return liveSessionsCount.get().intValue();
+        }
+    }
+
+    public Integer getSessionsCount(final String groupUUID, final Long groupId) {
+        final Result<Long> sessionsCount = this.sessionDAO.allSessionCount(groupId);
+        if (sessionsCount.hasError()) {
+            log.error("Failed to count sessions for group: {}", groupUUID, sessionsCount.getError());
+            return null;
+        } else {
+            return sessionsCount.get().intValue();
         }
     }
 

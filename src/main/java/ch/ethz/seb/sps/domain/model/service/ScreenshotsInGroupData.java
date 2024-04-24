@@ -22,6 +22,7 @@ import java.util.Objects;
 public class ScreenshotsInGroupData {
 
     public static final String ATTR_EXAM = "exam";
+    public static final String ATTR_NUM_OF_LIVE_SESSIONS = "numberOfLiveSessions";
     public static final String ATTR_NUM_OF_SESSIONS = "numberOfSessions";
     public static final String ATTR_PAGE_NUMBER = "pageNumber";
     public static final String ATTR_PAGE_SIZE = "pageSize";
@@ -40,6 +41,10 @@ public class ScreenshotsInGroupData {
     @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(SEB_GROUP.ATTR_DESCRIPTION)
     public final String groupDescription;
+
+    @Schema(accessMode = AccessMode.READ_ONLY)
+    @JsonProperty(ATTR_NUM_OF_LIVE_SESSIONS)
+    public final int numberOfLiveSessions;
 
     @Schema(accessMode = AccessMode.READ_ONLY)
     @JsonProperty(ATTR_NUM_OF_SESSIONS)
@@ -68,6 +73,7 @@ public class ScreenshotsInGroupData {
             @JsonProperty(SEB_GROUP.ATTR_UUID) final String groupUUID,
             @JsonProperty(SEB_GROUP.ATTR_NAME) final String groupName,
             @JsonProperty(SEB_GROUP.ATTR_DESCRIPTION) final String groupDescription,
+            @JsonProperty(ATTR_NUM_OF_LIVE_SESSIONS) final int numberOfLiveSessions,
             @JsonProperty(ATTR_NUM_OF_SESSIONS) final int numberOfSessions,
             @JsonProperty(ATTR_PAGE_NUMBER) final int pageNumber,
             @JsonProperty(ATTR_PAGE_SIZE) final int pageSize,
@@ -79,6 +85,7 @@ public class ScreenshotsInGroupData {
         this.groupUUID = groupUUID;
         this.groupName = groupName;
         this.groupDescription = groupDescription;
+        this.numberOfLiveSessions = numberOfLiveSessions;
         this.numberOfSessions = numberOfSessions;
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
@@ -98,6 +105,10 @@ public class ScreenshotsInGroupData {
 
     public String getGroupDescription() {
         return this.groupDescription;
+    }
+
+    public int getNumberOfLiveSessions() {
+        return this.numberOfLiveSessions;
     }
 
     public int getNumberOfSessions() {
@@ -150,6 +161,8 @@ public class ScreenshotsInGroupData {
         builder.append(this.groupName);
         builder.append(", groupDescription=");
         builder.append(this.groupDescription);
+        builder.append(", numberOfLiveSessions=");
+        builder.append(this.numberOfLiveSessions);
         builder.append(", numberOfSessions=");
         builder.append(this.numberOfSessions);
         builder.append(", pageNumber=");
