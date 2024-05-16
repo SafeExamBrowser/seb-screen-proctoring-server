@@ -516,6 +516,31 @@ public class SessionDAOBatis implements SessionDAO {
                 .execute();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Boolean> hasAnySessionData(Collection<Long> groupIds) {
+        return Result.tryCatch(() -> {
+
+            List<Long> sessionIds = this.sessionRecordMapper
+                    .selectIdsByExample()
+                    .where(groupId, isIn(groupIds))
+                    .build()
+                    .execute();
+
+            if (sessionIds == null  || sessionIds.isEmpty()) {
+                return false;
+            }
+
+            Long dataNum = this.screenshotDataRecordMapper
+                    .countByExample()
+                    .where(ScreenshotDataRecordDynamicSqlSupport.id, isIn(sessionIds))
+                    .build()
+                    .execute();
+
+            return dataNum != null && dataNum.intValue() != 0;
+        });
+    }
+
     private Result<SessionRecord> recordByPK(final Long pk) {
         return Result.tryCatch(() -> {
 

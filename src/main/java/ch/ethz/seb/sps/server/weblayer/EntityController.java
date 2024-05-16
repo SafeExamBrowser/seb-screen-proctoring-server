@@ -110,7 +110,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
      * @param sort the sort parameter to sort the list of entities before paging
      *            the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for
      *            descending sort order.
-     * @param allRequestParams a MultiValueMap of all request parameter that is used for filtering.
+     * @param request Http request object.
      * @return Page of domain-model-entities of specified type */
     @Operation(
             summary = "Get a page of the specific domain entity. Sorting and filtering is applied before paging",
@@ -156,19 +156,17 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 
-        // NOTE this must be done outside of the paging supplier to do not interfere with Batis paging magic
+        // NOTE this must be done outside the paging supplier to do not interfere with Batis paging magic
         final Collection<Long> readPrivilegedPredication = getReadPrivilegedPredication();
-
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
-        final Page<T> page = this.paginationService.getPage(
+
+        return this.paginationService.getPage(
                 pageNumber,
                 pageSize,
                 sort,
                 getSQLTableOfEntity().tableNameAtRuntime(),
                 () -> getAll(filterMap, readPrivilegedPredication))
                 .getOrThrow();
-
-        return page;
     }
 
     // ******************
@@ -490,21 +488,21 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
 
     /** Checks overall read privilege for the specified entity type
      *
-     * @throws APIErrorException.ofPermissionDenied if user has no overall read privileges on the entity type */
+     * @throws APIErrorException if user has no overall read privileges on the entity type */
     protected void checkReadPrivilege() {
         this.userService.check(PrivilegeType.READ, getGrantEntityType());
     }
 
     /** Checks overall modify privilege for the specified entity type
      *
-     * @throws APIErrorException.ofPermissionDenied if user has no overall modify privileges on the entity type */
+     * @throws APIErrorException if user has no overall modify privileges on the entity type */
     protected void checkModifyPrivilege() {
         this.userService.check(PrivilegeType.MODIFY, getGrantEntityType());
     }
 
     /** Checks overall write privilege for the specified entity type
      *
-     * @throws APIErrorException.ofPermissionDenied if user has no overall write privileges on the entity type */
+     * @throws APIErrorException if user has no overall write privileges on the entity type */
     protected void checkWritePrivilege() {
         this.userService.check(PrivilegeType.WRITE, getGrantEntityType());
     }

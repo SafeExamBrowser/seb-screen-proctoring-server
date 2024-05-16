@@ -4,14 +4,12 @@ import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSql
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.server.datalayer.batis.model.AdditionalAttributeRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.*;
+import ch.ethz.seb.sps.utils.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
@@ -29,12 +27,6 @@ import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ExamRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
-import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
-import ch.ethz.seb.sps.server.datalayer.dao.OwnedEntityDAO;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
@@ -43,15 +35,18 @@ import ch.ethz.seb.sps.utils.Utils;
 public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     private final ExamRecordMapper examRecordMapper;
+    private final AdditionalAttributesDAO additionalAttributesDAO;
     private final GroupDAO groupDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
 
     public ExamDAOBatis(
             final ExamRecordMapper examRecordMapper,
+            final AdditionalAttributesDAO additionalAttributesDAO,
             final GroupDAO groupDAO,
             final EntityPrivilegeDAO entityPrivilegeDAO) {
 
         this.examRecordMapper = examRecordMapper;
+        this.additionalAttributesDAO = additionalAttributesDAO;
         this.groupDAO = groupDAO;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
     }
@@ -276,8 +271,19 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     data.endTime);
 
             this.examRecordMapper.insert(newRecord);
-            return this.examRecordMapper.selectByPrimaryKey(newRecord.getId());
 
+            if (data.userIds != null && !data.userIds.isEmpty()) {
+
+                // save new user ids
+                this.additionalAttributesDAO.saveAdditionalAttribute(
+                        EntityType.EXAM,
+                        newRecord.getId(),
+                        Exam.ATTR_USER_IDS,
+                        StringUtils.join(data.userIds, Constants.LIST_SEPARATOR)
+                ).onError(error -> log.warn("Failed to store exam user ids: {}", data.userIds, error));
+            }
+
+            return this.examRecordMapper.selectByPrimaryKey(newRecord.getId());
         })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);
@@ -310,6 +316,22 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     .build()
                     .execute();
 
+            if (data.userIds != null && !data.userIds.isEmpty()) {
+                // delete old user ids
+                this.additionalAttributesDAO.delete(
+                        EntityType.EXAM,
+                        pk,
+                        Exam.ATTR_USER_IDS);
+
+                // save new user ids
+                this.additionalAttributesDAO.saveAdditionalAttribute(
+                        EntityType.EXAM,
+                        pk,
+                        Exam.ATTR_USER_IDS,
+                        StringUtils.join(data.userIds, Constants.LIST_SEPARATOR)
+                ).onError(error -> log.warn("Failed to store exam user ids: {}", data.userIds, error));
+            }
+
             return this.examRecordMapper.selectByPrimaryKey(pk);
         })
                 .map(this::toDomainModel)
@@ -332,6 +354,9 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     .getOrThrow();
 
             log.info("Deleted following groups: {} before deleting exams: {}", deletedGroups, all);
+
+            // delete all additional attributes
+            ids.forEach(id -> this.additionalAttributesDAO.deleteAll(EntityType.EXAM, id));
 
             // delete all involved entity privileges
             deleteAllEntityPrivileges(ids, this.entityPrivilegeDAO);
@@ -396,6 +421,13 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
     }
 
     private Exam toDomainModel(final ExamRecord record) {
+
+        List<String> userIds = this.additionalAttributesDAO
+                .getAdditionalAttribute(EntityType.EXAM, record.getId(), Exam.ATTR_USER_IDS)
+                .map(AdditionalAttributeRecord::getValue)
+                .map(ids -> Arrays.asList(StringUtils.split(ids, Constants.LIST_SEPARATOR)))
+                .getOr(Collections.emptyList());
+
         return new Exam(
                 record.getId(),
                 record.getUuid(),
@@ -404,6 +436,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                 record.getUrl(),
                 record.getType(),
                 record.getOwner(),
+                userIds,
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),

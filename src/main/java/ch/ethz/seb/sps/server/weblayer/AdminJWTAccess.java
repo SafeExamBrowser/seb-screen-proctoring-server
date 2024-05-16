@@ -179,7 +179,7 @@ public class AdminJWTAccess {
         return claims;
     }
 
-    // NOTE Token is expires in one minute and is signed with internal secret
+    // NOTE Token is expired in one minute and is signed with internal secret
     private String createToken(final Map<String, Object> claims, final String subject) {
         final long millisecondsNow = Utils.getMillisecondsNow();
         return Jwts.builder()

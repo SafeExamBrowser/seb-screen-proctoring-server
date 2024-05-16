@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,7 +171,7 @@ class AdminUserInitializer {
                     null,
                     null,
                     null,
-                    new HashSet<>(Arrays.asList(API.UserRole.ADMIN.name()))))
+                    new HashSet<>(List.of(API.UserRole.ADMIN.name()))))
                     .getOrThrow();
 
             log.debug(

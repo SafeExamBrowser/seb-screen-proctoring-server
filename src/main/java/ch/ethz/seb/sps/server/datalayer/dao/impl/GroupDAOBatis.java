@@ -497,16 +497,11 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<Collection<Long>> allIdsForExamsIds(final Collection<Long> examPKs) {
-        return Result.tryCatch(() -> {
-
-            final List<Long> result = this.groupRecordMapper
+        return Result.tryCatch(() -> this.groupRecordMapper
                     .selectIdsByExample()
                     .where(GroupRecordDynamicSqlSupport.examId, isIn(examPKs))
                     .build()
-                    .execute();
-
-            return result;
-        });
+                    .execute());
     }
 
     @Override

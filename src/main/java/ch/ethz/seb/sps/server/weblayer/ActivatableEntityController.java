@@ -188,9 +188,7 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
         if ((entity.isActive() && !activation) || (!entity.isActive() && activation)) {
             return entity;
         } else {
-            throw new BadRequestException(
-                    activation ? "activation" : "deactivation",
-                    "Activation argument mismatch. Element is already " + (activation ? "active" : "inactive"));
+            throw new ActivationMismatchException("Activation argument mismatch. Element is already " + (activation ? "active" : "inactive"));
         }
     }
 

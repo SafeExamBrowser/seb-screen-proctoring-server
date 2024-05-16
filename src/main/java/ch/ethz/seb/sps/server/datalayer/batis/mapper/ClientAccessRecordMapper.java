@@ -32,20 +32,20 @@ import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
 @Mapper
 public interface ClientAccessRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.551+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.551+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.551+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<ClientAccessRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -61,7 +61,7 @@ public interface ClientAccessRecordMapper {
     })
     ClientAccessRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -77,22 +77,22 @@ public interface ClientAccessRecordMapper {
     })
     List<ClientAccessRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(clientAccessRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, clientAccessRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, clientAccessRecord)
                 .where(id, isEqualTo(id_))
@@ -100,7 +100,7 @@ public interface ClientAccessRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     default int insert(ClientAccessRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(clientAccessRecord)
@@ -117,7 +117,7 @@ public interface ClientAccessRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     default int insertSelective(ClientAccessRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(clientAccessRecord)
@@ -134,19 +134,19 @@ public interface ClientAccessRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<ClientAccessRecord>>> selectByExample() {
         return SelectDSL.selectWithMapper(this::selectMany, id, uuid, name, description, clientName, clientSecret, owner, creationTime, lastUpdateTime, terminationTime)
                 .from(clientAccessRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.538+02:00", comments="Source Table: client_access")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<ClientAccessRecord>>> selectDistinctByExample() {
         return SelectDSL.selectDistinctWithMapper(this::selectMany, id, uuid, name, description, clientName, clientSecret, owner, creationTime, lastUpdateTime, terminationTime)
                 .from(clientAccessRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.539+02:00", comments="Source Table: client_access")
     default ClientAccessRecord selectByPrimaryKey(Long id_) {
         return SelectDSL.selectWithMapper(this::selectOne, id, uuid, name, description, clientName, clientSecret, owner, creationTime, lastUpdateTime, terminationTime)
                 .from(clientAccessRecord)
@@ -155,7 +155,7 @@ public interface ClientAccessRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.539+02:00", comments="Source Table: client_access")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(ClientAccessRecord record) {
         return UpdateDSL.updateWithMapper(this::update, clientAccessRecord)
                 .set(uuid).equalTo(record::getUuid)
@@ -169,7 +169,7 @@ public interface ClientAccessRecordMapper {
                 .set(terminationTime).equalTo(record::getTerminationTime);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.539+02:00", comments="Source Table: client_access")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(ClientAccessRecord record) {
         return UpdateDSL.updateWithMapper(this::update, clientAccessRecord)
                 .set(uuid).equalToWhenPresent(record::getUuid)
@@ -183,7 +183,7 @@ public interface ClientAccessRecordMapper {
                 .set(terminationTime).equalToWhenPresent(record::getTerminationTime);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.539+02:00", comments="Source Table: client_access")
     default int updateByPrimaryKey(ClientAccessRecord record) {
         return UpdateDSL.updateWithMapper(this::update, clientAccessRecord)
                 .set(uuid).equalTo(record::getUuid)
@@ -200,7 +200,7 @@ public interface ClientAccessRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-04-09T08:51:01.552+02:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.539+02:00", comments="Source Table: client_access")
     default int updateByPrimaryKeySelective(ClientAccessRecord record) {
         return UpdateDSL.updateWithMapper(this::update, clientAccessRecord)
                 .set(uuid).equalToWhenPresent(record::getUuid)

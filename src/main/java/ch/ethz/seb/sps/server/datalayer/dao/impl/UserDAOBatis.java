@@ -255,10 +255,7 @@ public class UserDAOBatis implements UserDAO {
 
             this.userRecordMapper.insert(recordToSave);
             final Long newUserPK = recordToSave.getId();
-            final UserRecord newRecord = this.userRecordMapper
-                    .selectByPrimaryKey(newUserPK);
-            return newRecord;
-
+            return this.userRecordMapper.selectByPrimaryKey(newUserPK);
         })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);
@@ -516,7 +513,19 @@ public class UserDAOBatis implements UserDAO {
         if (roles == null || roles.isEmpty()) {
             return null;
         }
-        return StringUtils.join(roles, Constants.LIST_SEPARATOR);
+
+        // Filter out unknown roles
+        Set<String> known_roles = roles.stream().filter(r -> {
+            try {
+                UserRole.valueOf(r);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }).collect(Collectors.toSet());
+
+
+        return StringUtils.join(known_roles, Constants.LIST_SEPARATOR);
     }
 
     private ServerUser sebServerUserFromRecord(final UserRecord record) {

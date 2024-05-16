@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ch.ethz.seb.sps.domain.model.service.Exam;
+import ch.ethz.seb.sps.server.datalayer.dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -45,10 +47,6 @@ import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.domain.model.user.UserMod;
 import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
-import ch.ethz.seb.sps.server.datalayer.dao.EntityDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.OwnedEntityDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.server.servicelayer.EntityService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Result;
@@ -64,17 +62,20 @@ public class UserServiceImpl implements UserService {
     private final UserDAO userDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
     private final EntityService entityService;
+    private final AdditionalAttributesDAO additionalAttributesDAO;
 
     public UserServiceImpl(
             final UserDAO userDAO,
             final EntityPrivilegeDAO entityPrivilegeDAO,
             final EntityService entityService,
+            final AdditionalAttributesDAO additionalAttributesDAO,
             final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies) {
 
         this.userDAO = userDAO;
         this.extractStrategies = extractStrategies;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.entityService = entityService;
+        this.additionalAttributesDAO = additionalAttributesDAO;
 
         // admin privileges
         this.rolePrivileges.put(
@@ -89,8 +90,9 @@ public class UserServiceImpl implements UserService {
                         new Privilege(EntityType.SCREENSHOT_DATA, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.AUDIT_LOG, API.PRIVILEGES_WRITE)));
 
-        // proctor only has dedicated entity privileges
+        // proctor and teacher only has dedicated entity privileges
         this.rolePrivileges.put(UserRole.PROCTOR, Collections.emptyList());
+        this.rolePrivileges.put(UserRole.TEACHER, Collections.emptyList());
 
         // TODO other roles...
     }
@@ -151,12 +153,10 @@ public class UserServiceImpl implements UserService {
 
         return user.roles.stream()
                 .map(UserRole::valueOf)
-                .map(role -> this.rolePrivileges.get(role))
+                .map(this.rolePrivileges::get)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
-                .filter(p -> p.entityType == entityType && p.privilegeTypes.contains(privilegeType))
-                .findAny()
-                .isPresent();
+                .anyMatch(p -> p.entityType == entityType && p.privilegeTypes.contains(privilegeType));
 
     }
 
@@ -193,10 +193,10 @@ public class UserServiceImpl implements UserService {
             final String userUUID = this.getCurrentUser().uuid();
 
             // if owned entity type. get all owned entity id's if owned entity
-            final Set<Long> onedEntityIds = new HashSet<>();
+            final Set<Long> ownedEntityIds = new HashSet<>();
             final EntityDAO<Entity, ModelIdAware> entityDAO = this.entityService.getEntityDAOForType(entityType);
             if (entityDAO instanceof OwnedEntityDAO) {
-                onedEntityIds.addAll(((OwnedEntityDAO) entityDAO)
+                ownedEntityIds.addAll(((OwnedEntityDAO) entityDAO)
                         .getAllOwnedEntityPKs(userUUID)
                         .getOr(Collections.emptySet()));
             }
@@ -207,7 +207,7 @@ public class UserServiceImpl implements UserService {
                     .getOrThrow();
 
             return Utils.immutableSetOf(Stream
-                    .of(onedEntityIds, grantedEntityIds)
+                    .of(ownedEntityIds, grantedEntityIds)
                     .flatMap(Set::stream)
                     .collect(Collectors.toSet()));
         });
@@ -258,6 +258,47 @@ public class UserServiceImpl implements UserService {
             });
 
             return new UserPrivileges(userUUID, typePrivileges, entityPrivileges);
+        });
+    }
+
+    @Override
+    public Result<Exam> applyExamPrivileges(Exam exam) {
+        return Result.tryCatch(() -> {
+
+            if (exam.userIds == null || exam.userIds.isEmpty()) {
+                return exam;
+            }
+
+            // remove all old privileges from the exam
+            this.entityPrivilegeDAO.deleteAllPrivileges(EntityType.EXAM, exam.id)
+                    .onError(error -> log.warn("Failed to delete old privileges for exam {}, error: {}",
+                            exam,
+                            error.getMessage()));
+
+            // add new privileges according to the user role of user ids
+            exam.userIds
+                    .forEach(userUUID -> {
+                        Result<UserInfo> userInfoResult = this.userDAO.byModelId(userUUID);
+                        if (userInfoResult.hasError()) {
+                            log.warn("Failed to get user to apply exam privilege. User: {}", userUUID);
+                            return;
+                        }
+
+                        UserInfo userInfo = userInfoResult.get();
+                        boolean readonlyActive = userInfo.roles.contains(UserRole.TEACHER.name()) &&
+                                userInfo.roles.size() == 1;
+                        this.entityPrivilegeDAO.addPrivilege(
+                                EntityType.EXAM,
+                                exam.id,
+                                userUUID,
+                                readonlyActive ? PrivilegeType.READ_ONLY_ACTIVE : PrivilegeType.READ)
+                                .onError(error -> log.warn(
+                                        "Failed to apply entity privilege for exam: {} and user: {}",
+                                        exam,
+                                        userUUID,
+                                        error));
+                    });
+            return exam;
         });
     }
 

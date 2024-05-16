@@ -173,6 +173,15 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
 
+    @ExceptionHandler(ActivationMismatchException.class)
+    public ResponseEntity<Object> handleActivationMismatchException(
+            final ActivationMismatchException ex,
+            final WebRequest request) {
+
+        log.info("Activation requested but was already active/inactive: {}", ex.getMessage());
+        return new ResponseEntity<>(null, null, HttpStatus.OK);
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequestException(
             final BadRequestException ex,

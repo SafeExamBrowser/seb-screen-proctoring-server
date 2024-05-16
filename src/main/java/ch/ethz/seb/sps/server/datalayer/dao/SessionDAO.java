@@ -43,4 +43,5 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
 
     Long getNumberOfScreenshots(String uuid, FilterMap filterMap);
 
+    Result<Boolean> hasAnySessionData(Collection<Long> groupIds);
 }

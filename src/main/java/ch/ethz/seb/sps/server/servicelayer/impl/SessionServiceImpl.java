@@ -8,8 +8,14 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
+import ch.ethz.seb.sps.domain.model.service.Exam;
+import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -27,17 +33,22 @@ import ch.ethz.seb.sps.utils.Result;
 @Service
 public class SessionServiceImpl implements SessionService {
 
+    private static final Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
+
+    private final ExamDAO examDAO;
     private final GroupDAO groupDAO;
     private final SessionDAO sessionDAO;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ProctoringCacheService proctoringCacheService;
 
     public SessionServiceImpl(
+            final ExamDAO examDAO,
             final GroupDAO groupDAO,
             final SessionDAO sessionDAO,
             final ApplicationEventPublisher applicationEventPublisher,
             final ProctoringCacheService proctoringCacheService) {
 
+        this.examDAO = examDAO;
         this.groupDAO = groupDAO;
         this.sessionDAO = sessionDAO;
         this.applicationEventPublisher = applicationEventPublisher;
@@ -133,6 +144,15 @@ public class SessionServiceImpl implements SessionService {
                     }
                     return sessionUUID;
                 });
+    }
+
+    @Override
+    public boolean hasAnySessionDataForExam(String examUUID) {
+        return this.groupDAO
+                .allIdsForExamsIds(List.of(examDAO.modelIdToPK(examUUID)))
+                .flatMap(sessionDAO::hasAnySessionData)
+                .onError(error -> log.warn("Failed to check if there are any session data for Exam: {} error: {}", examUUID, error.getMessage()))
+                .getOr(true);
     }
 
     private Session checkUpdateIntegrity(final Session session) {

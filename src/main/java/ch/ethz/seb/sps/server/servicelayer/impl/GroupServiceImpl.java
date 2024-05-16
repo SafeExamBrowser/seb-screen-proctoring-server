@@ -44,6 +44,8 @@ public class GroupServiceImpl implements GroupService {
             return Collections.emptyList();
         }
 
+        // TODO check if current user only has READ_ONLY_ACTIVE privilege. If so filter also termination date == null
+
         // list of group id's with users entity read privileges
         final Set<Long> directGrants = this.userService
                 .getIdsWithReadEntityPrivilege(EntityType.SEB_GROUP)

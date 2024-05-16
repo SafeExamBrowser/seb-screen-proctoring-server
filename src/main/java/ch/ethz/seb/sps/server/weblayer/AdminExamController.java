@@ -2,15 +2,22 @@ package ch.ethz.seb.sps.server.weblayer;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import ch.ethz.seb.sps.domain.model.EntityKey;
+import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.server.datalayer.batis.model.AdditionalAttributeRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.AdditionalAttributesDAO;
+import ch.ethz.seb.sps.server.servicelayer.SessionService;
+import ch.ethz.seb.sps.utils.Result;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import ch.ethz.seb.sps.domain.Domain.EXAM;
 import ch.ethz.seb.sps.domain.api.API;
@@ -35,6 +42,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     private static final Logger log = LoggerFactory.getLogger(AdminExamController.class);
 
     private final GroupDAO groupDAO;
+    private final SessionService sessionService;
 
     public AdminExamController(
             final UserService userService,
@@ -42,10 +50,12 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             final AuditLogDAO auditLogDAO,
             final PaginationService paginationService,
             final BeanValidationService beanValidationService,
-            final GroupDAO groupDAO) {
+            final GroupDAO groupDAO,
+            final SessionService sessionService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.groupDAO = groupDAO;
+        this.sessionService = sessionService;
     }
 
     @Operation(
@@ -74,6 +84,36 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
         return super.create(formParameter, request);
     }
 
+    @Operation(
+            summary = "Deletes a single entity (and all its dependencies) by its modelId.",
+            description = "To check or report what dependent object also would be deleted for a certain entity object, "
+                    +
+                    "please use the dependency endpoint to get a report of all dependend entity objects.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_MODEL_ID,
+                            description = "The model identifier of the entity object to get.",
+                            in = ParameterIn.PATH)
+            })
+    @RequestMapping(
+            path = API.PARAM_MODEL_PATH_SEGMENT + API.REQUEST_DELETE_ENDPOINT,
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+
+    public Collection<EntityKey> requestDelete(@PathVariable final String modelId) {
+
+        if (!this.sessionService.hasAnySessionDataForExam(modelId)) {
+            return super.hardDelete(modelId);
+        } else {
+            log.info("Exam will not be deleted because it already has screenshot data assigned to it. Exam: {}", modelId);
+            return Collections.emptyList();
+        }
+
+    }
+
     @Override
     protected Exam doBeforeActivation(final Exam entity, final boolean activation) {
 
@@ -97,12 +137,33 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 postParams.getString(EXAM.ATTR_URL),
                 postParams.getString(EXAM.ATTR_TYPE),
                 this.userService.getCurrentUserUUIDOrNull(),
-                null,
+                postParams.getStringSet(Exam.ATTR_USER_IDS),
                 null,
                 null,
                 postParams.getLong(EXAM.ATTR_START_TIME),
                 postParams.getLong(EXAM.ATTR_END_TIME),
                 null);
+    }
+
+    @Override
+    protected Result<Exam> notifyCreated(Exam entity) {
+        return super
+                .notifyCreated(entity)
+                .map(this::updateEntityPrivileges);
+    }
+
+    @Override
+    protected Exam notifySaved(Exam entity) {
+        return updateEntityPrivileges(super.notifySaved(entity));
+    }
+
+    private Exam updateEntityPrivileges(Exam entity) {
+        this.userService.applyExamPrivileges(entity)
+                .onError(error -> log.error(
+                        "Failed to update entity privileges for exam: {}",
+                        entity,
+                        error));
+        return entity;
     }
 
     @Override
@@ -115,7 +176,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 modifyData.url,
                 modifyData.type,
                 null,
-                null,
+                modifyData.userIds,
                 null,
                 null,
                 modifyData.startTime,

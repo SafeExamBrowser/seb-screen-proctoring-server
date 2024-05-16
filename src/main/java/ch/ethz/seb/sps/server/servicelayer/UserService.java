@@ -15,6 +15,7 @@ import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.domain.model.user.UserMod;
@@ -160,5 +161,7 @@ public interface UserService {
     Result<UserInfo> synchronizeUserAccount(UserMod userMod);
 
     Result<UserPrivileges> getUserPrivileges(String userUUID);
+
+    Result<Exam> applyExamPrivileges(Exam exam);
 
 }

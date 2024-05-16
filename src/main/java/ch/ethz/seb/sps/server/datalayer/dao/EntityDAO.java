@@ -9,7 +9,6 @@
 package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,7 +46,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
     }
 
     /** converts a given model identifier to an entity primary key (PK).
-     *
+     * <p>
      * NOTE: usually they are the same but either as long or String representation.
      * If modelId differs from PK, this must be overwritten to adapt and convert correctly.
      *
@@ -75,7 +74,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
     Result<T> byPK(Long id);
 
     /** Use this to get an Entity instance of concrete type by model identifier
-     *
+     * <p>
      * NOTE: A model identifier may differ from the string representation of the database identifier
      * but usually they are the same.
      *
@@ -90,7 +89,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
 
     /** Get a collection of all entities for the given Set of model id.
      *
-     * @param pks the Set of primary keys to get the Entity's for
+     * @param ids the Set of primary keys to get the Entity's for
      * @return Result referring the collection or an error if happened */
     default Result<Collection<T>> allOf(final Collection<String> ids) {
         return allOf(ids.stream().map(this::modelIdToPK).collect(Collectors.toSet()));
@@ -140,7 +139,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
     Result<T> save(T data);
 
     default Result<Collection<EntityKey>> delete(final String modelId) {
-        return delete(new HashSet<>(Arrays.asList(new EntityKey(modelId, this.entityType()))));
+        return delete(new HashSet<>(List.of(new EntityKey(modelId, this.entityType()))));
     }
 
     /** Use this to delete all entities defined by a set of EntityKey
@@ -154,7 +153,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
 
     /** Get a (unordered) collection of all Entities that matches the given filter criteria.
      * The possible filter criteria for a specific Entity type is defined by the entity type.
-     *
+     * <p>
      * This adds filtering in SQL level by creating the select where clause from related
      * filter criteria of the specific Entity type. If the filterMap contains a value for
      * a particular filter criteria the value is extracted from the map and added to the where
@@ -168,13 +167,13 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
 
     /** Get a (unordered) collection of all Entities that matches a given filter criteria
      * and a given predicate.
-     *
+     * <p>
      * The possible filter criteria for a specific Entity type is defined by the entity type.
      * This adds filtering in SQL level by creating the select where clause from related
      * filter criteria of the specific Entity type. If the filterMap contains a value for
      * a particular filter criteria the value is extracted from the map and added to the where
      * clause of the SQL select statement.
-     *
+     * <p>
      * The prePredicated is used when not empty to use in an isIn statement to only match
      * and include the given pre predicated id's for the match query.
      * This is mostly useful for some privilege based pre predication where only entries shall be
@@ -216,7 +215,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
     /** Context based utility method to extract a set of id's (PK) from a collection of various EntityKey
      * This uses the EntityType defined by this instance to filter all EntityKey by the given type and
      * convert the matching EntityKey's to id's (PK's)
-     *
+     * <p>
      * Use this if you need to transform a Collection of EntityKey into a extracted Set of id's of a specified
      * EntityType
      *
@@ -229,7 +228,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
     /** Context based utility method to extract a set of id's (PK) from a collection of various EntityKey
      * This uses the EntityType defined by this instance to filter all EntityKey by the given type and
      * convert the matching EntityKey's to id's (PK's)
-     *
+     * <p>
      * Use this if you need to transform a Collection of EntityKey into a extracted List of id's of a specified
      * EntityType
      *
@@ -242,7 +241,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
     /** Context based utility method to extract a set of id's (PK) from a collection of various EntityKey
      * This uses the EntityType defined by this instance to filter all EntityKey by the given type and
      * convert the matching EntityKey's to id's (PK's)
-     *
+     * <p>
      * Use this if you need to transform a Collection of EntityKey into a extracted Set of id's of a specified
      * EntityType
      *
@@ -269,7 +268,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
 
     default void deleteAllEntityPrivileges(final List<Long> allPks, final EntityPrivilegeDAO entityPrivilegeDAO) {
         final EntityType entityType = entityType();
-        allPks.stream()
+        allPks
                 .forEach(pk -> entityPrivilegeDAO.deleteAllPrivileges(entityType, pk)
                         .onError(error -> log.error(
                                 "Failed to delete all EntityPrivileges for entity type: {} and pk: {}",

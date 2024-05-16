@@ -41,6 +41,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
 
+    public static final String ATTR_USER_IDS = "userUUIDs";
+
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     @JsonProperty(EXAM.ATTR_ID)
     public final Long id;
@@ -87,7 +89,8 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
 
     @JsonProperty(EXAM.ATTR_END_TIME)
     public final Long endTime;
-
+    @JsonProperty(ATTR_USER_IDS)
+    public final Collection<String> userIds;
     @JsonIgnore
     public final Collection<EntityPrivilege> entityPrivileges;
 
@@ -100,6 +103,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             @JsonProperty(EXAM.ATTR_URL) final String url,
             @JsonProperty(EXAM.ATTR_TYPE) final String type,
             @JsonProperty(EXAM.ATTR_OWNER) final String owner,
+            @JsonProperty(ATTR_USER_IDS) final Collection<String> userIds,
             @JsonProperty(EXAM.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(EXAM.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
             @JsonProperty(EXAM.ATTR_TERMINATION_TIME) final Long terminationTime,
@@ -119,6 +123,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         this.startTime = startTime;
         this.endTime = endTime;
         this.entityPrivileges = null;
+        this.userIds = Utils.immutableCollectionOf(userIds);
     }
 
     public Exam(
@@ -129,6 +134,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             final String url,
             final String type,
             final String owner,
+            final Collection<String> userIds,
             final Long creationTime,
             final Long lastUpdateTime,
             final Long terminationTime,
@@ -149,6 +155,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         this.startTime = startTime;
         this.endTime = endTime;
         this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
+        this.userIds =  Utils.immutableCollectionOf(userIds);
     }
 
     @Override

@@ -33,4 +33,6 @@ public interface SessionService {
 
     Result<String> closeSession(String sessionUUID);
 
+    boolean hasAnySessionDataForExam(String examUUID);
+
 }

@@ -16,10 +16,12 @@ public final class API {
 
     public enum UserRole {
         ADMIN,
-        PROCTOR
+        PROCTOR,
+        TEACHER
     }
 
     public enum PrivilegeType {
+        READ_ONLY_ACTIVE("roa"),
         READ("r"),
         MODIFY("m"),
         WRITE("w");
@@ -30,7 +32,7 @@ public final class API {
             this.flag = flag;
         }
 
-        public static final PrivilegeType byFlag(final String flag) {
+        public static PrivilegeType byFlag(final String flag) {
             for (final PrivilegeType t : PrivilegeType.values()) {
                 if (t.flag.equals(flag)) {
                     return t;
@@ -111,6 +113,7 @@ public final class API {
     public static final String USERSYNC_SEBSERVER_ENDPOINT = "/usersync/sebserver";
     public static final String ENTITY_PRIVILEGE_ENDPOINT = "/entityprivilege";
     public static final String REGISTER_ENDPOINT = "/register";
+    public static final String REQUEST_DELETE_ENDPOINT = "/request";
 
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 
