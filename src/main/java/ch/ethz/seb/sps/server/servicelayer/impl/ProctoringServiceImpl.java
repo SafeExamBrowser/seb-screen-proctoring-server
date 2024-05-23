@@ -10,7 +10,9 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Date;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -249,10 +251,8 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public Result<Collection<SessionSearchResult>> searchSessions(final FilterMap filterMap) {
-        return this.sessionDAO
-                .allMatching(filterMap)
-                .map(data -> this.createSessionSearchResult(data, filterMap));
+    public Result<Collection<Date>> searchSessions(final FilterMap filterMap) {
+        return this.sessionDAO.searchSessions(filterMap);
     }
 
     @Override

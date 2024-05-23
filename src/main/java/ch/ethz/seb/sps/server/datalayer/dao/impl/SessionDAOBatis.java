@@ -15,6 +15,7 @@ import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamic
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport.uuid;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SessionMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -59,16 +61,22 @@ import ch.ethz.seb.sps.utils.Utils;
 @Service
 public class SessionDAOBatis implements SessionDAO {
 
+    private final SessionMapper sessionMapper;
+
     private final SessionRecordMapper sessionRecordMapper;
     private final GroupRecordMapper groupRecordMapper;
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
     private final ScreenshotDAO screenshotDAO;
 
     public SessionDAOBatis(
+            final SessionMapper sessionMapper,
+
             final SessionRecordMapper sessionRecordMapper,
             final GroupRecordMapper groupRecordMapper,
             final ScreenshotDataRecordMapper screenshotDataRecordMapper,
             final ScreenshotDAO screenshotDAO) {
+
+        this.sessionMapper = sessionMapper;
 
         this.sessionRecordMapper = sessionRecordMapper;
         this.groupRecordMapper = groupRecordMapper;
@@ -170,6 +178,77 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Collection<Date>> searchSessions(final FilterMap filterMap) {
+        return Result.tryCatch(() -> {
+
+            final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
+            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
+            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
+
+            final String groupPKs = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
+            final String sessionUUID = filterMap.contains(API.PARAM_SESSION_ID)
+                    ? filterMap.getString(API.PARAM_SESSION_ID)
+                    : filterMap.getString(Domain.SESSION.ATTR_UUID);
+
+
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Date>>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.sessionMapper
+                            .getCreationTimes()
+                            .where(
+                                    SessionRecordDynamicSqlSupport.terminationTime,
+                                    (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
+                                            : SqlBuilder.isEqualToWhenPresent(() -> null))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.uuid,
+                                    SqlBuilder.isEqualToWhenPresent(sessionUUID))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.clientName,
+                                    isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_NAME)))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.clientMachineName,
+                                    isLikeWhenPresent(
+                                            filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_MACHINE_NAME)))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.clientVersion,
+                                    isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_VERSION)))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.clientIp,
+                                    isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SESSION.ATTR_CLIENT_IP)))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.creationTime,
+                                    SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                            .and(
+                                    SessionRecordDynamicSqlSupport.creationTime,
+                                    SqlBuilder.isLessThanOrEqualToWhenPresent(toTime));
+
+            // group constraint
+            if (groupPKs != null) {
+                if (groupPKs.contains(Constants.LIST_SEPARATOR)) {
+                    final List<Long> pksAsList = Arrays.asList(StringUtils.split(groupPKs, Constants.LIST_SEPARATOR))
+                            .stream()
+                            .map(Long::parseLong)
+                            .collect(Collectors.toList());
+                    queryBuilder = queryBuilder.and(
+                            SessionRecordDynamicSqlSupport.groupId,
+                            SqlBuilder.isInWhenPresent(pksAsList));
+                } else {
+                    queryBuilder = queryBuilder.and(
+                            SessionRecordDynamicSqlSupport.groupId,
+                            SqlBuilder.isEqualToWhenPresent(Long.parseLong(groupPKs)));
+                }
+            }
+
+            return queryBuilder
+                    .orderBy(SessionRecordDynamicSqlSupport.creationTime.descending())
+                    .build()
+                    .execute()
+                    .stream()
+                    .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Collection<Session>> allMatching(
             final FilterMap filterMap,
             final Collection<Long> prePredicated) {
@@ -245,6 +324,8 @@ public class SessionDAOBatis implements SessionDAO {
                     .collect(Collectors.toList());
         });
     }
+
+
 
     @Override
     @Transactional(readOnly = true)
@@ -604,6 +685,7 @@ public class SessionDAOBatis implements SessionDAO {
                 record.getLastUpdateTime(),
                 record.getTerminationTime());
     }
+
 
     private void checkUniqueUUID(final String uuid) {
         if (uuid != null) {

@@ -20,6 +20,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.utils.Result;
 
 import java.io.OutputStream;
+import java.sql.Date;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -81,7 +82,7 @@ public interface ProctoringService {
      *
      * @param filterMap Contains all filter criteria
      * @return Result refer to the requested list of search results or to an error when happened */
-    Result<Collection<SessionSearchResult>> searchSessions(FilterMap filterMap);
+    Result<Collection<Date>> searchSessions(FilterMap filterMap);
 
     Result<Collection<ScreenshotSearchResult>> searchScreenshots(final FilterMap filterMap);
 

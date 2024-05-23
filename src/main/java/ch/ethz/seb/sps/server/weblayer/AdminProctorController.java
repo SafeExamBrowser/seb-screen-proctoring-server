@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.sql.Date;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -477,8 +478,8 @@ public class AdminProctorController {
     }
 
     @Operation(
-            summary = "Get the requested page of a given session search result",
-            description = "This search is an extension to the generic session search to apply more screenshot specific data as a result. The search query includes specific and generic filter criteria and paging as well as sorting. See detailed description for each part in the parameter description",
+            summary = "Returns a list of of dates where at least one session matches the given search criteria.",
+            description = "This search is an extension to the generic session search to apply more screenshot specific data as a result. Returns a list of of dates where at least one session matches the given search criteria.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -568,7 +569,7 @@ public class AdminProctorController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<SessionSearchResult> searchSessions(
+    public List<Date> searchSessions(
             @RequestParam(name = API.PARAM_EXAM_NAME, required = false) final String examName,
             @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
             @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
@@ -583,33 +584,13 @@ public class AdminProctorController {
         final FilterMap filterMap = new FilterMap(request);
 
         if (hasMetaDataCriteria(filterMap)) {
-
-            // paging must be applied programmatically after getting sorted big page form DB
             preProcessGroupCriteria(filterMap);
-            this.paginationService.setUnlimitedPagination(
-                    sortBy,
-                    SessionRecordDynamicSqlSupport.sessionRecord.tableNameAtRuntime());
-
-            final Collection<SessionSearchResult> result = querySessions(filterMap)
-                    .getOrThrow();
-
-            return this.paginationService.buildPageFromList(
-                    pageNumber,
-                    pageSize,
-                    sortBy,
-                    result,
-                    all -> (List<SessionSearchResult>) all);
         }
 
-        // paging can be applied on DB level (SQL)
-        return this.paginationService.getPageOf(
-                pageNumber,
-                pageSize,
-                sortBy,
-                SessionRecordDynamicSqlSupport.sessionRecord.tableNameAtRuntime(),
-                () -> preProcessGroupCriteria(filterMap),
-                () -> querySessions(filterMap))
-                .getOrThrow();
+        return querySessions(filterMap)
+                .getOrThrow()
+                .stream()
+                .toList();
     }
 
     @Operation(
@@ -722,7 +703,7 @@ public class AdminProctorController {
         }
     }
 
-    private Result<Collection<SessionSearchResult>> querySessions(final FilterMap filterMap) {
+    private Result<Collection<Date>> querySessions(final FilterMap filterMap) {
         final String groupIds = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
         if (groupIds != null && StringUtils.isBlank(groupIds)) {
             return Result.of(Collections.emptyList());

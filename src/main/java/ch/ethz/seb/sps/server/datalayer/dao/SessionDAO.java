@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao;
 
+import java.sql.Date;
 import java.util.Collection;
 import java.util.List;
 
@@ -44,4 +45,6 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
     Long getNumberOfScreenshots(String uuid, FilterMap filterMap);
 
     Result<Boolean> hasAnySessionData(Collection<Long> groupIds);
+
+    Result<Collection<Date>> searchSessions(final FilterMap filterMap);
 }
