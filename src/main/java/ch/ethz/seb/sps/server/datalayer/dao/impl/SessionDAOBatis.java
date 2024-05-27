@@ -178,7 +178,7 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Date>> searchSessions(final FilterMap filterMap) {
+    public Result<Collection<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap) {
         return Result.tryCatch(() -> {
 
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);

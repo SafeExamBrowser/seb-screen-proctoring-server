@@ -82,8 +82,10 @@ public interface ProctoringService {
      *
      * @param filterMap Contains all filter criteria
      * @return Result refer to the requested list of search results or to an error when happened */
-    Result<Collection<Date>> searchSessions(FilterMap filterMap);
+
+    Result<Collection<SessionSearchResult>> searchSessions(FilterMap filterMap);
 
     Result<Collection<ScreenshotSearchResult>> searchScreenshots(final FilterMap filterMap);
 
+    Result<Collection<Date>> queryMatchingDaysForSessionSearch(FilterMap filterMap);
 }

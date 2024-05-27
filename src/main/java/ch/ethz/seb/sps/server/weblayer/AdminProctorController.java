@@ -473,7 +473,7 @@ public class AdminProctorController {
                 sortBy,
                 ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
                 () -> preProcessGroupCriteria(filterMap),
-                () -> queryScreenShots(filterMap))
+                () -> queryScreenshots(filterMap))
                 .getOrThrow();
     }
 
@@ -565,11 +565,125 @@ public class AdminProctorController {
                             required = false)
             })
     @RequestMapping(
+            path = API.SESSION_DAY_SEARCH_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Date> getMatchingDaysForSessionSearch(
+            @RequestParam(name = API.PARAM_EXAM_NAME, required = false) final String examName,
+            @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
+            @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
+            @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
+            @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
+            @RequestParam(name = API.PARAM_TO_TIME, required = false) final Long toTime,
+            @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
+            @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
+            @RequestParam(name = Page.ATTR_SORT, required = false) final String sortBy,
+            final HttpServletRequest request) {
+
+        final FilterMap filterMap = new FilterMap(request);
+
+        preProcessGroupCriteria(filterMap);
+
+        return queryMatchingDaysForSessionSearch(filterMap)
+                .getOrThrow()
+                .stream()
+                .toList();
+    }
+
+    @Operation(
+            summary = "Get the requested page of a given session search result",
+            description = "This search is an extension to the generic session search to apply more screenshot specific data as a result. The search query includes specific and generic filter criteria and paging as well as sorting. See detailed description for each part in the parameter description",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_GROUP_ID,
+                            description = "The group UUID filter criteria. If available the search is restricted to the given group. The value must be the UUID or the PK of the group",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_EXAM_NAME,
+                            description = "The exam name filter criteria. If available the search is restricted to the given full text search on exam name",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_GROUP_NAME,
+                            description = "The group name filter criteria. If available the search is restricted to the given full text search on group name",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_SESSION_ID,
+                            description = "The session filter criteria. If available the search is restricted to the given session. The value must be the UUID or the PK of the session",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_FROM_TIME,
+                            description = "The search from-time filter criteria. If given only matches from this time onwards are part of the search result. Value must be a unix timestamp in millisecods in UTC timezone",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_TO_TIME,
+                            description = "The search to-time filter criteria. If given only matches from this time backwards in time are part of the search result. Value must be a unix timestamp in millisecods in UTC timezone",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_NAME,
+                            description = "The search filter criteria for a specific session user name. This is used for full-text search on the participant/students login-name session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_MACHINE_NAME,
+                            description = "The search filter criteria for a specific session user machine name. This is used for full-text search on the participant/students machine name session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_OS_NAME,
+                            description = "The search filter criteria for a specific session user machine operating system name. This is used for full-text search on the participant/students machine operating system name session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Domain.SESSION.ATTR_CLIENT_VERSION,
+                            description = "The search filter criteria for a specific session user SEB version. This is used for full-text search on the participant/students SEB version session-field",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_BROWSER_URL,
+                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
+                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_USER_ACTION,
+                            description = "The search filter criteria for screenshot user action metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Page.ATTR_PAGE_NUMBER,
+                            description = "The number of the page to get from the whole list. If the page does not exists, the API returns with the first page.",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Page.ATTR_PAGE_SIZE,
+                            description = "The size of the page to get. Default is 10",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = Page.ATTR_SORT,
+                            in = ParameterIn.QUERY,
+                            description = "The sort parameter to sort the result list of entities before paging. Sorting is only possible for: startTime, imageFormat, clientName, clientIp, clientOsName, clientVersion, clientMachineName. Use a leading '-' sign for descending sort order.",
+                            required = false)
+            })
+    @RequestMapping(
             path = API.SESSION_SEARCH_ENDPOINT,
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Date> searchSessions(
+    public Page<SessionSearchResult> searchSessions(
             @RequestParam(name = API.PARAM_EXAM_NAME, required = false) final String examName,
             @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
             @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
@@ -584,14 +698,35 @@ public class AdminProctorController {
         final FilterMap filterMap = new FilterMap(request);
 
         if (hasMetaDataCriteria(filterMap)) {
+
+            // paging must be applied programmatically after getting sorted big page form DB
             preProcessGroupCriteria(filterMap);
+            this.paginationService.setUnlimitedPagination(
+                    sortBy,
+                    SessionRecordDynamicSqlSupport.sessionRecord.tableNameAtRuntime());
+
+            final Collection<SessionSearchResult> result = querySessions(filterMap)
+                    .getOrThrow();
+
+            return this.paginationService.buildPageFromList(
+                    pageNumber,
+                    pageSize,
+                    sortBy,
+                    result,
+                    all -> (List<SessionSearchResult>) all);
         }
 
-        return querySessions(filterMap)
-                .getOrThrow()
-                .stream()
-                .toList();
+        // paging can be applied on DB level (SQL)
+        return this.paginationService.getPageOf(
+                        pageNumber,
+                        pageSize,
+                        sortBy,
+                        SessionRecordDynamicSqlSupport.sessionRecord.tableNameAtRuntime(),
+                        () -> preProcessGroupCriteria(filterMap),
+                        () -> querySessions(filterMap))
+                .getOrThrow();
     }
+
 
     @Operation(
             summary = "Get grouped screenshot data list for specific session",
@@ -694,7 +829,16 @@ public class AdminProctorController {
         filterMap.putIfAbsent(Domain.SESSION.ATTR_GROUP_ID, ids);
     }
 
-    private Result<Collection<ScreenshotSearchResult>> queryScreenShots(final FilterMap filterMap) {
+    private Result<Collection<SessionSearchResult>> querySessions(final FilterMap filterMap) {
+        final String groupIds = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
+        if (groupIds != null && StringUtils.isBlank(groupIds)) {
+            return Result.of(Collections.emptyList());
+        } else {
+            return this.proctoringService.searchSessions(filterMap);
+        }
+    }
+
+    private Result<Collection<ScreenshotSearchResult>> queryScreenshots(final FilterMap filterMap) {
         final String groupIds = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
         if (groupIds != null && StringUtils.isBlank(groupIds)) {
             return Result.of(Collections.emptyList());
@@ -703,12 +847,12 @@ public class AdminProctorController {
         }
     }
 
-    private Result<Collection<Date>> querySessions(final FilterMap filterMap) {
+    private Result<Collection<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap) {
         final String groupIds = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
         if (groupIds != null && StringUtils.isBlank(groupIds)) {
             return Result.of(Collections.emptyList());
         } else {
-            return this.proctoringService.searchSessions(filterMap);
+            return this.proctoringService.queryMatchingDaysForSessionSearch(filterMap);
         }
     }
 
