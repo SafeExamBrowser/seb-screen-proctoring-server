@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.service.GroupViewData;
+import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -251,7 +252,12 @@ public class ProctoringServiceImpl implements ProctoringService {
 
     @Override
     public Result<Collection<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap) {
-        return this.sessionDAO.queryMatchingDaysForSessionSearch(filterMap);
+
+//        Collection<Date> test = this.sessionDAO.queryMatchingDaysForSessionSearch(filterMap).get();
+
+        return this.sessionDAO.
+                queryMatchingDaysForSessionSearch(filterMap)
+                .map(data -> this.createSessionDaySearchResult(data, filterMap));
     }
 
     @Override
@@ -409,6 +415,20 @@ public class ProctoringServiceImpl implements ProctoringService {
                 .collect(Collectors.toList());
     }
 
+    private Collection<Date> createSessionDaySearchResult(
+            final Collection<Date> dateList,
+            final FilterMap filterMap){
+
+//        return dateList;
+
+        return dateList
+                .stream()
+                .map(date -> toSessionDaySearchResult(date, filterMap))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+    }
+
     private SessionSearchResult toSessionSearchResult(
             final Session session,
             final Map<Long, GroupViewData> groupCache,
@@ -432,6 +452,45 @@ public class ProctoringServiceImpl implements ProctoringService {
                 group,
                 nrOfScreenshots.intValue()
         );
+    }
+
+    private static String getUnixTimestampAtStartOfDay(Date sqlDate) {
+        long unixTimestamp = sqlDate.getTime() / 1000;
+        unixTimestamp -= unixTimestamp % (24 * 60 * 60);
+        unixTimestamp = unixTimestamp*1000;
+
+        System.out.println("start of day: " + unixTimestamp);
+
+        return String.valueOf(unixTimestamp);
+    }
+
+    private static String getUnixTimestampAtEndOfDay(Date sqlDate) {
+        long unixTimestamp = sqlDate.getTime() / 1000;
+        unixTimestamp += (24 * 60 * 60) - 1;
+        unixTimestamp = unixTimestamp*1000;
+
+        System.out.println("end of day: " + unixTimestamp);
+
+        return String.valueOf(unixTimestamp);
+    }
+
+
+    private Date toSessionDaySearchResult(
+            final Date date,
+            final FilterMap filterMap) {
+
+        filterMap.put("fromTime", getUnixTimestampAtStartOfDay(date));
+        filterMap.put("toTime", getUnixTimestampAtEndOfDay(date));
+
+        String uuid = this.sessionDAO.getAnyUuidOfGivenDay(filterMap).getOrThrow();
+
+        final Long nrOfScreenshots = this.sessionDAO.getNumberOfScreenshots(uuid, filterMap);
+
+        if (nrOfScreenshots == null || nrOfScreenshots <= 0) {
+            return null;
+        }
+
+        return date;
     }
 
     private ScreenshotViewData createScreenshotViewData(
