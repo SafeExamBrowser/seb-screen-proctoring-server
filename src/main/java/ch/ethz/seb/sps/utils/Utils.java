@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.model.FilterMap;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -766,6 +768,16 @@ public final class Utils {
                 .append(Constants.COMPLEX_VALUE_SEPARATOR));
 
         return sb.toString();
+    }
+
+    public static boolean hasMetaDataCriteria(final FilterMap filterMap) {
+        final API.ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
+        for (int i = 0; i < metaData.length; i++) {
+            if (filterMap.contains(metaData[i].parameterName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

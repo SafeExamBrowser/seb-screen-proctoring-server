@@ -66,6 +66,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
+import ch.ethz.seb.sps.utils.Utils;
+
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.PROCTORING_ENDPOINT)
 @SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_GUI_ADMIN)
@@ -697,7 +699,7 @@ public class AdminProctorController {
 
         final FilterMap filterMap = new FilterMap(request);
 
-        if (hasMetaDataCriteria(filterMap)) {
+        if (Utils.hasMetaDataCriteria(filterMap)) {
 
             // paging must be applied programmatically after getting sorted big page form DB
             preProcessGroupCriteria(filterMap);
@@ -804,15 +806,15 @@ public class AdminProctorController {
                 .collect(Collectors.toList());
     }
 
-    private boolean hasMetaDataCriteria(final FilterMap filterMap) {
-        final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
-        for (int i = 0; i < metaData.length; i++) {
-            if (filterMap.contains(metaData[i].parameterName)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    private boolean hasMetaDataCriteria(final FilterMap filterMap) {
+//        final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
+//        for (int i = 0; i < metaData.length; i++) {
+//            if (filterMap.contains(metaData[i].parameterName)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     private void preProcessGroupCriteria(final FilterMap filterMap) {
         final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();

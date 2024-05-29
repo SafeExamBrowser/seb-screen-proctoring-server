@@ -39,14 +39,14 @@ public interface SessionMapper {
     }
 
 
-    @SelectProvider(type= SqlProviderAdapter.class, method="select")
-    @ConstructorArgs({
-            @Arg(column="uuid", javaType=String.class, jdbcType=JdbcType.VARCHAR),
-    })
-    List<String> selectOne(SelectStatementProvider selectStatement);
-
-    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>> getUuid(){
-        return SelectDSL.selectDistinctWithMapper(this::selectOne, SessionRecordDynamicSqlSupport.uuid)
-                .from(SessionRecordDynamicSqlSupport.sessionRecord);
-    }
+//    @SelectProvider(type= SqlProviderAdapter.class, method="select")
+//    @ConstructorArgs({
+//            @Arg(column="uuid", javaType=String.class, jdbcType=JdbcType.VARCHAR),
+//    })
+//    List<String> selectOne(SelectStatementProvider selectStatement);
+//
+//    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>> getUuid(){
+//        return SelectDSL.selectWithMapper(this::selectOne, SessionRecordDynamicSqlSupport.uuid)
+//                .from(SessionRecordDynamicSqlSupport.sessionRecord);
+//    }
 }

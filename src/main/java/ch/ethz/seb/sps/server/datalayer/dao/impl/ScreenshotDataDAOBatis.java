@@ -12,6 +12,7 @@ import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecord
 import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 import static org.mybatis.dynamic.sql.SqlBuilder.isLikeWhenPresent;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -393,7 +394,47 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                         SqlBuilder.isLike(value));
             }
 
-            return queryBuilder.build().execute();
+            return queryBuilder
+                    .build()
+                    .execute();
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Long> countMatchingScreenshotDataPerDay(Date date, FilterMap filterMap){
+        return Result.tryCatch(() -> {
+
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.screenshotDataMapper
+                            .countMatchingScreenshotDataPerDay(date)
+                            .where();
+
+            // meta data constraint
+            final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
+            for (int i = 0; i < metaData.length; i++) {
+                final ScreenshotMetadataType mc = metaData[i];
+
+                final String sqlWildcard = filterMap.getSQLWildcard(mc.parameterName);
+                if (sqlWildcard == null) {
+                    continue;
+                }
+
+                final String value =
+                        Constants.PERCENTAGE_STRING +
+                                Constants.DOUBLE_QUOTE +
+                                mc.parameterName +
+                                Constants.DOUBLE_QUOTE +
+                                sqlWildcard;
+
+                queryBuilder = queryBuilder.and(
+                        ScreenshotDataRecordDynamicSqlSupport.metaData,
+                        SqlBuilder.isLike(value));
+            }
+
+            return queryBuilder
+                    .build()
+                    .execute();
         });
     }
 
@@ -507,5 +548,28 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                         : null,
                 record.getMetaData());
     }
+
+//    private String extractMetadataValueFromFilterMap(FilterMap filterMap, int index){
+////        final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
+////        for (int i = 0; i < metaData.length; i++) {
+//            final ScreenshotMetadataType mc = metaData[i];
+//
+//            final String sqlWildcard = filterMap.getSQLWildcard(mc.parameterName);
+//            if (sqlWildcard == null) {
+//                continue;
+//            }
+//
+//            final String value =
+//                    Constants.PERCENTAGE_STRING +
+//                            Constants.DOUBLE_QUOTE +
+//                            mc.parameterName +
+//                            Constants.DOUBLE_QUOTE +
+//                            sqlWildcard;
+//
+////            queryBuilder = queryBuilder.and(
+////                    ScreenshotDataRecordDynamicSqlSupport.metaData,
+////                    SqlBuilder.isLike(value));
+////        }
+//    }
 
 }

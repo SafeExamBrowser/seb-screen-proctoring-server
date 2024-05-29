@@ -255,6 +255,9 @@ public class ProctoringServiceImpl implements ProctoringService {
 
 //        Collection<Date> test = this.sessionDAO.queryMatchingDaysForSessionSearch(filterMap).get();
 
+//        return this.sessionDAO.
+//                queryMatchingDaysForSessionSearch(filterMap);
+
         return this.sessionDAO.
                 queryMatchingDaysForSessionSearch(filterMap)
                 .map(data -> this.createSessionDaySearchResult(data, filterMap));
@@ -419,7 +422,9 @@ public class ProctoringServiceImpl implements ProctoringService {
             final Collection<Date> dateList,
             final FilterMap filterMap){
 
-//        return dateList;
+        if(!Utils.hasMetaDataCriteria(filterMap)){
+            return dateList;
+        }
 
         return dateList
                 .stream()
@@ -479,12 +484,8 @@ public class ProctoringServiceImpl implements ProctoringService {
             final Date date,
             final FilterMap filterMap) {
 
-        filterMap.put("fromTime", getUnixTimestampAtStartOfDay(date));
-        filterMap.put("toTime", getUnixTimestampAtEndOfDay(date));
-
-        String uuid = this.sessionDAO.getAnyUuidOfGivenDay(filterMap).getOrThrow();
-
-        final Long nrOfScreenshots = this.sessionDAO.getNumberOfScreenshots(uuid, filterMap);
+        //check if min 1 entry in the screenshotData db matches the metadata
+        final Long nrOfScreenshots = this.screenshotDataDAO.countMatchingScreenshotDataPerDay(date, filterMap).getOrThrow();
 
         if (nrOfScreenshots == null || nrOfScreenshots <= 0) {
             return null;
