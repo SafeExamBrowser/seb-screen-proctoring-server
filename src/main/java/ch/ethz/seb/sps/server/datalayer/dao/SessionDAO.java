@@ -47,6 +47,4 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
     Result<Boolean> hasAnySessionData(Collection<Long> groupIds);
 
     Result<Collection<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap);
-
-//    Result<String> getAnyUuidOfGivenDay(final FilterMap filterMap);
 }

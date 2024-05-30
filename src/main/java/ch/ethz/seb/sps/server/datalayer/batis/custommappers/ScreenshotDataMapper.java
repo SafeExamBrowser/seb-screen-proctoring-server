@@ -51,15 +51,15 @@ public interface ScreenshotDataMapper {
 
     class SqlProvider {
         public String countMatchingScreenshotDataPerDay(SelectStatementProvider selectStatement, @Param("parameters") Map<String, Object> parameters, Date date) {
-            String startingQuery = selectStatement.getSelectStatement();
+            String baseQuery = selectStatement.getSelectStatement();
 
-            String selectAndCount = startingQuery.substring(0, 6) + " COUNT(session_uuid)";
-            String restOfQuery = startingQuery.substring(6, startingQuery.length());
+            String selectAndCount = "SELECT COUNT(session_uuid) ";
+            String fromClause = baseQuery.substring(baseQuery.indexOf("from"));
 
             String whereTimestampStart = " AND timestamp >= UNIX_TIMESTAMP('" + date + "') * 1000";
             String whereTimestampEnd = " AND timestamp <= (UNIX_TIMESTAMP('" + date + "') + 86400) * 1000";
 
-            String fullQuery = selectAndCount + restOfQuery + whereTimestampStart + whereTimestampEnd;
+            String fullQuery = selectAndCount + fromClause + whereTimestampStart + whereTimestampEnd;
 
             return fullQuery;
         }

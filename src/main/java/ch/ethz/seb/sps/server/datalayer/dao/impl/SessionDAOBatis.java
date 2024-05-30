@@ -247,37 +247,6 @@ public class SessionDAOBatis implements SessionDAO {
         });
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public Result<String> getAnyUuidOfGivenDay(final FilterMap filterMap){
-//        return Result.tryCatch(() -> {
-//
-//            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
-//            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
-//
-//            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>>.QueryExpressionWhereBuilder queryBuilder =
-//                    this.sessionMapper
-//                            .getUuid().where();
-//
-//            List<String> test = queryBuilder
-//                    .build()
-//                    .execute()
-//                    .stream()
-//                    .collect(Collectors.toList());
-//
-//
-//
-//            return "";
-
-//            return queryBuilder
-////                                .limit(1l)
-//                                .build()
-//                                .execute()
-//                                .get(0);
-//        });
-//    }
-
-
     @Override
     @Transactional(readOnly = true)
     public Result<Collection<Session>> allMatching(

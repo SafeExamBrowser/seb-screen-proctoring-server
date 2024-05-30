@@ -23,8 +23,8 @@ public interface SessionMapper {
             String query = selectStatement.getSelectStatement();
             int indexWhere = query.toLowerCase().indexOf("from");
 
-            query = query.substring(indexWhere);
-            query = "SELECT DISTINCT DATE(FROM_UNIXTIME(creation_time / 1000)) as creation_time " + query;
+            String fromClause = query.substring(indexWhere);
+            query = "SELECT DISTINCT DATE(FROM_UNIXTIME(creation_time / 1000)) as creation_time " + fromClause;
 
             return query;
         }
@@ -38,15 +38,4 @@ public interface SessionMapper {
                 .from(SessionRecordDynamicSqlSupport.sessionRecord);
     }
 
-
-//    @SelectProvider(type= SqlProviderAdapter.class, method="select")
-//    @ConstructorArgs({
-//            @Arg(column="uuid", javaType=String.class, jdbcType=JdbcType.VARCHAR),
-//    })
-//    List<String> selectOne(SelectStatementProvider selectStatement);
-//
-//    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>> getUuid(){
-//        return SelectDSL.selectWithMapper(this::selectOne, SessionRecordDynamicSqlSupport.uuid)
-//                .from(SessionRecordDynamicSqlSupport.sessionRecord);
-//    }
 }

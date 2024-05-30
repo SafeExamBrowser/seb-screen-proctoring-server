@@ -549,23 +549,7 @@ public class AdminProctorController {
                             name = API.SCREENSHOT_META_DATA_USER_ACTION,
                             description = "The search filter criteria for screenshot user action metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
-                            required = false),
-                    @Parameter(
-                            name = Page.ATTR_PAGE_NUMBER,
-                            description = "The number of the page to get from the whole list. If the page does not exists, the API returns with the first page.",
-                            in = ParameterIn.QUERY,
-                            required = false),
-                    @Parameter(
-                            name = Page.ATTR_PAGE_SIZE,
-                            description = "The size of the page to get. Default is 10",
-                            in = ParameterIn.QUERY,
-                            required = false),
-                    @Parameter(
-                            name = Page.ATTR_SORT,
-                            in = ParameterIn.QUERY,
-                            description = "The sort parameter to sort the result list of entities before paging. Sorting is only possible for: startTime, imageFormat, clientName, clientIp, clientOsName, clientVersion, clientMachineName. Use a leading '-' sign for descending sort order.",
-                            required = false)
-            })
+                            required = false)})
     @RequestMapping(
             path = API.SESSION_DAY_SEARCH_ENDPOINT,
             method = RequestMethod.GET,
@@ -578,9 +562,6 @@ public class AdminProctorController {
             @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
             @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
             @RequestParam(name = API.PARAM_TO_TIME, required = false) final Long toTime,
-            @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
-            @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
-            @RequestParam(name = Page.ATTR_SORT, required = false) final String sortBy,
             final HttpServletRequest request) {
 
         final FilterMap filterMap = new FilterMap(request);
@@ -805,16 +786,6 @@ public class AdminProctorController {
                 .stream()
                 .collect(Collectors.toList());
     }
-
-//    private boolean hasMetaDataCriteria(final FilterMap filterMap) {
-//        final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
-//        for (int i = 0; i < metaData.length; i++) {
-//            if (filterMap.contains(metaData[i].parameterName)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
 
     private void preProcessGroupCriteria(final FilterMap filterMap) {
         final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();

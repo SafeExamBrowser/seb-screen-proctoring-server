@@ -252,14 +252,8 @@ public class ProctoringServiceImpl implements ProctoringService {
 
     @Override
     public Result<Collection<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap) {
-
-//        Collection<Date> test = this.sessionDAO.queryMatchingDaysForSessionSearch(filterMap).get();
-
-//        return this.sessionDAO.
-//                queryMatchingDaysForSessionSearch(filterMap);
-
-        return this.sessionDAO.
-                queryMatchingDaysForSessionSearch(filterMap)
+        return this.sessionDAO
+                .queryMatchingDaysForSessionSearch(filterMap)
                 .map(data -> this.createSessionDaySearchResult(data, filterMap));
     }
 
