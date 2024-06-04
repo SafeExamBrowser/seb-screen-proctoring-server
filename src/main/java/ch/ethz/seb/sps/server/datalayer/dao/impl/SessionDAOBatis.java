@@ -62,7 +62,6 @@ import ch.ethz.seb.sps.utils.Utils;
 public class SessionDAOBatis implements SessionDAO {
 
     private final SessionMapper sessionMapper;
-
     private final SessionRecordMapper sessionRecordMapper;
     private final GroupRecordMapper groupRecordMapper;
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
@@ -70,14 +69,12 @@ public class SessionDAOBatis implements SessionDAO {
 
     public SessionDAOBatis(
             final SessionMapper sessionMapper,
-
             final SessionRecordMapper sessionRecordMapper,
             final GroupRecordMapper groupRecordMapper,
             final ScreenshotDataRecordMapper screenshotDataRecordMapper,
             final ScreenshotDAO screenshotDAO) {
 
         this.sessionMapper = sessionMapper;
-
         this.sessionRecordMapper = sessionRecordMapper;
         this.groupRecordMapper = groupRecordMapper;
         this.screenshotDataRecordMapper = screenshotDataRecordMapper;
@@ -189,7 +186,6 @@ public class SessionDAOBatis implements SessionDAO {
             final String sessionUUID = filterMap.contains(API.PARAM_SESSION_ID)
                     ? filterMap.getString(API.PARAM_SESSION_ID)
                     : filterMap.getString(Domain.SESSION.ATTR_UUID);
-
 
             QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Date>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.sessionMapper
@@ -324,8 +320,6 @@ public class SessionDAOBatis implements SessionDAO {
                     .collect(Collectors.toList());
         });
     }
-
-
 
     @Override
     @Transactional(readOnly = true)
@@ -685,7 +679,6 @@ public class SessionDAOBatis implements SessionDAO {
                 record.getLastUpdateTime(),
                 record.getTerminationTime());
     }
-
 
     private void checkUniqueUUID(final String uuid) {
         if (uuid != null) {

@@ -16,13 +16,12 @@ import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
+import static org.mybatis.dynamic.sql.SqlBuilder.isGreaterThanWhenPresent;
+import static org.mybatis.dynamic.sql.SqlBuilder.isLessThanWhenPresent;
 
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
-
-import static org.mybatis.dynamic.sql.SqlBuilder.isGreaterThanWhenPresent;
-import static org.mybatis.dynamic.sql.SqlBuilder.isLessThanWhenPresent;
 
 @Mapper
 public interface ScreenshotDataMapper {

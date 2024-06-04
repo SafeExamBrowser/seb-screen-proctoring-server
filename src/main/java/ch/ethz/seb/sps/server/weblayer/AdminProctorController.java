@@ -65,7 +65,6 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
 import ch.ethz.seb.sps.utils.Utils;
 
 @RestController
@@ -481,7 +480,7 @@ public class AdminProctorController {
 
     @Operation(
             summary = "Returns a list of of dates where at least one session matches the given search criteria.",
-            description = "This search is an extension to the generic session search to apply more screenshot specific data as a result. Returns a list of of dates where at least one session matches the given search criteria.",
+            description = "This search takes all available data into account and checks if min. 1 session a day for the given timeframe matches search criteria.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {

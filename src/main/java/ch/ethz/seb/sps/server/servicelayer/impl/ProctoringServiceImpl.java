@@ -425,7 +425,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                 .map(date -> toSessionDaySearchResult(date, filterMap))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-
     }
 
     private SessionSearchResult toSessionSearchResult(
@@ -452,27 +451,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                 nrOfScreenshots.intValue()
         );
     }
-
-    private static String getUnixTimestampAtStartOfDay(Date sqlDate) {
-        long unixTimestamp = sqlDate.getTime() / 1000;
-        unixTimestamp -= unixTimestamp % (24 * 60 * 60);
-        unixTimestamp = unixTimestamp*1000;
-
-        System.out.println("start of day: " + unixTimestamp);
-
-        return String.valueOf(unixTimestamp);
-    }
-
-    private static String getUnixTimestampAtEndOfDay(Date sqlDate) {
-        long unixTimestamp = sqlDate.getTime() / 1000;
-        unixTimestamp += (24 * 60 * 60) - 1;
-        unixTimestamp = unixTimestamp*1000;
-
-        System.out.println("end of day: " + unixTimestamp);
-
-        return String.valueOf(unixTimestamp);
-    }
-
 
     private Date toSessionDaySearchResult(
             final Date date,

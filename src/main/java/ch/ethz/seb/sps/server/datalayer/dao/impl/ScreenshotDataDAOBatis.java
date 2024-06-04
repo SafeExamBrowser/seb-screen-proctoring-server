@@ -549,27 +549,4 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                 record.getMetaData());
     }
 
-//    private String extractMetadataValueFromFilterMap(FilterMap filterMap, int index){
-////        final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
-////        for (int i = 0; i < metaData.length; i++) {
-//            final ScreenshotMetadataType mc = metaData[i];
-//
-//            final String sqlWildcard = filterMap.getSQLWildcard(mc.parameterName);
-//            if (sqlWildcard == null) {
-//                continue;
-//            }
-//
-//            final String value =
-//                    Constants.PERCENTAGE_STRING +
-//                            Constants.DOUBLE_QUOTE +
-//                            mc.parameterName +
-//                            Constants.DOUBLE_QUOTE +
-//                            sqlWildcard;
-//
-////            queryBuilder = queryBuilder.and(
-////                    ScreenshotDataRecordDynamicSqlSupport.metaData,
-////                    SqlBuilder.isLike(value));
-////        }
-//    }
-
 }
