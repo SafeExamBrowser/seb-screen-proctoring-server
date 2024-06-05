@@ -52,7 +52,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
     public final String uuid;
 
     @JsonProperty(EXAM.ATTR_NAME)
-    @NotNull(message = "clientaccess:name:notNull")
+    @NotNull(message = "exam:name:notNull")
     @Size(min = 3, max = 255, message = "exam:name:size:{min}:{max}:${validatedValue}")
     public final String name;
 

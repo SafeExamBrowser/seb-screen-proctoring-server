@@ -475,7 +475,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
             throw new DuplicateEntityException(
                     EntityType.EXAM,
                     Domain.CLIENT_ACCESS.ATTR_NAME,
-                    "clientaccess:name:name.notunique");
+                    "exam:name.notunique");
         }
     }
 

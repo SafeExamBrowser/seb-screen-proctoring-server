@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +52,6 @@ public class AdminJWTAccess {
     private static final String PASSWORD_CLAIM = "pwd";
     private static final String USERNAME_CLAIM = "usr";
     private static final String REDIRECT_CLAIM = "redirect";
-
-    // TODO This is a problem for scaled environments!
 
 
     @Autowired
@@ -191,7 +188,7 @@ public class AdminJWTAccess {
                 .compact();
     }
 
-    private final static class LoginInfo {
+    public final static class LoginInfo {
 
         @JsonProperty
         public final String username;
