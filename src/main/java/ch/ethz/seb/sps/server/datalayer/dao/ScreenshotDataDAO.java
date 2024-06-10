@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao;
 
+import java.sql.Date;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -60,4 +61,5 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
 
     Result<Collection<ScreenshotDataRecord>> searchScreenshotData(FilterMap filterMap);
 
+    Result<Long> countMatchingScreenshotDataPerDay(Date date, FilterMap filterMap);
 }

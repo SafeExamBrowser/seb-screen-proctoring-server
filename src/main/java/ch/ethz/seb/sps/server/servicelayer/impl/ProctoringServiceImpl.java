@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Date;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.service.GroupViewData;
+import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -249,10 +251,10 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public Result<Collection<SessionSearchResult>> searchSessions(final FilterMap filterMap) {
+    public Result<Collection<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap) {
         return this.sessionDAO
-                .allMatching(filterMap)
-                .map(data -> this.createSessionSearchResult(data, filterMap));
+                .queryMatchingDaysForSessionSearch(filterMap)
+                .map(data -> this.createSessionDaySearchResult(data, filterMap));
     }
 
     @Override
@@ -260,6 +262,13 @@ public class ProctoringServiceImpl implements ProctoringService {
         return this.screenshotDataDAO
                 .searchScreenshotData(filterMap)
                 .map(this::createScreenshotSearchResult);
+    }
+
+    @Override
+    public Result<Collection<SessionSearchResult>> searchSessions(final FilterMap filterMap) {
+        return this.sessionDAO
+                .allMatching(filterMap)
+                .map(data -> this.createSessionSearchResult(data, filterMap));
     }
 
     @Override
@@ -403,6 +412,21 @@ public class ProctoringServiceImpl implements ProctoringService {
                 .collect(Collectors.toList());
     }
 
+    private Collection<Date> createSessionDaySearchResult(
+            final Collection<Date> dateList,
+            final FilterMap filterMap){
+
+        if(!Utils.hasMetaDataCriteria(filterMap)){
+            return dateList;
+        }
+
+        return dateList
+                .stream()
+                .map(date -> toSessionDaySearchResult(date, filterMap))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
     private SessionSearchResult toSessionSearchResult(
             final Session session,
             final Map<Long, GroupViewData> groupCache,
@@ -426,6 +450,20 @@ public class ProctoringServiceImpl implements ProctoringService {
                 group,
                 nrOfScreenshots.intValue()
         );
+    }
+
+    private Date toSessionDaySearchResult(
+            final Date date,
+            final FilterMap filterMap) {
+
+        //check if min 1 entry in the screenshotData db matches the metadata
+        final Long nrOfScreenshots = this.screenshotDataDAO.countMatchingScreenshotDataPerDay(date, filterMap).getOrThrow();
+
+        if (nrOfScreenshots == null || nrOfScreenshots <= 0) {
+            return null;
+        }
+
+        return date;
     }
 
     private ScreenshotViewData createScreenshotViewData(

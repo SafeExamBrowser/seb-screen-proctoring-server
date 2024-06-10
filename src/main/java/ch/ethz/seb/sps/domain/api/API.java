@@ -150,6 +150,7 @@ public final class API {
 
     public static final String SCREENSHOT_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/screenshots";
     public static final String SESSION_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/sessions";
+    public static final String SESSION_DAY_SEARCH_ENDPOINT = SESSION_SEARCH_ENDPOINT + "/day";
     public static final String TIMELINE_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/timeline";
     public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_ID + "}";
     public static final String SESSION_ID_PATH_SEGMENT = "/{" + PARAM_SESSION_ID + "}";
