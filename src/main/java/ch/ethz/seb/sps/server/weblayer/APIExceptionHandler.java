@@ -19,6 +19,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -221,9 +222,33 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
     }
 
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Object> handleBadCredentialsException(
+            final BadCredentialsException ex,
+            final WebRequest request) {
+
+        final Map<String, String> attributes = new HashMap<>();
+        addRequestAttributes(request, attributes);
+
+        final APIError apiError = new APIError(
+                APIError.APIErrorType.ACCESS_DENIED,
+                request.getDescription(false),
+                ex.getMessage(),
+                attributes,
+                null);
+
+        log.error("Error intercepted at API response error handler: {}", apiError, ex);
+
+        return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
+    }
+
     private void addRequestAttributes(final WebRequest request, final Map<String, String> attributes) {
         final Principal userPrincipal = request.getUserPrincipal();
-        attributes.put("request-parameter", Utils.toString(request.getParameterMap()));
+
+        Map<String, String[]> parameterMap = new HashMap<>(request.getParameterMap());
+        parameterMap.remove("password");
+        attributes.put("request-parameter", Utils.toString(parameterMap));
+    
         if (userPrincipal != null) {
             attributes.put("request-user", userPrincipal.getName());
         }
