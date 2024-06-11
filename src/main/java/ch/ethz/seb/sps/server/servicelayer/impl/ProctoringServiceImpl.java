@@ -332,6 +332,10 @@ public class ProctoringServiceImpl implements ProctoringService {
 
         final Map<String, String> metaData = new HashMap<>();
 
+        if (data.getMetaData() == null) {
+            return metaData;
+        }
+
         try {
 
             metaData.putAll(
@@ -341,7 +345,10 @@ public class ProctoringServiceImpl implements ProctoringService {
                             }));
 
         } catch (final Exception e) {
-            log.warn("Failed to parse meta data JSON, add it as single attribute: {}", data.getMetaData());
+            log.warn(
+                    "Failed to parse meta data JSON, add it as single attribute: {} error: {}",
+                    data.getMetaData(),
+                    e.getMessage());
             metaData.put("data", data.getMetaData());
         }
 
