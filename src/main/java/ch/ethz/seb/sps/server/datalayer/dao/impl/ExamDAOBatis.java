@@ -146,7 +146,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
             final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
             final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
-            final List<Exam> result = this.examRecordMapper
+            return this.examRecordMapper
                     .selectByExample()
                     .where(
                             ExamRecordDynamicSqlSupport.terminationTime,
@@ -174,8 +174,6 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     .stream()
                     .map(this::toDomainModel)
                     .collect(Collectors.toList());
-
-            return result;
         });
     }
 
@@ -253,7 +251,9 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
     public Result<Exam> createNew(final Exam data) {
         return Result.tryCatch(() -> {
 
-            checkUniqueName(data);
+            if (data.uuid != null) {
+                checkUniqueUUID(data);
+            }
 
             final long millisecondsNow = Utils.getMillisecondsNow();
             final ExamRecord newRecord = new ExamRecord(
@@ -272,7 +272,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
             this.examRecordMapper.insert(newRecord);
 
-            if (data.userIds != null && !data.userIds.isEmpty()) {
+            if (!data.userIds.isEmpty()) {
 
                 // save new user ids
                 this.additionalAttributesDAO.saveAdditionalAttribute(
@@ -316,7 +316,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     .build()
                     .execute();
 
-            if (data.userIds != null && !data.userIds.isEmpty()) {
+            if (!data.userIds.isEmpty()) {
                 // delete old user ids
                 this.additionalAttributesDAO.delete(
                         EntityType.EXAM,
@@ -462,11 +462,11 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
         }
     }
 
-    private void checkUniqueName(final Exam exam) {
+    private void checkUniqueUUID(final Exam exam) {
 
         final Long otherWithSameName = this.examRecordMapper
                 .countByExample()
-                .where(ExamRecordDynamicSqlSupport.name, isEqualTo(exam.name))
+                .where(ExamRecordDynamicSqlSupport.uuid, isEqualTo(exam.uuid))
                 .and(ExamRecordDynamicSqlSupport.id, isNotEqualToWhenPresent(exam.id))
                 .build()
                 .execute();
@@ -474,8 +474,8 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
         if (otherWithSameName != null && otherWithSameName > 0) {
             throw new DuplicateEntityException(
                     EntityType.EXAM,
-                    Domain.CLIENT_ACCESS.ATTR_NAME,
-                    "exam:name.notunique");
+                    Domain.CLIENT_ACCESS.ATTR_UUID,
+                    "exam:uuid.notunique");
         }
     }
 
