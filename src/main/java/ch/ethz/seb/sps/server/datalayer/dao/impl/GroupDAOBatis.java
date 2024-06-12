@@ -296,6 +296,9 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                             GroupRecordDynamicSqlSupport.name,
                             isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_NAME)))
                     .and(
+                            GroupRecordDynamicSqlSupport.examId,
+                            isEqualToWhenPresent(filterMap.getLong(Domain.SEB_GROUP.ATTR_EXAM_ID)))
+                    .and(
                             GroupRecordDynamicSqlSupport.description,
                             isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_DESCRIPTION)))
                     .and(
