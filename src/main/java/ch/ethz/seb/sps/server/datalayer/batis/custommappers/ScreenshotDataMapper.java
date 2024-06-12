@@ -5,7 +5,6 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamic
 import org.apache.ibatis.annotations.Arg;
 import org.apache.ibatis.annotations.ConstructorArgs;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.type.JdbcType;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -21,7 +20,6 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isLessThanWhenPresent;
 
 import java.sql.Date;
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface ScreenshotDataMapper {
@@ -29,6 +27,10 @@ public interface ScreenshotDataMapper {
     @SelectProvider(type= SqlProviderAdapter.class, method="select")
     @ConstructorArgs({@Arg(column="timestamp", javaType=Long.class, jdbcType= JdbcType.BIGINT, id=true)})
     List<Long> selectTimestamps(SelectStatementProvider select);
+
+    @SelectProvider(type = CustomSqlProvider.class, method = "selectDistinctTimestamps")
+    List<Date> selectDistinctTimestamps(SelectStatementProvider selectStatement);
+
 
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>>.QueryExpressionWhereBuilder selectScreenshotTimestamps(
             final String sessionUUID,
@@ -48,29 +50,24 @@ public interface ScreenshotDataMapper {
                 .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, isGreaterThanWhenPresent(timestamp));
     }
 
-    class SqlProvider {
-        public String countMatchingScreenshotDataPerDay(SelectStatementProvider selectStatement, @Param("parameters") Map<String, Object> parameters, Date date) {
-            String baseQuery = selectStatement.getSelectStatement();
-
-            String selectAndCount = "SELECT COUNT(session_uuid) ";
-            String fromClause = baseQuery.substring(baseQuery.indexOf("from"));
-
-            String whereTimestampStart = " AND timestamp >= UNIX_TIMESTAMP('" + date + "') * 1000";
-            String whereTimestampEnd = " AND timestamp <= (UNIX_TIMESTAMP('" + date + "') + 86400) * 1000";
-
-            String fullQuery = selectAndCount + fromClause + whereTimestampStart + whereTimestampEnd;
-
-            return fullQuery;
-        }
+    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Date>>> selectTimestampsAsDates(){
+        return SelectDSL.selectDistinctWithMapper(this::selectDistinctTimestamps, ScreenshotDataRecordDynamicSqlSupport.timestamp)
+                .from(screenshotDataRecord);
     }
 
-    @SelectProvider(type = SqlProvider.class, method = "countMatchingScreenshotDataPerDay")
-    Long countScreenshotDataPerDay(SelectStatementProvider selectStatement, @Param("parameters") Map<String, Object> parameters, Date date);
 
-    default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countMatchingScreenshotDataPerDay(final Date date) {
+    class CustomSqlProvider {
+        public String selectDistinctTimestamps(SelectStatementProvider selectStatement) {
+            String query = selectStatement.getSelectStatement();
+            int indexWhere = query.toLowerCase().indexOf("from");
 
-        return SelectDSL.selectWithMapper((selectStatement) -> countScreenshotDataPerDay(selectStatement, selectStatement.getParameters(), date))
-                .from(screenshotDataRecord);
+            String fromClause = query.substring(indexWhere);
+            query = "SELECT DISTINCT " +
+                    "DATE(FROM_UNIXTIME(" + ScreenshotDataRecordDynamicSqlSupport.timestamp.name() + "/ 1000)) as timestamp "
+                    + fromClause;
+
+            return query;
+        }
     }
 
 }

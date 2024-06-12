@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SessionMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchSessionMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -61,20 +61,20 @@ import ch.ethz.seb.sps.utils.Utils;
 @Service
 public class SessionDAOBatis implements SessionDAO {
 
-    private final SessionMapper sessionMapper;
+    private final SearchSessionMapper searchSessionMapper;
     private final SessionRecordMapper sessionRecordMapper;
     private final GroupRecordMapper groupRecordMapper;
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
     private final ScreenshotDAO screenshotDAO;
 
     public SessionDAOBatis(
-            final SessionMapper sessionMapper,
+            final SearchSessionMapper searchSessionMapper,
             final SessionRecordMapper sessionRecordMapper,
             final GroupRecordMapper groupRecordMapper,
             final ScreenshotDataRecordMapper screenshotDataRecordMapper,
             final ScreenshotDAO screenshotDAO) {
 
-        this.sessionMapper = sessionMapper;
+        this.searchSessionMapper = searchSessionMapper;
         this.sessionRecordMapper = sessionRecordMapper;
         this.groupRecordMapper = groupRecordMapper;
         this.screenshotDataRecordMapper = screenshotDataRecordMapper;
@@ -175,7 +175,7 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap) {
+    public Result<List<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap) {
         return Result.tryCatch(() -> {
 
             final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
@@ -188,8 +188,8 @@ public class SessionDAOBatis implements SessionDAO {
                     : filterMap.getString(Domain.SESSION.ATTR_UUID);
 
             QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Date>>>.QueryExpressionWhereBuilder queryBuilder =
-                    this.sessionMapper
-                            .getCreationTimes()
+                    this.searchSessionMapper
+                            .selectCreationTimesAsDates()
                             .where(
                                     SessionRecordDynamicSqlSupport.terminationTime,
                                     (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
@@ -237,9 +237,7 @@ public class SessionDAOBatis implements SessionDAO {
             return queryBuilder
                     .orderBy(SessionRecordDynamicSqlSupport.creationTime.descending())
                     .build()
-                    .execute()
-                    .stream()
-                    .collect(Collectors.toList());
+                    .execute();
         });
     }
 
