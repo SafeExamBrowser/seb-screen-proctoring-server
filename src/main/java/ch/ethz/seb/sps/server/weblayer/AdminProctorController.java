@@ -568,9 +568,7 @@ public class AdminProctorController {
         preProcessGroupCriteria(filterMap);
 
         return queryMatchingDaysForSessionSearch(filterMap)
-                .getOrThrow()
-                .stream()
-                .toList();
+                .getOrThrow();
     }
 
     @Operation(
@@ -819,7 +817,7 @@ public class AdminProctorController {
         }
     }
 
-    private Result<Collection<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap) {
+    private Result<List<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap) {
         final String groupIds = filterMap.getString(Domain.SESSION.ATTR_GROUP_ID);
         if (groupIds != null && StringUtils.isBlank(groupIds)) {
             return Result.of(Collections.emptyList());

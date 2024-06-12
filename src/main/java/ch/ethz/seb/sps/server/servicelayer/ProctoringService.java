@@ -22,6 +22,7 @@ import ch.ethz.seb.sps.utils.Result;
 import java.io.OutputStream;
 import java.sql.Date;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -87,5 +88,5 @@ public interface ProctoringService {
 
     Result<Collection<ScreenshotSearchResult>> searchScreenshots(final FilterMap filterMap);
 
-    Result<Collection<Date>> queryMatchingDaysForSessionSearch(FilterMap filterMap);
+    Result<List<Date>> queryMatchingDaysForSessionSearch(FilterMap filterMap);
 }

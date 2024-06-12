@@ -402,13 +402,21 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Long> countMatchingScreenshotDataPerDay(Date date, FilterMap filterMap){
-        return Result.tryCatch(() -> {
+    public Result<List<Date>> selectMatchingScreenshotDataPerDay(FilterMap filterMap){
 
-            QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>>.QueryExpressionWhereBuilder queryBuilder =
+        final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
+        final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
+
+        return Result.tryCatch(() -> {
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Date>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.screenshotDataMapper
-                            .countMatchingScreenshotDataPerDay(date)
-                            .where();
+                            .selectTimestampsAsDates()
+                            .where(
+                                    ScreenshotDataRecordDynamicSqlSupport.timestamp,
+                                    SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                            .and(
+                                    ScreenshotDataRecordDynamicSqlSupport.timestamp,
+                                    SqlBuilder.isLessThanOrEqualToWhenPresent(toTime));
 
             // meta data constraint
             final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();

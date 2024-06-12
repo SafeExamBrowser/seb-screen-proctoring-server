@@ -61,5 +61,6 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
 
     Result<Collection<ScreenshotDataRecord>> searchScreenshotData(FilterMap filterMap);
 
-    Result<Long> countMatchingScreenshotDataPerDay(Date date, FilterMap filterMap);
+    Result<List<Date>> selectMatchingScreenshotDataPerDay(FilterMap filterMap);
+
 }
