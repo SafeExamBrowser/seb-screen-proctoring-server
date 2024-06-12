@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -432,7 +433,10 @@ public class ProctoringServiceImpl implements ProctoringService {
                 .selectMatchingScreenshotDataPerDay(filterMap)
                 .getOrThrow();
 
-        return compareSessionSearchWithScreenshotDataSearch(dateList, screenshotDataSearchResult);
+        List<Date> finalSearchResult = compareSessionSearchWithScreenshotDataSearch(dateList, screenshotDataSearchResult);
+        Collections.reverse(finalSearchResult);
+
+        return finalSearchResult;
     }
 
     private List<Date> compareSessionSearchWithScreenshotDataSearch(final List<Date> sessionSearchResult, final List<Date> screenshotDataSearchResult){
