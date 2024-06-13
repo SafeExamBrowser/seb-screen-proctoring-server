@@ -95,7 +95,7 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
     @Override
     protected Group doBeforeActivation(final Group entity, final boolean activation) {
 
-        // apply only deactivation on all depending sessions
+        // apply only deactivation on all depending on sessions
         if (activation) {
             return entity;
         }

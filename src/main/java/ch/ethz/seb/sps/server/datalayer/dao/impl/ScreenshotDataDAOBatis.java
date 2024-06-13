@@ -448,7 +448,11 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Long>> getScreenshotTimestamps(final String sessionUUID, final Long timestamp, final PageSortOrder sortOrder){
+    public Result<Collection<Long>> getScreenshotTimestamps(
+            final String sessionUUID,
+            final Long timestamp,
+            final PageSortOrder sortOrder) {
+
         return Result.tryCatch(() -> {
             final List<Long> result = this.screenshotDataMapper
                     .selectScreenshotTimestamps(sessionUUID, timestamp, sortOrder)
