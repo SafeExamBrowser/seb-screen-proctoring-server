@@ -136,14 +136,10 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                             name = Page.ATTR_SORT,
                             description = "the sort parameter to sort the list of entities before paging"),
                     @Parameter(
-                            name = "filterCriteria",
-                            description = "Additional filter criteria as query parameter or application/x-www-form-urlencoded body value \n"
-                                    +
-                                    "For OpenAPI 3 input please use the JSON object form: {\"columnName\":\"filterValue\"} Swagger will translate it to form-urlencoded body",
-                            example = "{\"name\":\"ethz\"}",
-                            in = ParameterIn.DEFAULT,
+                            name = "allRequestParams",
+                            description = "fwrgrwgwg",
                             required = false,
-                            allowEmptyValue = true)
+                            hidden = true),
             })
     @RequestMapping(
             method = RequestMethod.GET,
@@ -153,12 +149,12 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sort,
-            @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
+            @RequestParam(required = false) final MultiValueMap<String, String> allRequestParams,
             final HttpServletRequest request) {
 
         // NOTE this must be done outside the paging supplier to do not interfere with Batis paging magic
         final Collection<Long> readPrivilegedPredication = getReadPrivilegedPredication();
-        final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
+        final FilterMap filterMap = new FilterMap(allRequestParams, request.getQueryString());
 
         return this.paginationService.getPage(
                 pageNumber,
@@ -185,12 +181,10 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
-                            name = "filterCriteria",
+                            name = "allRequestParams",
                             description = "Additional filter criteria \n" +
                                     "For OpenAPI 3 input please use the form: {\"columnName\":\"filterValue\"}",
-                            example = "{\"name\":\"ethz\"}",
-                            required = false,
-                            allowEmptyValue = true)
+                            hidden = true)
             })
     @RequestMapping(
             path = API.NAMES_PATH_SEGMENT,
@@ -198,11 +192,11 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<EntityName> getNames(
-            @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
+            @RequestParam(required = false) final MultiValueMap<String, String> allRequestParams,
             final HttpServletRequest request) {
 
         final Collection<Long> readPrivilegedPredication = getReadPrivilegedPredication();
-        final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
+        final FilterMap filterMap = new FilterMap(allRequestParams, request.getQueryString());
         final Collection<T> all = getAll(filterMap, readPrivilegedPredication)
                 .getOrThrow();
 
