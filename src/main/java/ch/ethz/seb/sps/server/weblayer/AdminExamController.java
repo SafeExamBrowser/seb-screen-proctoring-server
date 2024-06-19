@@ -131,7 +131,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     protected Exam createNew(final POSTMapper postParams) {
         return new Exam(
                 null,
-                null,
+                postParams.getString(EXAM.ATTR_UUID),
                 postParams.getString(EXAM.ATTR_NAME),
                 postParams.getString(EXAM.ATTR_DESCRIPTION),
                 postParams.getString(EXAM.ATTR_URL),
