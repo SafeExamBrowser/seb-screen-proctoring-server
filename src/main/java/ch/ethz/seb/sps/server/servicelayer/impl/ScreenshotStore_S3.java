@@ -55,6 +55,8 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
     private final TaskScheduler taskScheduler;
+
+    private final boolean batchStore;
     private final long batchInterval;
     private final S3DAO s3DAO;
     private SqlSessionTemplate sqlSessionTemplate;
@@ -67,12 +69,14 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
             final PlatformTransactionManager transactionManager,
             final S3DAO s3DAO,
             @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler,
-            @Value("${sps.data.store.batch.interval:1000}") final long batchInterval) {
+            @Value("${sps.data.store.batch.interval:1000}") final long batchInterval,
+            @Value("${sps.s3.store.batch:true}") final boolean batchStore) {
 
         this.sqlSessionFactory = sqlSessionFactory;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.taskScheduler = taskScheduler;
+        this.batchStore = batchStore;
         this.batchInterval = batchInterval;
         this.s3DAO = s3DAO;
     }
@@ -92,15 +96,16 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
 
         this.screenshotDataRecordMapper = this.sqlSessionTemplate.getMapper(ScreenshotDataRecordMapper.class);
 
+        // we run with two scheduled tasks that process the queue in half second interval
         final Collection<ScreenshotQueueData> data1 = new ArrayList<>();
         this.taskScheduler.scheduleWithFixedDelay(
-                () -> processBatchStore(data1),
+                () -> processStore(data1),
                 DateTime.now(DateTimeZone.UTC).toDate(),
                 this.batchInterval);
 
         final Collection<ScreenshotQueueData> data2 = new ArrayList<>();
         this.taskScheduler.scheduleWithFixedDelay(
-                () -> processBatchStore(data2),
+                () -> processStore(data2),
                 DateTime.now(DateTimeZone.UTC).plus(500).toDate(),
                 this.batchInterval);
 
@@ -140,7 +145,7 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
     public void storeScreenshot(final String sessionUUID, final InputStream in) {
     }
 
-    private void processBatchStore(final Collection<ScreenshotQueueData> batch) {
+    private void processStore(final Collection<ScreenshotQueueData> batch) {
         batch.clear();
         this.screenshotDataQueue.drainTo(batch);
 
@@ -148,20 +153,52 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
             return;
         }
 
-        applyBatchStore(batch);
+        if (batchStore) {
+            applyBatchStore(batch);
+        } else {
+            applySingleStore(batch);
+        }
+    }
+
+    private void applySingleStore(final Collection<ScreenshotQueueData> batch) {
+        // this stores the batch with single transactions and S3 store calls
+        // probably less performant but in case S3 do not support batch store
+        batch.forEach(data -> {
+            try {
+                // store screenshot data of single screenshot within DB
+                screenshotDataRecordMapper.insert(data.record);
+                this.sqlSessionTemplate.flushStatements();
+
+                // store single screenshot picture to S3
+                this.s3DAO.uploadItem(
+                        data.screenshotIn,
+                        data.record.getSessionUuid(),
+                        data.record.getId()
+                ).getOrThrow();
+
+            } catch (Exception e) {
+                log.error("Failed to single store screenshot data... put data back to queue. Cause: {}", e.getMessage());
+                this.screenshotDataQueue.add(data);
+            }
+        });
     }
 
     private void applyBatchStore(final Collection<ScreenshotQueueData> batch) {
         try {
             this.transactionTemplate.executeWithoutResult(status -> {
                 // store all screenshot data in batch and grab generated keys put back to records
-                batch.stream().forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
+                batch.forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
                 this.sqlSessionTemplate.flushStatements();
 
                 // now store all screenshots within respective generated ids in batch
                 List<SnowballObject> batchItems = new ArrayList<SnowballObject>();
-                batch.stream().forEach(data -> {
+                batch.forEach(data -> {
                     String fileName = data.record.getSessionUuid() + Constants.UNDERLINE + data.record.getId();
+
+                    // TODO check if this is necessary, it should be possible to use data.screenshotIn directly
+                    //      since it is already a ByteArrayInputStream (no need of unwrap and crate new ByteArrayInputStream
+                    //      for every screenshot would improve performance here. seems to make a copy of the whole byte array in memory each time)
+                    //      use "data.screenshotIn.available()" for size
                     byte[] screenshotBytes = data.screenshotIn.readAllBytes();
 
                     batchItems.add(

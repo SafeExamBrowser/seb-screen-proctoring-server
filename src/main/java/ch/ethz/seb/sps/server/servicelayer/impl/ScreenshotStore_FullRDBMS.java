@@ -208,11 +208,11 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
                     .executeWithoutResult(status -> {
 
                         // store all screenshot data in batch and grab generated keys put back to records
-                        batch.stream().forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
+                        batch.forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
                         this.sqlSessionTemplate.flushStatements();
 
                         // now store all screenshots within respective generated ids in batch
-                        batch.stream().forEach(
+                        batch.forEach(
                                 data -> this.screenshotMapper.insert(new BlobContent(
                                         data.record.getId(),
                                         data.screenshotIn)));
