@@ -14,6 +14,7 @@ import java.util.concurrent.Executor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ch.ethz.seb.sps.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,11 +137,11 @@ public class SEBSessionController {
         final Session session = this.sessionService
                 .createNewSession(
                         groupUUID,
-                        userSessionName,
-                        clientIP,
-                        clientMachineName,
-                        clientOSName,
-                        clientVersion,
+                        Utils.decodeFormURL_UTF_8(userSessionName),
+                        Utils.decodeFormURL_UTF_8(clientIP),
+                        Utils.decodeFormURL_UTF_8(clientMachineName),
+                        Utils.decodeFormURL_UTF_8(clientOSName),
+                        Utils.decodeFormURL_UTF_8(clientVersion),
                         imageFormat)
                 .getOrThrow();
 
@@ -203,12 +204,12 @@ public class SEBSessionController {
 
         final Session session = this.sessionService
                 .updateSessionData(
-                        sessionUUID,
-                        userSessionName,
-                        clientIP,
-                        clientMachineName,
-                        clientOSName,
-                        clientVersion)
+                        Utils.decodeFormURL_UTF_8(sessionUUID),
+                        Utils.decodeFormURL_UTF_8(userSessionName),
+                        Utils.decodeFormURL_UTF_8(clientIP),
+                        Utils.decodeFormURL_UTF_8(clientMachineName),
+                        Utils.decodeFormURL_UTF_8(clientOSName),
+                        Utils.decodeFormURL_UTF_8(clientVersion))
                 .getOrThrow();
 
         response.setHeader(API.SESSION_HEADER_UUID, session.uuid);
@@ -299,7 +300,7 @@ public class SEBSessionController {
                                 sessionUUID,
                                 timestamp,
                                 imageFormat,
-                                metadata,
+                                Utils.decodeFormURL_UTF_8(metadata),
                                 request.getInputStream());
 
                         response.setStatus(HttpStatus.OK.value());
