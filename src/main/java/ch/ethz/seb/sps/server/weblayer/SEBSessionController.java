@@ -204,7 +204,7 @@ public class SEBSessionController {
 
         final Session session = this.sessionService
                 .updateSessionData(
-                        Utils.decodeFormURL_UTF_8(sessionUUID),
+                        sessionUUID,
                         Utils.decodeFormURL_UTF_8(userSessionName),
                         Utils.decodeFormURL_UTF_8(clientIP),
                         Utils.decodeFormURL_UTF_8(clientMachineName),
