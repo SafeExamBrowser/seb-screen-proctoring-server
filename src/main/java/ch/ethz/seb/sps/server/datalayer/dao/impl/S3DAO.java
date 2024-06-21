@@ -90,12 +90,13 @@ public class S3DAO {
     }
 
     public Result<ObjectWriteResponse> uploadItem(final ByteArrayInputStream screenshotInputStream, final String sessionUUID, final Long pk){
+        System.out.println(screenshotInputStream.available());
         return Result.tryCatch(() ->
             this.minioClient.putObject(
                         PutObjectArgs.builder()
                                 .bucket(BUCKET_NAME)
                                 .object(sessionUUID + Constants.UNDERLINE + pk)
-                                .stream(screenshotInputStream, -1, 10485760)
+                                .stream(screenshotInputStream, screenshotInputStream.available(), -1)
                                 .build())
         );
     }

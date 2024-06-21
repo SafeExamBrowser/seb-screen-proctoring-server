@@ -280,11 +280,6 @@ public class SEBSessionController {
             final HttpServletRequest request,
             final HttpServletResponse response) {
 
-        // TODO remove this after testing
-        if (log.isDebugEnabled()) {
-            log.debug("Meta Data received: {}", metadata);
-        }
-
         return CompletableFuture.runAsync(
                 () -> {
                     try {

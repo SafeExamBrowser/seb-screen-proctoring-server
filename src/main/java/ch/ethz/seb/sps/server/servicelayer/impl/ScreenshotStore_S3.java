@@ -195,17 +195,11 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
                 batch.forEach(data -> {
                     String fileName = data.record.getSessionUuid() + Constants.UNDERLINE + data.record.getId();
 
-                    // TODO check if this is necessary, it should be possible to use data.screenshotIn directly
-                    //      since it is already a ByteArrayInputStream (no need of unwrap and crate new ByteArrayInputStream
-                    //      for every screenshot would improve performance here. seems to make a copy of the whole byte array in memory each time)
-                    //      use "data.screenshotIn.available()" for size
-                    byte[] screenshotBytes = data.screenshotIn.readAllBytes();
-
                     batchItems.add(
                             new SnowballObject(
                                     fileName,
-                                    new ByteArrayInputStream(screenshotBytes),
-                                    screenshotBytes.length,
+                                    data.screenshotIn,
+                                    data.screenshotIn.available(),
                                     null));
                 });
 
