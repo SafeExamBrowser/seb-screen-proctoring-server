@@ -39,9 +39,9 @@ public interface ProctoringService {
     void checkMonitoringSessionAccess(String sessionUUID);
 
     /** Get the recorded image data and metadata at a given point of time.
-     *
+     * <p>
      * If the timestamp is null this returns the data for the last available screenshot
-     *
+     * <p>
      * If there is no screenshot at the exact given timestamp this returns the screenshot on
      * the next previous point of time and if there is no such previous screenshot, this
      * returns the screenshot on the next point in time from the given.

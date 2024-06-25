@@ -12,4 +12,5 @@ public interface ExamDAO extends ActivatableEntityDAO<Exam, Exam> {
 
     Result<Collection<Exam>> pksByExamName(final FilterMap filterMap);
 
+    boolean isExamRunning(Long examId);
 }

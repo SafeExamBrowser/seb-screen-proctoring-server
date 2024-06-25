@@ -50,7 +50,7 @@ public class ClientAccessServiceImpl implements ClientAccessService {
     @Override
     public Result<ClientDetails> getClientDetails(final String clientName) {
         return this.clientAccessDAO
-                .getEncodedClientPWD(clientName)
+                .getEncodedClientPWD(clientName, true)
                 .map(encodedSecret -> getClientDetails(clientName, encodedSecret));
     }
 

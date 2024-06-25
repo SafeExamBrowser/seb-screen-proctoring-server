@@ -279,7 +279,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO, OwnedEntityDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<CharSequence> getEncodedClientPWD(final String clientId) {
+    public Result<CharSequence> getEncodedClientPWD(final String clientId, boolean checkActive) {
         return Result.tryCatch(() -> {
 
             final List<ClientAccessRecord> execute = this.clientAccessRecordMapper
@@ -295,7 +295,13 @@ public class ClientAccessDAOBatis implements ClientAccessDAO, OwnedEntityDAO {
                 throw new IllegalStateException("Expected one client but found more for: " + clientId);
             }
 
-            return execute.get(0).getClientSecret();
+            ClientAccessRecord clientAccessRecord = execute.get(0);
+
+            if (checkActive && clientAccessRecord.getTerminationTime() != null) {
+                throw new IllegalStateException("Expected Client Access to be active but is not: " + clientId);
+            }
+
+            return clientAccessRecord.getClientSecret();
         });
 
     }

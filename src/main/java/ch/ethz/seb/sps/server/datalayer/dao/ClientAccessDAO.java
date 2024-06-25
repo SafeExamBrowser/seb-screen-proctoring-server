@@ -13,6 +13,6 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface ClientAccessDAO extends ActivatableEntityDAO<ClientAccess, ClientAccess> {
 
-    public Result<CharSequence> getEncodedClientPWD(String clientId);
+    public Result<CharSequence> getEncodedClientPWD(String clientId, boolean checkActive);
 
 }

@@ -140,9 +140,9 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 postParams.getStringSet(Exam.ATTR_USER_IDS),
                 null,
                 null,
+                null,
                 postParams.getLong(EXAM.ATTR_START_TIME),
-                postParams.getLong(EXAM.ATTR_END_TIME),
-                null);
+                postParams.getLong(EXAM.ATTR_END_TIME));
     }
 
     @Override
@@ -179,9 +179,9 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 modifyData.userIds,
                 null,
                 null,
+                null,
                 modifyData.startTime,
-                modifyData.endTime,
-                null);
+                modifyData.endTime);
     }
 
     @Override

@@ -11,6 +11,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.model.AdditionalAttributeRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.*;
 import ch.ethz.seb.sps.utils.Constants;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.springframework.stereotype.Service;
@@ -210,6 +211,27 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     .map(this::toDomainModel)
                     .collect(Collectors.toList());
         });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isExamRunning(Long examId) {
+        try {
+            ExamRecord examRecord = recordByPK(examId).getOrThrow();
+            long now = Utils.getMillisecondsNow();
+            Long startTimeMilli = examRecord.getStartTime();
+            Long endTimeMilli = examRecord.getEndTime();
+            if (startTimeMilli == null && endTimeMilli == null) {
+                return true;
+            }
+
+            assert startTimeMilli != null;
+            return now < startTimeMilli && (endTimeMilli == null || endTimeMilli > now);
+        } catch (Exception e) {
+            log.error("Failed to verify if exam is running: ", e);
+            return false;
+        }
+
     }
 
     @Override

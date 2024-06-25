@@ -10,6 +10,8 @@ package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.UUID;
 
+import ch.ethz.seb.sps.domain.model.service.Group;
+import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringCacheService;
 import ch.ethz.seb.sps.utils.Result;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +42,7 @@ public class AdminSessionController extends EntityController<Session, Session> {
     private static final Logger log = LoggerFactory.getLogger(AdminSessionController.class);
 
     private final GroupDAO groupDAO;
+    private final ExamDAO examDAO;
     private final ProctoringCacheService proctoringCacheService;
 
     public AdminSessionController(
@@ -49,10 +52,12 @@ public class AdminSessionController extends EntityController<Session, Session> {
             final AuditLogDAO auditLogDAO,
             final PaginationService paginationService,
             final BeanValidationService beanValidationService,
+            final ExamDAO examDAO,
             final ProctoringCacheService proctoringCacheService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.groupDAO = groupDAO;
+        this.examDAO = examDAO;
         this.proctoringCacheService = proctoringCacheService;
     }
 
@@ -72,8 +77,26 @@ public class AdminSessionController extends EntityController<Session, Session> {
 
         final String groupId = postParams.getString(Domain.SESSION.ATTR_GROUP_ID);
         final Long groupPK = this.groupDAO.modelIdToPK(groupId);
+        
+        // check group is active, if not --> error response
         if (groupPK == null) {
             throw APIErrorException.ofMissingAttribute(Domain.SESSION.ATTR_GROUP_ID, groupId);
+        }
+        Group group = this.groupDAO.byPK(groupPK).getOrThrow();
+        if (group.terminationTime != null) {
+            throw APIErrorException.ofIllegalState(
+                    Domain.SESSION.ATTR_GROUP_ID,
+                    "Group closed",
+                    groupId);
+        }
+        // also check if exam is running if the group has an exam
+        if (group.exam_id != null) {
+            if (!examDAO.isExamRunning(group.exam_id)) {
+                throw APIErrorException.ofIllegalState(
+                        Domain.SEB_GROUP.ATTR_EXAM_ID,
+                        "Exam not running",
+                        String.valueOf(group.exam_id));
+            }
         }
 
         return new Session(
