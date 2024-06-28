@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.util.Collection;
 
+import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
@@ -81,8 +82,8 @@ public class ProctoringCacheService {
             cacheNames = SESSION_TOKENS_CACHE,
             key = "#groupUUID",
             unless = "#result == null")
-    public Collection<String> getLiveSessionTokens(final String groupUUID, final Long groupId) {
-        final Result<Collection<String>> liveSessions = this.sessionDAO.allLiveSessionUUIDs(groupId);
+    public Collection<String> getLiveSessionTokens(final String groupUUID, final Long groupId, final PageSortOrder sortOrder) {
+        final Result<Collection<String>> liveSessions = this.sessionDAO.allLiveSessionUUIDs(groupId, sortOrder);
         if (liveSessions.hasError()) {
             log.error("Failed to load live sessions for group: {}", groupUUID, liveSessions.getError());
             return null;

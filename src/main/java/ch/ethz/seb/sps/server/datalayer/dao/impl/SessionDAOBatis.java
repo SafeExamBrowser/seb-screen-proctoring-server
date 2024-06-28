@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchSessionMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
@@ -136,13 +137,15 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<String>> allLiveSessionUUIDs(final Long groupId) {
+    public Result<Collection<String>> allLiveSessionUUIDs(final Long groupId, final PageSortOrder sortOrder) {
         return Result.tryCatch(() -> {
             return this.sessionRecordMapper.selectByExample()
                     .where(SessionRecordDynamicSqlSupport.groupId, SqlBuilder.isEqualTo(groupId))
                     .and(SessionRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
-                    //todo: properly implemented sort: SEBSP-131
-                    .orderBy(SessionRecordDynamicSqlSupport.clientName)
+                    .orderBy(sortOrder == PageSortOrder.ASCENDING ?
+                            SessionRecordDynamicSqlSupport.clientName :
+                            SessionRecordDynamicSqlSupport.clientName.descending()
+                    )
                     .build()
                     .execute()
                     .stream()
