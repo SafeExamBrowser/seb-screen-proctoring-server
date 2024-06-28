@@ -147,7 +147,7 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             final Collection<String> liveSessionTokens = this.proctoringCacheService
-                    .getLiveSessionTokens(activeGroup.uuid, activeGroup.id);
+                    .getLiveSessionTokens(activeGroup.uuid, activeGroup.id, sortOrder);
 
             final int liveSessionCount = this.sessionDAO
                     .allLiveSessionCount(activeGroup.id)
@@ -165,7 +165,6 @@ public class ProctoringServiceImpl implements ProctoringService {
             final int pnum = (pageNumber == null || pageNumber < 1) ? 1
                     : ((pageNumber - 1) * pSize > liveSessionTokens.size()) ? 1 : pageNumber;
 
-            //todo: properly implemented sort: SEBSP-131
             final List<String> sessionIdsInOrder = liveSessionTokens
                     .stream()
                     .map(this.proctoringCacheService::getSession)
@@ -402,7 +401,7 @@ public class ProctoringServiceImpl implements ProctoringService {
         if (fully) {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             this.proctoringCacheService
-                    .getLiveSessionTokens(groupUUID, activeGroup.id)
+                    .getLiveSessionTokens(groupUUID, activeGroup.id, PageSortOrder.ASCENDING)
                     .stream()
                     .forEach(this.proctoringCacheService::evictSession);
         }

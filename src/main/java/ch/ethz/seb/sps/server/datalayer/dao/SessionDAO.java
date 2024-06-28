@@ -14,6 +14,7 @@ import java.util.List;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.FilterMap;
+import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Result;
@@ -30,7 +31,7 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
             String clientVersion,
             ImageFormat imageFormat);
 
-    Result<Collection<String>> allLiveSessionUUIDs(Long groupId);
+    Result<Collection<String>> allLiveSessionUUIDs(Long groupId, PageSortOrder sortOrder);
 
     Result<Long> allLiveSessionCount(Long groupId);
 
