@@ -216,17 +216,25 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
     @Override
     @Transactional(readOnly = true)
     public boolean isExamRunning(Long examId) {
+        // Note: Since start-date and end-date are just informational, in SPS
+        //       the termination_time indicated whether an Exam is running or not.
+        //       On SEB Server there are some configurable pre- and post time slices applied to start date and end date
+        //       that means these dates do not indicate a running Exam in all cases. In contrary the termination_time
+        //       can be controlled by SEB Server (or another service) independently of LMS start- and end-time
         try {
-            ExamRecord examRecord = recordByPK(examId).getOrThrow();
-            long now = Utils.getMillisecondsNow();
-            Long startTimeMilli = examRecord.getStartTime();
-            Long endTimeMilli = examRecord.getEndTime();
-            if (startTimeMilli == null && endTimeMilli == null) {
-                return true;
-            }
 
-            assert startTimeMilli != null;
-            return now < startTimeMilli && (endTimeMilli == null || endTimeMilli > now);
+            Long count = this.examRecordMapper
+                    .countByExample()
+                    .where(
+                            ExamRecordDynamicSqlSupport.terminationTime, isNull())
+                    .and(
+                            ExamRecordDynamicSqlSupport.id,
+                            isEqualTo(examId))
+                    .build()
+                    .execute();
+
+            return count >= 1;
+
         } catch (Exception e) {
             log.error("Failed to verify if exam is running: ", e);
             return false;
