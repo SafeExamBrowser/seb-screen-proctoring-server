@@ -68,13 +68,17 @@ public class GroupingServiceImpl implements GroupingService {
         final ScreenshotSearchResult firstScreenshot = screenshotSearchResultList.get(0);
         TimelineGroupData currentGroup = createTimelineGroupData(
                 groupOrder,
-                firstScreenshot.getMetaData().get(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE),
+//                firstScreenshot.getMetaData().get(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE),
+                firstScreenshot.getMetaData().get(API.SCREENSHOT_META_DATA_APPLICATION),
+
                 firstScreenshot);
 
         for (int i = 1; i < screenshotSearchResultList.size(); i++) {
             final ScreenshotSearchResult currentScreenshot = screenshotSearchResultList.get(i);
             final String metadataWindowTitle =
-                    currentScreenshot.getMetaData().get(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE);
+//                    currentScreenshot.getMetaData().get(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE);
+            currentScreenshot.getMetaData().get(API.SCREENSHOT_META_DATA_APPLICATION);
+
 
             if (currentGroup.getGroupName() != null && currentGroup.getGroupName().equals(metadataWindowTitle)) {
                 currentGroup.addItemToScreenshotData(
