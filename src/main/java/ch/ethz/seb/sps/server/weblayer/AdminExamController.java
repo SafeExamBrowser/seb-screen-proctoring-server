@@ -6,9 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
-import ch.ethz.seb.sps.domain.model.EntityType;
-import ch.ethz.seb.sps.server.datalayer.batis.model.AdditionalAttributeRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.AdditionalAttributesDAO;
 import ch.ethz.seb.sps.server.servicelayer.SessionService;
 import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;

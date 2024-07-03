@@ -28,7 +28,6 @@ import ch.ethz.seb.sps.server.datalayer.batis.custommappers.EntityPrivilegeIdMap
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.EntityPrivilegeRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.EntityPrivilegeRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.utils.Result;
@@ -117,9 +116,9 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                     .build()
                     .execute();
 
+            // if we have duplication then just return thr existing one
             if (ids != null && !ids.isEmpty()) {
-                throw new DuplicateEntityException(EntityType.ENTITY_PRIVILEGE, "userUUID",
-                        "for type: " + type + " and id: " + entityId + " and userId: " + userUUID);
+                return this.entityPrivilegeRecordMapper.selectByPrimaryKey(ids.get(0));
             }
 
             final EntityPrivilegeRecord entityPrivilegeRecord = new EntityPrivilegeRecord(

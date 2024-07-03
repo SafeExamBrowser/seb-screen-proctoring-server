@@ -266,8 +266,6 @@ public class UserDAOBatis implements UserDAO {
     public Result<UserInfo> synchronizeUserAccount(final UserMod userData) {
         return Result.tryCatch(() -> {
 
-            checkUniqueMailAddress(userData);
-            checkUniqueUsername(userData);
             // check if user already exists
             final Result<UserRecord> userRecord = this
                     .recordByUUID(userData.uuid)
@@ -275,6 +273,7 @@ public class UserDAOBatis implements UserDAO {
 
             if (userRecord.hasError() && userRecord.getError() instanceof NoResourceFoundException) {
                 // user do not exist yet. create new one with the given attributes
+                checkUniqueUsername(userData);
                 final long now = Utils.getMillisecondsNow();
                 final UserRecord recordToSave = new UserRecord(
                         null,
