@@ -251,9 +251,8 @@ public class UserServiceImpl implements UserService {
                     .getOrThrow();
 
             final Map<EntityType, PrivilegeType> typePrivileges = new EnumMap<>(EntityType.class);
-            userInfo.roles.stream().forEach(role -> {
+            userInfo.roles.forEach(role -> {
                 this.rolePrivileges.get(UserRole.valueOf(role))
-                        .stream()
                         .forEach(p -> typePrivileges.put(p.entityType, p.getHighest()));
             });
 

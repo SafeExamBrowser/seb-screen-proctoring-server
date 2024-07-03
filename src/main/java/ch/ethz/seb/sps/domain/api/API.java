@@ -140,6 +140,8 @@ public final class API {
     public static final String PARAM_FROM_TIME = "fromTime";
     public static final String PARAM_TO_TIME = "toTime";
     public static final String PARAM_DIRECTION = "direction";
+    public static final String PARAM_EXCLUDE_INACTIVE_GROUPS = "excludeInactiveGroups";
+
     public static final String PROCTORING_ENDPOINT = "/proctoring";
     public static final String EXAM_ENDPOINT = "/exam";
     public static final String GROUP_ENDPOINT = "/group";

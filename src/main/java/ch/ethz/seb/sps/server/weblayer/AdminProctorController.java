@@ -104,7 +104,7 @@ public class AdminProctorController {
     }
 
     @Operation(
-            summary = "Get a page of all active groups the requesting user can access for proctoring",
+            summary = "Get a page of all groups the requesting user can access for proctoring",
             description = "Sorting: the sort parameter to sort the list of entities before paging\n"
                     + "the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for\n"
                     + "descending sort order. Note that not all entity-model attribute are suited for sorting while the most\n"
@@ -127,26 +127,23 @@ public class AdminProctorController {
                             name = Page.ATTR_SORT,
                             description = "the sort parameter to sort the list of entities before paging"),
                     @Parameter(
-                            name = "filterCriteria",
-                            description = "Additional filter criterias \n" +
-                                    "For OpenAPI 3 input please use the form: {\"columnName\":\"filterValue\"}",
-                            required = false,
-                            allowEmptyValue = true)
+                            name = API.PARAM_EXCLUDE_INACTIVE_GROUPS,
+                            description = "set to true to exclude inactive groups",
+                            in = ParameterIn.QUERY),
             })
     @RequestMapping(
             path = API.GROUP_ENDPOINT,
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<GroupViewData> getGroup(
+    public Page<GroupViewData> getGroups(
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sort,
-            @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
+            @RequestParam(name = API.PARAM_EXCLUDE_INACTIVE_GROUPS, required = false) final Boolean excludeInactiveGroups,
             final HttpServletRequest request) {
 
-        final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
-        filterMap.putIfAbsent(Group.FILTER_ATTR_ACTIVE, Constants.TRUE_STRING);
+        final FilterMap filterMap = new FilterMap(request);
 
         final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();
         return this.paginationService.getPageOf(

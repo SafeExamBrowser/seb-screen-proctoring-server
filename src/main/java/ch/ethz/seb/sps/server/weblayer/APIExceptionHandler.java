@@ -179,7 +179,9 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
             final ActivationMismatchException ex,
             final WebRequest request) {
 
-        log.info("Activation requested but was already active/inactive: {}", ex.getMessage());
+        if (log.isDebugEnabled()) {
+            log.debug("Activation requested but was already active/inactive: {}", ex.getMessage());
+        }
         return new ResponseEntity<>(null, null, HttpStatus.OK);
     }
 
