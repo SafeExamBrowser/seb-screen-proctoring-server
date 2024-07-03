@@ -43,15 +43,15 @@ public final class API {
 
     }
 
-
     //Note - do not change the value of those strings as they are used in the API!
+    public static final String SCREENSHOT_META_DATA_BROWSER_TITLE = "screenProctoringMetadataBrowser";
     public static final String SCREENSHOT_META_DATA_BROWSER_URL = "screenProctoringMetadataURL";
     public static final String SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE = "screenProctoringMetadataWindowTitle";
     public static final String SCREENSHOT_META_DATA_USER_ACTION = "screenProctoringMetadataUserAction";
     public static final String SCREENSHOT_META_DATA_APPLICATION = "screenProctoringMetadataApplication";
 
-
     public enum ScreenshotMetadataType {
+        BROWSER_TITLE(SCREENSHOT_META_DATA_BROWSER_TITLE),
         BROWSER_URL(SCREENSHOT_META_DATA_BROWSER_URL),
         ACTIVE_WINDOW_TITLE(SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE),
         USER_ACTION(SCREENSHOT_META_DATA_USER_ACTION),
