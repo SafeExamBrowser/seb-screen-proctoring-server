@@ -17,6 +17,7 @@ public class ExamViewData {
 
     @JsonProperty(EXAM.ATTR_NAME)
     public final String name;
+
     @JsonProperty(ATTR_IS_RUNNING)
     public final Boolean isRunning;
 

@@ -20,9 +20,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
+import org.mybatis.dynamic.sql.select.QueryExpressionDSL;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -232,45 +232,48 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
 
         return Result.tryCatch(() -> {
 
-            final Boolean active = filterMap.getBooleanObject(API.ACTIVE_FILTER);
+            final Boolean excludeInactiveGroups = filterMap.getBooleanObject(API.PARAM_EXCLUDE_INACTIVE_GROUPS);
             final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
             final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
-            final List<GroupViewData> result = this.groupViewMapper
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<Collection<GroupViewRecord>>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.groupViewMapper
                     .getGroupsWithExamData()
-
                     .where(
-                            GroupRecordDynamicSqlSupport.terminationTime,
-                            (active != null) ? active ? SqlBuilder.isNull() : SqlBuilder.isNotNull()
-                                    : SqlBuilder.isEqualToWhenPresent(() -> null))
-                    .and(
-                            GroupRecordDynamicSqlSupport.name,
+                            name,
                             isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_NAME)))
                     .and(
-                            GroupRecordDynamicSqlSupport.description,
+                            description,
                             isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_DESCRIPTION)))
                     .and(
                             ExamRecordDynamicSqlSupport.name,
                             isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_EXAM_NAME)))
                     .and(
-                            GroupRecordDynamicSqlSupport.creationTime,
-                            SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                            creationTime,
+                            isGreaterThanOrEqualToWhenPresent(fromTime))
                     .and(
-                            GroupRecordDynamicSqlSupport.creationTime,
-                            SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                            creationTime,
+                            isLessThanOrEqualToWhenPresent(toTime))
                     .and(
-                            GroupRecordDynamicSqlSupport.id,
-                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                            id,
+                            isInWhenPresent((prePredicated == null)
                                     ? Collections.emptyList()
-                                    : prePredicated))
+                                    : prePredicated));
 
+            //if excludeInactiveGroups is set to true only active groups (terminationTime == null) will be included in the result
+            if(excludeInactiveGroups != null && excludeInactiveGroups){
+                queryBuilder = queryBuilder.and(
+                        GroupRecordDynamicSqlSupport.terminationTime,
+                        isNull()
+                );
+            }
+
+            return queryBuilder
                     .build()
                     .execute()
                     .stream()
                     .map(this::toGroupWithExamDomainModel)
                     .collect(Collectors.toList());
-
-            return result;
         });
     }
 
@@ -508,12 +511,8 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     }
 
     @Override
-    public Boolean isExamRunning(final Long examEndTime){
-        if(examEndTime == null){
-            return null;
-        }
-
-        if(examEndTime >= Utils.getMillisecondsNow()){
+    public Boolean isExamRunning(final Long groupTerminationTime){
+        if(groupTerminationTime == null){
             return true;
         }
 
@@ -618,7 +617,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),
-                new ExamViewData(record.getExamUuid(), record.getExamName(), isExamRunning(record.getExamEndTime()), record.getExamStartTime(), record.getExamEndTime()));
+                new ExamViewData(record.getExamUuid(), record.getExamName(), isExamRunning(record.getTerminationTime()), record.getExamStartTime(), record.getExamEndTime()));
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id, final Long examId) {
