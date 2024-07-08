@@ -137,7 +137,7 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<String>> allLiveSessionUUIDs(final Long groupId) {
+    public Result<Collection<String>> allLiveSessionUUIDsByGroupId(final Long groupId) {
         return Result.tryCatch(() -> {
             return this.sessionRecordMapper.selectByExample()
                     .where(SessionRecordDynamicSqlSupport.groupId, SqlBuilder.isEqualTo(groupId))

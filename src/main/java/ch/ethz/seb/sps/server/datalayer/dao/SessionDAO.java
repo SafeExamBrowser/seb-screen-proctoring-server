@@ -15,11 +15,9 @@ import java.util.Set;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.FilterMap;
-import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Result;
-import io.micrometer.core.instrument.Tags;
 
 public interface SessionDAO extends EntityDAO<Session, Session> {
 
@@ -33,7 +31,7 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
             String clientVersion,
             ImageFormat imageFormat);
 
-    Result<Collection<String>> allLiveSessionUUIDs(Long groupId);
+    Result<Collection<String>> allLiveSessionUUIDsByGroupId(Long groupId);
 
     Result<Long> allLiveSessionCount(Long groupId);
 

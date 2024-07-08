@@ -149,7 +149,7 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             final Collection<String> liveSessionTokens = this.proctoringCacheService
-                    .getLiveSessionTokens(activeGroup.id);
+                    .getLiveSessionTokens(activeGroup.uuid);
 
             final int liveSessionCount = this.sessionDAO
                     .allLiveSessionCount(activeGroup.id)
@@ -423,8 +423,7 @@ public class ProctoringServiceImpl implements ProctoringService {
         if (fully) {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             this.proctoringCacheService
-                    .getLiveSessionTokens(activeGroup.id)
-                    .stream()
+                    .getLiveSessionTokens(activeGroup.uuid)
                     .forEach(this.proctoringCacheService::evictSession);
         }
         this.proctoringCacheService.evictGroup(groupUUID);
@@ -556,7 +555,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                 this.clearGroupCache(groupUUID, true);
             } else {
                 Set<Long> updateTimes = this.proctoringCacheService
-                        .getLiveSessionTokens(activeGroup.id)
+                        .getLiveSessionTokens(activeGroup.uuid)
                         .stream()
                         .map(this.proctoringCacheService::getSession)
                         .filter(Objects::nonNull)
@@ -568,9 +567,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                         .getOr(Collections.emptyList())
                         .forEach(this.proctoringCacheService::evictSession);
             }
-
-
-
             lastUpdateTime = now;
         }
     }
