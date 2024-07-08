@@ -420,6 +420,9 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     public void clearGroupCache(final String groupUUID, final boolean fully) {
+
+        log.info("Clear group cache request for group: {}, full cache flush: {}", groupUUID, fully);
+
         if (fully) {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             this.proctoringCacheService
@@ -546,6 +549,7 @@ public class ProctoringServiceImpl implements ProctoringService {
         if (now - lastUpdateTime > this.serviceInfo.getDistributedUpdateInterval()) {
             Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             if (activeGroup == null) {
+                lastUpdateTime = now;
                 return;
             }
 
