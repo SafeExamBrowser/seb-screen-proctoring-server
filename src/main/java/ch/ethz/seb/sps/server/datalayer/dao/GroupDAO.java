@@ -41,5 +41,5 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Collection<Long>> allIdsForExamsIds(Collection<Long> examPKs);
 
-    Boolean isExamRunning(final Long examEndTime);
+    boolean needsUpdate(String groupUUID, Long lastUpdateTime);
 }

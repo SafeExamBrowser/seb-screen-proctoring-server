@@ -190,7 +190,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
             final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
             final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
-            final List<Long> result = this.groupViewMapper
+            final List<Long> result = new ArrayList<>(this.groupViewMapper
                     .getGroupIdsWithExamData()
 
                     .where(
@@ -216,9 +216,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                                     : prePredicated))
 
                     .build()
-                    .execute()
-                    .stream()
-                    .collect(Collectors.toList());
+                    .execute());
 
             return result;
         });
@@ -511,12 +509,21 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     }
 
     @Override
-    public Boolean isExamRunning(final Long groupTerminationTime){
-        if(groupTerminationTime == null){
-            return true;
-        }
+    @Transactional(readOnly = true)
+    public boolean needsUpdate(final String groupUUID, final Long lastUpdateTime) {
+        try {
 
-        return false;
+            Long count = this.groupRecordMapper.countByExample()
+                    .where(uuid, isEqualTo(groupUUID))
+                    .and(GroupRecordDynamicSqlSupport.lastUpdateTime, isEqualTo(lastUpdateTime))
+                    .build()
+                    .execute();
+
+            return count == 0;
+        } catch (Exception e) {
+            log.error("Failed to verify if group needs cache update. Group: {} error: {}", groupUUID, e.getMessage());
+            return false;
+        }
     }
 
     private Result<GroupRecord> recordByPK(final Long pk) {
@@ -617,7 +624,12 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),
-                new ExamViewData(record.getExamUuid(), record.getExamName(), isExamRunning(record.getTerminationTime()), record.getExamStartTime(), record.getExamEndTime()));
+                new ExamViewData(
+                        record.getExamUuid(),
+                        record.getExamName(),
+                        record.getTerminationTime() == null,
+                        record.getExamStartTime(),
+                        record.getExamEndTime()));
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id, final Long examId) {

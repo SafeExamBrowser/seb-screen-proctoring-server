@@ -9,10 +9,7 @@
 package ch.ethz.seb.sps.server.weblayer;
 
 import java.sql.Date;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -37,11 +34,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.domain.api.API.ScreenshotMetadataType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
-import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
@@ -56,7 +51,6 @@ import ch.ethz.seb.sps.server.servicelayer.GroupService;
 import ch.ethz.seb.sps.server.servicelayer.GroupingService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -75,7 +69,6 @@ public class AdminProctorController {
     private static final Logger log = LoggerFactory.getLogger(AdminProctorController.class);
 
     private final Executor downloadExecutor;
-    private final UserService userService;
     private final GroupDAO groupDAO;
     private final ScreenshotDataDAO screenshotDataDAO;
     private final GroupService groupService;
@@ -84,7 +77,6 @@ public class AdminProctorController {
     private final GroupingService groupingService;
 
     public AdminProctorController(
-            final UserService userService,
             final GroupDAO groupDAO,
             final ScreenshotDataDAO screenshotDataDAO,
             final GroupService groupService,
@@ -94,7 +86,6 @@ public class AdminProctorController {
             @Qualifier(value = ServiceConfig.SCREENSHOT_DOWNLOAD_API_EXECUTOR) final Executor downloadExecutor) {
 
         this.downloadExecutor = downloadExecutor;
-        this.userService = userService;
         this.groupDAO = groupDAO;
         this.screenshotDataDAO = screenshotDataDAO;
         this.groupService = groupService;
@@ -233,10 +224,10 @@ public class AdminProctorController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ScreenshotViewData getScreenhotViewData(
+    public ScreenshotViewData getScreenshotViewData(
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID) {
 
-        return getScreenhotViewData(sessionUUID, null);
+        return getScreenshotViewData(sessionUUID, null);
     }
 
     @Operation(
@@ -260,7 +251,7 @@ public class AdminProctorController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ScreenshotViewData getScreenhotViewData(
+    public ScreenshotViewData getScreenshotViewData(
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
             @PathVariable(name = API.PARAM_TIMESTAMP, required = true) final String timestamp) {
 
@@ -271,7 +262,7 @@ public class AdminProctorController {
             try {
                 ts = Long.valueOf(timestamp);
             } catch (final Exception e) {
-                throw new BadRequestException("getScreenhotViewData", "Failed to parse timestamp: " + timestamp);
+                throw new BadRequestException("getScreenshotViewData", "Failed to parse timestamp: " + timestamp);
             }
         }
 
@@ -346,7 +337,7 @@ public class AdminProctorController {
                         this.proctoringService.streamScreenshot(
                                 sessionUUID,
                                 (StringUtils.isNotBlank(timestamp)) ? Long.parseLong(timestamp) : null,
-                                mimeType -> response.setContentType(mimeType),
+                                response::setContentType,
                                 response.getOutputStream());
 
                         response.setStatus(HttpStatus.OK.value());
@@ -774,11 +765,14 @@ public class AdminProctorController {
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
             @PathVariable(name = API.PARAM_TIMESTAMP, required = true) final String timestamp,
             @PathVariable(name = API.PARAM_DIRECTION, required = true) final PageSortOrder sortOrder){
-        return this.screenshotDataDAO
-                .getScreenshotTimestamps(sessionUUID, (StringUtils.isNotBlank(timestamp)) ? Long.parseLong(timestamp) : null, sortOrder)
-                .getOrThrow()
-                .stream()
-                .collect(Collectors.toList());
+        return new ArrayList<>(this.screenshotDataDAO
+                .getScreenshotTimestamps(
+                        sessionUUID,
+                        (StringUtils.isNotBlank(timestamp))
+                                ? Long.parseLong(timestamp)
+                                : null,
+                        sortOrder)
+                .getOrThrow());
     }
 
     private void preProcessGroupCriteria(final FilterMap filterMap) {

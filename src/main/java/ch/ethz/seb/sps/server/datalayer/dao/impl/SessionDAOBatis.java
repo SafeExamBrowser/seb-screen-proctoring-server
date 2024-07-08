@@ -245,6 +245,31 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
+    public Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Set<Long> updateTimes) {
+        return Result.tryCatch(() -> {
+
+            List<Long> idsForUpdate = this.sessionRecordMapper
+                    .selectIdsByExample()
+                    .where(SessionRecordDynamicSqlSupport.groupId, isEqualTo(groupId))
+                    .and(SessionRecordDynamicSqlSupport.lastUpdateTime, isNotIn(updateTimes))
+                    .build()
+                    .execute();
+
+            if (idsForUpdate != null && !idsForUpdate.isEmpty()) {
+                return sessionRecordMapper.selectByExample()
+                        .where(SessionRecordDynamicSqlSupport.id, isIn(idsForUpdate))
+                        .build()
+                        .execute()
+                        .stream()
+                        .map(SessionRecord::getUuid)
+                        .collect(Collectors.toList());
+            }
+
+            return Collections.emptyList();
+        });
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Result<Collection<Session>> allMatching(
             final FilterMap filterMap,

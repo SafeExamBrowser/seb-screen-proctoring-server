@@ -154,7 +154,7 @@ public class ServiceInfo {
         this.distributedUpdateInterval = environment.getProperty(
                 "sps.webservice.distributed.updateInterval",
                 Long.class,
-                2000L);
+                5000L);
 
         this.isSEBServerBundle = BooleanUtils.toBoolean(environment.getProperty(
                 "sps.webservice.sebserver.bundle",

@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.server.servicelayer;
 
+import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Result;

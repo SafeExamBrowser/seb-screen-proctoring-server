@@ -11,6 +11,7 @@ package ch.ethz.seb.sps.server.datalayer.dao;
 import java.sql.Date;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.FilterMap;
@@ -18,6 +19,7 @@ import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Result;
+import io.micrometer.core.instrument.Tags;
 
 public interface SessionDAO extends EntityDAO<Session, Session> {
 
@@ -48,4 +50,6 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
     Result<Boolean> hasAnySessionData(Collection<Long> groupIds);
 
     Result<List<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap);
+
+    Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Set<Long> updateTimes);
 }

@@ -18,6 +18,8 @@ public class ExamViewData {
     @JsonProperty(EXAM.ATTR_NAME)
     public final String name;
 
+    // TODO Use termination_time here instead of isRunning
+    //      If an Exam should be shown to the user (isRunning) depends then on user view (roles and privileges)
     @JsonProperty(ATTR_IS_RUNNING)
     public final Boolean isRunning;
 

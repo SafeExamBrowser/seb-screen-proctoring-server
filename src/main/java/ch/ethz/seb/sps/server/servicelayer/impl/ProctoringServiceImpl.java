@@ -11,14 +11,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -185,7 +178,7 @@ public class ProctoringServiceImpl implements ProctoringService {
             ExamViewData examViewData = ExamViewData.EMPTY_MODEL;
             if (activeGroup.getExam_id() != null) {
                 final Exam exam = this.examDAO.byModelId(activeGroup.exam_id.toString()).getOr(null);
-                examViewData = new ExamViewData(exam.uuid, exam.name, this.groupDAO.isExamRunning(activeGroup.terminationTime), exam.startTime, exam.endTime);
+                examViewData = new ExamViewData(exam.uuid, exam.name, activeGroup.terminationTime != null, exam.startTime, exam.endTime);
             }
 
             return new ScreenshotsInGroupData(
@@ -256,6 +249,21 @@ public class ProctoringServiceImpl implements ProctoringService {
         return this.sessionDAO
                 .queryMatchingDaysForSessionSearch(filterMap)
                 .map(data -> this.createSessionDaySearchResult(data, filterMap));
+    }
+
+    @Override
+    public Result<Exam> updateCacheForExam(Exam exam) {
+        return Result.tryCatch(() -> {
+            this.groupDAO
+                    .allIdsForExamsIds(Collections.singletonList(exam.id))
+                    .getOrThrow()
+                    .stream()
+                    .map(gid -> groupDAO.byPK(gid).getOr(null))
+                    .filter(Objects::nonNull)
+                    .forEach(group -> this.clearGroupCache(group.uuid, false));
+
+            return exam;
+        });
     }
 
     @Override
@@ -523,8 +531,32 @@ public class ProctoringServiceImpl implements ProctoringService {
     private void updateSessionCache(String groupUUID) {
         long now = Utils.getMillisecondsNow();
         if (now - lastUpdateTime > this.serviceInfo.getDistributedUpdateInterval()) {
-            // TODO instead of evict the while cache, check updates on session and make it per outdated session
-            this.clearGroupCache(groupUUID, true);
+            Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
+            if (activeGroup == null) {
+                return;
+            }
+
+            proctoringCacheService.evictSessionTokens(groupUUID);
+
+            if (this.groupDAO.needsUpdate(groupUUID, activeGroup.lastUpdateTime)) {
+                this.clearGroupCache(groupUUID, true);
+            } else {
+                Set<Long> updateTimes = this.proctoringCacheService
+                        .getLiveSessionTokens(groupUUID, activeGroup.id, null)
+                        .stream()
+                        .map(this.proctoringCacheService::getSession)
+                        .filter(Objects::nonNull)
+                        .map(s -> s.lastUpdateTime)
+                        .collect(Collectors.toSet());
+
+                this.sessionDAO
+                        .allTokensThatNeedsUpdate(activeGroup.id, updateTimes)
+                        .getOr(Collections.emptyList())
+                        .forEach(this.proctoringCacheService::evictSession);
+            }
+
+
+
             lastUpdateTime = now;
         }
     }

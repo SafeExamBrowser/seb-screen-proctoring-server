@@ -10,12 +10,7 @@ package ch.ethz.seb.sps.server.servicelayer;
 
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
-import ch.ethz.seb.sps.domain.model.service.Group;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
-import ch.ethz.seb.sps.domain.model.service.Session;
-import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
+import ch.ethz.seb.sps.domain.model.service.*;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.utils.Result;
 
@@ -89,4 +84,6 @@ public interface ProctoringService {
     Result<Collection<ScreenshotSearchResult>> searchScreenshots(final FilterMap filterMap);
 
     Result<List<Date>> queryMatchingDaysForSessionSearch(FilterMap filterMap);
+
+    Result<Exam> updateCacheForExam(Exam exam);
 }

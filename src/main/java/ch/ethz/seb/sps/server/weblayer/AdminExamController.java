@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
-import ch.ethz.seb.sps.server.servicelayer.SessionService;
+import ch.ethz.seb.sps.server.servicelayer.*;
 import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import org.mybatis.dynamic.sql.SqlTable;
@@ -24,9 +24,6 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
-import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
-import ch.ethz.seb.sps.server.servicelayer.PaginationService;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,6 +37,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
 
     private final GroupDAO groupDAO;
     private final SessionService sessionService;
+    private final ProctoringService proctoringService;
 
     public AdminExamController(
             final UserService userService,
@@ -48,11 +46,13 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             final PaginationService paginationService,
             final BeanValidationService beanValidationService,
             final GroupDAO groupDAO,
-            final SessionService sessionService) {
+            final SessionService sessionService,
+            final ProctoringService proctoringService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.groupDAO = groupDAO;
         this.sessionService = sessionService;
+        this.proctoringService = proctoringService;
     }
 
     @Operation(
@@ -155,7 +155,9 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     }
 
     private Exam updateEntityPrivileges(Exam entity) {
-        this.userService.applyExamPrivileges(entity)
+        this.userService
+                .applyExamPrivileges(entity)
+                .flatMap(exam -> this.proctoringService.updateCacheForExam(entity))
                 .onError(error -> log.error(
                         "Failed to update entity privileges for exam: {}",
                         entity,
