@@ -82,10 +82,10 @@ public class ProctoringCacheService {
             cacheNames = SESSION_TOKENS_CACHE,
             key = "#groupUUID",
             unless = "#result == null")
-    public Collection<String> getLiveSessionTokens(final String groupUUID, final Long groupId, final PageSortOrder sortOrder) {
-        final Result<Collection<String>> liveSessions = this.sessionDAO.allLiveSessionUUIDs(groupId, sortOrder);
+    public Collection<String> getLiveSessionTokens(final Long groupId) {
+        final Result<Collection<String>> liveSessions = this.sessionDAO.allLiveSessionUUIDs(groupId);
         if (liveSessions.hasError()) {
-            log.error("Failed to load live sessions for group: {}", groupUUID, liveSessions.getError());
+            log.error("Failed to load live sessions for group: {}", groupId, liveSessions.getError());
             return null;
         } else {
             return liveSessions.get();

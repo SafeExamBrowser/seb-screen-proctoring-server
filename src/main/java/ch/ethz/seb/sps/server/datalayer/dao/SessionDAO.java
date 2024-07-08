@@ -33,7 +33,7 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
             String clientVersion,
             ImageFormat imageFormat);
 
-    Result<Collection<String>> allLiveSessionUUIDs(Long groupId, PageSortOrder sortOrder);
+    Result<Collection<String>> allLiveSessionUUIDs(Long groupId);
 
     Result<Long> allLiveSessionCount(Long groupId);
 

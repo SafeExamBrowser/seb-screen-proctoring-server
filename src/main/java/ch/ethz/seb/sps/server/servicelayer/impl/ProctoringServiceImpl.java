@@ -11,7 +11,16 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Date;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -140,7 +149,7 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             final Collection<String> liveSessionTokens = this.proctoringCacheService
-                    .getLiveSessionTokens(activeGroup.uuid, activeGroup.id, sortOrder);
+                    .getLiveSessionTokens(activeGroup.id);
 
             final int liveSessionCount = this.sessionDAO
                     .allLiveSessionCount(activeGroup.id)
@@ -161,6 +170,11 @@ public class ProctoringServiceImpl implements ProctoringService {
             final List<String> sessionIdsInOrder = liveSessionTokens
                     .stream()
                     .map(this.proctoringCacheService::getSession)
+                    .sorted(
+                            sortOrder == PageSortOrder.ASCENDING ?
+                            Comparator.comparing(Session::getClientName) :
+                            Comparator.comparing(Session::getClientName).reversed()
+                    ) // sort by client name
                     .skip((long) (pnum - 1) * pSize)
                     .limit(pSize)
                     .map(Session::getUuid)
@@ -409,7 +423,7 @@ public class ProctoringServiceImpl implements ProctoringService {
         if (fully) {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             this.proctoringCacheService
-                    .getLiveSessionTokens(groupUUID, activeGroup.id, PageSortOrder.ASCENDING)
+                    .getLiveSessionTokens(activeGroup.id)
                     .stream()
                     .forEach(this.proctoringCacheService::evictSession);
         }
@@ -542,7 +556,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                 this.clearGroupCache(groupUUID, true);
             } else {
                 Set<Long> updateTimes = this.proctoringCacheService
-                        .getLiveSessionTokens(groupUUID, activeGroup.id, null)
+                        .getLiveSessionTokens(activeGroup.id)
                         .stream()
                         .map(this.proctoringCacheService::getSession)
                         .filter(Objects::nonNull)
