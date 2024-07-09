@@ -408,13 +408,23 @@ public class AdminProctorController {
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
+                            name = API.SCREENSHOT_META_DATA_APPLICATION,
+                            description = "The search filter criteria for screenshot application metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_BROWSER_TITLE,
+                            description = "The search filter criteria for browser title metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
                             name = API.SCREENSHOT_META_DATA_BROWSER_URL,
                             description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
                             name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
-                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            description = "The search filter criteria for screenshot active window title metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
@@ -523,13 +533,23 @@ public class AdminProctorController {
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
+                            name = API.SCREENSHOT_META_DATA_APPLICATION,
+                            description = "The search filter criteria for screenshot application metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_BROWSER_TITLE,
+                            description = "The search filter criteria for browser title metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
                             name = API.SCREENSHOT_META_DATA_BROWSER_URL,
                             description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
                             name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
-                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            description = "The search filter criteria for screenshot active window title metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
@@ -616,13 +636,23 @@ public class AdminProctorController {
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
+                            name = API.SCREENSHOT_META_DATA_APPLICATION,
+                            description = "The search filter criteria for screenshot application metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_BROWSER_TITLE,
+                            description = "The search filter criteria for browser title metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
                             name = API.SCREENSHOT_META_DATA_BROWSER_URL,
                             description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
                             name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
-                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            description = "The search filter criteria for screenshot active window title metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
@@ -709,13 +739,23 @@ public class AdminProctorController {
                             description = "The UUID of the session to get the timeline group data for",
                             required = true),
                     @Parameter(
+                            name = API.SCREENSHOT_META_DATA_APPLICATION,
+                            description = "The search filter criteria for screenshot application metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_BROWSER_TITLE,
+                            description = "The search filter criteria for browser title metadata. This is used for full-text search in screenshot meta data",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
                             name = API.SCREENSHOT_META_DATA_BROWSER_URL,
                             description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
                             name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
-                            description = "The search filter criteria for screenshot browser URL metadata. This is used for full-text search in screenshot meta data",
+                            description = "The search filter criteria for screenshot active window title metadata. This is used for full-text search in screenshot meta data",
                             in = ParameterIn.QUERY,
                             required = false),
                     @Parameter(
