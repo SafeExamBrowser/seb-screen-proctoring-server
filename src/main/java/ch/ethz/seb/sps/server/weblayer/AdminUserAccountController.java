@@ -151,7 +151,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
 
         checkAdminRole();
 
-        log.info("User synchronization request received for user: {}", userMod);
+        log.info("User synchronization request received for user: {}", userMod.uuid);
 
         return this.userService
                 .synchronizeUserAccount(userMod)

@@ -72,8 +72,8 @@ public class ProctoringCacheService {
             cacheNames = { ACTIVE_GROUP_CACHE, SESSION_TOKENS_CACHE },
             key = "#groupUUID")
     public void evictGroup(final String groupUUID) {
-        if (log.isTraceEnabled()) {
-            log.trace("Eviction of running group from cache: {}", groupUUID);
+        if (log.isDebugEnabled()) {
+            log.debug("Eviction of running group from cache: {}", groupUUID);
         }
     }
 
@@ -121,8 +121,8 @@ public class ProctoringCacheService {
             cacheNames = ACTIVE_SESSION_CACHE,
             key = "#sessionUUID")
     public void evictSession(final String sessionUUID) {
-        if (log.isTraceEnabled()) {
-            log.trace("Eviction of session from cache, sesisonId: {}", sessionUUID);
+        if (log.isDebugEnabled()) {
+            log.debug("Eviction of session from cache, sessionUUID: {}", sessionUUID);
         }
     }
 
