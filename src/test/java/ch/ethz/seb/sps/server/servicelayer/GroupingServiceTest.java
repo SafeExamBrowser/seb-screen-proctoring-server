@@ -10,7 +10,6 @@ import ch.ethz.seb.sps.domain.model.service.TimelineScreenshotData;
 import ch.ethz.seb.sps.domain.model.service.TimelineViewData;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.impl.ScreenshotDataDAOBatis;
 import ch.ethz.seb.sps.server.servicelayer.impl.GroupingServiceImpl;
 import ch.ethz.seb.sps.utils.Result;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,11 +37,11 @@ public class GroupingServiceTest {
 
     private static final String SESSION_UUID = "SESSION_UUID";
     private static final Long TIMESTAMP = 123456789L;
-    private static final String GROUP_NAME1 = "Moodle Page 1";
-    private static final String GROUP_NAME2 = "Moodle Page 2";
-    private static final String METADATA_KEY = "screenProctoringMetadataWindowTitle";
-    private static final String METADATA_WINDOW_TITLE_VALUE1 = "Moodle Page 1";
-    private static final String METADATA_WINDOW_TITLE_VALUE2 = "Moodle Page 2";
+    private static final String GROUP_NAME1 = "SafeExamBrowser.Client.exe (SafeExamBrowser.Client.exe, 2bc82fe8e56a39f96bc6c4b91d6703a0379b76a2)";
+    private static final String GROUP_NAME2 = "calc1.exe (CALC.EXE.MUI)";
+    private static final String METADATA_KEY = "screenProctoringMetadataApplication";
+    private static final String METADATA_APPLICATION_VALUE1 = "SafeExamBrowser.Client.exe (SafeExamBrowser.Client.exe, 2bc82fe8e56a39f96bc6c4b91d6703a0379b76a2)";
+    private static final String METADATA_APPLICATION_VALUE2 = "calc1.exe (CALC.EXE.MUI)";
 
 
     @Mock
@@ -125,12 +124,12 @@ public class GroupingServiceTest {
     }
 
     private List<TimelineScreenshotData> createScreenshotDataListGroup1(){
-        return createScreenshotDataList(METADATA_WINDOW_TITLE_VALUE1);
+        return createScreenshotDataList(METADATA_APPLICATION_VALUE1);
 
     }
 
     private List<TimelineScreenshotData> createScreenshotDataListGroup2(){
-        return createScreenshotDataList(METADATA_WINDOW_TITLE_VALUE2);
+        return createScreenshotDataList(METADATA_APPLICATION_VALUE2);
     }
 
     private List<TimelineScreenshotData> createScreenshotDataList(String metadataValue){
@@ -171,14 +170,14 @@ public class GroupingServiceTest {
     private Collection<ScreenshotSearchResult> screenshotSearchResultCollection(){
         return new ArrayList<>(
                 List.of(
-                        createScreenshotSearchResult(GROUP_NAME1, METADATA_WINDOW_TITLE_VALUE1),
-                        createScreenshotSearchResult(GROUP_NAME2, METADATA_WINDOW_TITLE_VALUE1),
-                        createScreenshotSearchResult(GROUP_NAME1, METADATA_WINDOW_TITLE_VALUE2),
-                        createScreenshotSearchResult(GROUP_NAME2, METADATA_WINDOW_TITLE_VALUE2),
-                        createScreenshotSearchResult(GROUP_NAME1, METADATA_WINDOW_TITLE_VALUE1),
-                        createScreenshotSearchResult(GROUP_NAME2, METADATA_WINDOW_TITLE_VALUE1),
-                        createScreenshotSearchResult(GROUP_NAME1, METADATA_WINDOW_TITLE_VALUE2),
-                        createScreenshotSearchResult(GROUP_NAME2, METADATA_WINDOW_TITLE_VALUE2)
+                        createScreenshotSearchResult(GROUP_NAME1, METADATA_APPLICATION_VALUE1),
+                        createScreenshotSearchResult(GROUP_NAME2, METADATA_APPLICATION_VALUE1),
+                        createScreenshotSearchResult(GROUP_NAME1, METADATA_APPLICATION_VALUE2),
+                        createScreenshotSearchResult(GROUP_NAME2, METADATA_APPLICATION_VALUE2),
+                        createScreenshotSearchResult(GROUP_NAME1, METADATA_APPLICATION_VALUE1),
+                        createScreenshotSearchResult(GROUP_NAME2, METADATA_APPLICATION_VALUE1),
+                        createScreenshotSearchResult(GROUP_NAME1, METADATA_APPLICATION_VALUE2),
+                        createScreenshotSearchResult(GROUP_NAME2, METADATA_APPLICATION_VALUE2)
                 )
         );
     }
