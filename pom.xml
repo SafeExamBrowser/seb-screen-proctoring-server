@@ -16,7 +16,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <seb-sps-version>0.1-SNAPSHOT</seb-sps-version>
+        <seb-sps-version>1.0-SNAPSHOT</seb-sps-version>
         <build-version>${seb-sps-version}</build-version>
         <revision>${seb-sps-version}</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
