@@ -14,6 +14,7 @@ import ch.ethz.seb.sps.domain.model.Entity;
 
 public final class API {
 
+
     public enum UserRole {
         ADMIN,
         PROCTOR,
@@ -121,7 +122,7 @@ public final class API {
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 
     public static final String ADMIN_SESSION_ENDPOINT = "/session";
-
+    public static final String ACTIVE_COUNTS_ENDPOINT = "/active_counts";
     public static final String GROUP_HEADER_UUID = "seb_group_uuid";
     public static final String SESSION_HEADER_UUID = "seb_session_uuid";
     public static final String SESSION_HEADER_SEB_USER_NAME = "seb_user_name";

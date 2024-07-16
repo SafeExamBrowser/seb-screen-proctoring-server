@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import ch.ethz.seb.sps.domain.model.service.GroupViewData;
+import ch.ethz.seb.sps.domain.model.service.*;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,15 +39,7 @@ import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
-import ch.ethz.seb.sps.domain.model.service.Exam;
-import ch.ethz.seb.sps.domain.model.service.ExamViewData;
-import ch.ethz.seb.sps.domain.model.service.Group;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
-import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
-import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
 import ch.ethz.seb.sps.server.ServiceInfo;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
@@ -100,7 +92,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public void checkMonitroingAccess(final String groupUUID) {
+    public void checkMonitoringAccess(final String groupUUID) {
         final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
         if (activeGroup == null) {
             throw APIErrorException.notFound(EntityType.SEB_GROUP, groupUUID, "Group doesn't exist or is not active");
@@ -151,11 +143,14 @@ public class ProctoringServiceImpl implements ProctoringService {
             final Collection<String> liveSessionTokens = this.proctoringCacheService
                     .getLiveSessionTokens(activeGroup.uuid);
 
-            final int liveSessionCount = this.sessionDAO
-                    .allLiveSessionCount(activeGroup.id)
-                    .onError(error -> log.warn("Failed to count live sessions for group: {} message {}", groupUUID, error.getMessage()))
-                    .getOr(-1L)
-                    .intValue();
+
+            final int liveSessionCount = liveSessionTokens.size();
+            // TODO this should be equals to liveSessionTokens.size() so we don't need an extra DB call here
+//            final int liveSessionCount = this.sessionDAO
+//                    .allLiveSessionCount(activeGroup.id)
+//                    .onError(error -> log.warn("Failed to count live sessions for group: {} message {}", groupUUID, error.getMessage()))
+//                    .getOr(-1L)
+//                    .intValue();
 
             final int sessionCount = this.sessionDAO.allSessionCount(activeGroup.id)
                     .onError(error -> log.warn("Failed to count sessions for group: {} message {}", groupUUID, error.getMessage()))
@@ -376,6 +371,27 @@ public class ProctoringServiceImpl implements ProctoringService {
         }
 
         return metaData;
+    }
+
+    @Override
+    public Result<Collection<GroupSessionCount>> getActivateGroupSessionCounts() {
+        return Result.tryCatch(() -> {
+            this.userService.check(PrivilegeType.READ, EntityType.SEB_GROUP);
+
+            return this.groupDAO
+                    .activeGroupUUIDs()
+                    .getOrThrow()
+                    .stream()
+                    .map(this.proctoringCacheService::getActiveGroup)
+                    .filter(Objects::nonNull)
+                    .map(group -> new GroupSessionCount(
+                            group.uuid,
+                            this.proctoringCacheService.getLiveSessionTokens(group.uuid).size(),
+                            this.sessionDAO.allSessionCount(group.id)
+                                    .getOr(-1L).intValue()
+                    ))
+                    .collect(Collectors.toSet());
+        });
     }
 
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {

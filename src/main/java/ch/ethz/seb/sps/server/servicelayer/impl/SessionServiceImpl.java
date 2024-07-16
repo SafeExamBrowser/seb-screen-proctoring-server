@@ -8,11 +8,12 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import ch.ethz.seb.sps.domain.model.service.Exam;
+import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,6 +145,24 @@ public class SessionServiceImpl implements SessionService {
                     }
                     return sessionUUID;
                 });
+    }
+
+    @Override
+    public Result<Collection<EntityKey>> closeAllSessions(Collection<EntityKey> groupKeys) {
+        return Result.tryCatch(() -> {
+            Collection<EntityKey> result = new ArrayList<>(groupKeys);
+            groupKeys.forEach(groupKey -> {
+
+                this.sessionDAO
+                        .closeAllSessionsForGroup(this.groupDAO.modelIdToPK(groupKey.modelId))
+                        .onError(error -> log.warn(
+                                "Failed to close SEB sessions for group: {} error: {}",
+                                groupKey,
+                                error.getMessage()))
+                        .onSuccess(result::addAll);
+            });
+            return result;
+        });
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
+import ch.ethz.seb.sps.domain.model.service.GroupSessionCount;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,10 +104,15 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
         this.sessionDAO
                 .closeAllSessionsForGroup(entity.id)
                 .onError(
-                        error -> log.error("Failed to apply close on all sessions of group: {}", entity, error))
+                        error -> log.error(
+                                "Failed to apply close on all sessions of group: {}",
+                                entity,
+                                error))
                 .onSuccess(
-                        keys -> log.info("Successfully apply close to all sessions of group: {}, {}", entity, keys));
-
+                        keys -> log.info(
+                                "Successfully apply close to all sessions of group: {}, {}",
+                                entity,
+                                keys));
         return entity;
     }
 

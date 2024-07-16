@@ -526,6 +526,17 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<String>> activeGroupUUIDs() {
+        return Result.tryCatch(() -> this.groupRecordMapper.selectByExample()
+                    .where(terminationTime, isNull())
+                    .build()
+                    .execute()
+                    .stream().map(GroupRecord::getUuid)
+                    .collect(Collectors.toSet()));
+    }
+
     private Result<GroupRecord> recordByPK(final Long pk) {
         return Result.tryCatch(() -> {
 

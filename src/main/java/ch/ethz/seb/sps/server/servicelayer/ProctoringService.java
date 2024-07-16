@@ -25,12 +25,12 @@ public interface ProctoringService {
 
     /** Check current users monitoring access for given groupUUID
      *
-     * @param groupUUID */
-    void checkMonitroingAccess(String groupUUID);
+     * @param groupUUID the groups UUID */
+    void checkMonitoringAccess(String groupUUID);
 
     /** Check current users monitoring access for given sessionUUID
      *
-     * @param sessionUUID */
+     * @param sessionUUID the sessions UUID */
     void checkMonitoringSessionAccess(String sessionUUID);
 
     /** Get the recorded image data and metadata at a given point of time.
@@ -62,6 +62,10 @@ public interface ProctoringService {
             Map<String, Session> sessionCache);
 
     Map<String, String> extractedMetaData(ScreenshotDataRecord data);
+
+    /** Gets through all active groups and counts active and total session for these groups.
+     * @return Result refer to collection of all group session counts or to an error when happened */
+    Result<Collection<GroupSessionCount>> getActivateGroupSessionCounts();
 
     void streamScreenshot(
             String sessionUUID,

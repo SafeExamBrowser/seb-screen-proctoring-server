@@ -116,11 +116,25 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
 
         this.groupDAO
                 .applyActivationForAllOfExam(entity.id, activation)
+                .map(groupKeys -> {
+                    if (!activation) {
+                        // if deactivation also deactivate all sessions of groups
+                        this.sessionService
+                                .closeAllSessions(groupKeys)
+                                .getOrThrow();
+                    }
+                    return groupKeys;
+                })
                 .onError(
-                        error -> log.error("Failed to apply activation on all groups of exam: {}", entity, error))
+                        error -> log.error(
+                                "Failed to apply activation on all groups of exam: {}",
+                                entity,
+                                error))
                 .onSuccess(
-                        keys -> log.info("Successfully apply activation to all groups of exam: {}, {}", entity, keys));
-
+                        keys -> log.info(
+                                "Successfully apply activation to all groups of exam: {}, {}",
+                                entity,
+                                keys));
         return entity;
     }
 

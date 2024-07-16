@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
+import ch.ethz.seb.sps.domain.model.service.*;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -37,11 +37,6 @@ import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
-import ch.ethz.seb.sps.domain.model.service.GroupViewData;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
-import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
-import ch.ethz.seb.sps.domain.model.service.TimelineViewData;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
@@ -92,6 +87,18 @@ public class AdminProctorController {
         this.paginationService = paginationService;
         this.proctoringService = proctoringService;
         this.groupingService = groupingService;
+    }
+
+    @RequestMapping(
+            path = API.ACTIVE_COUNTS_ENDPOINT,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<GroupSessionCount> getActivateGroupSessionCounts() {
+        return this.proctoringService
+                .getActivateGroupSessionCounts()
+                .getOrThrow();
+
     }
 
     @Operation(
@@ -201,7 +208,7 @@ public class AdminProctorController {
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
 
-        this.proctoringService.checkMonitroingAccess(groupUUID);
+        this.proctoringService.checkMonitoringAccess(groupUUID);
 
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
         return this.proctoringService
