@@ -490,7 +490,7 @@ public class SessionDAOBatis implements SessionDAO {
             UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
                     .set(lastUpdateTime).equalTo(now)
                     .set(terminationTime).equalTo(now)
-                    .where(groupId, isIn(pks))
+                    .where(id, isIn(pks))
                     .build()
                     .execute();
 

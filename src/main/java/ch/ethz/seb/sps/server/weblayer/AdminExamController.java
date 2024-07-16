@@ -133,7 +133,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 .onSuccess(
                         keys -> log.info(
                                 "Successfully apply activation to all groups of exam: {}, {}",
-                                entity,
+                                entity.uuid,
                                 keys));
         return entity;
     }

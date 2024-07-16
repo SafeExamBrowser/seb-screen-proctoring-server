@@ -90,7 +90,6 @@ public class S3DAO {
     }
 
     public Result<ObjectWriteResponse> uploadItem(final ByteArrayInputStream screenshotInputStream, final String sessionUUID, final Long pk){
-        System.out.println(screenshotInputStream.available());
         return Result.tryCatch(() ->
             this.minioClient.putObject(
                         PutObjectArgs.builder()
@@ -205,8 +204,6 @@ public class S3DAO {
             LifecycleConfiguration config =
                     minioClient.getBucketLifecycle(
                             GetBucketLifecycleArgs.builder().bucket(BUCKET_NAME).build());
-            System.out.println("Lifecycle configuration: " + config);
-
 
         }catch(Exception e){
             log.error("");
