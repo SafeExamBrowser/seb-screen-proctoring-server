@@ -126,14 +126,14 @@ public class AdminSessionController extends EntityController<Session, Session> {
     protected Session merge(final Session modifyData, final Session existingEntity) {
         return new Session(
                 existingEntity.id,
-                null,
+                existingEntity.groupId,
                 existingEntity.uuid,
                 modifyData.clientName,
                 modifyData.clientIP,
                 modifyData.clientMachineName,
                 modifyData.clientOSName,
                 modifyData.clientVersion,
-                modifyData.imageFormat,
+                modifyData.imageFormat != null ? modifyData.imageFormat : existingEntity.imageFormat,
                 existingEntity.creationTime,
                 null,
                 null);

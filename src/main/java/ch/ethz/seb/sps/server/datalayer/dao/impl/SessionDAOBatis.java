@@ -541,7 +541,7 @@ public class SessionDAOBatis implements SessionDAO {
             }
 
             UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
-                    .set(imageFormat).equalTo((data.imageFormat != null) ? null : data.imageFormat.code)
+                    .set(imageFormat).equalTo(data.imageFormat.code)
                     .set(clientName).equalTo(data.clientName)
                     .set(clientIp).equalTo(data.clientIP)
                     .set(clientMachineName).equalTo(data.clientMachineName)
