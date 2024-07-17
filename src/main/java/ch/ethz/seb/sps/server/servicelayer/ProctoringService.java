@@ -46,7 +46,7 @@ public interface ProctoringService {
      * @return Result refer to the screenshot data or to an error when happened */
     Result<ScreenshotViewData> getRecordedImageDataAt(String sessionUUID, Long timestamp);
 
-    Result<ScreenshotsInGroupData> getMonitoringPageData(
+    Result<ScreenshotsInGroupData> getSessionsByGroup(
             String groupUUID,
             Integer pageNumber,
             Integer pageSize,
