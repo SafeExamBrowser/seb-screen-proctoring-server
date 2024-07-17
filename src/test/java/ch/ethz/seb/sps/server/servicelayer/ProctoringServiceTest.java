@@ -129,9 +129,6 @@ public class ProctoringServiceTest {
         when(this.sessionDAO.allSessionCount(any()))
                 .thenReturn(Result.of(0L));
 
-        when(this.proctoringCacheService.getSession(any()))
-                .thenReturn(createGenericSession(true));
-
         when(this.screenshotDataDAO.allLatestIn(any()))
                 .thenReturn(Result.of(new HashMap<>()));
 
