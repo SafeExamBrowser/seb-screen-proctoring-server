@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -41,19 +42,22 @@ public class SessionServiceImpl implements SessionService {
     private final SessionDAO sessionDAO;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ProctoringCacheService proctoringCacheService;
+    private final ProctoringService proctoringService;
 
     public SessionServiceImpl(
             final ExamDAO examDAO,
             final GroupDAO groupDAO,
             final SessionDAO sessionDAO,
             final ApplicationEventPublisher applicationEventPublisher,
-            final ProctoringCacheService proctoringCacheService) {
+            final ProctoringCacheService proctoringCacheService,
+            final ProctoringService proctoringService) {
 
         this.examDAO = examDAO;
         this.groupDAO = groupDAO;
         this.sessionDAO = sessionDAO;
         this.applicationEventPublisher = applicationEventPublisher;
         this.proctoringCacheService = proctoringCacheService;
+        this.proctoringService = proctoringService;
     }
 
     @Override
@@ -159,6 +163,14 @@ public class SessionServiceImpl implements SessionService {
                                 "Failed to close SEB sessions for group: {} error: {}",
                                 groupKey,
                                 error.getMessage()))
+                        // clear group cache
+                        .onSuccess( results -> groupDAO
+                                .byModelId(groupKey.modelId)
+                                .onSuccess( gr -> proctoringService.clearGroupCache(
+                                        gr.uuid,
+                                        true))
+                        )
+                        // add results
                         .onSuccess(result::addAll);
             });
             return result;

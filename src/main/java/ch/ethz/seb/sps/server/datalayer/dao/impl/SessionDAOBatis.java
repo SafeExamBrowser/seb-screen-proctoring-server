@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchSessionMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
@@ -361,7 +360,7 @@ public class SessionDAOBatis implements SessionDAO {
                     null,
                     data.groupId,
                     (StringUtils.isNotBlank(data.uuid)) ? data.uuid : UUID.randomUUID().toString(),
-                    (data.imageFormat != null) ? data.imageFormat.code : ImageFormat.PNG.code,
+                    data.imageFormat.code,
                     data.clientName,
                     data.clientIP,
                     data.clientMachineName,

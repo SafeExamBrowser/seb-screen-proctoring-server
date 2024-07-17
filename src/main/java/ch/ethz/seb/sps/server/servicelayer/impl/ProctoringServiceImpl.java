@@ -394,6 +394,20 @@ public class ProctoringServiceImpl implements ProctoringService {
         });
     }
 
+    @Override
+    public void clearGroupCache(final String groupUUID, final boolean fully) {
+
+        log.info("Clear group cache request for group: {}, full cache flush: {}", groupUUID, fully);
+
+        if (fully) {
+            final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
+            this.proctoringCacheService
+                    .getLiveSessionTokens(activeGroup.uuid)
+                    .forEach(this.proctoringCacheService::evictSession);
+        }
+        this.proctoringCacheService.evictGroup(groupUUID);
+    }
+
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
         try {
 
@@ -433,19 +447,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public void clearGroupCache(final String groupUUID, final boolean fully) {
-
-        log.info("Clear group cache request for group: {}, full cache flush: {}", groupUUID, fully);
-
-        if (fully) {
-            final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
-            this.proctoringCacheService
-                    .getLiveSessionTokens(activeGroup.uuid)
-                    .forEach(this.proctoringCacheService::evictSession);
-        }
-        this.proctoringCacheService.evictGroup(groupUUID);
     }
 
     private Collection<SessionSearchResult> createSessionSearchResult(

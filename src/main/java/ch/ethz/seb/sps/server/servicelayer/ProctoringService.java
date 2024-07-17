@@ -74,7 +74,7 @@ public interface ProctoringService {
             OutputStream out);
 
     void streamScreenshot(
-            Long screenhotId,
+            Long screenshotId,
             String sessionUUID,
             OutputStream out);
 
@@ -90,4 +90,6 @@ public interface ProctoringService {
     Result<List<Date>> queryMatchingDaysForSessionSearch(FilterMap filterMap);
 
     Result<Exam> updateCacheForExam(Exam exam);
+
+    void clearGroupCache(final String groupUUID, final boolean fully);
 }
