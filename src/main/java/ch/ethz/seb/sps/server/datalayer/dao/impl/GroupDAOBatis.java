@@ -229,40 +229,29 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
             final Collection<Long> prePredicated) {
 
         return Result.tryCatch(() -> {
-
-            final Boolean excludeInactiveGroups = filterMap.getBooleanObject(API.PARAM_EXCLUDE_INACTIVE_GROUPS);
-            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
-            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
+            final Boolean includePastExams = filterMap.getBooleanObject(API.PARAM_INCLUDE_PAST_EXAMS);
+            final Boolean includeUpcomingExams = filterMap.getBooleanObject(API.PARAM_INCLUDE_UPCOMING_EXAMS);
 
             QueryExpressionDSL<MyBatis3SelectModelAdapter<Collection<GroupViewRecord>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.groupViewMapper
                     .getGroupsWithExamData()
-                    .where(
-                            name,
-                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_NAME)))
-                    .and(
-                            description,
-                            isLikeWhenPresent(filterMap.getSQLWildcard(Domain.SEB_GROUP.ATTR_DESCRIPTION)))
-                    .and(
-                            ExamRecordDynamicSqlSupport.name,
-                            isLikeWhenPresent(filterMap.getSQLWildcard(API.PARAM_EXAM_NAME)))
-                    .and(
-                            creationTime,
-                            isGreaterThanOrEqualToWhenPresent(fromTime))
-                    .and(
-                            creationTime,
-                            isLessThanOrEqualToWhenPresent(toTime))
-                    .and(
-                            id,
-                            isInWhenPresent((prePredicated == null)
-                                    ? Collections.emptyList()
-                                    : prePredicated));
+                    .where();
 
-            //if excludeInactiveGroups is set to true only active groups (terminationTime == null) will be included in the result
-            if(excludeInactiveGroups != null && excludeInactiveGroups){
+            //if includePastExams is null or false (default), don't include finished exams
+            //if includePastExams is true, include finished exams (no extra condition required)
+            if(includePastExams == null || !includePastExams) {
                 queryBuilder = queryBuilder.and(
                         GroupRecordDynamicSqlSupport.terminationTime,
                         isNull()
+                );
+            }
+
+            //if includeUpcomingExams is null or false (default), don't include upcoming exams
+            //if includeUpcomingExams is true, include upcoming exams (no extra condition required)
+            if(includeUpcomingExams == null || !includeUpcomingExams){
+                queryBuilder = queryBuilder.and(
+                        ExamRecordDynamicSqlSupport.startTime,
+                        isLessThanOrEqualTo(Utils.getMillisecondsNow())
                 );
             }
 
@@ -638,7 +627,6 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                 new ExamViewData(
                         record.getExamUuid(),
                         record.getExamName(),
-                        record.getTerminationTime() == null,
                         record.getExamStartTime(),
                         record.getExamEndTime()));
     }
