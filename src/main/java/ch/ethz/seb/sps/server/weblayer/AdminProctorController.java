@@ -125,8 +125,12 @@ public class AdminProctorController {
                             name = Page.ATTR_SORT,
                             description = "the sort parameter to sort the list of entities before paging"),
                     @Parameter(
-                            name = API.PARAM_EXCLUDE_INACTIVE_GROUPS,
-                            description = "set to true to exclude inactive groups",
+                            name = API.PARAM_INCLUDE_PAST_EXAMS,
+                            description = "set to true to include past exams",
+                            in = ParameterIn.QUERY),
+                    @Parameter(
+                            name = API.PARAM_INCLUDE_UPCOMING_EXAMS,
+                            description = "set to true to include upcoming exams",
                             in = ParameterIn.QUERY),
             })
     @RequestMapping(
@@ -138,7 +142,8 @@ public class AdminProctorController {
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
             @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sort,
-            @RequestParam(name = API.PARAM_EXCLUDE_INACTIVE_GROUPS, required = false) final Boolean excludeInactiveGroups,
+            @RequestParam(name = API.PARAM_INCLUDE_PAST_EXAMS, required = false) final Boolean includePastExams,
+            @RequestParam(name = API.PARAM_INCLUDE_UPCOMING_EXAMS, required = false) final Boolean includeUpcomingExams,
             final HttpServletRequest request) {
 
         final FilterMap filterMap = new FilterMap(request);
