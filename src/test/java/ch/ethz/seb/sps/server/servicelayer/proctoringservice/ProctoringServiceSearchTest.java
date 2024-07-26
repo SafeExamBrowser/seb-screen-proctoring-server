@@ -1,4 +1,4 @@
-package ch.ethz.seb.sps.server.servicelayer;
+package ch.ethz.seb.sps.server.servicelayer.proctoringservice;
 
 import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.FilterMap;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 
-public class ProctoringServiceTest {
+public class ProctoringServiceSearchTest {
 
     private final JSONMapper jsonMapper = new JSONMapper();
 
@@ -146,6 +146,41 @@ public class ProctoringServiceTest {
         assertEquals(this.jsonMapper.writeValueAsString(excpectedScreenshotsInGroupData), this.jsonMapper.writeValueAsString(screenshotsInGroupDataEmpty.getOrThrow()));
     }
 
+
+    @Test
+    public void getSessionsByGroup() throws JsonProcessingException {
+        //GIVEN
+        ScreenshotsInGroupData excpectedScreenshotsInGroupData = createGroupWithEmptyList();
+
+        when(this.serviceInfo.isDistributed())
+                .thenReturn(false);
+
+        when(this.proctoringCacheService.getActiveGroup(any()))
+                .thenReturn(createGenericGroup());
+
+        when(this.proctoringCacheService.getLiveSessionTokens(any()))
+                .thenReturn(new ArrayList<>());
+
+        when(this.sessionDAO.allSessionCount(any()))
+                .thenReturn(Result.of(0L));
+
+        when(this.screenshotDataDAO.allLatestIn(any()))
+                .thenReturn(Result.of(new HashMap<>()));
+
+        //WHEN
+        Result<ScreenshotsInGroupData> screenshotsInGroupDataEmpty = this.proctoringService.getSessionsByGroup(
+                GROUP_UUID,
+                PAGE_NUMBER,
+                PAGE_SIZE_EMPTY,
+                SORT_BY,
+                SORT_ORDER,
+                FILTER_MAP);
+
+        //THEN
+        assertFalse(screenshotsInGroupDataEmpty.hasError());
+        assertEquals(this.jsonMapper.writeValueAsString(excpectedScreenshotsInGroupData), this.jsonMapper.writeValueAsString(screenshotsInGroupDataEmpty.getOrThrow()));
+    }
+
     private ScreenshotsInGroupData createGroupWithEmptyList(){
         return new ScreenshotsInGroupData(
                 GROUP_UUID,
@@ -158,7 +193,7 @@ public class ProctoringServiceTest {
                 SORT_BY,
                 SORT_ORDER,
                 new ArrayList<>(),
-                new ExamViewData(null, null, null, null, null)
+                new ExamViewData(null, null, null, null)
         );
     }
 
