@@ -16,11 +16,13 @@ import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringCacheService;
 import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringServiceImpl;
 import ch.ethz.seb.sps.utils.Result;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,8 +35,7 @@ import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-
+@ExtendWith(MockitoExtension.class)
 public class ProctoringServiceScreenshotTest {
 
     private final JSONMapper jsonMapper = new JSONMapper();
