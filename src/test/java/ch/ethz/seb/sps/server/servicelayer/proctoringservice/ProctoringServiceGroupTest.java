@@ -73,6 +73,13 @@ public class ProctoringServiceGroupTest {
     private ProctoringServiceImpl proctoringService;
 
 
+
+    @BeforeEach
+    public void setUp() {
+        when(this.serviceInfo.isDistributed())
+                .thenReturn(false);
+    }
+
     @Test
     public void testGetSessionsByGroup_EmptyResult() throws JsonProcessingException {
         //GIVEN
@@ -127,12 +134,6 @@ public class ProctoringServiceGroupTest {
 
             assertEquals(this.jsonMapper.writeValueAsString(excpectedMetadata), metadata.get("data"));
         }
-    }
-
-    @BeforeEach
-    public void setUp() {
-        when(this.serviceInfo.isDistributed())
-                .thenReturn(false);
     }
 
     private void mockDependenciesForEmptyResult(){

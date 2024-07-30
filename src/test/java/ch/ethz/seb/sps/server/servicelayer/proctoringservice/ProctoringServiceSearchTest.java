@@ -32,10 +32,10 @@ import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.Procto
 import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createRealisticGroup;
 import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createRealisticGroupViewData;
 import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createScreenshotDataRecordList;
-import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createScreenshotSearchResultList;
+import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createSearchScreenshotResultList;
 import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createSession;
 import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createSessionList;
-import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createSessionSearchResultList;
+import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createSearchSessionResultList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
@@ -60,6 +60,7 @@ public class ProctoringServiceSearchTest {
 
     static FilterMap filterMap;
 
+
     @BeforeAll
     public static void setup(){
         filterMap = createFilterMapWithMetadata();
@@ -69,7 +70,7 @@ public class ProctoringServiceSearchTest {
     @Test
     public void testGetDayListSessionSearch_NoMetadata(){
         //GIVEN
-        List<Date> excpectedSessionSearchDayList = SESSION_SEARCH_DAY_LIST_FULL;
+        List<Date> expectedSessionSearchDayList = SESSION_SEARCH_DAY_LIST_FULL;
         mockDependenciesForSessionSearchDayList();
 
         //WHEN
@@ -77,13 +78,13 @@ public class ProctoringServiceSearchTest {
 
         //THEN
         assertFalse(sessionSearchDayList.hasError());
-        assertEquals(excpectedSessionSearchDayList, sessionSearchDayList.getOrThrow());
+        assertEquals(expectedSessionSearchDayList, sessionSearchDayList.getOrThrow());
     }
 
     @Test
     public void testGetDayListSessionSearch_WithMetadata(){
         //GIVEN
-        List<Date> excpectedSessionSearchDayList = SESSION_SEARCH_DAY_LIST_FILTERED;
+        List<Date> expectedSessionSearchDayList = SESSION_SEARCH_DAY_LIST_FILTERED;
         mockDependenciesForSessionSearchDayList();
         mockDependenciesForSessionSearchDayList_WithMetadata();
 
@@ -92,7 +93,7 @@ public class ProctoringServiceSearchTest {
 
         //THEN
         assertFalse(sessionSearchDayList.hasError());
-        assertEquals(excpectedSessionSearchDayList, sessionSearchDayList.getOrThrow());
+        assertEquals(expectedSessionSearchDayList, sessionSearchDayList.getOrThrow());
     }
 
     private void mockDependenciesForSessionSearchDayList(){
@@ -111,14 +112,14 @@ public class ProctoringServiceSearchTest {
     @Test
     public void testSearchSession() throws JsonProcessingException {
         //GIVEN
-        Collection<SessionSearchResult> expectedSessionSearchResult = createSessionSearchResultList();
+        Collection<SessionSearchResult> expectedSearchSessionResult = createSearchSessionResultList();
         mockDependenciesForSearchSession();
 
         //WHEN
         Result<Collection<SessionSearchResult>> sessionSearchResult = this.proctoringService.searchSessions(filterMap);
 
         //THEN
-        assertEquals(this.jsonMapper.writeValueAsString(expectedSessionSearchResult), this.jsonMapper.writeValueAsString(sessionSearchResult.getOrThrow()));
+        assertEquals(this.jsonMapper.writeValueAsString(expectedSearchSessionResult), this.jsonMapper.writeValueAsString(sessionSearchResult.getOrThrow()));
     }
 
     private void mockDependenciesForSearchSession(){
@@ -138,34 +139,34 @@ public class ProctoringServiceSearchTest {
     @Test
     public void testSearchScreenshots() throws JsonProcessingException {
         //GIVEN
-        List<ScreenshotSearchResult> expectedScreenshotSearchResult = createScreenshotSearchResultList();
-        mockDependenciesForScreenshotSearch();
+        List<ScreenshotSearchResult> expectedSearchScreenshotResult = createSearchScreenshotResultList();
+        mockDependenciesForSearchScreenshot();
 
         //WHEN
-        Result<Collection<ScreenshotSearchResult>> screenshotSearchResultsCollection = this.proctoringService.searchScreenshots(filterMap);
-        List<ScreenshotSearchResult> screenshotSearchResult = (List<ScreenshotSearchResult>) screenshotSearchResultsCollection.getOrThrow();
+        Result<Collection<ScreenshotSearchResult>> searchScreenshotResultsCollection = this.proctoringService.searchScreenshots(filterMap);
+        List<ScreenshotSearchResult> searchScreenshotResult = (List<ScreenshotSearchResult>) searchScreenshotResultsCollection.getOrThrow();
 
         //THEN
         //compare singles values as metadata json as string is in different form
-        assertEquals(expectedScreenshotSearchResult.size(), screenshotSearchResult.size());
+        assertEquals(expectedSearchScreenshotResult.size(), searchScreenshotResult.size());
 
-        for(int i = 0; i < expectedScreenshotSearchResult.size(); i++){
-            assertEquals(expectedScreenshotSearchResult.get(i).groupUUID, screenshotSearchResult.get(i).groupUUID);
-            assertEquals(expectedScreenshotSearchResult.get(i).groupCreationTime, screenshotSearchResult.get(i).groupCreationTime);
-            assertEquals(expectedScreenshotSearchResult.get(i).groupName, screenshotSearchResult.get(i).groupName);
-            assertEquals(expectedScreenshotSearchResult.get(i).clientOSName, screenshotSearchResult.get(i).clientOSName);
+        for(int i = 0; i < expectedSearchScreenshotResult.size(); i++){
+            assertEquals(expectedSearchScreenshotResult.get(i).groupUUID, searchScreenshotResult.get(i).groupUUID);
+            assertEquals(expectedSearchScreenshotResult.get(i).groupCreationTime, searchScreenshotResult.get(i).groupCreationTime);
+            assertEquals(expectedSearchScreenshotResult.get(i).groupName, searchScreenshotResult.get(i).groupName);
+            assertEquals(expectedSearchScreenshotResult.get(i).clientOSName, searchScreenshotResult.get(i).clientOSName);
         }
 
         //compare metadata
-        for(int i = 0; i < expectedScreenshotSearchResult.size(); i++){
-            Map<String, String> excpectedMetadata = expectedScreenshotSearchResult.get(i).metaData;
-            Map<String, String> metadata = screenshotSearchResult.get(i).metaData;
+        for(int i = 0; i < expectedSearchScreenshotResult.size(); i++){
+            Map<String, String> expectedMetadata = expectedSearchScreenshotResult.get(i).metaData;
+            Map<String, String> metadata = searchScreenshotResult.get(i).metaData;
 
-            assertEquals(this.jsonMapper.writeValueAsString(excpectedMetadata), metadata.get("data"));
+            assertEquals(this.jsonMapper.writeValueAsString(expectedMetadata), metadata.get("data"));
         }
     }
 
-    private void mockDependenciesForScreenshotSearch() throws JsonProcessingException {
+    private void mockDependenciesForSearchScreenshot() throws JsonProcessingException {
         when(this.screenshotDataDAO.searchScreenshotData(filterMap))
                 .thenReturn(Result.of(createScreenshotDataRecordList()));
 
@@ -178,34 +179,5 @@ public class ProctoringServiceSearchTest {
         }
 
     }
-    //------------------------------------------------
-
-
-    //--------all layers combined---------
-    //usual use case is the combined search
-    @Test
-    public void testCompleteSearch(){
-        //search criteria is always the same as the user only enters the search form once
-
-        //GIVEN
-        //1. retrieve date list
-        List<Date> excpectedSessionSearchDayList = SESSION_SEARCH_DAY_LIST_FULL;
-
-        //2. search sessions in the given time frame
-        Collection<SessionSearchResult> expectedSessionSearchResult = createSessionSearchResultList();
-
-        //3. retrieve screenshot for the given day
-        List<ScreenshotSearchResult> expectedScreenshotSearchResult = createScreenshotSearchResultList();
-
-
-
-
-
-    }
-
-
-
-
-
     //------------------------------------------------
 }

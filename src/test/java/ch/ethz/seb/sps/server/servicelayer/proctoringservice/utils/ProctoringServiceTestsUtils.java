@@ -106,7 +106,7 @@ public class ProctoringServiceTestsUtils {
         );
     }
 
-    public static List<ScreenshotSearchResult> createScreenshotSearchResultList(){
+    public static List<ScreenshotSearchResult> createSearchScreenshotResultList(){
         List<ScreenshotSearchResult> screenshotSearchResultList = new ArrayList<>();
         for(int i = 0; i < SESSION_SEARCH_DAY_LIST_FILTERED.size(); i++){
             screenshotSearchResultList.add(new ScreenshotSearchResult(
@@ -216,13 +216,13 @@ public class ProctoringServiceTestsUtils {
         );
     }
 
-    public static List<SessionSearchResult> createSessionSearchResultList(){
-        List<SessionSearchResult> sessionSearchResultList = new ArrayList<>();
+    public static List<SessionSearchResult> createSearchSessionResultList(){
+        List<SessionSearchResult> searchSessionResultList = new ArrayList<>();
         for(int i = 0; i < SESSION_SEARCH_DAY_LIST_FILTERED.size(); i++){
-            sessionSearchResultList.add(createSessionSearchResult(UUID_LIST.get(i)));
+            searchSessionResultList.add(createSessionSearchResult(UUID_LIST.get(i)));
         }
 
-        return sessionSearchResultList;
+        return searchSessionResultList;
     }
 
     public static SessionSearchResult createSessionSearchResult(String sessionUUID){
