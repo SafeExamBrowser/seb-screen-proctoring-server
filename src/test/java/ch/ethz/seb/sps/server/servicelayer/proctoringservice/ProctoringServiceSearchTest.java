@@ -22,12 +22,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceConstants.FILTER_MAP_EMPTY;
-import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceConstants.NR_OF_SCREENSHOTS;
-import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceConstants.SESSION_SEARCH_DAY_LIST_FILTERED;
-import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceConstants.SESSION_SEARCH_DAY_LIST_FILTERED_REVERSED;
-import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceConstants.SESSION_SEARCH_DAY_LIST_FULL;
-import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceConstants.UUID_LIST;
+import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestConstants.FILTER_MAP_EMPTY;
+import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestConstants.NR_OF_SCREENSHOTS;
+import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestConstants.SESSION_SEARCH_DAY_LIST_FILTERED;
+import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestConstants.SESSION_SEARCH_DAY_LIST_FILTERED_REVERSED;
+import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestConstants.SESSION_SEARCH_DAY_LIST_FULL;
+import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestConstants.UUID_LIST;
 import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createFilterMapWithMetadata;
 import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createRealisticGroup;
 import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.ProctoringServiceTestsUtils.createRealisticGroupViewData;

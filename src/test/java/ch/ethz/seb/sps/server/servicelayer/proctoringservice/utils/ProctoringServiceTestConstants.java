@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ProctoringServiceConstants {
+public class ProctoringServiceTestConstants {
 
     //generic data
     public static final Long GENERIC_LONG = 1L;
