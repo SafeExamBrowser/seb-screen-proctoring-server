@@ -1,4 +1,4 @@
-package ch.ethz.seb.sps.integrationtests.procotoring;
+package ch.ethz.seb.sps.integrationtests.proctoring;
 
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +15,7 @@ import ch.ethz.seb.sps.server.ScreenProctoringServer;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Sql(scripts = { "classpath:schema-test.sql", "classpath:proctoring-test-data.sql" })
-
 public abstract class ServiceTest_PROCTORING {
+
+
 }
