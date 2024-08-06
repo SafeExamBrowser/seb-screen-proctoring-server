@@ -1,7 +1,7 @@
-INSERT IGNORE INTO `user` VALUES 
-    (1, 'super-admin', 'super-admin', 'surname', 'super-admin', '$2a$08$c2GKYEYoUVXH1Yb8GXVXVu66ltPvbZgLMcVSXRH.LgZNF/YeaYB8m', 'super-admin@nomail.nomail', 'en', 'UTC', 'ADMIN', 0, 0, null)
+INSERT IGNORE INTO `user` VALUES
+    (1, 'super-admin', 'super-admin', 'surname', 'super-admin', '$2a$08$c2GKYEYoUVXH1Yb8GXVXVu66ltPvbZgLMcVSXRH.LgZNF/YeaYB8m', 'super-admin@nomail.nomail', 'en', 'UTC', 'ADMIN', 0, 0, null),
+    (2, 'b37605f1-2147-4de4-9150-f0f16ed3014d', 'SEBServerAPIAccount', 'SEBServerAPIAccount', 'SEBServerAPIAccount', '$2a$08$7sP1pVJfVQBcUW72hmaIN.yDP4T5lkBiV/1t3r/AqRdK1mN5WMCL6', NULL, 'en', 'UTC', 'ADMIN', 1705324904573, 1705324904573, NULL)
 ;
-
 INSERT IGNORE INTO `client_access` VALUES
     (1, 'test', 'test', 'test-description','test', '$2a$04$9JXeMn4nIHtHUSujpgTiqe11Y./qM/LdiMeaSDbTTWBI/zkHWAfEi', 'super-admin', 0, 0, null)
 ;
@@ -187,14 +187,14 @@ INSERT INTO `screenshot_data` VALUES
 
 --screenshot data for 830c4164-8167-4952-ab6c-2a72b585465b
 INSERT INTO `screenshot_data` VALUES
-    (600580, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707635612, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 3","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
-    (600582, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707636409, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 2","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
-    (600585, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707637413, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 1","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
-    (600589, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707638434, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 2","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
-    (600593, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707639455, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 3","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
-    (600597, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707640470, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 2","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
-    (600601, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707641474, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 3","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
-    (600605, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707642500, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 3","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
-    (600609, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707643510, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 2","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
-    (600613, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707644517, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 1","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}')
+    (91, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707635612, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 3","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
+    (92, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707636409, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 2","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
+    (93, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707637413, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 1","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
+    (94, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707638434, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 2","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
+    (95, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707639455, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 3","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
+    (96, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707640470, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 2","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
+    (97, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707641474, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 3","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
+    (98, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707642500, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 3","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
+    (99, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707643510, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 2","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
+    (100, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707644517, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 1","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}')
 ;

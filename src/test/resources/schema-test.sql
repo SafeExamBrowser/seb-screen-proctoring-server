@@ -209,7 +209,7 @@ CREATE TABLE IF NOT EXISTS `additional_attribute` (
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `webservice_server_info` ;
 
-CREATE TABLE IF NOT EXISTS `webservice_server_info` (
+CREATE TABLE `webservice_server_info` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `uuid` VARCHAR(255) NOT NULL,
   `server_address` VARCHAR(45) NOT NULL,
