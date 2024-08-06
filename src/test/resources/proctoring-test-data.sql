@@ -1,7 +1,7 @@
-INSERT IGNORE INTO `user` VALUES
-    (1, 'super-admin', 'super-admin', 'surname', 'super-admin', '$2a$08$c2GKYEYoUVXH1Yb8GXVXVu66ltPvbZgLMcVSXRH.LgZNF/YeaYB8m', 'super-admin@nomail.nomail', 'en', 'UTC', 'ADMIN', 0, 0, null),
-    (2, 'b37605f1-2147-4de4-9150-f0f16ed3014d', 'SEBServerAPIAccount', 'SEBServerAPIAccount', 'SEBServerAPIAccount', '$2a$08$7sP1pVJfVQBcUW72hmaIN.yDP4T5lkBiV/1t3r/AqRdK1mN5WMCL6', NULL, 'en', 'UTC', 'ADMIN', 1705324904573, 1705324904573, NULL)
+INSERT IGNORE INTO `usertablenew` VALUES
+    (1, 'super-admin', 'super-admin', 'surname', 'super-admin', '$2a$08$c2GKYEYoUVXH1Yb8GXVXVu66ltPvbZgLMcVSXRH.LgZNF/YeaYB8m', 'super-admin@nomail.nomail', 'en', 'UTC', 'ADMIN', 0, 0, null)
 ;
+
 INSERT IGNORE INTO `client_access` VALUES
     (1, 'test', 'test', 'test-description','test', '$2a$04$9JXeMn4nIHtHUSujpgTiqe11Y./qM/LdiMeaSDbTTWBI/zkHWAfEi', 'super-admin', 0, 0, null)
 ;

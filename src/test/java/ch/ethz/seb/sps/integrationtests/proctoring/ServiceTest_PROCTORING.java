@@ -1,7 +1,18 @@
 package ch.ethz.seb.sps.integrationtests.proctoring;
 
+import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
+import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
+import ch.ethz.seb.sps.domain.model.service.Session;
+import ch.ethz.seb.sps.domain.model.user.ServerUser;
+import ch.ethz.seb.sps.domain.model.user.UserInfo;
+import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.flywaydb.core.internal.jdbc.JdbcTemplate;
+import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +25,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -31,7 +43,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -50,7 +65,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(
         properties = "file.encoding=UTF-8",
         classes = { ScreenProctoringServer.class },
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+        webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Sql(scripts = { "classpath:schema-test.sql", "classpath:proctoring-test-data.sql" })
@@ -62,7 +77,7 @@ public abstract class ServiceTest_PROCTORING {
     @Value("${sps.api.admin.gui.clientSecret}")
     protected String clientSecret;
 
-    @Value("${sps.api.admin.endpoint}")
+    @Value("${sps.api.admin.endpoint.v1}")
     protected String endpoint;
 
 
@@ -83,30 +98,20 @@ public abstract class ServiceTest_PROCTORING {
                 .addFilter(this.springSecurityFilterChain).build();
     }
 
-
-
-//    @Test
-//    public void test() throws Exception {
-//        this.mockMvc.perform(get("/homePage")).andDo(print());
-//    }
-//}
-
-
     protected String obtainAccessToken(final String username, final String password) throws Exception {
         final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "password");
-//        params.add("client_id", this.clientId);
         params.add("username", username);
         params.add("password", password);
 
         final ResultActions result = this.mockMvc.perform(post("/oauth/token")
                 .params(params)
                 .with(httpBasic(this.clientId, this.clientSecret))
-                .accept("application/json")
+                .accept("application/json;charset=UTF-8")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json"));
+                .andExpect(content().contentType("application/json;charset=UTF-8"));
 
         final String resultString = result.andReturn().getResponse().getContentAsString();
 
@@ -175,6 +180,7 @@ public abstract class ServiceTest_PROCTORING {
             }
 
             return action
+                    .andDo(print())
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
@@ -184,11 +190,14 @@ public abstract class ServiceTest_PROCTORING {
             final ResultActions action = ServiceTest_PROCTORING.this.mockMvc
                     .perform(requestBuilder());
             if (this.expectedStatus != null) {
-                action.andExpect(status().is(this.expectedStatus.value()));
+                action
+                        .andDo(print())
+                        .andExpect(status().is(this.expectedStatus.value()));
             }
 
             return ServiceTest_PROCTORING.this.jsonMapper.readValue(
                     action
+                            .andDo(print())
                             .andReturn()
                             .getResponse()
                             .getContentAsString(),

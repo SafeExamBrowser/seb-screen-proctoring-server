@@ -77,7 +77,7 @@ public final class UserRecordDynamicSqlSupport {
         public final SqlColumn<Long> terminationTime = column("termination_time", JDBCType.BIGINT);
 
         public UserRecord() {
-            super("user");
+            super("usertablenew");
         }
     }
 }

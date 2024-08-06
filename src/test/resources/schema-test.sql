@@ -31,9 +31,9 @@ CREATE TABLE IF NOT EXISTS `oauth_refresh_token` (
 -- -----------------------------------------------------
 -- Table `user`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `user` ;
+DROP TABLE IF EXISTS `usertablenew` ;
 
-CREATE TABLE IF NOT EXISTS `user` (
+CREATE TABLE IF NOT EXISTS `usertablenew` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `uuid` VARCHAR(255) NOT NULL,
   `name` VARCHAR(255) NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `password` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) NULL DEFAULT NULL,
   `language` VARCHAR(45) NOT NULL,
-  `timeZone` VARCHAR(45) NOT NULL,
+  `timezone` VARCHAR(45) NOT NULL,
   `roles` VARCHAR(255) NOT NULL,
   `creation_time` BIGINT NOT NULL,
   `last_update_time` BIGINT NOT NULL,
