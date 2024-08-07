@@ -11,21 +11,21 @@ INSERT IGNORE INTO `exam` VALUES
 ;
 
 INSERT IGNORE INTO `seb_group` VALUES
-    (1, 'test_group', 'test_group', 'test-description', 'super-admin', 0, 0, null, null),
-    (2, '1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c', 'exam_group', 'exam_group description', 'super-admin', 1721743475058, 1721743475060, null, 1)
+    (1, '3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c', 'test_group', 'test-description', 'super-admin', 0, 0, null, null),
+    (2, '1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c', 'exam_group', 'exam_group description', 'super-admin', 1721743475058, 1721743475060, null, null)
 ;
 
 INSERT IGNORE INTO `session` VALUES
-    (1, 1, '9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, 1721743656171);
+    (1, 1, '9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null);
 
 INSERT IGNORE INTO `session` VALUES
-    (2, 1, '1cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, 1721743656171);
+    (2, 1, '1cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null);
 
 INSERT IGNORE INTO `session` VALUES
-    (2, 1, 'a9ecf98e-4fe9-45d8-b513-ec30d82ae22f', 0, 'Meela Greenleaf', '30.254.51.215', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, 1721743656171);
+    (2, 1, 'a9ecf98e-4fe9-45d8-b513-ec30d82ae22f', 0, 'Meela Greenleaf', '30.254.51.215', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null);
 
 INSERT IGNORE INTO `session` VALUES
-    (3, 1, '4461dec0-5579-4fef-a86f-0ec7b252c779', 0, 'Owen Torres', '11.66.101.212', 'localhost', 'windows', '0.1-httpBot', 1721743474041, 1721743654070, 1721743654070);
+    (3, 1, '4461dec0-5579-4fef-a86f-0ec7b252c779', 0, 'Owen Torres', '11.66.101.212', 'localhost', 'windows', '0.1-httpBot', 1721743474041, 1721743654070, null);
 
 INSERT IGNORE INTO `session` VALUES
     (4, 1, 'a21f4778-2d8a-49be-8ee2-7750682ca424', 0, 'Bethel Jenks', '83.85.253.32', 'localhost', 'windows', '0.1-httpBot', 1721743473036, 1721743653055, 1721743653055);

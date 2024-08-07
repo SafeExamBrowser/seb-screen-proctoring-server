@@ -44,6 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
 import javax.servlet.ServletContext;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -148,6 +149,14 @@ public abstract class ServiceTest_PROCTORING {
 
         public RestAPITestHelper withAttribute(final String name, final String value) {
             this.queryAttrs.put(name, value);
+            return this;
+        }
+
+        public RestAPITestHelper withAttributes(Map<String, String> attributes) {
+            for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+                this.queryAttrs.put(attribute.getKey(), attribute.getValue());
+            }
+
             return this;
         }
 
