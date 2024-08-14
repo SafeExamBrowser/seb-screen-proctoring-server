@@ -125,7 +125,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public Result<ScreenshotsInGroupData> getMonitoringPageData(
+    public Result<ScreenshotsInGroupData> getSessionsByGroup(
             final String groupUUID,
             final Integer pageNumber,
             final Integer pageSize,

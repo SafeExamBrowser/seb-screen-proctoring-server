@@ -217,7 +217,7 @@ public class AdminProctorController {
 
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
         return this.proctoringService
-                .getMonitoringPageData(groupUUID, pageNumber, pageSize, sortBy, sortOrder, filterMap)
+                .getSessionsByGroup(groupUUID, pageNumber, pageSize, sortBy, sortOrder, filterMap)
                 .getOrThrow();
     }
 
