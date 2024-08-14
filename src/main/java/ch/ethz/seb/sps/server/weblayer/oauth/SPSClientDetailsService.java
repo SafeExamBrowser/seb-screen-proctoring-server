@@ -72,9 +72,7 @@ public class SPSClientDetailsService implements ClientDetailsService {
 
         return getForClientAPI(clientId)
                 .get(t -> {
-                    if (log.isDebugEnabled()) {
-                        log.warn("Active client not found: {} cause: {}", clientId, t.getMessage());
-                    }
+                    log.warn("Active client not found: {} cause: {}", clientId, t.getMessage());
                     throw new UsernameNotFoundException(t.getMessage());
                 });
     }
