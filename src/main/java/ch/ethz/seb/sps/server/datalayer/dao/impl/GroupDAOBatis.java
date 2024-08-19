@@ -235,7 +235,10 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
             QueryExpressionDSL<MyBatis3SelectModelAdapter<Collection<GroupViewRecord>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.groupViewMapper
                     .getGroupsWithExamData()
-                    .where();
+                    .where(
+                            id,
+                            isInWhenPresent((prePredicated == null) ? Collections.emptyList() : prePredicated)
+                    );
 
             //if includePastExams is null or false (default), don't include finished exams
             //if includePastExams is true, include finished exams (no extra condition required)
