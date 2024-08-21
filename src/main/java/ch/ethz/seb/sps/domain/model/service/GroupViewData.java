@@ -56,15 +56,15 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
     public final ExamViewData examViewData;
 
     public GroupViewData(
-            final Long id,
-            final String uuid,
-            final String name,
-            final String description,
-            final String owner,
-            final Long creationTime,
-            final Long lastUpdateTime,
-            final Long terminationTime,
-            final ExamViewData examViewData) {
+            @JsonProperty(SEB_GROUP.ATTR_ID) final Long id,
+            @JsonProperty(SEB_GROUP.ATTR_UUID) final String uuid,
+            @JsonProperty(SEB_GROUP.ATTR_NAME) final String name,
+            @JsonProperty(SEB_GROUP.ATTR_DESCRIPTION) final String description,
+            @JsonProperty(SEB_GROUP.ATTR_OWNER) final String owner,
+            @JsonProperty(SEB_GROUP.ATTR_CREATION_TIME) final Long creationTime,
+            @JsonProperty(SEB_GROUP.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
+            @JsonProperty(SEB_GROUP.ATTR_TERMINATION_TIME) final Long terminationTime,
+            @JsonProperty(ATTR_EXAM) final ExamViewData examViewData) {
 
         this.id = id;
         this.uuid = uuid;
@@ -76,6 +76,7 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
         this.terminationTime = terminationTime;
         this.examViewData = examViewData;
     }
+
 
     @Override
     public EntityType entityType() {

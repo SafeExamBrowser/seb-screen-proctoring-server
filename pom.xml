@@ -5,7 +5,7 @@
     <artifactId>seb-screen-proctoring-service</artifactId>
     <version>${revision}</version>
     <name>seb-screen-proctoring-service</name>
-    <description>SEB screen procotring service to collect and store screenshots from connecting SEB client</description>
+    <description>SEB screen proctoring service to collect and store screenshots from connecting SEB client</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
