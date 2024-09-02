@@ -11,7 +11,10 @@ Together with the SEB Server Screen Proctoring Guiservice (sps-guiservice), this
 
 The Image below shows the two screen proctoring components, sps-webservice and sps-guiservice, together with SEB Server and SEB Client and how they interact with each-other. This shows also how a fully bundled of SEB Server setup since version 2.0, would look like.
 
-![sps-service](https://github.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png)
+.. image:: https://github.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png
+    :align: center
+    :target: https://github.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png
+
 
 SEB - SEB Server Compatibility
 ------------------------------
@@ -24,11 +27,11 @@ SEB Server versions. There is an entry for each platform with a beta or testing 
 SEB Client Compatibility:
 
 .. csv-table::
-:header: "Platform / OS", "Release Version"
-
-"SEB Client for iOS", "3.4"
-"SEB Client for Mac", "3.4"
-"SEB Client for Windows", "3.8"
+    :header: "Platform / OS", "Release Version"
+    
+    "SEB Client for iOS", "3.4"
+    "SEB Client for Mac", "3.4"
+    "SEB Client for Windows", "3.8"
 
 Install SEB Server
 ------------------
