@@ -1,4 +1,5 @@
-# seb-screen-proctoring-server
+seb-screen-proctoring-server
+======
 
 About SEB Screen Proctoring Service
 -----------------------------------
