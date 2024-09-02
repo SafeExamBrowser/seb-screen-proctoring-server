@@ -3,18 +3,18 @@
 About SEB Screen Proctoring Service
 -----------------------------------
 
-SEB Server Screen Proctoring Webservice (sps-webservice) is a subproject of the [SEB Server](https://github.com/SafeExamBrowser/seb-server) project and
+SEB Server Screen Proctoring Webservice (sps-webservice) is a subproject of the `SEB Server <https://github.com/SafeExamBrowser/seb-server>`_ project and
 a new webservice component running beside the seb-server service to provide screen proctoring features
 for SEB Server.
 
-Together with the SEB Server Screen Proctoring Guiservice (sps-guiservice), this service, that fully integrates to SEB Server, allows to configure and apply screen proctoring for exams with the [Safe Exam Browser](https://safeexambrowser.org/news_en.html) (SEB).
+Together with the SEB Server Screen Proctoring Guiservice (sps-guiservice), this service, that fully integrates to SEB Server, allows to configure and apply screen proctoring for exams with the `Safe Exam Browser (SEB) <https://safeexambrowser.org>`_.
 
 The Image below shows the two screen proctoring components, sps-webservice and sps-guiservice, together with SEB Server and SEB Client and how they interact with each-other. This shows also how a fully bundled of SEB Server setup since version 2.0, would look like.
 
 .. image:: https://github.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png
     :align: center
     :target: https://github.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png
-
+    
 
 SEB - SEB Server Compatibility
 ------------------------------
