@@ -13,7 +13,6 @@ The Image below shows the two screen proctoring components, sps-webservice and s
 
 .. image:: https://raw.githubusercontent.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png
     :align: center
-    :target: https://github.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png
     
 
 SEB - SEB Server Compatibility
