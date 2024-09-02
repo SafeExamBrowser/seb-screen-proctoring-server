@@ -1,7 +1,7 @@
-seb-screen-proctoring-server
+SEB Screen Proctoring Service
 ======
 
-About SEB Screen Proctoring Service
+About 
 -----------------------------------
 
 SEB Server Screen Proctoring Webservice (sps-webservice) is a subproject of the `SEB Server <https://github.com/SafeExamBrowser/seb-server>`_ project and
