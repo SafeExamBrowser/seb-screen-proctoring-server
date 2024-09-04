@@ -24,13 +24,15 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 
 /** Abstract Spring ResourceServerConfiguration to configure different resource services
  * for different API's. */
-public abstract class WebserviceResourceConfiguration extends ResourceServerConfiguration {
+public abstract class WebserviceResourceConfiguration extends ResourceServerConfigurationAdapter {
 
     /** The resource identifier of Administration API resources */
     public static final String ADMIN_API_RESOURCE_ID = "sps-administration-api";
     /** The resource identifier of the session API resources */
     public static final String SESSION_API_RESOURCE_ID = "sps-session-api";
 
+    private final ConfigurerAdapter configurerAdapter;
+    
     public WebserviceResourceConfiguration(
             final TokenStore tokenStore,
             final SPSClientDetailsService webServiceClientDetails,
@@ -44,7 +46,7 @@ public abstract class WebserviceResourceConfiguration extends ResourceServerConf
             final int refreshTokenValiditySeconds) {
 
         super();
-        final ConfigurerAdapter configurerAdapter = new ConfigurerAdapter(
+        configurerAdapter = new ConfigurerAdapter(
                 this,
                 tokenStore,
                 webServiceClientDetails,
@@ -59,12 +61,15 @@ public abstract class WebserviceResourceConfiguration extends ResourceServerConf
         setConfigurers(Arrays.asList(configurerAdapter));
         super.setOrder(order);
     }
-
-    // Switches off the Spring Boot auto configuration
-    @Override
-    public final void setConfigurers(final List<ResourceServerConfigurer> configurers) {
-        super.setConfigurers(configurers);
-    }
+    
+//    public void configure(final HttpSecurity http) throws Exception {
+//        ResourceServerSecurityConfigurer resources = new ResourceServerSecurityConfigurer();
+//        resources.setBuilder(http);
+//        resources.init(http);
+//        addConfiguration(this.configurerAdapter, http);
+//        resources.configure(http);
+//        this.configurerAdapter.configure(resources);
+//    }
 
     protected void addConfiguration(final ConfigurerAdapter configurerAdapter, final HttpSecurity http)
             throws Exception {
@@ -126,8 +131,7 @@ public abstract class WebserviceResourceConfiguration extends ResourceServerConf
             this.accessTokenValiditySeconds = accessTokenValiditySeconds;
             this.refreshTokenValiditySeconds = refreshTokenValiditySeconds;
         }
-
-        @Override
+        
         public void configure(final ResourceServerSecurityConfigurer resources) {
             resources.resourceId(this.resourceId);
             final DefaultTokenServices tokenService = new DefaultTokenServices();
@@ -140,11 +144,7 @@ public abstract class WebserviceResourceConfiguration extends ResourceServerConf
             tokenService.setRefreshTokenValiditySeconds(this.refreshTokenValiditySeconds);
             resources.tokenServices(tokenService);
         }
-
-        @Override
-        public void configure(final HttpSecurity http) throws Exception {
-            this.webserviceResourceConfiguration.addConfiguration(this, http);
-        }
+        
     }
 
 }

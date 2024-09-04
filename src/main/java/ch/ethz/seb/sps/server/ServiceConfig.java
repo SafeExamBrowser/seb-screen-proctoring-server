@@ -22,10 +22,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 
 import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.server.weblayer.oauth.CachableJdbcTokenStore;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 
 @Configuration
 @EnableAsync

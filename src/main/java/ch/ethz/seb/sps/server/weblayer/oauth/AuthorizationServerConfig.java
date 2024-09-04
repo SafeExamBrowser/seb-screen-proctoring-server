@@ -15,14 +15,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerEndpointsConfiguration;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
@@ -33,9 +36,10 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.weblayer.WebServiceConfig;
 import ch.ethz.seb.sps.utils.Constants;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableAuthorizationServer
+@Import({AuthorizationServerEndpointsConfiguration.class, AuthorizationServerSecurityConfigurationAdapter.class})
 @Order(100)
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
@@ -60,6 +64,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Value("${sps.api.admin.refreshTokenValiditySeconds:-1}")
     private Integer adminRefreshTokenValSec;
 
+//    @Bean
+//    @Order(100)
+//    public SecurityFilterChain overallFilterChain(HttpSecurity http) throws Exception {
+//        super.co
+//    }
+
     @Override
     public void configure(final AuthorizationServerSecurityConfigurer oauthServer) {
         oauthServer
@@ -78,7 +88,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.withClientDetails(this.sebClientDetailsService);
+       clients.withClientDetails(this.sebClientDetailsService);
     }
 
     @Override

@@ -13,6 +13,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ch.ethz.seb.sps.server.weblayer.oauth.*;
 import org.apache.catalina.filters.RemoteIpFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,20 +36,18 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfiguration;
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.UserAuthenticationConverter;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.server.ServiceConfig;
-import ch.ethz.seb.sps.server.weblayer.oauth.BasicAuthUserDetailService;
-import ch.ethz.seb.sps.server.weblayer.oauth.PreAuthProvider;
-import ch.ethz.seb.sps.server.weblayer.oauth.SPSClientDetailsService;
-import ch.ethz.seb.sps.server.weblayer.oauth.WebServiceUserDetails;
-import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.OAuthFlow;
@@ -56,15 +56,15 @@ import io.swagger.v3.oas.models.security.Scopes;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityScheme.In;
 import io.swagger.v3.oas.models.security.SecurityScheme.Type;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 
 @Configuration
 @EnableWebSecurity
-@Order(6)
 @Import(DataSourceAutoConfiguration.class)
-@SuppressWarnings("deprecation")
-public class WebServiceConfig
-        extends org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-        implements ErrorController {
+public class WebServiceConfig implements ErrorController {
 
     public static final String SWAGGER_AUTH_SEB_CLIENT = "SEBOAuth";
     public static final String SWAGGER_AUTH_GUI_ADMIN = "guiClient";
@@ -150,29 +150,23 @@ public class WebServiceConfig
         userAuthenticationConverter.setUserDetailsService(this.webServiceUserDetails);
         return userAuthenticationConverter;
     }
-
-    @Override
+    
     @Bean(AUTHENTICATION_MANAGER)
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        final AuthenticationManager authenticationManagerBean = super.authenticationManagerBean();
-        return authenticationManagerBean;
-    }
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
 
-    @Override
-    protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-        auth
+        AuthenticationManagerBuilder authManagerBuilder =  http.getSharedObject(AuthenticationManagerBuilder.class);
+        authManagerBuilder
                 .userDetailsService(this.webServiceUserDetails)
                 .passwordEncoder(this.userPasswordEncoder);
-
-        auth
+        authManagerBuilder
                 .userDetailsService(this.basicAuthUserDetailService)
                 .passwordEncoder(this.userPasswordEncoder);
-
-        auth.authenticationProvider(this.preAuthProvider);
+        return authManagerBuilder.build();
     }
 
-    @Override
-    public void configure(final HttpSecurity http) throws Exception {
+    @Bean
+    @Order(6)
+    public SecurityFilterChain overallFilterChain(HttpSecurity http) throws Exception {
         http
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -197,14 +191,81 @@ public class WebServiceConfig
                 .authorizeRequests()
                 .and()
                 .httpBasic();
+        http
+                .securityContext((securityContext) -> securityContext
+                        .requireExplicitSave(true)
+                )
+                .securityContext((securityContext) -> securityContext
+                        .securityContextRepository(new DelegatingSecurityContextRepository(
+                                new RequestAttributeSecurityContextRepository(),
+                                new HttpSessionSecurityContextRepository()
+                        ))
+                );
+        
+        return http.build();
     }
 
+//    @Override
+//    public void configure(final HttpSecurity http) throws Exception {
+//        http
+//                .sessionManagement()
+//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//                .formLogin().disable()
+//                .httpBasic().disable()
+//                .logout().disable()
+//                .headers().frameOptions().disable()
+//                .and()
+//                .csrf()
+//                .disable();
+//
+//        http
+//                .antMatcher(API.OAUTH_JWTTOKEN_ENDPOINT + "/**")
+//                .authorizeRequests()
+//                .anyRequest().authenticated()
+//                .and()
+//                .httpBasic();
+//
+//        http
+//                .antMatcher(API.REGISTER_ENDPOINT)
+//                .authorizeRequests()
+//                .and()
+//                .httpBasic();
+//    }
+    
+
+//    @Bean
+//    @Order(2)
+//    public SecurityFilterChain sebServerAdminAPIResourcesFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+//        new AdminAPIResourceServerConfiguration(
+//                this.tokenStore,
+//                this.webServiceClientDetails,
+//                authenticationManager,
+//                this.adminAPIEndpoint,
+//                this.unauthorizedRedirect,
+//                this.adminAccessTokenValSec,
+//                this.adminRefreshTokenValSec).configure(http);
+//        return http.build();
+//    }
+//
+//    @Bean
+//    @Order(3)
+//    public SecurityFilterChain sebServerExamAPIResourcesFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+//        new SessionAPIClientResourceServerConfiguration(
+//                this.tokenStore,
+//                this.webServiceClientDetails,
+//                authenticationManager,
+//                this.sessionAPIEndpoint,
+//                this.sessionAccessTokenValSec).configure(http);
+//        return http.build();
+//    }
+
     @Bean
-    protected ResourceServerConfiguration sebServerAdminAPIResources() throws Exception {
+    protected ResourceServerConfigurationAdapter sebServerAdminAPIResources(AuthenticationManager authenticationManager) throws Exception {
         return new AdminAPIResourceServerConfiguration(
                 this.tokenStore,
                 this.webServiceClientDetails,
-                authenticationManagerBean(),
+                authenticationManager,
                 this.adminAPIEndpoint,
                 this.unauthorizedRedirect,
                 this.adminAccessTokenValSec,
@@ -212,11 +273,11 @@ public class WebServiceConfig
     }
 
     @Bean
-    protected ResourceServerConfiguration sebServerExamAPIResources() throws Exception {
+    protected ResourceServerConfigurationAdapter sebServerExamAPIResources(AuthenticationManager authenticationManager) throws Exception {
         return new SessionAPIClientResourceServerConfiguration(
                 this.tokenStore,
                 this.webServiceClientDetails,
-                authenticationManagerBean(),
+                authenticationManager,
                 this.sessionAPIEndpoint,
                 this.sessionAccessTokenValSec);
     }

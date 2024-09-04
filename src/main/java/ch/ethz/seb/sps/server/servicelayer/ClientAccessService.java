@@ -11,9 +11,9 @@ package ch.ethz.seb.sps.server.servicelayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.oauth2.provider.ClientDetails;
 
 import ch.ethz.seb.sps.utils.Result;
+import org.springframework.security.oauth2.provider.ClientDetails;
 
 public interface ClientAccessService {
 

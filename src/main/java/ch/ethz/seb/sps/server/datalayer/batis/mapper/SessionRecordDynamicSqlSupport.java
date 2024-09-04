@@ -6,46 +6,46 @@ import org.mybatis.dynamic.sql.SqlColumn;
 import org.mybatis.dynamic.sql.SqlTable;
 
 public final class SessionRecordDynamicSqlSupport {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.550+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source Table: session")
     public static final SessionRecord sessionRecord = new SessionRecord();
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.550+02:00", comments="Source field: session.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.id")
     public static final SqlColumn<Long> id = sessionRecord.id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.550+02:00", comments="Source field: session.group_id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.group_id")
     public static final SqlColumn<Long> groupId = sessionRecord.groupId;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.uuid")
     public static final SqlColumn<String> uuid = sessionRecord.uuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.image_format")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.image_format")
     public static final SqlColumn<Integer> imageFormat = sessionRecord.imageFormat;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.client_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.client_name")
     public static final SqlColumn<String> clientName = sessionRecord.clientName;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.client_ip")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.client_ip")
     public static final SqlColumn<String> clientIp = sessionRecord.clientIp;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.client_machine_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.410+02:00", comments="Source field: session.client_machine_name")
     public static final SqlColumn<String> clientMachineName = sessionRecord.clientMachineName;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.client_os_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.410+02:00", comments="Source field: session.client_os_name")
     public static final SqlColumn<String> clientOsName = sessionRecord.clientOsName;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.client_version")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.410+02:00", comments="Source field: session.client_version")
     public static final SqlColumn<String> clientVersion = sessionRecord.clientVersion;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.410+02:00", comments="Source field: session.creation_time")
     public static final SqlColumn<Long> creationTime = sessionRecord.creationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.411+02:00", comments="Source field: session.last_update_time")
     public static final SqlColumn<Long> lastUpdateTime = sessionRecord.lastUpdateTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.551+02:00", comments="Source field: session.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.411+02:00", comments="Source field: session.termination_time")
     public static final SqlColumn<Long> terminationTime = sessionRecord.terminationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.550+02:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source Table: session")
     public static final class SessionRecord extends SqlTable {
         public final SqlColumn<Long> id = column("id", JDBCType.BIGINT);
 

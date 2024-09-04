@@ -9,13 +9,11 @@
 package ch.ethz.seb.sps.utils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 
 import org.bouncycastle.jcajce.provider.keystore.pkcs12.PKCS12KeyStoreSpi;
-import org.bouncycastle.jcajce.provider.keystore.pkcs12.PKCS12KeyStoreSpi.BCPKCS12KeyStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -57,17 +55,17 @@ public class Cryptor {
         return decrypt(text, this.internalPWD);
     }
 
-    public Result<PKCS12KeyStoreSpi> createNewEmptyKeyStore() {
-        return loadKeyStore(null);
-    }
-
-    public Result<PKCS12KeyStoreSpi> loadKeyStore(final InputStream in) {
-        return Result.tryCatch(() -> {
-            final BCPKCS12KeyStore bcpkcs12KeyStore = new BCPKCS12KeyStore();
-            bcpkcs12KeyStore.engineLoad(in, Utils.toCharArray(this.internalPWD));
-            return bcpkcs12KeyStore;
-        });
-    }
+//    public Result<PKCS12KeyStoreSpi> createNewEmptyKeyStore() {
+//        return loadKeyStore(null);
+//    }
+//
+//    public Result<PKCS12KeyStoreSpi> loadKeyStore(final InputStream in) {
+//        return Result.tryCatch(() -> {
+//            final BCPKCS12KeyStore bcpkcs12KeyStore = new BCPKCS12KeyStore();
+//            bcpkcs12KeyStore.engineLoad(in, Utils.toCharArray(this.internalPWD));
+//            return bcpkcs12KeyStore;
+//        });
+//    }
 
     public Result<Void> storeKeyStore(final PKCS12KeyStoreSpi keyStore, final OutputStream out) {
         try {
