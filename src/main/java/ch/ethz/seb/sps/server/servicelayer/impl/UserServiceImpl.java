@@ -26,6 +26,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -323,7 +324,8 @@ public class UserServiceImpl implements UserService {
 //                }
 //            }
 
-            return null;
+            // TODO remove fake, return null
+            return new ServerUser(1L, new UserInfo(1L, "test", "test", "test", "test", null, null, null, new HashSet(Arrays.asList("ADMIN")), 1L, 1L, null), "pwd");
         }
     }
 

@@ -145,17 +145,17 @@ public class WebServiceConfig implements ErrorController {
     @Bean
     @Order(6)
     public SecurityFilterChain overallFilterChain(HttpSecurity http) throws Exception {
-        http
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .logout().disable()
-                .headers().frameOptions().disable()
-                .and()
-                .csrf()
-                .disable();
+//        http
+//                .sessionManagement()
+//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//                .formLogin().disable()
+//                .httpBasic().disable()
+//                .logout().disable()
+//                .headers().frameOptions().disable()
+//                .and()
+//                .csrf()
+//                .disable();
 
 //        http
 //                .antMatcher(API.OAUTH_JWTTOKEN_ENDPOINT + "/**")

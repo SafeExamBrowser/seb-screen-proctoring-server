@@ -59,7 +59,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
  *
  * @param <T> The concrete Entity domain-model type used on all GET, PUT
  * @param <M> The concrete Entity domain-model type used for write methods (new, save) */
-@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_GUI_ADMIN)
+//@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_GUI_ADMIN)
 public abstract class EntityController<T extends Entity, M extends Entity> {
 
     protected final UserService userService;
@@ -143,7 +143,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             })
     @RequestMapping(
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            //consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<T> getPage(
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,

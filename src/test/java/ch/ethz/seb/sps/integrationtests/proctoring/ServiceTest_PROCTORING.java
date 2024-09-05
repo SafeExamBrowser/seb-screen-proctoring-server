@@ -51,6 +51,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -130,7 +131,7 @@ public abstract class ServiceTest_PROCTORING {
         private final Map<String, String> queryAttrs = new HashMap<>();
         private String accessToken;
         private HttpStatus expectedStatus;
-        private HttpMethod httpMethod = HttpMethod.POST;
+        private HttpMethod httpMethod = POST;
         private MediaType contentType = MediaType.APPLICATION_FORM_URLENCODED;
         private String body = null;
 
@@ -215,25 +216,18 @@ public abstract class ServiceTest_PROCTORING {
 
         private RequestBuilder requestBuilder() {
             MockHttpServletRequestBuilder builder = get(getFullPath());
-            switch (this.httpMethod) {
-                case GET:
-                    builder = get(getFullPath());
-                    break;
-                case POST:
-                    builder = post(getFullPath());
-                    break;
-                case PUT:
-                    builder = put(getFullPath());
-                    break;
-                case DELETE:
-                    builder = delete(getFullPath());
-                    break;
-                case PATCH:
-                    builder = patch(getFullPath());
-                    break;
-                default:
-                    get(getFullPath());
-                    break;
+            if (this.httpMethod.equals(GET)) {
+                builder = get(getFullPath());
+            } else if (this.httpMethod.equals(POST)) {
+                builder = post(getFullPath());
+            } else if (this.httpMethod.equals(PUT)) {
+                builder = put(getFullPath());
+            } else if (this.httpMethod.equals(DELETE)) {
+                builder = delete(getFullPath());
+            } else if (this.httpMethod.equals(PATCH)) {
+                builder = patch(getFullPath());
+            } else {
+                get(getFullPath());
             }
             builder.header("Authorization", "Bearer " + this.accessToken);
 

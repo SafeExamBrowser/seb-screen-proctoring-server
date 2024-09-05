@@ -46,7 +46,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
-@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_SEBSEVER_ADMIN)
+//@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_SEBSEVER_ADMIN)
 public class AdminJWTAccess {
 
     private static final String SUBJECT_CLAIM_NAME = "sub";

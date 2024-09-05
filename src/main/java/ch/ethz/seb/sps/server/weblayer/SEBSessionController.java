@@ -45,7 +45,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("${sps.api.session.endpoint.v1}" + API.SESSION_ENDPOINT)
-@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_SEB_CLIENT)
+//@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_SEB_CLIENT)
 public class SEBSessionController {
 
     private static final Logger log = LoggerFactory.getLogger(SEBSessionController.class);

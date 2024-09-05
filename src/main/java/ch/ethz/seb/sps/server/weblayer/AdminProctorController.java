@@ -58,7 +58,7 @@ import ch.ethz.seb.sps.utils.Utils;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.PROCTORING_ENDPOINT)
-@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_GUI_ADMIN)
+//@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_GUI_ADMIN)
 public class AdminProctorController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminProctorController.class);
