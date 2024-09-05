@@ -92,27 +92,27 @@ public class WebServiceConfig implements ErrorController {
         return new RemoteIpFilter();
     }
 
-    @Bean
-    public OpenAPI customOpenAPI() {
-
-        return new OpenAPI()
-                .components(new Components()
-                        .addSecuritySchemes(SWAGGER_AUTH_GUI_ADMIN, new SecurityScheme()
-                                .type(Type.OAUTH2)
-                                .scheme("bearer")
-                                .in(In.HEADER)
-                                .bearerFormat("jwt")
-                                .flows(new OAuthFlows().password(new OAuthFlow().tokenUrl("/oauth/token"))))
-
-                        .addSecuritySchemes(SWAGGER_AUTH_SEB_CLIENT, new SecurityScheme()
-                                .type(Type.OAUTH2)
-                                .scheme("basic")
-                                .in(In.HEADER)
-                                .flows(new OAuthFlows().clientCredentials(new OAuthFlow()
-                                        .tokenUrl("/oauth/token")
-                                        .scopes(new Scopes().addString("read", "read").addString("write", "write"))))));
-
-    }
+//    @Bean
+//    public OpenAPI customOpenAPI() {
+//
+//        return new OpenAPI()
+//                .components(new Components()
+//                        .addSecuritySchemes(SWAGGER_AUTH_GUI_ADMIN, new SecurityScheme()
+//                                .type(Type.OAUTH2)
+//                                .scheme("bearer")
+//                                .in(In.HEADER)
+//                                .bearerFormat("jwt")
+//                                .flows(new OAuthFlows().password(new OAuthFlow().tokenUrl("/oauth/token"))))
+//
+//                        .addSecuritySchemes(SWAGGER_AUTH_SEB_CLIENT, new SecurityScheme()
+//                                .type(Type.OAUTH2)
+//                                .scheme("basic")
+//                                .in(In.HEADER)
+//                                .flows(new OAuthFlows().clientCredentials(new OAuthFlow()
+//                                        .tokenUrl("/oauth/token")
+//                                        .scopes(new Scopes().addString("read", "read").addString("write", "write"))))));
+//
+//    }
 
 //    @Bean
 //    public AccessTokenConverter accessTokenConverter() {
