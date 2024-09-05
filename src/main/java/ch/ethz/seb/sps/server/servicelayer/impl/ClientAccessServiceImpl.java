@@ -10,17 +10,16 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.util.Collections;
 
+import ch.ethz.seb.sps.domain.model.user.ClientDetails;
+import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.provider.ClientDetails;
-import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 import org.springframework.stereotype.Service;
 
 import ch.ethz.seb.sps.server.datalayer.dao.ClientAccessDAO;
 import ch.ethz.seb.sps.server.servicelayer.ClientAccessService;
-import ch.ethz.seb.sps.server.weblayer.oauth.WebserviceResourceConfiguration;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Cryptor;
 import ch.ethz.seb.sps.utils.Result;
@@ -58,7 +57,7 @@ public class ClientAccessServiceImpl implements ClientAccessService {
             final String clientName,
             final CharSequence encodedSecret) {
 
-        final BaseClientDetails clientDetails = new BaseClientDetails(
+        final ClientDetails clientDetails = new ClientDetails(
                 Utils.toString(clientName),
                 WebserviceResourceConfiguration.SESSION_API_RESOURCE_ID,
                 null,

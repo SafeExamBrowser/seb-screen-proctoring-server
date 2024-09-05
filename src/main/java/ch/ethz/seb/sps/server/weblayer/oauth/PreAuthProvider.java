@@ -8,8 +8,8 @@
 
 package ch.ethz.seb.sps.server.weblayer.oauth;
 
-import javax.annotation.PostConstruct;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 package ch.ethz.seb.sps.server.datalayer.batis.model;
 
-import javax.annotation.Generated;
+import jakarta.annotation.Generated;
 
 public class SessionRecord {
     @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.id")

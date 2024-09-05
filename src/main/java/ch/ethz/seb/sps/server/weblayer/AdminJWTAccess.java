@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -21,8 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.endpoint.TokenEndpoint;
+
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,7 +37,6 @@ import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
-import ch.ethz.seb.sps.server.weblayer.oauth.BasicAuthUserDetailService;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Cryptor;
 import ch.ethz.seb.sps.utils.Utils;
@@ -59,20 +60,20 @@ public class AdminJWTAccess {
     private PasswordEncoder userPasswordEncoder;
 
     private final UserDAO userDAO;
-    private final TokenEndpoint tokenEndpoint;
-    private final BasicAuthUserDetailService basicAuthUserDetailService;
+//    private final TokenEndpoint tokenEndpoint;
+//    private final BasicAuthUserDetailService basicAuthUserDetailService;
     private final Cryptor cryptor;
     private final String subjectClaim;
 
     public AdminJWTAccess(
             final UserDAO userDAO,
-            final TokenEndpoint tokenEndpoint,
-            final BasicAuthUserDetailService basicAuthUserDetailService,
+//            final TokenEndpoint tokenEndpoint,
+//            final BasicAuthUserDetailService basicAuthUserDetailService,
             final Cryptor cryptor) {
 
         this.userDAO = userDAO;
-        this.tokenEndpoint = tokenEndpoint;
-        this.basicAuthUserDetailService = basicAuthUserDetailService;
+//        this.tokenEndpoint = tokenEndpoint;
+//        this.basicAuthUserDetailService = basicAuthUserDetailService;
         this.cryptor = cryptor;
         subjectClaim = "logintoken_" + Utils.hash_SHA_256_Base_16(cryptor.getInternalPWD());
     }
@@ -136,14 +137,21 @@ public class AdminJWTAccess {
             params.put("username", username);
             params.put("password", password);
             final WebAuthenticationDetails details = new WebAuthenticationDetails("localhost", null);
-            final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                    new UsernamePasswordAuthenticationToken(
-                            this.basicAuthUserDetailService.getGuiUserDetails(),
-                            details,
-                            Collections.emptyList());
-            final ResponseEntity<OAuth2AccessToken> accessToken =
-                    this.tokenEndpoint.postAccessToken(usernamePasswordAuthenticationToken, params);
-            final OAuth2AccessToken token = accessToken.getBody();
+//            final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+//                    new UsernamePasswordAuthenticationToken(
+//                            this.basicAuthUserDetailService.getGuiUserDetails(),
+//                            details,
+//                            Collections.emptyList());
+//            final ResponseEntity<OAuth2AccessToken> accessToken =
+//                    this.tokenEndpoint.postAccessToken(usernamePasswordAuthenticationToken, params);
+//            final OAuth2AccessToken token = accessToken.getBody();
+
+            // TODO Fake now
+            final OAuth2AccessToken token = new OAuth2AccessToken(
+                    OAuth2AccessToken.TokenType.BEARER, 
+                    "",
+                    DateTime.now(DateTimeZone.UTC).toDate().toInstant(),
+                    DateTime.now(DateTimeZone.UTC).toDate().toInstant());
 
             final LoginInfo loginInfo = new LoginInfo(username, user.uuid(), redirect, token);
             return loginInfo;

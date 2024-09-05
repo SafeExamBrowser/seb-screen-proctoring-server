@@ -8,11 +8,6 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import ch.ethz.seb.sps.server.weblayer.oauth.*;
 import org.apache.catalina.filters.RemoteIpFilter;
 import org.slf4j.Logger;
@@ -26,27 +21,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfiguration;
-import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.UserAuthenticationConverter;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.web.AuthenticationEntryPoint;
 
-import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.server.ServiceConfig;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -57,12 +38,9 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityScheme.In;
 import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.context.DelegatingSecurityContextRepository;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 
 @Configuration
-@EnableWebSecurity
+//@EnableWebSecurity
 @Import(DataSourceAutoConfiguration.class)
 public class WebServiceConfig implements ErrorController {
 
@@ -80,12 +58,12 @@ public class WebServiceConfig implements ErrorController {
     @Autowired
     @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME)
     private PasswordEncoder userPasswordEncoder;
-    @Autowired
-    private TokenStore tokenStore;
-    @Autowired
-    private SPSClientDetailsService webServiceClientDetails;
-    @Autowired
-    private BasicAuthUserDetailService basicAuthUserDetailService;
+//    @Autowired
+//    private TokenStore tokenStore;
+//    @Autowired
+//    private SPSClientDetailsService webServiceClientDetails;
+//    @Autowired
+//    private BasicAuthUserDetailService basicAuthUserDetailService;
     @Autowired
     private PreAuthProvider preAuthProvider;
 
@@ -136,20 +114,20 @@ public class WebServiceConfig implements ErrorController {
 
     }
 
-    @Bean
-    public AccessTokenConverter accessTokenConverter() {
-        final DefaultAccessTokenConverter accessTokenConverter = new DefaultAccessTokenConverter();
-        accessTokenConverter.setUserTokenConverter(userAuthenticationConverter());
-        return accessTokenConverter;
-    }
-
-    @Bean
-    public UserAuthenticationConverter userAuthenticationConverter() {
-        final DefaultUserAuthenticationConverter userAuthenticationConverter =
-                new DefaultUserAuthenticationConverter();
-        userAuthenticationConverter.setUserDetailsService(this.webServiceUserDetails);
-        return userAuthenticationConverter;
-    }
+//    @Bean
+//    public AccessTokenConverter accessTokenConverter() {
+//        final DefaultAccessTokenConverter accessTokenConverter = new DefaultAccessTokenConverter();
+//        accessTokenConverter.setUserTokenConverter(userAuthenticationConverter());
+//        return accessTokenConverter;
+//    }
+//
+//    @Bean
+//    public UserAuthenticationConverter userAuthenticationConverter() {
+//        final DefaultUserAuthenticationConverter userAuthenticationConverter =
+//                new DefaultUserAuthenticationConverter();
+//        userAuthenticationConverter.setUserDetailsService(this.webServiceUserDetails);
+//        return userAuthenticationConverter;
+//    }
     
     @Bean(AUTHENTICATION_MANAGER)
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
@@ -158,9 +136,9 @@ public class WebServiceConfig implements ErrorController {
         authManagerBuilder
                 .userDetailsService(this.webServiceUserDetails)
                 .passwordEncoder(this.userPasswordEncoder);
-        authManagerBuilder
-                .userDetailsService(this.basicAuthUserDetailService)
-                .passwordEncoder(this.userPasswordEncoder);
+//        authManagerBuilder
+//                .userDetailsService(this.basicAuthUserDetailService)
+//                .passwordEncoder(this.userPasswordEncoder);
         return authManagerBuilder.build();
     }
 
@@ -179,46 +157,6 @@ public class WebServiceConfig implements ErrorController {
                 .csrf()
                 .disable();
 
-        http
-                .antMatcher(API.OAUTH_JWTTOKEN_ENDPOINT + "/**")
-                .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .httpBasic();
-
-        http
-                .antMatcher(API.REGISTER_ENDPOINT)
-                .authorizeRequests()
-                .and()
-                .httpBasic();
-        http
-                .securityContext((securityContext) -> securityContext
-                        .requireExplicitSave(true)
-                )
-                .securityContext((securityContext) -> securityContext
-                        .securityContextRepository(new DelegatingSecurityContextRepository(
-                                new RequestAttributeSecurityContextRepository(),
-                                new HttpSessionSecurityContextRepository()
-                        ))
-                );
-        
-        return http.build();
-    }
-
-//    @Override
-//    public void configure(final HttpSecurity http) throws Exception {
-//        http
-//                .sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                .and()
-//                .formLogin().disable()
-//                .httpBasic().disable()
-//                .logout().disable()
-//                .headers().frameOptions().disable()
-//                .and()
-//                .csrf()
-//                .disable();
-//
 //        http
 //                .antMatcher(API.OAUTH_JWTTOKEN_ENDPOINT + "/**")
 //                .authorizeRequests()
@@ -231,8 +169,26 @@ public class WebServiceConfig implements ErrorController {
 //                .authorizeRequests()
 //                .and()
 //                .httpBasic();
+//        http
+//                .securityContext((securityContext) -> securityContext
+//                        .requireExplicitSave(true)
+//                )
+//                .securityContext((securityContext) -> securityContext
+//                        .securityContextRepository(new DelegatingSecurityContextRepository(
+//                                new RequestAttributeSecurityContextRepository(),
+//                                new HttpSessionSecurityContextRepository()
+//                        ))
+//                );
+        
+        return http.build();
+    }
+
+//    @Bean
+//    public TokenStore tokenStore(final DataSource dataSource) {
+//        return new CachableJdbcTokenStore(dataSource);
 //    }
-    
+
+
 
 //    @Bean
 //    @Order(2)
@@ -259,95 +215,74 @@ public class WebServiceConfig implements ErrorController {
 //                this.sessionAccessTokenValSec).configure(http);
 //        return http.build();
 //    }
+    
 
-    @Bean
-    protected ResourceServerConfigurationAdapter sebServerAdminAPIResources(AuthenticationManager authenticationManager) throws Exception {
-        return new AdminAPIResourceServerConfiguration(
-                this.tokenStore,
-                this.webServiceClientDetails,
-                authenticationManager,
-                this.adminAPIEndpoint,
-                this.unauthorizedRedirect,
-                this.adminAccessTokenValSec,
-                this.adminRefreshTokenValSec);
-    }
-
-    @Bean
-    protected ResourceServerConfigurationAdapter sebServerExamAPIResources(AuthenticationManager authenticationManager) throws Exception {
-        return new SessionAPIClientResourceServerConfiguration(
-                this.tokenStore,
-                this.webServiceClientDetails,
-                authenticationManager,
-                this.sessionAPIEndpoint,
-                this.sessionAccessTokenValSec);
-    }
-
-    private static final class AdminAPIResourceServerConfiguration extends WebserviceResourceConfiguration {
-
-        public AdminAPIResourceServerConfiguration(
-                final TokenStore tokenStore,
-                final SPSClientDetailsService webServiceClientDetails,
-                final AuthenticationManager authenticationManager,
-                final String apiEndpoint,
-                final String redirect,
-                final int adminAccessTokenValSec,
-                final int adminRefreshTokenValSec) {
-
-            super(
-                    tokenStore,
-                    webServiceClientDetails,
-                    authenticationManager,
-                    new LoginRedirectOnUnauthorized(),
-                    ADMIN_API_RESOURCE_ID,
-                    apiEndpoint,
-                    true,
-                    2,
-                    adminAccessTokenValSec,
-                    adminRefreshTokenValSec);
-        }
-    }
-
-    private static final class SessionAPIClientResourceServerConfiguration extends WebserviceResourceConfiguration {
-
-        public SessionAPIClientResourceServerConfiguration(
-                final TokenStore tokenStore,
-                final SPSClientDetailsService webServiceClientDetails,
-                final AuthenticationManager authenticationManager,
-                final String apiEndpoint,
-                final int adminAccessTokenValSec) {
-
-            super(
-                    tokenStore,
-                    webServiceClientDetails,
-                    authenticationManager,
-                    (request, response, exception) -> {
-                        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        log.warn("Unauthorized Request: {}", request, exception);
-                        response.getOutputStream().println("{ \"error\": \"" + exception.getMessage() + "\" }");
-                    },
-                    SESSION_API_RESOURCE_ID,
-                    apiEndpoint,
-                    true,
-                    3,
-                    adminAccessTokenValSec,
-                    1);
-        }
-    }
-
-    private static class LoginRedirectOnUnauthorized implements AuthenticationEntryPoint {
-
-        @Override
-        public void commence(
-                final HttpServletRequest request,
-                final HttpServletResponse response,
-                final AuthenticationException authenticationException) throws IOException {
-
-            log.warn("Unauthorized Request on: {}", request.getRequestURI());
-
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.flushBuffer();
-        }
-    }
+//    private static final class AdminAPIResourceServerConfiguration extends WebserviceResourceConfiguration {
+//
+//        public AdminAPIResourceServerConfiguration(
+//                final TokenStore tokenStore,
+//                final SPSClientDetailsService webServiceClientDetails,
+//                final AuthenticationManager authenticationManager,
+//                final String apiEndpoint,
+//                final String redirect,
+//                final int adminAccessTokenValSec,
+//                final int adminRefreshTokenValSec) {
+//
+//            super(
+//                    tokenStore,
+//                    webServiceClientDetails,
+//                    authenticationManager,
+//                    new LoginRedirectOnUnauthorized(),
+//                    ADMIN_API_RESOURCE_ID,
+//                    apiEndpoint,
+//                    true,
+//                    2,
+//                    adminAccessTokenValSec,
+//                    adminRefreshTokenValSec);
+//        }
+//    }
+//
+//    private static final class SessionAPIClientResourceServerConfiguration extends WebserviceResourceConfiguration {
+//
+//        public SessionAPIClientResourceServerConfiguration(
+//                final TokenStore tokenStore,
+//                final SPSClientDetailsService webServiceClientDetails,
+//                final AuthenticationManager authenticationManager,
+//                final String apiEndpoint,
+//                final int adminAccessTokenValSec) {
+//
+//            super(
+//                    tokenStore,
+//                    webServiceClientDetails,
+//                    authenticationManager,
+//                    (request, response, exception) -> {
+//                        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+//                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//                        log.warn("Unauthorized Request: {}", request, exception);
+//                        response.getOutputStream().println("{ \"error\": \"" + exception.getMessage() + "\" }");
+//                    },
+//                    SESSION_API_RESOURCE_ID,
+//                    apiEndpoint,
+//                    true,
+//                    3,
+//                    adminAccessTokenValSec,
+//                    1);
+//        }
+//    }
+//
+//    private static class LoginRedirectOnUnauthorized implements AuthenticationEntryPoint {
+//
+//        @Override
+//        public void commence(
+//                final HttpServletRequest request,
+//                final HttpServletResponse response,
+//                final AuthenticationException authenticationException) throws IOException {
+//
+//            log.warn("Unauthorized Request on: {}", request.getRequestURI());
+//
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//            response.flushBuffer();
+//        }
+//    }
 
 }

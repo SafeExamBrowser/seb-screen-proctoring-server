@@ -37,7 +37,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.FilterMap;

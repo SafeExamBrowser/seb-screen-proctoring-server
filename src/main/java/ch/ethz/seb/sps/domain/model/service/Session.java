@@ -11,7 +11,7 @@ package ch.ethz.seb.sps.domain.model.service;
 import java.util.Comparator;
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;

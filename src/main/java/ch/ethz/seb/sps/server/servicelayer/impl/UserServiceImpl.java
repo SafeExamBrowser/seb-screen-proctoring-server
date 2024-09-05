@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -312,17 +311,17 @@ public class UserServiceImpl implements UserService {
 
         @Override
         public ServerUser extract(final Principal principal) {
-            if (principal instanceof OAuth2Authentication) {
-                final Authentication userAuthentication = ((OAuth2Authentication) principal).getUserAuthentication();
-                //UsernamePasswordAuthenticationToken == initial request with username & password | PreAuthenticatedAuthenticationToken == request with refresh token
-                if (userAuthentication instanceof UsernamePasswordAuthenticationToken
-                        || userAuthentication instanceof PreAuthenticatedAuthenticationToken) {
-                    final Object userPrincipal = userAuthentication.getPrincipal();
-                    if (userPrincipal instanceof ServerUser) {
-                        return (ServerUser) userPrincipal;
-                    }
-                }
-            }
+//            if (principal instanceof OAuth2Authentication) {
+//                final Authentication userAuthentication = ((OAuth2Authentication) principal).getUserAuthentication();
+//                //UsernamePasswordAuthenticationToken == initial request with username & password | PreAuthenticatedAuthenticationToken == request with refresh token
+//                if (userAuthentication instanceof UsernamePasswordAuthenticationToken
+//                        || userAuthentication instanceof PreAuthenticatedAuthenticationToken) {
+//                    final Object userPrincipal = userAuthentication.getPrincipal();
+//                    if (userPrincipal instanceof ServerUser) {
+//                        return (ServerUser) userPrincipal;
+//                    }
+//                }
+//            }
 
             return null;
         }

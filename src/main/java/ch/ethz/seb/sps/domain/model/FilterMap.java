@@ -11,7 +11,7 @@ package ch.ethz.seb.sps.domain.model;
 import java.util.Arrays;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;

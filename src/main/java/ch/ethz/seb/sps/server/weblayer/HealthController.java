@@ -8,7 +8,7 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

@@ -24,8 +24,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import ch.ethz.seb.sps.domain.api.JSONMapper;
-import ch.ethz.seb.sps.server.weblayer.oauth.CachableJdbcTokenStore;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 
 @Configuration
 @EnableAsync
@@ -47,10 +45,6 @@ public class ServiceConfig {
         return new JSONMapper();
     }
 
-    @Bean
-    public TokenStore tokenStore(final DataSource dataSource) {
-        return new CachableJdbcTokenStore(dataSource);
-    }
 
     /** Password encoder used for user passwords (stronger protection) */
     @Bean(USER_PASSWORD_ENCODER_BEAN_NAME)
