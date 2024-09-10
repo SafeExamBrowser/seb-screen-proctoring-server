@@ -37,7 +37,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.FilterMap;
@@ -401,12 +401,7 @@ public final class Utils {
             return value;
         }
 
-        try {
-            return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
-        } catch (final UnsupportedEncodingException e) {
-            log.error("Failed to encode FormURL_UTF_8 for: {}", value, e);
-            return value;
-        }
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
     public static String decodeFormURL_UTF_8(final String value) {
@@ -414,18 +409,7 @@ public final class Utils {
             return value;
         }
 
-        try {
-            return URLDecoder.decode(
-                    // TODO it seems that + replacement for spaces and this replacement with %2b are not working as expected
-                    //      create Unit Tests and that different combinations of URL encoding and decoding
-                    (value.indexOf('+') >= 0)
-                            ? value.replaceAll("\\+", "%2b")
-                            : value,
-                    StandardCharsets.UTF_8.name());
-        } catch (final UnsupportedEncodingException e) {
-            log.error("Failed to decode FormURL_UTF_8 for: {}", value, e);
-            return value;
-        }
+        return URLDecoder.decode(value, StandardCharsets.UTF_8);
     }
 
     public static void clearCharArray(final char[] array) {
