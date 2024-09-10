@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.server.weblayer;
 
 import ch.ethz.seb.sps.server.weblayer.oauth.*;
+import ch.ethz.seb.sps.server.weblayer.oauth.authserver.WebServiceUserDetails;
 import org.apache.catalina.filters.RemoteIpFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,19 +25,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import ch.ethz.seb.sps.server.ServiceConfig;
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.security.OAuthFlow;
-import io.swagger.v3.oas.models.security.OAuthFlows;
-import io.swagger.v3.oas.models.security.Scopes;
-import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.security.SecurityScheme.In;
-import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -56,7 +48,6 @@ public class WebServiceConfig implements ErrorController {
     @Autowired
     private WebServiceUserDetails webServiceUserDetails;
     @Autowired
-    @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME)
     private PasswordEncoder userPasswordEncoder;
 //    @Autowired
 //    private TokenStore tokenStore;
@@ -145,17 +136,17 @@ public class WebServiceConfig implements ErrorController {
     @Bean
     @Order(6)
     public SecurityFilterChain overallFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                .and()
-//                .formLogin().disable()
-//                .httpBasic().disable()
-//                .logout().disable()
-//                .headers().frameOptions().disable()
-//                .and()
-//                .csrf()
-//                .disable();
+        http
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .formLogin().disable()
+                .httpBasic().disable()
+                .logout().disable()
+                .headers().frameOptions().disable()
+                .and()
+                .csrf()
+                .disable();
 
 //        http
 //                .antMatcher(API.OAUTH_JWTTOKEN_ENDPOINT + "/**")

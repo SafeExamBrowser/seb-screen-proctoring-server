@@ -416,6 +416,8 @@ public final class Utils {
 
         try {
             return URLDecoder.decode(
+                    // TODO it seems that + replacement for spaces and this replacement with %2b are not working as expected
+                    //      create Unit Tests and that different combinations of URL encoding and decoding
                     (value.indexOf('+') >= 0)
                             ? value.replaceAll("\\+", "%2b")
                             : value,

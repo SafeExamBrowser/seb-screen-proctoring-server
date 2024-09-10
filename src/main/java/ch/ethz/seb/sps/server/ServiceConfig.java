@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -30,10 +31,10 @@ import ch.ethz.seb.sps.domain.api.JSONMapper;
 @EnableScheduling
 public class ServiceConfig {
 
-    /** Spring bean name of user password encoder */
-    public static final String USER_PASSWORD_ENCODER_BEAN_NAME = "userPasswordEncoder";
-    /** Spring bean name of client (application) password encoder */
-    public static final String CLIENT_PASSWORD_ENCODER_BEAN_NAME = "clientPasswordEncoder";
+//    /** Spring bean name of user password encoder */
+//    public static final String USER_PASSWORD_ENCODER_BEAN_NAME = "userPasswordEncoder";
+//    /** Spring bean name of client (application) password encoder */
+//    public static final String CLIENT_PASSWORD_ENCODER_BEAN_NAME = "clientPasswordEncoder";
 
     public static final String SCREENSHOT_UPLOAD_API_EXECUTOR = "SCREENSHOT_UPLOAD_API_EXECUTOR";
     public static final String SCREENSHOT_DOWNLOAD_API_EXECUTOR = "SCREENSHOT_DOWNLOAD_API_EXECUTOR";
@@ -47,16 +48,17 @@ public class ServiceConfig {
 
 
     /** Password encoder used for user passwords (stronger protection) */
-    @Bean(USER_PASSWORD_ENCODER_BEAN_NAME)
+    @Primary
+    @Bean
     public PasswordEncoder userPasswordEncoder() {
-        return new BCryptPasswordEncoder(8);
+        return new BCryptPasswordEncoder();
     }
 
-    /** Password encode used for client (application) passwords */
-    @Bean(CLIENT_PASSWORD_ENCODER_BEAN_NAME)
-    public PasswordEncoder clientPasswordEncoder() {
-        return new BCryptPasswordEncoder(4);
-    }
+//    /** Password encode used for client (application) passwords */
+//    @Bean(CLIENT_PASSWORD_ENCODER_BEAN_NAME)
+//    public PasswordEncoder clientPasswordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
 
     @Bean(name = SCREENSHOT_UPLOAD_API_EXECUTOR)
     public Executor screenhortUploadThreadPoolTaskExecutor() {

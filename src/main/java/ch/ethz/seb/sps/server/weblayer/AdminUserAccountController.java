@@ -75,7 +75,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
             final ApplicationEventPublisher applicationEventPublisher,
             final BeanValidationService beanValidationService,
             final EntityService entityService,
-            @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME) final PasswordEncoder userPasswordEncoder) {
+            final PasswordEncoder userPasswordEncoder) {
 
         super(userService, userDAO, auditLogDAO, paginationService, beanValidationService);
         this.entityPrivilegeDAO = entityPrivilegeDAO;

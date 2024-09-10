@@ -57,7 +57,7 @@ public class RegisterUserController {
             final UserDAO userDAO,
             final BeanValidationService beanValidationService,
             final RateLimitService rateLimitService,
-            @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME) final PasswordEncoder userPasswordEncoder) {
+            final PasswordEncoder userPasswordEncoder) {
 
         this.auditLogDAO = auditLogDAO;
         this.userDAO = userDAO;

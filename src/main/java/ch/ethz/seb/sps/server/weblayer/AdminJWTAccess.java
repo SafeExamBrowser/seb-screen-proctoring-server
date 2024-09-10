@@ -56,7 +56,6 @@ public class AdminJWTAccess {
 
 
     @Autowired
-    @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME)
     private PasswordEncoder userPasswordEncoder;
 
     private final UserDAO userDAO;
