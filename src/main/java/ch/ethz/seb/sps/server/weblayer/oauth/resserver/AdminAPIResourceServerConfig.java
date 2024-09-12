@@ -8,16 +8,12 @@
 
 package ch.ethz.seb.sps.server.weblayer.oauth.resserver;
 
-import static org.springframework.security.oauth2.core.authorization.OAuth2AuthorizationManagers.hasScope;
-
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
 import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.utils.Constants;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import ch.ethz.seb.sps.server.weblayer.oauth.LoginRedirectOnUnauthorized;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +24,14 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -58,24 +53,18 @@ public class AdminAPIResourceServerConfig {
     @Order(2)
     SecurityFilterChain adminResourceSecurityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .securityMatcher(adminAPIEndpoint + "/**")
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .exceptionHandling()
-                .authenticationEntryPoint(new LoginRedirectOnUnauthorized())
-                .and()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .logout().disable()
-                .headers().frameOptions().disable()
-                .and()
-                .csrf().disable();
+        http.authorizeHttpRequests((requests) -> requests
+                        .requestMatchers(adminAPIEndpoint + "/**").permitAll()
+                        .anyRequest()
+                        .authenticated())
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                .exceptionHandling( c -> c.authenticationEntryPoint(new LoginRedirectOnUnauthorized()))
+        ;
+        
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new AdminAPIJwtGrantedAuthoritiesConverter());
@@ -94,7 +83,7 @@ public class AdminAPIResourceServerConfig {
         private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         
         @Override
-        public Collection<GrantedAuthority> convert(final Jwt source) {
+        public Collection<GrantedAuthority> convert(@NotNull final Jwt source) {
             final List<String> scopes;
             try {
                 scopes = source.getClaim("scope");
@@ -107,21 +96,6 @@ public class AdminAPIResourceServerConfig {
             }
             
             return jwtGrantedAuthoritiesConverter.convert(source);
-        }
-    }
-
-    private static class LoginRedirectOnUnauthorized implements AuthenticationEntryPoint {
-
-        @Override
-        public void commence(
-                final HttpServletRequest request,
-                final HttpServletResponse response,
-                final AuthenticationException authenticationException) throws IOException {
-
-            log.warn("Unauthorized Request on: {}", request.getRequestURI());
-
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.flushBuffer();
         }
     }
     

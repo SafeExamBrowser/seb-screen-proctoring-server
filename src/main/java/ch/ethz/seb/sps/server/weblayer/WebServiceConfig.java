@@ -8,16 +8,9 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
-import java.io.IOException;
-
-import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.server.weblayer.oauth.LoginRedirectOnUnauthorized;
 import ch.ethz.seb.sps.server.weblayer.oauth.authserver.WebServiceUserDetails;
-import ch.ethz.seb.sps.server.weblayer.oauth.resserver.AdminAPIResourceServerConfig;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.apache.catalina.filters.RemoteIpFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -28,19 +21,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 @Import(DataSourceAutoConfiguration.class)
 public class WebServiceConfig implements ErrorController {
-
-    private static final Logger log = LoggerFactory.getLogger(WebServiceConfig.class);
 
     /** Spring bean name of single AuthenticationManager bean */
     public static final String AUTHENTICATION_MANAGER = "AUTHENTICATION_MANAGER";
@@ -78,26 +68,20 @@ public class WebServiceConfig implements ErrorController {
     @Bean
     @Order(6)
     public SecurityFilterChain overallFilterChain(HttpSecurity http) throws Exception {
-        http
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .logout().disable()
-                .headers().frameOptions().disable()
-                .and()
-                .csrf()
-                .disable();
 
-        http
-                .securityMatcher(API.REGISTER_ENDPOINT)
-                .authorizeRequests()
-                .and()
-                .httpBasic();
+        http.authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("/**").permitAll()
+                        .anyRequest()
+                        .authenticated())
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                .exceptionHandling( c -> c.authenticationEntryPoint(new LoginRedirectOnUnauthorized()))
+        ;
         
         return http.build();
     }
     
-
 }
