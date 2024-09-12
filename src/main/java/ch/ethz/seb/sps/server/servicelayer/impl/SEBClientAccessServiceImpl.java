@@ -12,6 +12,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 import java.time.Duration;
 
+import ch.ethz.seb.sps.domain.api.API;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -66,8 +67,9 @@ public class SEBClientAccessServiceImpl implements SEBClientAccessService {
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                 .clientSecretExpiresAt(null)
-                .scope("read")
-                .scope("write")
+                .scope(API.READ_SCOPE_NAME)
+                .scope(API.WRITE_SCOPE_NAME)
+                .scope(API.SEB_API_SCOPE_NAME)
                 .tokenSettings(TokenSettings
                         .builder()
                         .accessTokenTimeToLive(Duration.of(this.sessionAccessTokenValSec, SECONDS))
@@ -89,30 +91,6 @@ public class SEBClientAccessServiceImpl implements SEBClientAccessService {
         }
         
         return builder.build();
-
-//        final ClientDetails clientDetails = new ClientDetails(
-//                Utils.toString(clientName),
-//                WebserviceResourceConfiguration.SESSION_API_RESOURCE_ID,
-//                null,
-//                Constants.OAUTH2_GRANT_TYPE_CLIENT_CREDENTIALS,
-//                StringUtils.EMPTY);
-//
-//        clientDetails.setScope(Collections.emptySet());
-//        clientDetails.setAccessTokenValiditySeconds(this.sessionAccessTokenValSec);
-//        clientDetails.setRefreshTokenValiditySeconds(-1); // not used, not expiring
-//
-//        // Note: the encodedSecret is either internally encrypted or with the clientPasswordEncoder
-//        try {
-//
-//            clientDetails.setClientSecret(Utils.toString(
-//                    this.clientPasswordEncoder.encode(
-//                            this.cryptor.decrypt(encodedSecret).getOrThrow())));
-//
-//        } catch (final Exception e) {
-//            clientDetails.setClientSecret(Utils.toString(encodedSecret));
-//        }
-//
-//        return clientDetails;
     }
 
 }

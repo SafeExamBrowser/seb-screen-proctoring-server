@@ -13,6 +13,7 @@ import static java.time.temporal.ChronoUnit.YEARS;
 
 import java.time.Duration;
 
+import ch.ethz.seb.sps.domain.api.API;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,8 +49,9 @@ public class RegisteredSEBServerClient {
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                 .clientSecretExpiresAt(null)
-                .scope("read")
-                .scope("write")
+                .scope(API.READ_SCOPE_NAME)
+                .scope(API.WRITE_SCOPE_NAME)
+                .scope(API.WEB_API_SCOPE_NAME)
                 .tokenSettings(TokenSettings
                         .builder()
                         .accessTokenTimeToLive(Duration.of(accessTokenValiditySeconds, SECONDS))

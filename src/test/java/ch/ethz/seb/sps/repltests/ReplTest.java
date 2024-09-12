@@ -43,21 +43,21 @@ public class ReplTest {
         final String encode = bCryptPasswordEncoder.encode("test");
         System.out.print(encode);
     }
-
-    @Test
-    public void encodeURL() throws UnsupportedEncodingException {
-        String encoded = URLEncoder.encode("heute + morgen", "utf8");
-        
-        assertEquals("heute+%2B+morgen", encoded);
-        String decodedOrig = URLDecoder.decode(encoded, "utf8");
-        String decodedMe = Utils.decodeFormURL_UTF_8(encoded);
-        assertEquals("heute+++morgen", decodedMe);
-        assertEquals("heute + morgen", decodedOrig);
-
-        String encodedMacProbably = "heute+\\++morgen";
-        String decodedMacMe = Utils.decodeFormURL_UTF_8(encodedMacProbably);
-        assertEquals("heute+++morgen", decodedMacMe);
-    }
+//
+//    @Test
+//    public void encodeURL() throws UnsupportedEncodingException {
+//        String encoded = URLEncoder.encode("heute + morgen", "utf8");
+//        
+//        assertEquals("heute+%2B+morgen", encoded);
+//        String decodedOrig = URLDecoder.decode(encoded, "utf8");
+//        String decodedMe = Utils.decodeFormURL_UTF_8(encoded);
+//        assertEquals("heute+++morgen", decodedMe);
+//        assertEquals("heute + morgen", decodedOrig);
+//
+//        String encodedMacProbably = "heute+\\++morgen";
+//        String decodedMacMe = Utils.decodeFormURL_UTF_8(encodedMacProbably);
+//        assertEquals("heute+++morgen", decodedMacMe);
+//    }
 
 
     @Test

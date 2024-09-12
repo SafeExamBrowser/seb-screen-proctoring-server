@@ -9,7 +9,6 @@
 package ch.ethz.seb.sps.utils;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -36,8 +35,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
-import javax.validation.constraints.NotNull;
 
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.FilterMap;
@@ -604,7 +601,7 @@ public final class Utils {
                 .toString();
     }
 
-    public static String toAppFormUrlEncodedBody(@NotNull final String name, final Collection<String> array) {
+    public static String toAppFormUrlEncodedBody(final String name, final Collection<String> array) {
         if (array == null) {
             return StringUtils.EMPTY;
         }

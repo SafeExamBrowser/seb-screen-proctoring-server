@@ -30,12 +30,7 @@ import ch.ethz.seb.sps.domain.api.JSONMapper;
 @EnableAsync
 @EnableScheduling
 public class ServiceConfig {
-
-//    /** Spring bean name of user password encoder */
-//    public static final String USER_PASSWORD_ENCODER_BEAN_NAME = "userPasswordEncoder";
-//    /** Spring bean name of client (application) password encoder */
-//    public static final String CLIENT_PASSWORD_ENCODER_BEAN_NAME = "clientPasswordEncoder";
-
+    
     public static final String SCREENSHOT_UPLOAD_API_EXECUTOR = "SCREENSHOT_UPLOAD_API_EXECUTOR";
     public static final String SCREENSHOT_DOWNLOAD_API_EXECUTOR = "SCREENSHOT_DOWNLOAD_API_EXECUTOR";
     public static final String SCREENSHOT_STORE_API_EXECUTOR = "SCREENSHOT_STORE_API_EXECUTOR";
@@ -46,20 +41,12 @@ public class ServiceConfig {
         return new JSONMapper();
     }
 
-
     /** Password encoder used for user passwords (stronger protection) */
-    @Primary
     @Bean
     public PasswordEncoder userPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-//    /** Password encode used for client (application) passwords */
-//    @Bean(CLIENT_PASSWORD_ENCODER_BEAN_NAME)
-//    public PasswordEncoder clientPasswordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
-
+    
     @Bean(name = SCREENSHOT_UPLOAD_API_EXECUTOR)
     public Executor screenhortUploadThreadPoolTaskExecutor() {
         final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
