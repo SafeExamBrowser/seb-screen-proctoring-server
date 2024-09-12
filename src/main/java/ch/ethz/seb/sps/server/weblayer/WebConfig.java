@@ -43,7 +43,7 @@ public class WebConfig implements WebMvcConfigurer {
                                 .bearerFormat("jwt")
                                 .flows(new OAuthFlows().password(new OAuthFlow().tokenUrl("/oauth/token"))))
 
-                        .addSecuritySchemes(SWAGGER_AUTH_ADMIN_API, new SecurityScheme()
+                        .addSecuritySchemes(SWAGGER_AUTH_SEB_API, new SecurityScheme()
                                 .type(SecurityScheme.Type.OAUTH2)
                                 .scheme("basic")
                                 .in(SecurityScheme.In.HEADER)

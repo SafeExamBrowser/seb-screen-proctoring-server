@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.utils;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 
@@ -37,6 +38,14 @@ public class Cryptor {
 
     public CharSequence getInternalPWD() {
         return this.internalPWD;
+    }
+
+    public CharSequence getInternalSecret256() {
+        StringBuffer buffer = new StringBuffer(internalPWD);
+        while (buffer.length() < 256) {
+            buffer.append(internalPWD);
+        }
+        return buffer;
     }
 
     /** Use this to encrypt a text with the internal password

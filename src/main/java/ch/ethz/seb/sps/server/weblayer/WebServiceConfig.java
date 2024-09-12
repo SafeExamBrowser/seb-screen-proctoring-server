@@ -8,7 +8,13 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.io.IOException;
+
+import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.server.weblayer.oauth.authserver.WebServiceUserDetails;
+import ch.ethz.seb.sps.server.weblayer.oauth.resserver.AdminAPIResourceServerConfig;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.catalina.filters.RemoteIpFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +27,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-//@EnableWebSecurity
+@EnableWebSecurity
 @Import(DataSourceAutoConfiguration.class)
 public class WebServiceConfig implements ErrorController {
 
@@ -80,9 +89,15 @@ public class WebServiceConfig implements ErrorController {
                 .and()
                 .csrf()
                 .disable();
+
+        http
+                .securityMatcher(API.REGISTER_ENDPOINT)
+                .authorizeRequests()
+                .and()
+                .httpBasic();
         
-        // TODO endpoint handling
         return http.build();
     }
+    
 
 }
