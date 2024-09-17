@@ -12,10 +12,13 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.time.temporal.ChronoUnit.YEARS;
 
 import java.time.Duration;
+import java.util.Collections;
 
 import ch.ethz.seb.sps.domain.api.API;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -62,5 +65,12 @@ public class RegisteredSEBServerClient {
 
     public String getClientId() {
         return client.getClientId();
+    }
+    
+    public UserDetails getUserDetails() {
+        return new User(
+                client.getClientId(),
+                client.getClientSecret(),
+                Collections.emptyList());
     }
 }

@@ -35,6 +35,7 @@ import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.context.AuthorizationServerContext;
 import org.springframework.security.oauth2.server.authorization.context.AuthorizationServerContextHolder;
 import org.springframework.security.oauth2.server.authorization.token.DefaultOAuth2TokenContext;
 import org.springframework.security.oauth2.server.authorization.token.DelegatingOAuth2TokenGenerator;
@@ -100,10 +101,11 @@ public class OAuth2PasswordGrantAuthenticationProvider implements Authentication
             log.trace("Validated token request parameters");
         }
         
+        AuthorizationServerContext context = AuthorizationServerContextHolder.getContext();
         DefaultOAuth2TokenContext.Builder tokenContextBuilder = DefaultOAuth2TokenContext.builder()
                 .registeredClient(registeredClient)
                 .principal(usernamePasswordAuthentication)
-                .authorizationServerContext(AuthorizationServerContextHolder.getContext())
+                .authorizationServerContext(context)
                 .authorizedScopes(authorizedScopes)
                 .authorizationGrantType(AuthorizationGrantType.PASSWORD)
                 .authorizationGrant(passwordGrantAuth);
@@ -215,9 +217,7 @@ public class OAuth2PasswordGrantAuthenticationProvider implements Authentication
 
     @Override
     public boolean supports(Class<?> authentication) {
-        boolean supports = OAuth2PasswordGrantAuthenticationToken.class.isAssignableFrom(authentication);
-        log.debug("supports authentication=" + authentication + " returning " + supports);
-        return supports;
+       return OAuth2PasswordGrantAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
     private Authentication getUsernamePasswordAuthentication(OAuth2PasswordGrantAuthenticationToken resouceOwnerPasswordAuthentication) {

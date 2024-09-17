@@ -8,16 +8,11 @@
 
 package ch.ethz.seb.sps.server.weblayer.oauth.authserver;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
+import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.server.servicelayer.SEBClientAccessService;
 import ch.ethz.seb.sps.server.weblayer.oauth.authserver.pwdgrant.OAuth2PasswordGrantAuthenticationConverter;
 import ch.ethz.seb.sps.server.weblayer.oauth.authserver.pwdgrant.OAuth2PasswordGrantAuthenticationProvider;
-import ch.ethz.seb.sps.utils.Cryptor;
-import ch.ethz.seb.sps.utils.Utils;
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,32 +24,26 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
-import com.nimbusds.jose.proc.SecurityContext;
 
 @Configuration
 @EnableWebSecurity
 public class AuthServerConfig {
 
     @Autowired
-    private Cryptor cryptor;
+    private PasswordEncoder userPasswordEncoder;
+    @Autowired
+    private AutoLoginService autoLoginService;
     @Autowired
     private SEBClientAccessService sebClientAccessService;
     @Autowired
@@ -67,8 +56,7 @@ public class AuthServerConfig {
     private UserDAO userDAO;
     @Value("${sps.http.redirect}")
     private String unauthorizedRedirect;
-    @Autowired
-    private PasswordEncoder userPasswordEncoder;
+    
     
     @Bean
     @Order(1)
@@ -78,8 +66,8 @@ public class AuthServerConfig {
             OAuth2AuthorizationService authorizationService) throws Exception {
         
        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-       
-        OAuth2PasswordGrantAuthenticationProvider resourceOwnerPasswordAuthenticationProvider =
+
+        OAuth2PasswordGrantAuthenticationProvider oAuth2PasswordGrantAuthenticationProvider =
                 new OAuth2PasswordGrantAuthenticationProvider(authenticationManager, authorizationService);
         OAuth2ClientCredentialsGrantProvider oAuth2ClientCredentialsGrantProvider =
                 new OAuth2ClientCredentialsGrantProvider(authorizationService);
@@ -87,7 +75,7 @@ public class AuthServerConfig {
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .authorizationEndpoint(c -> c.authenticationProviders( providers -> {
                     providers.add(0, oAuth2ClientCredentialsGrantProvider);
-                    providers.add(0, resourceOwnerPasswordAuthenticationProvider);
+                    providers.add(0, oAuth2PasswordGrantAuthenticationProvider);
                 }));
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
@@ -106,8 +94,9 @@ public class AuthServerConfig {
         DefaultSecurityFilterChain result = http.build();
         
         // we have to initialize the custom providers after the chain has been built
-        resourceOwnerPasswordAuthenticationProvider.init(http);
+        oAuth2PasswordGrantAuthenticationProvider.init(http);
         oAuth2ClientCredentialsGrantProvider.init(http);
+        autoLoginService.init(oAuth2PasswordGrantAuthenticationProvider);
         
         return result;
     }
@@ -127,7 +116,6 @@ public class AuthServerConfig {
         authenticationManagerBuilder
                 .userDetailsService(this.webServiceUserDetails)
                 .passwordEncoder(this.userPasswordEncoder);
-        //authenticationManagerBuilder.authenticationProvider(authProvider);
         return authenticationManagerBuilder.build();
     }
 
@@ -150,35 +138,11 @@ public class AuthServerConfig {
     }
 
     @Bean
-    public JwtEncoder jwtEncoder() {
-        byte[] secretByte = Utils.toByteArray(cryptor.getInternalSecret256());
-        SecretKey secretKey = new SecretKeySpec(secretByte, 0, secretByte.length, MacAlgorithm.HS256.getName());
-        ImmutableSecret<SecurityContext> securityContextImmutableSecret = new ImmutableSecret<>(secretKey);
-        return new org.springframework.security.oauth2.jwt.NimbusJwtEncoder(securityContextImmutableSecret);
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        byte[] secretByte = Utils.toByteArray(cryptor.getInternalSecret256());
-        SecretKey secretKey = new SecretKeySpec(secretByte, 0, secretByte.length, MacAlgorithm.HS256.getName());
-        return NimbusJwtDecoder.withSecretKey(secretKey).build();
-    }
-
-    @Bean
-    public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
-        return (context) -> {
-            if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
-                context.getJwsHeader().algorithm(MacAlgorithm.HS256);
-            }
-        };
-    }
-
-    @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings
                 .builder()
-                .tokenEndpoint("/oauth/token")
-                .tokenRevocationEndpoint("/oauth/revoke-token")
+                .tokenEndpoint(API.OAUTH_TOKEN_ENDPOINT)
+                .tokenRevocationEndpoint(API.OAUTH_REVOKE_TOKEN_ENDPOINT)
                 .build();
     }
 

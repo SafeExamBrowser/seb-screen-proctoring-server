@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.server.weblayer.oauth.LoginRedirectOnUnauthorized;
+import ch.ethz.seb.sps.server.weblayer.WebConfig;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,31 +50,31 @@ public class SEBClientResourceServerConfig {
     private String unauthorizedRedirect;
 
     @Bean
-    @Order(3)
+    @Order(2)
     SecurityFilterChain sebClientResourceFilterChain(HttpSecurity http) throws Exception {
-
-        http.authorizeHttpRequests((requests) -> requests
-                        .requestMatchers(sessionAPIEndpoint + "/**").permitAll()
-                        .anyRequest()
-                        .authenticated())
+        
+        http.securityMatcher(sessionAPIEndpoint + "/**")
+                .authorizeHttpRequests((requests) -> requests
+                        .anyRequest().authenticated())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                .exceptionHandling( c -> c.authenticationEntryPoint(new LoginRedirectOnUnauthorized()))
+                .exceptionHandling( c -> c.authenticationEntryPoint(new WebConfig.UnauthoritedRequestHandler("SEBClientResourceServerConfig")))
         ;
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new SEBAPIJwtGrantedAuthoritiesConverter());
         http
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationEntryPoint(new WebConfig.UnauthoritedRequestHandler("SEBClientResourceServerConfig"))
                         .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(jwtAuthenticationConverter))
                 );
 
         return http.build();
     }
-    
+
 
     private static class SEBAPIJwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 

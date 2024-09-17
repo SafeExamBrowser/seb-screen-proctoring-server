@@ -201,11 +201,6 @@
             <artifactId>bucket4j-core</artifactId>
             <version>4.10.0</version>
         </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
-            <version>0.9.1</version>
-        </dependency>
 
 
         <!-- Testing -->

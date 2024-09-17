@@ -11,10 +11,16 @@ package ch.ethz.seb.sps.server.weblayer.oauth.authserver;
 import static java.time.temporal.ChronoUnit.*;
 
 import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import ch.ethz.seb.sps.domain.api.API;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -57,9 +63,17 @@ public class RegisteredGuiClient {
                             .refreshTokenTimeToLive(refreshTokenValDuration)
                             .build())
                     .build();
+
     }
 
     public String getClientId() {
             return client.getClientId();
+    }
+
+    public UserDetails getUserDetails() {
+        return new User(
+                client.getClientId(),
+                client.getClientSecret(),
+                Collections.emptyList());
     }
 }

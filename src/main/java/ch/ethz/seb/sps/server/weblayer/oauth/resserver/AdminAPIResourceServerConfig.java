@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 import ch.ethz.seb.sps.domain.api.API;
-import ch.ethz.seb.sps.server.weblayer.oauth.LoginRedirectOnUnauthorized;
+import ch.ethz.seb.sps.server.weblayer.WebConfig;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,27 +50,25 @@ public class AdminAPIResourceServerConfig {
     private String unauthorizedRedirect;
 
     @Bean
-    @Order(2)
+    @Order(3)
     SecurityFilterChain adminResourceSecurityFilterChain(HttpSecurity http) throws Exception {
-
-        http.authorizeHttpRequests((requests) -> requests
-                        .requestMatchers(adminAPIEndpoint + "/**").permitAll()
-                        .anyRequest()
-                        .authenticated())
+        
+        http.securityMatcher(adminAPIEndpoint + "/**")
+                .authorizeHttpRequests((requests) -> requests
+                        .anyRequest().authenticated())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                .exceptionHandling( c -> c.authenticationEntryPoint(new LoginRedirectOnUnauthorized()))
+                .exceptionHandling( c -> c.authenticationEntryPoint(new WebConfig.UnauthoritedRequestHandler("AdminAPIResourceServerConfig")))
         ;
-        
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new AdminAPIJwtGrantedAuthoritiesConverter());
         http
                 .oauth2ResourceServer(resServer -> resServer
-                        .authenticationEntryPoint(new LoginRedirectOnUnauthorized())
+                        .authenticationEntryPoint(new WebConfig.UnauthoritedRequestHandler("AdminAPIResourceServerConfig"))
                         .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(jwtAuthenticationConverter))
                 );
 
