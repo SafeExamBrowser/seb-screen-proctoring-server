@@ -13,6 +13,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.server.servicelayer.SEBClientAccessService;
 import ch.ethz.seb.sps.server.weblayer.oauth.authserver.pwdgrant.OAuth2PasswordGrantAuthenticationConverter;
 import ch.ethz.seb.sps.server.weblayer.oauth.authserver.pwdgrant.OAuth2PasswordGrantAuthenticationProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,8 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
@@ -118,6 +121,11 @@ public class AuthServerConfig {
                 .passwordEncoder(this.userPasswordEncoder);
         return authenticationManagerBuilder.build();
     }
+    
+    @Bean
+    public BearerTokenResolver customBearerTokenResolver() {
+        return new CustomBearerTokenResolver();
+    }
 
     @Bean
     public UserDetailsManager userDetailsManager() {
@@ -144,6 +152,21 @@ public class AuthServerConfig {
                 .tokenEndpoint(API.OAUTH_TOKEN_ENDPOINT)
                 .tokenRevocationEndpoint(API.OAUTH_REVOKE_TOKEN_ENDPOINT)
                 .build();
+    }
+    
+    private static final class CustomBearerTokenResolver implements BearerTokenResolver {
+        private final DefaultBearerTokenResolver delegate = new DefaultBearerTokenResolver();
+
+        @Override
+        public String resolve(HttpServletRequest request) {
+            String token = delegate.resolve(request);
+            if (token != null) {
+                return token;
+            }
+
+            String accessToken = request.getParameter("access_token");
+            return accessToken;
+        }
     }
 
 }
