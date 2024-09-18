@@ -14,6 +14,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
@@ -33,6 +35,8 @@ import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
 
 @Service
 public class SessionServiceHealthControlImpl implements SessionServiceHealthControl {
+
+    private static final Logger log = LoggerFactory.getLogger(SessionServiceHealthControlImpl.class);
 
     private final ThreadPoolExecutor uploadExecutor;
     private final ThreadPoolExecutor downloadExecutor;
@@ -75,7 +79,7 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
     }
 
     @Override
-    public int getDataSourceHelathIndicator() {
+    public int getDataSourceHealthIndicator() {
         if (this.dataSource instanceof HikariDataSource) {
             final HikariDataSource hds = (HikariDataSource) this.dataSource;
             final HikariPoolMXBean hikariPoolMXBean = hds.getHikariPoolMXBean();
@@ -95,11 +99,26 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
         final int uploadHealthIndicator = getUploadHealthIndicator();
         final int downloadHealthIndicator = getDownloadHealthIndicator();
         final int storeHealthIndicator = getStoreHealthIndicator();
-        final int dataSourceHelathIndicator = getDataSourceHelathIndicator();
+        final int dataSourceHealthIndicator = getDataSourceHealthIndicator();
+        
+        if (log.isDebugEnabled()) {
+            if (uploadHealthIndicator >= 0) {
+                log.debug("uploadHealthIndicator: {}", uploadHealthIndicator);
+            }
+            if (downloadHealthIndicator >= 0) {
+                log.debug("downloadHealthIndicator: {}", downloadHealthIndicator);
+            }
+            if (storeHealthIndicator >= 0) {
+                log.debug("storeHealthIndicator: {}", storeHealthIndicator);
+            }
+            if (dataSourceHealthIndicator >= 0) {
+                log.debug("dataSourceHealthIndicator: {}", dataSourceHealthIndicator);
+            }
+        }
 
         return Math.max(
                 Math.max(uploadHealthIndicator, downloadHealthIndicator),
-                Math.max(storeHealthIndicator, dataSourceHelathIndicator));
+                Math.max(storeHealthIndicator, dataSourceHealthIndicator));
     }
 
     // map size between THREAD_POOL_SIZE_INDICATOR_MAP_MIN ... THREAD_POOL_SIZE_INDICATOR_MAP_MAX to 0 ... HEALTH_INDICATOR_MAX

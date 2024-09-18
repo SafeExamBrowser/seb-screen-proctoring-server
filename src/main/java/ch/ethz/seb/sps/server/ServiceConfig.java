@@ -51,7 +51,7 @@ public class ServiceConfig {
     public Executor screenhortUploadThreadPoolTaskExecutor() {
         final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(100);
-        executor.setMaxPoolSize(200);
+        executor.setMaxPoolSize(400);
         executor.setQueueCapacity(0);
         executor.setThreadPriority(Thread.MAX_PRIORITY);
         executor.setThreadNamePrefix("upload-");

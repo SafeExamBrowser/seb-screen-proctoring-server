@@ -21,7 +21,7 @@ public interface SessionServiceHealthControl {
 
     int getStoreHealthIndicator();
 
-    int getDataSourceHelathIndicator();
+    int getDataSourceHealthIndicator();
 
     int getOverallLoadIndicator();
 
