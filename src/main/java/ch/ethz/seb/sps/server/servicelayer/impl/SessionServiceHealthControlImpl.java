@@ -14,6 +14,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.sql.DataSource;
 
+import ch.ethz.seb.sps.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,6 +44,9 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
     private final ScreenshotStoreService screenshotStoreService;
     private final DataSource dataSource;
     private final DataSourceHealthIndicator dataSourceHealthIndicator;
+    
+    private long debug_log_time_interval = 1000;
+    private long debug_log_last_log_time = 0;
 
     public SessionServiceHealthControlImpl(
             @Qualifier(value = ServiceConfig.SCREENSHOT_UPLOAD_API_EXECUTOR) final Executor upload,
@@ -102,17 +106,21 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
         final int dataSourceHealthIndicator = getDataSourceHealthIndicator();
         
         if (log.isDebugEnabled()) {
-            if (uploadHealthIndicator > 0) {
-                log.info("uploadHealthIndicator: {}", uploadHealthIndicator);
-            }
-            if (downloadHealthIndicator > 0) {
-                log.info("downloadHealthIndicator: {}", downloadHealthIndicator);
-            }
-            if (storeHealthIndicator > 0) {
-                log.info("storeHealthIndicator: {}", storeHealthIndicator);
-            }
-            if (dataSourceHealthIndicator > 0) {
-                log.info("dataSourceHealthIndicator: {}", dataSourceHealthIndicator);
+            long now = Utils.getMillisecondsNow();
+            if (now - debug_log_last_log_time > debug_log_time_interval) {
+                debug_log_last_log_time = now;
+                if (uploadHealthIndicator > 0) {
+                    log.info("uploadHealthIndicator: {}", uploadHealthIndicator);
+                }
+                if (downloadHealthIndicator > 0) {
+                    log.info("downloadHealthIndicator: {}", downloadHealthIndicator);
+                }
+                if (storeHealthIndicator > 0) {
+                    log.info("storeHealthIndicator: {}", storeHealthIndicator);
+                }
+                if (dataSourceHealthIndicator > 0) {
+                    log.info("dataSourceHealthIndicator: {}", dataSourceHealthIndicator);
+                }
             }
         }
 
