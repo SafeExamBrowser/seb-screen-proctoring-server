@@ -92,6 +92,7 @@ public final class API {
     public static final String HEALTH_ENDPOINT = "/health";
     public static final String WEBSOCKET_SESSION_ENDPOINT = "/wsock";
     public static final String GUI_REDIRECT_ENDPOINT = "/gui-redirect-location";
+    public static final String OAUTH_JWTTOKEN_QUERY_PARAM = "access_token";
 
     public static final String PARAM_MODEL_ID = "modelId";
 

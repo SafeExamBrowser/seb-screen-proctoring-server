@@ -25,11 +25,16 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2RefreshTokenAuthenticationProvider;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
+import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2ClientCredentialsAuthenticationConverter;
+import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2RefreshTokenAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.provisioning.UserDetailsManager;
@@ -74,16 +79,21 @@ public class AuthServerConfig {
                 new OAuth2PasswordGrantAuthenticationProvider(authenticationManager, authorizationService);
         OAuth2ClientCredentialsGrantProvider oAuth2ClientCredentialsGrantProvider =
                 new OAuth2ClientCredentialsGrantProvider(authorizationService);
-
+        
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .authorizationEndpoint(c -> c.authenticationProviders( providers -> {
+                    providers.clear();
                     providers.add(0, oAuth2ClientCredentialsGrantProvider);
                     providers.add(0, oAuth2PasswordGrantAuthenticationProvider);
                 }));
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                .tokenEndpoint( e -> e.accessTokenRequestConverter(
-                        new OAuth2PasswordGrantAuthenticationConverter()));
+                .tokenEndpoint( e -> e.accessTokenRequestConverters( converters -> {
+                    converters.clear();
+                    converters.add(new OAuth2PasswordGrantAuthenticationConverter());
+                    converters.add(new OAuth2RefreshTokenAuthenticationConverter());
+                    converters.add(new OAuth2ClientCredentialsAuthenticationConverter());
+                }));
         http
                 // Redirect to the login page when not authenticated from the
                 // authorization endpoint
@@ -96,6 +106,8 @@ public class AuthServerConfig {
         
         DefaultSecurityFilterChain result = http.build();
         
+        OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator = http.getSharedObject(OAuth2TokenGenerator.class);
+        http.authenticationProvider(new OAuth2RefreshTokenAuthenticationProvider(authorizationService, tokenGenerator));
         // we have to initialize the custom providers after the chain has been built
         oAuth2PasswordGrantAuthenticationProvider.init(http);
         oAuth2ClientCredentialsGrantProvider.init(http);
@@ -164,8 +176,7 @@ public class AuthServerConfig {
                 return token;
             }
 
-            String accessToken = request.getParameter("access_token");
-            return accessToken;
+            return request.getParameter(API.OAUTH_JWTTOKEN_QUERY_PARAM);
         }
     }
 
