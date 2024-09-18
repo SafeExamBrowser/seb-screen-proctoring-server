@@ -142,16 +142,8 @@ public class ProctoringServiceImpl implements ProctoringService {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             final Collection<String> liveSessionTokens = this.proctoringCacheService
                     .getLiveSessionTokens(activeGroup.uuid);
-
-
+            
             final int liveSessionCount = liveSessionTokens.size();
-            // TODO this should be equals to liveSessionTokens.size() so we don't need an extra DB call here
-//            final int liveSessionCount = this.sessionDAO
-//                    .allLiveSessionCount(activeGroup.id)
-//                    .onError(error -> log.warn("Failed to count live sessions for group: {} message {}", groupUUID, error.getMessage()))
-//                    .getOr(-1L)
-//                    .intValue();
-
             final int sessionCount = this.sessionDAO.allSessionCount(activeGroup.id)
                     .onError(error -> log.warn("Failed to count sessions for group: {} message {}", groupUUID, error.getMessage()))
                     .getOr(-1L)
@@ -204,9 +196,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     examViewData);
         });
     }
-
-
-
+    
     @Override
     public void streamScreenshot(
             final String sessionUUID,
@@ -582,7 +572,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                         .filter(Objects::nonNull)
                         .map(s -> s.lastUpdateTime)
                         .collect(Collectors.toSet());
-
+                
                 this.sessionDAO
                         .allTokensThatNeedsUpdate(activeGroup.id, updateTimes)
                         .getOr(Collections.emptyList())
