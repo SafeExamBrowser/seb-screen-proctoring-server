@@ -101,20 +101,20 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
         final int storeHealthIndicator = getStoreHealthIndicator();
         final int dataSourceHealthIndicator = getDataSourceHealthIndicator();
         
-        //if (log.isDebugEnabled()) {
-            if (uploadHealthIndicator >= 0) {
+        if (log.isDebugEnabled()) {
+            if (uploadHealthIndicator > 0) {
                 log.info("uploadHealthIndicator: {}", uploadHealthIndicator);
             }
-            if (downloadHealthIndicator >= 0) {
+            if (downloadHealthIndicator > 0) {
                 log.info("downloadHealthIndicator: {}", downloadHealthIndicator);
             }
-            if (storeHealthIndicator >= 0) {
+            if (storeHealthIndicator > 0) {
                 log.info("storeHealthIndicator: {}", storeHealthIndicator);
             }
-            if (dataSourceHealthIndicator >= 0) {
+            if (dataSourceHealthIndicator > 0) {
                 log.info("dataSourceHealthIndicator: {}", dataSourceHealthIndicator);
             }
-        //}
+        }
 
         return Math.max(
                 Math.max(uploadHealthIndicator, downloadHealthIndicator),

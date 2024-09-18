@@ -10,10 +10,10 @@ package ch.ethz.seb.sps.server.servicelayer;
 
 public interface SessionServiceHealthControl {
 
-    public static final int HEALTH_INDICATOR_MAX = 10;
-    public static final int BATCH_SIZE_INDICATOR_MAP_MAX = 500;
-    public static final int THREAD_POOL_SIZE_INDICATOR_MAP_MAX = 500;
-    public static final int THREAD_POOL_SIZE_INDICATOR_MAP_MIN = 100;
+    int HEALTH_INDICATOR_MAX = 10;
+    int BATCH_SIZE_INDICATOR_MAP_MAX = 800;
+    int THREAD_POOL_SIZE_INDICATOR_MAP_MAX = 500;
+    int THREAD_POOL_SIZE_INDICATOR_MAP_MIN = 100;
 
     int getUploadHealthIndicator();
 
