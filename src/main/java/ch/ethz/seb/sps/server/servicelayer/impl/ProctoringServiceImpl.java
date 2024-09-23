@@ -142,12 +142,16 @@ public class ProctoringServiceImpl implements ProctoringService {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             final Collection<String> liveSessionTokens = this.proctoringCacheService
                     .getLiveSessionTokens(activeGroup.uuid);
+
+            //SEBSP-145 modify "getLiveSessionTokens" to determine inactivity via screenshotData Table (join will likely cause performance issues)
             
             final int liveSessionCount = liveSessionTokens.size();
             final int sessionCount = this.sessionDAO.allSessionCount(activeGroup.id)
                     .onError(error -> log.warn("Failed to count sessions for group: {} message {}", groupUUID, error.getMessage()))
                     .getOr(-1L)
                     .intValue();
+
+            //SEBSP-145 - add count for inactive sessions
 
             final long millisecondsNow = Utils.getMillisecondsNow();
             final int pSize = (pageSize != null && pageSize < 20) ? pageSize : 9;
@@ -173,6 +177,7 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             final List<ScreenshotViewData> page = sessionIdsInOrder.stream()
                     .map(sid -> createScreenshotViewData(sid, mapping.get(sid), millisecondsNow))
+                    //SEBSP-145 - remove inactive sessions from page / add flag to indicative inactivity
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
