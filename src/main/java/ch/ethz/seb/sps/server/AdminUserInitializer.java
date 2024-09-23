@@ -43,7 +43,7 @@ class AdminUserInitializer {
     public AdminUserInitializer(
             final UserDAO userDAO,
             final Environment environment,
-            @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME) final PasswordEncoder passwordEncoder,
+            final PasswordEncoder passwordEncoder,
             @Value("${sebserver.init.adminaccount.gen-on-init:false}") final boolean initializeAdmin,
             @Value("${sebserver.init.adminaccount.username:seb-server-admin}") final String adminName,
             @Value("${sps.init.sebserveraccount.generate:true}") final boolean initializeSEBServerAPIAccount) {

@@ -1,45 +1,45 @@
 package ch.ethz.seb.sps.server.datalayer.batis.model;
 
-import javax.annotation.Generated;
+import jakarta.annotation.Generated;
 
 public class ExamRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.uuid")
     private String uuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.name")
     private String name;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.description")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.description")
     private String description;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.url")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.url")
     private String url;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.type")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.type")
     private String type;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.owner")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.owner")
     private String owner;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.creation_time")
     private Long creationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.last_update_time")
     private Long lastUpdateTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.termination_time")
     private Long terminationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.start_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.397+02:00", comments="Source field: exam.start_time")
     private Long startTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.end_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.397+02:00", comments="Source field: exam.end_time")
     private Long endTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source Table: exam")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source Table: exam")
     public ExamRecord(Long id, String uuid, String name, String description, String url, String type, String owner, Long creationTime, Long lastUpdateTime, Long terminationTime, Long startTime, Long endTime) {
         this.id = id;
         this.uuid = uuid;
@@ -55,62 +55,62 @@ public class ExamRecord {
         this.endTime = endTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.uuid")
     public String getUuid() {
         return uuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.name")
     public String getName() {
         return name;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.description")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.description")
     public String getDescription() {
         return description;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.540+02:00", comments="Source field: exam.url")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.395+02:00", comments="Source field: exam.url")
     public String getUrl() {
         return url;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.type")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.type")
     public String getType() {
         return type;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.owner")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.owner")
     public String getOwner() {
         return owner;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.creation_time")
     public Long getCreationTime() {
         return creationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.last_update_time")
     public Long getLastUpdateTime() {
         return lastUpdateTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.396+02:00", comments="Source field: exam.termination_time")
     public Long getTerminationTime() {
         return terminationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.start_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.397+02:00", comments="Source field: exam.start_time")
     public Long getStartTime() {
         return startTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-05-14T14:28:54.542+02:00", comments="Source field: exam.end_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.397+02:00", comments="Source field: exam.end_time")
     public Long getEndTime() {
         return endTime;
     }
@@ -119,7 +119,7 @@ public class ExamRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table exam
      *
-     * @mbg.generated Tue May 14 14:28:54 CEST 2024
+     * @mbg.generated Tue Sep 03 11:11:55 CEST 2024
      */
     @Override
     public String toString() {
@@ -147,7 +147,7 @@ public class ExamRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table exam
      *
-     * @mbg.generated Tue May 14 14:28:54 CEST 2024
+     * @mbg.generated Tue Sep 03 11:11:55 CEST 2024
      */
     @Override
     public boolean equals(Object that) {
@@ -179,7 +179,7 @@ public class ExamRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table exam
      *
-     * @mbg.generated Tue May 14 14:28:54 CEST 2024
+     * @mbg.generated Tue Sep 03 11:11:55 CEST 2024
      */
     @Override
     public int hashCode() {

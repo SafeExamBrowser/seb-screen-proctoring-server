@@ -8,6 +8,9 @@
 
 package ch.ethz.seb.sps.server;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationInfoService;
@@ -16,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,14 +28,14 @@ public class MigrationStrategy implements FlywayMigrationStrategy {
     private static final Logger log = LoggerFactory.getLogger(MigrationStrategy.class);
 
     private final boolean cleanDBOnStartup;
-    private final ServiceInfo serviceInfo;
+    private final HashSet<String> profiles;
     private Flyway flyway;
 
     public MigrationStrategy(
-            final ServiceInfo serviceInfo,
+            final Environment environment,
             @Value("${seb.sps.clean-db-on-startup:false}") final boolean cleanDBOnStartup) {
 
-        this.serviceInfo = serviceInfo;
+        profiles = new HashSet<>(Arrays.asList(environment.getActiveProfiles()));
         this.cleanDBOnStartup = cleanDBOnStartup;
     }
 
@@ -41,7 +45,7 @@ public class MigrationStrategy implements FlywayMigrationStrategy {
     }
 
     public void applyMigration() {
-        if (this.serviceInfo.hasProfile("test")) {
+        if (this.profiles.contains("test")) {
             ServiceInit.INIT_LOGGER.info("No migration applies for test profile");
             return;
         }

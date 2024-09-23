@@ -26,11 +26,8 @@ import ch.ethz.seb.sps.server.datalayer.dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -62,7 +59,6 @@ public class UserServiceImpl implements UserService {
     private final UserDAO userDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
     private final EntityService entityService;
-    private final AdditionalAttributesDAO additionalAttributesDAO;
 
     public UserServiceImpl(
             final UserDAO userDAO,
@@ -75,7 +71,6 @@ public class UserServiceImpl implements UserService {
         this.extractStrategies = extractStrategies;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.entityService = entityService;
-        this.additionalAttributesDAO = additionalAttributesDAO;
 
         // admin privileges
         this.rolePrivileges.put(
@@ -309,22 +304,19 @@ public class UserServiceImpl implements UserService {
     @Lazy
     @Component
     public static class DefaultUserExtractStrategy implements ExtractUserFromAuthenticationStrategy {
+        
+        final UserDAO userDAO;
+
+        DefaultUserExtractStrategy(UserDAO userDAO) {
+            this.userDAO = userDAO;
+        }
 
         @Override
         public ServerUser extract(final Principal principal) {
-            if (principal instanceof OAuth2Authentication) {
-                final Authentication userAuthentication = ((OAuth2Authentication) principal).getUserAuthentication();
-                //UsernamePasswordAuthenticationToken == initial request with username & password | PreAuthenticatedAuthenticationToken == request with refresh token
-                if (userAuthentication instanceof UsernamePasswordAuthenticationToken
-                        || userAuthentication instanceof PreAuthenticatedAuthenticationToken) {
-                    final Object userPrincipal = userAuthentication.getPrincipal();
-                    if (userPrincipal instanceof ServerUser) {
-                        return (ServerUser) userPrincipal;
-                    }
-                }
-            }
-
-            return null;
+            String name = principal.getName();
+            return userDAO.byUsername(name)
+                    .onError(error -> log.warn("Failed to find user for token authentication: {}", name))
+                    .getOr(null);
         }
     }
 

@@ -8,9 +8,12 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
+import static org.flywaydb.core.internal.util.DateUtils.toDate;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -20,6 +23,7 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,18 +100,20 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
 
             this.screenshotMapper = this.sqlSessionTemplate.getMapper(ScreenshotMapper.class);
             this.screenshotDataRecordMapper = this.sqlSessionTemplate.getMapper(ScreenshotDataRecordMapper.class);
-
+            final DateTime start1 = DateTime.now(DateTimeZone.UTC).plus(10000);
+            final DateTime start2 = start1.plus(500);
+            
             final Collection<ScreenshotQueueData> data1 = new ArrayList<>();
             this.taskScheduler.scheduleWithFixedDelay(
                     () -> processBatchStore(data1),
-                    DateTime.now(DateTimeZone.UTC).toDate(),
-                    this.batchInterval);
+                    start1.toDate().toInstant(),
+                    java.time.Duration.ofMillis(this.batchInterval));
 
             final Collection<ScreenshotQueueData> data2 = new ArrayList<>();
             this.taskScheduler.scheduleWithFixedDelay(
                     () -> processBatchStore(data2),
-                    DateTime.now(DateTimeZone.UTC).plus(500).toDate(),
-                    this.batchInterval);
+                    start2.toDate().toInstant(),
+                    java.time.Duration.ofMillis(this.batchInterval));
 
             ServiceInit.INIT_LOGGER.info(
                     "----> Screenshot Store: 2 workers with update-interval: {} initialized",

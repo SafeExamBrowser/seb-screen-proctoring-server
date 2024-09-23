@@ -18,6 +18,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -44,15 +45,15 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
             final Exception ex,
             final Object body,
             final HttpHeaders headers,
-            final HttpStatus status,
+            final HttpStatusCode statusCode,
             final WebRequest request) {
-
-        if (HttpStatus.INTERNAL_SERVER_ERROR.equals(status)) {
+        
+        if (HttpStatus.INTERNAL_SERVER_ERROR.value() == statusCode.value()) {
             request.setAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE, ex, WebRequest.SCOPE_REQUEST);
         }
 
         final Map<String, String> attributes = new HashMap<>();
-        attributes.put("http-status", (status != null) ? status.name() : "--");
+        attributes.put("http-status", HttpStatus.valueOf(statusCode.value()).name());
         addRequestAttributes(request, attributes);
         attributes.put("body", String.valueOf(body));
 
@@ -65,8 +66,10 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 
         log.error("Error intercepted at API response error handler: {}", apiError, ex);
 
-        return new ResponseEntity<>(apiError, headers, status);
+        return new ResponseEntity<>(apiError, headers, statusCode);
     }
+
+
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Object> handleRuntimeException(

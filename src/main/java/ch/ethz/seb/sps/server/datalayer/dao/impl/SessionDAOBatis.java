@@ -239,6 +239,7 @@ public class SessionDAOBatis implements SessionDAO {
         });
     }
 
+    // TODO this seems to not work as expected. Seems to get always all ids of the group!?
     @Override
     public Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Set<Long> updateTimes) {
         return Result.tryCatch(() -> {
@@ -249,6 +250,10 @@ public class SessionDAOBatis implements SessionDAO {
                     .and(SessionRecordDynamicSqlSupport.lastUpdateTime, isNotIn(updateTimes))
                     .build()
                     .execute();
+            
+            if (idsForUpdate != null && !idsForUpdate.isEmpty() && log.isDebugEnabled()) {
+                log.debug("Found {} session tokens to refresh on group {}", idsForUpdate.size(), groupId);
+            }
 
             if (idsForUpdate != null && !idsForUpdate.isEmpty()) {
                 return sessionRecordMapper.selectByExample()

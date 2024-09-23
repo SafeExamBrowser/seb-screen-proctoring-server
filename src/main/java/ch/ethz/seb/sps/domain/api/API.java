@@ -14,7 +14,11 @@ import ch.ethz.seb.sps.domain.model.Entity;
 
 public final class API {
 
-
+    public static final String READ_SCOPE_NAME = "read";
+    public static final String WRITE_SCOPE_NAME = "write";
+    public static final String WEB_API_SCOPE_NAME = "web-api";
+    public static final String SEB_API_SCOPE_NAME = "seb-api";
+    
     public enum UserRole {
         ADMIN,
         PROCTOR,
@@ -88,6 +92,7 @@ public final class API {
     public static final String HEALTH_ENDPOINT = "/health";
     public static final String WEBSOCKET_SESSION_ENDPOINT = "/wsock";
     public static final String GUI_REDIRECT_ENDPOINT = "/gui-redirect-location";
+    public static final String OAUTH_JWTTOKEN_QUERY_PARAM = "access_token";
 
     public static final String PARAM_MODEL_ID = "modelId";
 

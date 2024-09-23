@@ -10,7 +10,7 @@ package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.Collection;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import ch.ethz.seb.sps.domain.model.service.GroupSessionCount;
 import org.mybatis.dynamic.sql.SqlTable;

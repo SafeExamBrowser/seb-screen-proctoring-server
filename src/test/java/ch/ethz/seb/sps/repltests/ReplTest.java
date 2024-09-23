@@ -11,11 +11,15 @@ package ch.ethz.seb.sps.repltests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
+import ch.ethz.seb.sps.utils.Utils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -35,10 +39,26 @@ public class ReplTest {
 
     @Test
     public void testPWDGen() {
-        final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(4);
+        final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         final String encode = bCryptPasswordEncoder.encode("test");
         System.out.print(encode);
     }
+//
+//    @Test
+//    public void encodeURL() throws UnsupportedEncodingException {
+//        String encoded = URLEncoder.encode("heute + morgen", "utf8");
+//        
+//        assertEquals("heute+%2B+morgen", encoded);
+//        String decodedOrig = URLDecoder.decode(encoded, "utf8");
+//        String decodedMe = Utils.decodeFormURL_UTF_8(encoded);
+//        assertEquals("heute+++morgen", decodedMe);
+//        assertEquals("heute + morgen", decodedOrig);
+//
+//        String encodedMacProbably = "heute+\\++morgen";
+//        String decodedMacMe = Utils.decodeFormURL_UTF_8(encodedMacProbably);
+//        assertEquals("heute+++morgen", decodedMacMe);
+//    }
+
 
     @Test
     public void intCast() {

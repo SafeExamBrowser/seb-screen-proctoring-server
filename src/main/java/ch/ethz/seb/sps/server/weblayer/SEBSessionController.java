@@ -11,8 +11,8 @@ package ch.ethz.seb.sps.server.weblayer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ch.ethz.seb.sps.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,7 +45,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("${sps.api.session.endpoint.v1}" + API.SESSION_ENDPOINT)
-@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_SEB_CLIENT)
+@SecurityRequirement(name = WebConfig.SWAGGER_AUTH_SEB_API)
 public class SEBSessionController {
 
     private static final Logger log = LoggerFactory.getLogger(SEBSessionController.class);

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
@@ -52,7 +52,6 @@ import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
 import ch.ethz.seb.sps.server.servicelayer.EntityService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
-import ch.ethz.seb.sps.server.weblayer.oauth.RevokeTokenEndpoint;
 import ch.ethz.seb.sps.utils.Result;
 
 @RestController
@@ -76,7 +75,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
             final ApplicationEventPublisher applicationEventPublisher,
             final BeanValidationService beanValidationService,
             final EntityService entityService,
-            @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME) final PasswordEncoder userPasswordEncoder) {
+            final PasswordEncoder userPasswordEncoder) {
 
         super(userService, userDAO, auditLogDAO, paginationService, beanValidationService);
         this.entityPrivilegeDAO = entityPrivilegeDAO;
@@ -255,8 +254,9 @@ public class AdminUserAccountController extends ActivatableEntityController<User
 
     private Result<UserInfo> revokeAccessToken(final UserInfo userInfo) {
         return Result.tryCatch(() -> {
-            this.applicationEventPublisher.publishEvent(
-                    new RevokeTokenEndpoint.RevokeTokenEvent(userInfo, userInfo.username));
+            // TODO
+//            this.applicationEventPublisher.publishEvent(
+//                    new RevokeTokenEndpoint.RevokeTokenEvent(userInfo, userInfo.username));
             return userInfo;
         });
     }

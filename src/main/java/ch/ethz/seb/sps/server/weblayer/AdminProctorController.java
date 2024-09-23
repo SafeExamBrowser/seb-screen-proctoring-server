@@ -14,8 +14,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ch.ethz.seb.sps.domain.model.service.*;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
@@ -58,7 +58,7 @@ import ch.ethz.seb.sps.utils.Utils;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.PROCTORING_ENDPOINT)
-@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_GUI_ADMIN)
+@SecurityRequirement(name = WebConfig.SWAGGER_AUTH_ADMIN_API)
 public class AdminProctorController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminProctorController.class);
