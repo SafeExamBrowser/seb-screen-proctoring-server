@@ -42,6 +42,8 @@ public class WebConfig implements WebMvcConfigurer {
     public static final String SWAGGER_AUTH_ADMIN_API = "adminAuth";
     
     private static String[] OPEN_ENDPOINTS = new String[] {
+            API.HEALTH_ENDPOINT,
+            API.HEALTH_ENDPOINT + "/",
             API.GUI_REDIRECT_ENDPOINT,
             API.OAUTH_JWTTOKEN_ENDPOINT + "/**",
             "/swagger-ui/**",
