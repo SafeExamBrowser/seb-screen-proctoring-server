@@ -8,6 +8,9 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.*;
+import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,6 +20,9 @@ import java.util.stream.Collectors;
 
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.SelectDSL;
+import org.mybatis.dynamic.sql.update.UpdateDSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +40,8 @@ import ch.ethz.seb.sps.utils.Result;
 
 @Service
 public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
+
+    private static final Logger log = LoggerFactory.getLogger(EntityPrivilegeDAOBatis.class);
 
     private final EntityPrivilegeRecordMapper entityPrivilegeRecordMapper;
     private final EntityPrivilegeIdMapper entityPrivilegeIdMapper;
@@ -195,6 +203,45 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                     .map(id -> new EntityKey(id, EntityType.ENTITY_PRIVILEGE))
                     .collect(Collectors.toList());
         });
+    }
+
+    @Override
+    @Transactional
+    public void updatePrivileges(Long epId, PrivilegeType privilegeType) {
+       try {
+
+           UpdateDSL.updateWithMapper(
+                   this.entityPrivilegeRecordMapper::update,
+                           EntityPrivilegeRecordDynamicSqlSupport.entityPrivilegeRecord)
+                   .set(EntityPrivilegeRecordDynamicSqlSupport.privileges).equalTo(privilegeType.flag)
+                   .where(id, isEqualTo(epId))
+                   .build()
+                   .execute();
+
+       } catch (Exception e) {
+           log.warn(
+                   "Failed to update entity privilege for privilege: {} error: {}",
+                   epId,
+                   e.getMessage());
+       }
+    }
+
+    @Override
+    @Transactional
+    public void deleteAllPrivilegesForUser(String user_uuid) {
+        try {
+
+            this.entityPrivilegeRecordMapper.deleteByExample()
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(user_uuid))
+                    .build()
+                    .execute();
+            
+        } catch (Exception e) {
+            log.warn(
+                    "Failed to delete entity privilege for user: {} error: {}",
+                    user_uuid,
+                    e.getMessage());
+        }
     }
 
     private EntityPrivilege toDomainObject(final EntityPrivilegeRecord record) {

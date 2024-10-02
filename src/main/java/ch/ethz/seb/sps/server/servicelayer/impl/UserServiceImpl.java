@@ -111,7 +111,7 @@ public class UserServiceImpl implements UserService {
                     return user;
                 }
             } catch (final Exception e) {
-                log.error("Unexpected error while trying to extract user form principal: ", e);
+                log.error("Unexpected error while trying to extract user from principal: ", e);
             }
         }
 
@@ -230,7 +230,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<UserInfo> synchronizeUserAccount(final UserMod userMod) {
-        return this.userDAO.synchronizeUserAccount(userMod);
+        return this.userDAO.synchronizeUserAccount(userMod)
+                .map(this::synchronizeUserPrivileges);
+    }
+    
+    private UserInfo synchronizeUserPrivileges(final UserInfo userInfo) {
+        try {
+
+            UserPrivileges privileges = getUserPrivileges(userInfo.uuid)
+                    .getOrThrow();
+            
+            boolean isAdmin = userInfo.roles.contains(UserRole.ADMIN.name());
+            privileges.entityPrivileges.forEach( p -> {
+                this.entityPrivilegeDAO.updatePrivileges(
+                        p.id,
+                        isAdmin ? PrivilegeType.WRITE : PrivilegeType.READ
+                );
+            });
+            
+        } catch (Exception e) {
+            log.error("Failed to sync user privileges for user: {}", userInfo, e);
+        }
+        return userInfo;
     }
 
     @Override

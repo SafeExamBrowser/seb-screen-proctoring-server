@@ -367,7 +367,7 @@ public class UserDAOBatis implements UserDAO {
                     .execute();
 
             // delete all involved entity privileges
-            deleteAllEntityPrivileges(ids, this.entityPrivilegeDAO);
+            users.forEach(user -> this.entityPrivilegeDAO.deleteAllPrivilegesForUser(user.getUuid()));
 
             // then delete the user account
             this.userRecordMapper.deleteByExample()
