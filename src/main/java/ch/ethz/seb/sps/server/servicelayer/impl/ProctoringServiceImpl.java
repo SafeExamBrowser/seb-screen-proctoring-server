@@ -413,14 +413,6 @@ public class ProctoringServiceImpl implements ProctoringService {
         );
     }
 
-    @Override
-    public List<UserListForApplicationSearchRecord> getUserListForApplicationSearch(final String metadataApplication, final String metadataWindowTitle, final List<Long> groupIds){
-        return this.screenshotDataDAO.getUserListForApplicationSearch(metadataApplication, metadataWindowTitle, groupIds)
-                .getOrThrow()
-                .stream()
-                .toList();
-    }
-
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
         try {
 

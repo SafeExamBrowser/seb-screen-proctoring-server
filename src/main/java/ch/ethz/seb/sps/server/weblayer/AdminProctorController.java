@@ -975,7 +975,10 @@ public class AdminProctorController {
             @RequestParam(name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, required = true) final String metadataWindowTitle,
             @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
 
-        return this.proctoringService.getUserListForApplicationSearch(metadataApplication, metadataWindowTitle, getIdListFromParameter(groupIds));
+        return this.screenshotDataDAO.getUserListForApplicationSearch(metadataApplication, metadataWindowTitle, getIdListFromParameter(groupIds))
+                .getOrThrow()
+                .stream()
+                .toList();
     }
 
 
