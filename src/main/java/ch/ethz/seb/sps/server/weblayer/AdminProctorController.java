@@ -14,6 +14,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.server.datalayer.batis.customrecords.DistinctMetadataWindowForExamRecord;
+import ch.ethz.seb.sps.server.datalayer.batis.customrecords.UserListForApplicationSearchRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.impl.SessionDAOBatis;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -66,6 +70,8 @@ public class AdminProctorController {
     private final Executor downloadExecutor;
     private final GroupDAO groupDAO;
     private final ScreenshotDataDAO screenshotDataDAO;
+    private final SessionDAOBatis sessionDAOBatis;
+    private final ExamDAO examDAO;
     private final GroupService groupService;
     private final ProctoringService proctoringService;
     private final PaginationService paginationService;
@@ -74,6 +80,8 @@ public class AdminProctorController {
     public AdminProctorController(
             final GroupDAO groupDAO,
             final ScreenshotDataDAO screenshotDataDAO,
+            final ExamDAO examDAO,
+            final SessionDAOBatis sessionDAOBatis,
             final GroupService groupService,
             final ProctoringService proctoringService,
             final PaginationService paginationService,
@@ -82,7 +90,9 @@ public class AdminProctorController {
 
         this.downloadExecutor = downloadExecutor;
         this.groupDAO = groupDAO;
+        this.examDAO = examDAO;
         this.screenshotDataDAO = screenshotDataDAO;
+        this.sessionDAOBatis = sessionDAOBatis;
         this.groupService = groupService;
         this.paginationService = paginationService;
         this.proctoringService = proctoringService;
@@ -173,7 +183,7 @@ public class AdminProctorController {
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
-                            name = API.PARAM_GROUP_ID,
+                            name = API.PARAM_GROUP_UUID,
                             description = "The UUID of the group to get a page of session for"),
                     @Parameter(
                             name = ScreenshotsInGroupData.ATTR_PAGE_NUMBER,
@@ -205,7 +215,7 @@ public class AdminProctorController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ScreenshotsInGroupData getSessionsByGroup(
-            @PathVariable(name = API.PARAM_GROUP_ID) final String groupUUID,
+            @PathVariable(name = API.PARAM_GROUP_UUID) final String groupUUID,
             @RequestParam(name = ScreenshotsInGroupData.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
             @RequestParam(name = ScreenshotsInGroupData.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
             @RequestParam(name = ScreenshotsInGroupData.ATTR_SORT_BY, required = false) final String sortBy,
@@ -375,7 +385,7 @@ public class AdminProctorController {
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
-                            name = API.PARAM_GROUP_ID,
+                            name = API.PARAM_GROUP_UUID,
                             description = "The group UUID filter criteria. If available the search is restricted to the given group. The value must be the UUID or the PK of the group",
                             in = ParameterIn.QUERY,
                             required = false),
@@ -466,7 +476,7 @@ public class AdminProctorController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<ScreenshotSearchResult> searchScreenshots(
-            @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
+            @RequestParam(name = API.PARAM_GROUP_UUID, required = false) final String groupUUID,
             @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
             @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
             @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
@@ -495,7 +505,7 @@ public class AdminProctorController {
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
-                            name = API.PARAM_GROUP_ID,
+                            name = API.PARAM_GROUP_UUID,
                             description = "The group UUID filter criteria. If available the search is restricted to the given group. The value must be the UUID or the PK of the group",
                             in = ParameterIn.QUERY,
                             required = false),
@@ -576,7 +586,7 @@ public class AdminProctorController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Date> getMatchingDaysForSessionSearch(
             @RequestParam(name = API.PARAM_EXAM_NAME, required = false) final String examName,
-            @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
+            @RequestParam(name = API.PARAM_GROUP_UUID, required = false) final String groupUUID,
             @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
             @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
             @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
@@ -598,7 +608,7 @@ public class AdminProctorController {
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
-                            name = API.PARAM_GROUP_ID,
+                            name = API.PARAM_GROUP_UUID,
                             description = "The group UUID filter criteria. If available the search is restricted to the given group. The value must be the UUID or the PK of the group",
                             in = ParameterIn.QUERY,
                             required = false),
@@ -695,7 +705,7 @@ public class AdminProctorController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<SessionSearchResult> searchSessions(
             @RequestParam(name = API.PARAM_EXAM_NAME, required = false) final String examName,
-            @RequestParam(name = API.PARAM_GROUP_ID, required = false) final String groupUUID,
+            @RequestParam(name = API.PARAM_GROUP_UUID, required = false) final String groupUUID,
             @RequestParam(name = API.PARAM_GROUP_NAME, required = false) final String groupName,
             @RequestParam(name = API.PARAM_SESSION_ID, required = false) final String sessionUUID,
             @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
@@ -827,6 +837,148 @@ public class AdminProctorController {
                 .getOrThrow());
     }
 
+
+    @Operation(
+            summary = "Get a list of all running exams in the given time frame",
+            description = "Get a list of all exams which don't have a termination time and their start time is in the given time frame",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_FROM_TIME,
+                            description = "The search from-time filter criteria. If given only matches from this time onwards are part of the search result. Value must be a unix timestamp in millisecods in UTC timezone",
+                            in = ParameterIn.QUERY,
+                            required = false),
+                    @Parameter(
+                            name = API.PARAM_TO_TIME,
+                            description = "The search to-time filter criteria. If given only matches from this time backwards in time are part of the search result. Value must be a unix timestamp in millisecods in UTC timezone",
+                            in = ParameterIn.QUERY,
+                            required = false),
+            })
+    @RequestMapping(
+            path = API.APPLICATION_SEARCH_EXAMS_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Exam> getExamsStarted(
+            @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
+            @RequestParam(name = API.PARAM_TO_TIME, required = false) final Long toTime,
+            final HttpServletRequest request){
+
+        final FilterMap filterMap = new FilterMap(request);
+
+        return this.examDAO.getExamsStarted(filterMap)
+                .getOrThrow()
+                .stream()
+                .toList();
+    }
+
+
+    @Operation(
+            summary = "Get a list of distinct groupIds for a given exam",
+            description = "Returns a list including each groupId of the given exam.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_EXAM_ID,
+                            description = "The exam Id"),
+            })
+    @RequestMapping(
+            path = API.APPLICATION_SEARCH_GROUP_IDS_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Long> getGroupIdsForExam(
+            @PathVariable(name = API.PARAM_EXAM_ID) final Long examId){
+
+        return this.groupDAO.getGroupIdsForExam(examId)
+                .getOrThrow()
+                .stream()
+                .toList();
+    }
+
+
+    @Operation(
+            summary = "Get a list of metadata application for a given exam",
+            description = "Returns a list of distinct metadata application for a given exam (via groupIds)",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_GROUP_IDS,
+                            description = "The ID's of the groups included in the exam"),
+            })
+    @RequestMapping(
+            path = API.APPLICATION_SEARCH_METADATA_APP_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<String> getDistinctMetadataAppForExam(
+            @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
+
+        return this.screenshotDataDAO.getDistinctMetadataAppForExam(getIdListFromParameter(groupIds))
+                .getOrThrow()
+                .stream()
+                .toList();
+    }
+
+
+    @Operation(
+            summary = "Get a list of metadata window titles for a given exam",
+            description = "Returns a list of distinct window titles for a given exam (via groupIds) & metadata application",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_APPLICATION,
+                            description = "The search filter criteria for screenshot application metadata."),
+                    @Parameter(
+                            name = API.PARAM_GROUP_IDS,
+                            description = "The ID's of the groups included in the exam")
+            })
+    @RequestMapping(
+            path = API.APPLICATION_SEARCH_METADATA_WINDOW_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DistinctMetadataWindowForExamRecord getDistinctMetadataWindowForExam(
+            @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
+            @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
+
+        return this.proctoringService.getDistinctMetadataWindowForExam(metadataApplication, getIdListFromParameter(groupIds));
+    }
+
+    @Operation(
+            summary = "Get a list of users who match the metadata search",
+            description = "Returns a list containing user data and a count. The list represents the users who at least have one screenshot matching the metadata of the given exam.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_APPLICATION,
+                            description = "The search filter criteria for screenshot application metadata."),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
+                            description = "The search filter criteria for screenshot window title metadata."),
+                    @Parameter(
+                            name = API.PARAM_GROUP_IDS,
+                            description = "The ID's of the groups included in the exam")
+            })
+    @RequestMapping(
+            path = API.APPLICATION_SEARCH_USER_LIST_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<UserListForApplicationSearchRecord> getUserListForApplicationSearch(
+            @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
+            @RequestParam(name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, required = true) final String metadataWindowTitle,
+            @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
+
+        return this.proctoringService.getUserListForApplicationSearch(metadataApplication, metadataWindowTitle, getIdListFromParameter(groupIds));
+    }
+
+
     private void preProcessGroupCriteria(final FilterMap filterMap) {
         final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();
         final String ids = StringUtils.join(
@@ -867,6 +1019,17 @@ public class AdminProctorController {
         } else {
             return this.proctoringService.queryMatchingDaysForSessionSearch(filterMap);
         }
+    }
+
+    private List<Long> getIdListFromParameter(final String ids){
+        String[] idsString = StringUtils.split(ids, Constants.LIST_SEPARATOR_CHAR);
+        List<Long> idsList = new ArrayList<>();
+
+        for(int i = 0; i < idsString.length; i++){
+            idsList.add(Long.parseLong(idsString[i]));
+        }
+
+        return idsList;
     }
 
 }

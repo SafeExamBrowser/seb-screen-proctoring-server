@@ -25,6 +25,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.service.*;
+import ch.ethz.seb.sps.server.datalayer.batis.customrecords.DistinctMetadataWindowForExamRecord;
+import ch.ethz.seb.sps.server.datalayer.batis.customrecords.UserListForApplicationSearchRecord;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -401,6 +403,22 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .forEach(this.proctoringCacheService::evictSession);
         }
         this.proctoringCacheService.evictGroup(groupUUID);
+    }
+
+    @Override
+    public DistinctMetadataWindowForExamRecord getDistinctMetadataWindowForExam(final String metadataApplication, final List<Long> groupIds){
+        return new DistinctMetadataWindowForExamRecord(
+                this.screenshotDataDAO.countDistinctMetadataWindowForExam(metadataApplication, groupIds).getOrThrow(),
+                this.screenshotDataDAO.getDistinctMetadataWindowForExam(metadataApplication, groupIds).getOrThrow()
+        );
+    }
+
+    @Override
+    public List<UserListForApplicationSearchRecord> getUserListForApplicationSearch(final String metadataApplication, final String metadataWindowTitle, final List<Long> groupIds){
+        return this.screenshotDataDAO.getUserListForApplicationSearch(metadataApplication, metadataWindowTitle, groupIds)
+                .getOrThrow()
+                .stream()
+                .toList();
     }
 
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {

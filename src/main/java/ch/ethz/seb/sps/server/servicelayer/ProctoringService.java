@@ -11,6 +11,8 @@ package ch.ethz.seb.sps.server.servicelayer;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.*;
+import ch.ethz.seb.sps.server.datalayer.batis.customrecords.DistinctMetadataWindowForExamRecord;
+import ch.ethz.seb.sps.server.datalayer.batis.customrecords.UserListForApplicationSearchRecord;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.utils.Result;
 
@@ -92,4 +94,8 @@ public interface ProctoringService {
     Result<Exam> updateCacheForExam(Exam exam);
 
     void clearGroupCache(final String groupUUID, final boolean fully);
+
+    DistinctMetadataWindowForExamRecord getDistinctMetadataWindowForExam(String metadataApplication, List<Long> groupIds);
+
+    List<UserListForApplicationSearchRecord> getUserListForApplicationSearch(String metadataApplication, String metadataWindowTitle, List<Long> groupIds);
 }

@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotDataMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchApplicationMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.customrecords.UserListForApplicationSearchRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -55,13 +57,17 @@ import ch.ethz.seb.sps.utils.Result;
 public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
-
     private final ScreenshotDataMapper screenshotDataMapper;
+    private final SearchApplicationMapper searchApplicationMapper;
 
+    public ScreenshotDataDAOBatis(
+            final ScreenshotDataRecordMapper screenshotDataRecordMapper,
+            final ScreenshotDataMapper screenshotDataMapper,
+            final SearchApplicationMapper searchApplicationMapper) {
 
-    public ScreenshotDataDAOBatis(final ScreenshotDataRecordMapper screenshotDataRecordMapper, final ScreenshotDataMapper screenshotDataMapper) {
         this.screenshotDataRecordMapper = screenshotDataRecordMapper;
         this.screenshotDataMapper = screenshotDataMapper;
+        this.searchApplicationMapper = searchApplicationMapper;
     }
 
     @Override
@@ -534,6 +540,124 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
         });
     }
 
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<String>> getDistinctMetadataAppForExam(final List<Long> groupIds) {
+        return Result.tryCatch(() -> {
+
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.searchApplicationMapper
+                            .selectDistinctMetadataAppForExam()
+                            .join(
+                                    SessionRecordDynamicSqlSupport.sessionRecord
+                            )
+                            .on(
+                                    sessionUuid,
+                                    SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
+                            .where();
+
+            queryBuilder = addGroupIdsToSearchQuery(queryBuilder, groupIds);
+
+            return queryBuilder
+                    .build()
+                    .execute();
+        });
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<String>> getDistinctMetadataWindowForExam(final String metadataApplication, final List<Long> groupIds) {
+        return Result.tryCatch(() -> {
+
+            final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);
+
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.searchApplicationMapper
+                            .selectDistinctWindowTitle()
+                            .join(
+                                    SessionRecordDynamicSqlSupport.sessionRecord
+                            )
+                            .on(
+                                    sessionUuid,
+                                    SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
+                            .where(
+                                    ScreenshotDataRecordDynamicSqlSupport.metaData,
+                                    SqlBuilder.isLike(metadataAppValue)
+                            );
+
+            queryBuilder = addGroupIdsToSearchQuery(queryBuilder, groupIds);
+
+            return queryBuilder
+                    .build()
+                    .execute();
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Long> countDistinctMetadataWindowForExam(final String metadataApplication, final List<Long> groupIds) {
+        return Result.tryCatch(() -> {
+
+            final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);
+
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.screenshotDataRecordMapper
+                            .countByExample()
+                            .join(
+                                    SessionRecordDynamicSqlSupport.sessionRecord
+                            )
+                            .on(
+                                    sessionUuid,
+                                    SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
+                            .where(
+                                    metaData,
+                                    SqlBuilder.isLike(metadataAppValue)
+                            );
+
+            queryBuilder = addGroupIdsToSearchQuery(queryBuilder, groupIds);
+
+            return queryBuilder
+                    .build()
+                    .execute();
+        });
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<UserListForApplicationSearchRecord>> getUserListForApplicationSearch(final String metadataApplication, final String metadataWindowTitle, final List<Long> groupIds) {
+        return Result.tryCatch(() -> {
+
+            final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);
+            final String metadataWindowValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, metadataWindowTitle);
+
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<UserListForApplicationSearchRecord>>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.searchApplicationMapper
+                            .selectUserListForApplicationSearch()
+                            .join(
+                                    SessionRecordDynamicSqlSupport.sessionRecord
+                            )
+                            .on(
+                                    sessionUuid,
+                                    SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
+                            .where(
+                                    ScreenshotDataRecordDynamicSqlSupport.metaData,
+                                    SqlBuilder.isLike(metadataAppValue)
+                            ).and(
+                                    ScreenshotDataRecordDynamicSqlSupport.metaData,
+                                    SqlBuilder.isLike(metadataWindowValue)
+                            );
+
+            queryBuilder = addGroupIdsToSearchQuery(queryBuilder, groupIds);
+
+            return queryBuilder
+                    .build()
+                    .execute();
+        });
+    }
+
     private ScreenshotDataRecord getLatestScreenshotDataRec(final String sessionUUID) {
         return SelectDSL
                 .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
@@ -559,6 +683,34 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                         ? ImageFormat.valueOf(record.getImageFormat())
                         : null,
                 record.getMetaData());
+    }
+
+    private QueryExpressionDSL.QueryExpressionWhereBuilder addGroupIdsToSearchQuery(QueryExpressionDSL.QueryExpressionWhereBuilder queryBuilder, final List<Long> groupIds){
+        if(groupIds.size() >= 1){
+            queryBuilder = (QueryExpressionDSL.QueryExpressionWhereBuilder) queryBuilder.and(
+                    SessionRecordDynamicSqlSupport.groupId,
+                    SqlBuilder.isEqualTo(groupIds.get(0))
+            );
+        }
+
+        for(int i = 1; i < groupIds.size(); i++){
+            queryBuilder = (QueryExpressionDSL.QueryExpressionWhereBuilder) queryBuilder.or(
+                    SessionRecordDynamicSqlSupport.groupId,
+                    SqlBuilder.isEqualTo(groupIds.get(i))
+            );
+        }
+
+        return queryBuilder;
+    }
+
+    private String createMetadataSearchString(String metadataKey, String metadataValue){
+        return  Constants.PERCENTAGE_STRING +
+                Constants.DOUBLE_QUOTE +
+                metadataKey +
+                Constants.DOUBLE_QUOTE +
+                Constants.PERCENTAGE_STRING +
+                metadataValue +
+                Constants.PERCENTAGE_STRING;
     }
 
 }

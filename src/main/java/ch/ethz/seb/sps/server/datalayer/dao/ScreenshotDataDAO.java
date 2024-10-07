@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
+import ch.ethz.seb.sps.server.datalayer.batis.customrecords.UserListForApplicationSearchRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,4 +64,11 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
 
     Result<List<Date>> selectMatchingScreenshotDataPerDay(FilterMap filterMap);
 
+    Result<Collection<String>> getDistinctMetadataAppForExam(List<Long> groupIds);
+
+    Result<Collection<String>> getDistinctMetadataWindowForExam(String metadataApplication, List<Long> groupIds);
+
+    Result<Long> countDistinctMetadataWindowForExam(String metadataApplication, List<Long> groupIds);
+
+    Result<Collection<UserListForApplicationSearchRecord>> getUserListForApplicationSearch(String metadataWindowTitle, String metadataApplication, List<Long> groupIds);
 }
