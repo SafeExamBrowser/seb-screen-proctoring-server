@@ -539,10 +539,10 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     public Result<Collection<Long>> getGroupIdsForExam(Long examId) {
         return Result.tryCatch(() -> this.searchApplicationMapper
                 .selectDistinctGroupIds()
-                .join(SessionRecordDynamicSqlSupport.sessionRecord)
+                .join(ExamRecordDynamicSqlSupport.examRecord)
                 .on(
-                        GroupRecordDynamicSqlSupport.id,
-                        SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.groupId)
+                        ExamRecordDynamicSqlSupport.id,
+                        SqlBuilder.equalTo(GroupRecordDynamicSqlSupport.examId)
                 )
                 .where(
                         GroupRecordDynamicSqlSupport.examId,

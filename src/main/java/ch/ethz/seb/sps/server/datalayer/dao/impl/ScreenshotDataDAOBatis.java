@@ -553,7 +553,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                                     SessionRecordDynamicSqlSupport.sessionRecord
                             )
                             .on(
-                                    sessionUuid,
+                                    ScreenshotDataRecordDynamicSqlSupport.sessionUuid,
                                     SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
                             .where();
 
@@ -580,7 +580,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                                     SessionRecordDynamicSqlSupport.sessionRecord
                             )
                             .on(
-                                    sessionUuid,
+                                    ScreenshotDataRecordDynamicSqlSupport.sessionUuid,
                                     SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
                             .where(
                                     ScreenshotDataRecordDynamicSqlSupport.metaData,
@@ -609,7 +609,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                                     SessionRecordDynamicSqlSupport.sessionRecord
                             )
                             .on(
-                                    sessionUuid,
+                                    ScreenshotDataRecordDynamicSqlSupport.sessionUuid,
                                     SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
                             .where(
                                     metaData,
@@ -640,7 +640,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                                     SessionRecordDynamicSqlSupport.sessionRecord
                             )
                             .on(
-                                    sessionUuid,
+                                    ScreenshotDataRecordDynamicSqlSupport.sessionUuid,
                                     SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
                             .where(
                                     ScreenshotDataRecordDynamicSqlSupport.metaData,

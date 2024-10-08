@@ -915,7 +915,7 @@ public class AdminProctorController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> getDistinctMetadataAppForExam(
-            @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
+            @RequestParam(name = API.PARAM_GROUP_IDS, required = false) final String groupIds){
 
         return this.screenshotDataDAO.getDistinctMetadataAppForExam(getIdListFromParameter(groupIds))
                 .getOrThrow()
