@@ -181,4 +181,6 @@ public final class API {
     public static final String APPLICATION_SEARCH_METADATA_APP_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/metadata/app";
     public static final String APPLICATION_SEARCH_METADATA_WINDOW_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/metadata/window";
     public static final String APPLICATION_SEARCH_USER_LIST_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/users";
+    public static final String APPLICATION_SEARCH_TIMESTAMP_LIST_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/timestamps";
+
 }

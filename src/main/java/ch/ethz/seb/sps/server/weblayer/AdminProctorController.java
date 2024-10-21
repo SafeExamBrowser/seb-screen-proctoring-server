@@ -981,6 +981,38 @@ public class AdminProctorController {
                 .toList();
     }
 
+    @Operation(
+            summary = "Get a list of timestamps which match the session & metadata search",
+            description = "The list represents all screenshots of the matching session & metadata search of the given exam.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_SESSION_ID,
+                            description = "The UUID of the session to get the screenshot for"),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_APPLICATION,
+                            description = "The search filter criteria for screenshot application metadata."),
+                    @Parameter(
+                            name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE,
+                            description = "The search filter criteria for screenshot window title metadata."),
+            })
+    @RequestMapping(
+            path = API.APPLICATION_SEARCH_TIMESTAMP_LIST_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Long> getTimestampListForApplicationSearch(
+            @RequestParam(name = API.PARAM_SESSION_ID, required = true) final String sessionUuid,
+            @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
+            @RequestParam(name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, required = true) final String metadataWindowTitle){
+
+        return this.screenshotDataDAO.getTimestampListForApplicationSearch(sessionUuid, metadataApplication, metadataWindowTitle)
+                .getOrThrow()
+                .stream()
+                .toList();
+    }
+
 
     private void preProcessGroupCriteria(final FilterMap filterMap) {
         final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();

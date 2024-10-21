@@ -20,8 +20,8 @@ import java.util.List;
 @Mapper
 public interface SearchApplicationMapper {
 
-    @SelectProvider(type= SqlProviderAdapter.class, method="select")
-    @ConstructorArgs({@Arg(column="id", javaType=String.class, jdbcType= JdbcType.VARCHAR, id=true)})
+    @SelectProvider(type=SqlProviderAdapter.class, method="select")
+    @ConstructorArgs({@Arg(column="id", javaType=String.class, jdbcType=JdbcType.VARCHAR, id=true)})
     List<Long> selectDistinctGroupIds(SelectStatementProvider select);
 
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>> selectDistinctGroupIds() {
@@ -31,7 +31,7 @@ public interface SearchApplicationMapper {
 
     //----------------------------------------------------------------------------------------------------------------------------
 
-    @SelectProvider(type= CustomSQLProvider.class, method="selectDistinctMetadataAppForExam")
+    @SelectProvider(type=CustomSQLProvider.class, method="selectDistinctMetadataAppForExam")
     List<String> selectDistinctMetadataAppForExam(SelectStatementProvider select);
 
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>> selectDistinctMetadataAppForExam() {
@@ -41,7 +41,7 @@ public interface SearchApplicationMapper {
 
     //----------------------------------------------------------------------------------------------------------------------------
 
-    @SelectProvider(type= CustomSQLProvider.class, method="selectDistinctWindowTitle")
+    @SelectProvider(type=CustomSQLProvider.class, method="selectDistinctWindowTitle")
     List<String> selectDistinctWindowTitle(SelectStatementProvider select);
 
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>> selectDistinctWindowTitle() {
@@ -51,7 +51,7 @@ public interface SearchApplicationMapper {
 
     //----------------------------------------------------------------------------------------------------------------------------
 
-    @SelectProvider(type= CustomSQLProvider.class, method="selectUserListForApplicationSearch")
+    @SelectProvider(type=CustomSQLProvider.class, method="selectUserListForApplicationSearch")
     @ConstructorArgs({
             @Arg(column="client_name", javaType=String.class, jdbcType= JdbcType.VARCHAR),
             @Arg(column="uuid", javaType=String.class, jdbcType= JdbcType.VARCHAR),
@@ -62,6 +62,17 @@ public interface SearchApplicationMapper {
 
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<UserListForApplicationSearchRecord>>> selectUserListForApplicationSearch() {
         return SelectDSL.selectWithMapper(this::selectUserListForApplicationSearch)
+                .from(ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord);
+    }
+
+    //----------------------------------------------------------------------------------------------------------------------------
+
+    @SelectProvider(type=SqlProviderAdapter.class, method="select")
+    @ConstructorArgs({@Arg(column="timestamp", javaType=Long.class, jdbcType=JdbcType.BIGINT)})
+    List<Long> selectTimestampListForApplicationSearch(SelectStatementProvider select);
+
+    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>> selectTimestampListForApplicationSearch() {
+        return SelectDSL.selectWithMapper(this::selectTimestampListForApplicationSearch, ScreenshotDataRecordDynamicSqlSupport.timestamp)
                 .from(ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord);
     }
 

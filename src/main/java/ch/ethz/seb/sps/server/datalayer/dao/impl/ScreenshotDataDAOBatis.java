@@ -658,6 +658,36 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
         });
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<Long>> getTimestampListForApplicationSearch(final String sessionUuid, final String metadataApplication, final String metadataWindowTitle) {
+        return Result.tryCatch(() -> {
+
+            final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);
+            final String metadataWindowValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, metadataWindowTitle);
+
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>>.QueryExpressionWhereBuilder queryBuilder =
+                    this.searchApplicationMapper
+                            .selectTimestampListForApplicationSearch()
+                            .where(
+                                    ScreenshotDataRecordDynamicSqlSupport.sessionUuid,
+                                    SqlBuilder.isEqualTo(sessionUuid)
+                            )
+                            .and(
+                                    ScreenshotDataRecordDynamicSqlSupport.metaData,
+                                    SqlBuilder.isLike(metadataAppValue)
+                            )
+                            .and(
+                                    ScreenshotDataRecordDynamicSqlSupport.metaData,
+                                    SqlBuilder.isLike(metadataWindowValue)
+                            );
+
+            return queryBuilder
+                    .build()
+                    .execute();
+        });
+    }
+
     private ScreenshotDataRecord getLatestScreenshotDataRec(final String sessionUUID) {
         return SelectDSL
                 .selectWithMapper(this.screenshotDataRecordMapper::selectOne,

@@ -71,4 +71,7 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
     Result<Long> countDistinctMetadataWindowForExam(String metadataApplication, List<Long> groupIds);
 
     Result<Collection<UserListForApplicationSearchRecord>> getUserListForApplicationSearch(String metadataWindowTitle, String metadataApplication, List<Long> groupIds);
+
+    Result<Collection<Long>> getTimestampListForApplicationSearch(final String sessionUuid, final String metadataApplication, final String metadataWindowTitle);
+
 }
