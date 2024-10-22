@@ -107,10 +107,11 @@ public interface SearchApplicationMapper {
 
             query = "SELECT " +
                     "`session`.client_name, " +
-                    "`session`.uuid, " +
+                    "MIN(`session`.uuid) AS uuid, " +
                     "MIN(`screenshot_data`.timestamp) AS timestamp, " +
                     "COUNT(*) as count " +
-                    fromClause;
+                    fromClause +
+                    " GROUP BY `session`.client_name";
 
             return query;
         }
