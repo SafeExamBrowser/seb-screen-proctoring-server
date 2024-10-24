@@ -40,6 +40,7 @@ public class ServiceInfo {
     private static final String WEB_SERVICE_SERVER_NAME_KEY = "sps.webservice.http.external.servername";
     private static final String WEB_SERVICE_HTTP_SCHEME_KEY = "sps.webservice.http.external.scheme";
     private static final String WEB_SERVICE_HTTP_PORT = "sps.webservice.http.external.port";
+    private static final String WEB_SERVICE_HTTP_SUB_PATH = "sps.webservice.http.sub.path";
     private static final String WEB_SERVICE_CONTEXT_PATH = "server.servlet.context-path";
     private static final String GUI_REDIRECT_URL = "sps.gui.redirect.url";
 
@@ -77,6 +78,7 @@ public class ServiceInfo {
     private final String httpScheme; // external
     private final String webserverName; // external
     private final String webserverPort; // external
+    private final String subPath; //external
     private final String externalServiceURI;
     private final String guiRedirectURL;
     private final String screenshotRequestURI;
@@ -116,6 +118,7 @@ public class ServiceInfo {
         this.httpScheme = environment.getRequiredProperty(WEB_SERVICE_HTTP_SCHEME_KEY);
         this.webserverPort = environment.getProperty(WEB_SERVICE_HTTP_PORT);
         this.webserverName = environment.getProperty(WEB_SERVICE_SERVER_NAME_KEY, "");
+        this.subPath = environment.getProperty(WEB_SERVICE_HTTP_SUB_PATH);
         if (StringUtils.isEmpty(this.webserverName)) {
             log.error("NOTE: External server name, property : 'sps.webservice.http.external.servername' is not set!");
             throw new IllegalArgumentException(
@@ -134,9 +137,13 @@ public class ServiceInfo {
         if (StringUtils.isNotBlank(this.webserverPort)) {
             builder.port(this.webserverPort);
         }
+        if (StringUtils.isNotBlank(this.subPath)) {
+            builder.path(this.subPath);
+        }
         if (StringUtils.isNotBlank(this.contextPath) && !this.contextPath.equals("/")) {
             builder.path(this.contextPath);
         }
+
         this.externalServiceURI = builder.toUriString();
         this.screenshotRequestURI =
                 this.externalServiceURI + this.adminAPIEndpointV1 +
@@ -233,6 +240,10 @@ public class ServiceInfo {
 
     public String getWebserverPort() {
         return this.webserverPort;
+    }
+
+    public String getSubPath() {
+        return this.subPath;
     }
 
     public String getExternalServiceURI() {
