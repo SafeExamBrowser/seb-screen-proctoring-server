@@ -283,6 +283,17 @@ public class SEBSessionController {
         return CompletableFuture.runAsync(
                 () -> {
                     try {
+                        
+                        //  EBSP-169 Patch Issue 2.0.2: Prevent error and queue overflow when SEB sends to long metadata
+                        // TODO replace this with attempt to fix metadata instead of complete skip
+                        if (metadata != null && metadata.length() > 3980) {
+                            
+                            log.warn("Sent metadata to long. Sent by SEB with session: {} metadata: {}", sessionUUID, metadata);
+                            
+                            // skip request here
+                            response.setStatus(HttpStatus.OK.value());
+                            return;
+                        }
 
                         // TODO inject session cache and get session by sessionUUID and check if it is still active (not terminated)
                         //      if inactive throw error for SEB client to notify session closed
