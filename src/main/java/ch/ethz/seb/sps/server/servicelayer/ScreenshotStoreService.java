@@ -15,8 +15,7 @@ import org.springframework.context.event.EventListener;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
 
-public interface
-ScreenshotStoreService {
+public interface ScreenshotStoreService {
 
     void storeScreenshot(
             String sessionUUID,
