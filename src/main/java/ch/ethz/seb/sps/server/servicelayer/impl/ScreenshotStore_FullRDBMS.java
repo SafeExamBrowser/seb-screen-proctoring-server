@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -225,10 +226,33 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
                     te);
             this.screenshotDataQueue.addAll(batch);
         } catch (final RuntimeException re) {
-            log.error(
-                    "Failed to batch store screenshot data... put data back to queue. Cause: ",
-                    re);
-            this.screenshotDataQueue.addAll(batch);
+            if (re instanceof DataIntegrityViolationException) {
+                // try to store in sequence to filter out the corrupted data and store the valid data
+                batch.forEach(data -> {
+                    try {
+                        this.transactionTemplate
+                                .executeWithoutResult(status -> {
+                                    this.screenshotDataRecordMapper.insert(data.record);
+                                    this.sqlSessionTemplate.flushStatements();
+
+                                    this.screenshotMapper.insert(new BlobContent(
+                                            data.record.getId(),
+                                            data.screenshotIn));
+                                    this.sqlSessionTemplate.flushStatements();
+                                });
+                    } catch (Exception e) {
+                        log.error(
+                                "Failed to store single screenshot after batch failed. data: {} cause: {}",
+                                data,
+                                re.getMessage());
+                    }
+                });
+            } else {
+                log.error(
+                        "Failed to batch store screenshot data... put data back to queue. Cause: ",
+                        re);
+                this.screenshotDataQueue.addAll(batch);
+            }
         }
     }
 
