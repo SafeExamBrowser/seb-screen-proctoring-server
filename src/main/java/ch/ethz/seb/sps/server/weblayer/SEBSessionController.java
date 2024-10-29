@@ -14,6 +14,7 @@ import java.util.concurrent.Executor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -284,9 +285,9 @@ public class SEBSessionController {
                 () -> {
                     try {
                         
-                        //  EBSP-169 Patch Issue 2.0.2: Prevent error and queue overflow when SEB sends to long metadata
+                        //  SEBSP-169 Patch Issue 2.0.2: Prevent error and queue overflow when SEB sends to long metadata
                         // TODO replace this with attempt to fix metadata instead of complete skip
-                        if (metadata != null && metadata.length() > 3980) {
+                        if (metadata != null && metadata.length() > Constants.MAX_METADATA_SIZE) {
                             
                             log.warn("Sent metadata to long. Sent by SEB with session: {} metadata: {}", sessionUUID, metadata);
                             

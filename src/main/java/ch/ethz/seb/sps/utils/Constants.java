@@ -23,6 +23,8 @@ public final class Constants {
     public static final String DEFAULT_TIME_ZONE_CODE = "UTC";
     public static final String TOOLTIP_TEXT_KEY_SUFFIX = ".tooltip";
 
+    // NOTE: DB Varchar is 4000 but we lave some sec gap here
+    public static final int MAX_METADATA_SIZE = 3980;
     public static final int SEB_FILE_HEADER_SIZE = 4;
     public static final int JN_CRYPTOR_ITERATIONS = 10000;
     public static final int JN_CRYPTOR_VERSION_HEADER_SIZE = 1;
