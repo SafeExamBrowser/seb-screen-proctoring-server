@@ -14,8 +14,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
-import ch.ethz.seb.sps.server.datalayer.batis.customrecords.DistinctMetadataWindowForExamRecord;
-import ch.ethz.seb.sps.server.datalayer.batis.customrecords.UserListForApplicationSearchRecord;
+import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
+import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.impl.SessionDAOBatis;
 import jakarta.servlet.http.HttpServletRequest;
@@ -942,7 +942,7 @@ public class AdminProctorController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public DistinctMetadataWindowForExamRecord getDistinctMetadataWindowForExam(
+    public DistinctMetadataWindowForExam getDistinctMetadataWindowForExam(
             @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
             @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
 
@@ -970,7 +970,7 @@ public class AdminProctorController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<UserListForApplicationSearchRecord> getUserListForApplicationSearch(
+    public List<UserListForApplicationSearch> getUserListForApplicationSearch(
             @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
             @RequestParam(name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, required = true) final String metadataWindowTitle,
             @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){

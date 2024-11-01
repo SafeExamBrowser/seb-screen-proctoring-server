@@ -190,8 +190,6 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
             return this.examRecordMapper
                     .selectByExample()
                     .where(
-                            ExamRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
-                    .and(
                             ExamRecordDynamicSqlSupport.startTime,
                             SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
                     .and(

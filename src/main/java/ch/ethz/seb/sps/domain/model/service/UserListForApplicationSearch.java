@@ -1,6 +1,6 @@
-package ch.ethz.seb.sps.server.datalayer.batis.customrecords;
+package ch.ethz.seb.sps.domain.model.service;
 
-public record UserListForApplicationSearchRecord(
+public record UserListForApplicationSearch(
         String username,
         String sessionUuid,
         Long firstScreenshotCaptureTime,

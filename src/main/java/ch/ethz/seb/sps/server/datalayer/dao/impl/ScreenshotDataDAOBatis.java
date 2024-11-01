@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotDataMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchApplicationMapper;
-import ch.ethz.seb.sps.server.datalayer.batis.customrecords.UserListForApplicationSearchRecord;
+import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -555,9 +555,10 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             .on(
                                     ScreenshotDataRecordDynamicSqlSupport.sessionUuid,
                                     SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
-                            .where();
-
-            queryBuilder = addGroupIdsToSearchQuery(queryBuilder, groupIds);
+                            .where(
+                                    SessionRecordDynamicSqlSupport.groupId,
+                                    isIn(groupIds)
+                            );
 
             return queryBuilder
                     .build()
@@ -585,9 +586,11 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             .where(
                                     ScreenshotDataRecordDynamicSqlSupport.metaData,
                                     SqlBuilder.isLike(metadataAppValue)
+                            )
+                            .and(
+                                    SessionRecordDynamicSqlSupport.groupId,
+                                    isIn(groupIds)
                             );
-
-            queryBuilder = addGroupIdsToSearchQuery(queryBuilder, groupIds);
 
             return queryBuilder
                     .build()
@@ -614,9 +617,10 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             .where(
                                     metaData,
                                     SqlBuilder.isLike(metadataAppValue)
+                            ).and(
+                                    SessionRecordDynamicSqlSupport.groupId,
+                                    isIn(groupIds)
                             );
-
-            queryBuilder = addGroupIdsToSearchQuery(queryBuilder, groupIds);
 
             return queryBuilder
                     .build()
@@ -627,30 +631,31 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<UserListForApplicationSearchRecord>> getUserListForApplicationSearch(final String metadataApplication, final String metadataWindowTitle, final List<Long> groupIds) {
+    public Result<Collection<UserListForApplicationSearch>> getUserListForApplicationSearch(final String metadataApplication, final String metadataWindowTitle, final List<Long> groupIds) {
         return Result.tryCatch(() -> {
 
             final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);
             final String metadataWindowValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, metadataWindowTitle);
 
-            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<UserListForApplicationSearchRecord>>>.QueryExpressionWhereBuilder queryBuilder =
+            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<UserListForApplicationSearch>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.searchApplicationMapper
                             .selectUserListForApplicationSearch()
                             .join(
                                     SessionRecordDynamicSqlSupport.sessionRecord
                             )
                             .on(
-                                    ScreenshotDataRecordDynamicSqlSupport.sessionUuid,
+                                    sessionUuid,
                                     SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
                             .where(
-                                    ScreenshotDataRecordDynamicSqlSupport.metaData,
+                                    metaData,
                                     SqlBuilder.isLike(metadataAppValue)
                             ).and(
-                                    ScreenshotDataRecordDynamicSqlSupport.metaData,
+                                    metaData,
                                     SqlBuilder.isLike(metadataWindowValue)
+                            ).and(
+                                    SessionRecordDynamicSqlSupport.groupId,
+                                    isIn(groupIds)
                             );
-
-            queryBuilder = addGroupIdsToSearchQuery(queryBuilder, groupIds);
 
             return queryBuilder
                     .build()
@@ -713,24 +718,6 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                         ? ImageFormat.valueOf(record.getImageFormat())
                         : null,
                 record.getMetaData());
-    }
-
-    private QueryExpressionDSL.QueryExpressionWhereBuilder addGroupIdsToSearchQuery(QueryExpressionDSL.QueryExpressionWhereBuilder queryBuilder, final List<Long> groupIds){
-        if(groupIds.size() >= 1){
-            queryBuilder = (QueryExpressionDSL.QueryExpressionWhereBuilder) queryBuilder.and(
-                    SessionRecordDynamicSqlSupport.groupId,
-                    SqlBuilder.isEqualTo(groupIds.get(0))
-            );
-        }
-
-        for(int i = 1; i < groupIds.size(); i++){
-            queryBuilder = (QueryExpressionDSL.QueryExpressionWhereBuilder) queryBuilder.or(
-                    SessionRecordDynamicSqlSupport.groupId,
-                    SqlBuilder.isEqualTo(groupIds.get(i))
-            );
-        }
-
-        return queryBuilder;
     }
 
     private String createMetadataSearchString(String metadataKey, String metadataValue){

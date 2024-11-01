@@ -1,6 +1,6 @@
 package ch.ethz.seb.sps.server.datalayer.batis.custommappers;
 
-import ch.ethz.seb.sps.server.datalayer.batis.customrecords.UserListForApplicationSearchRecord;
+import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
 import org.apache.ibatis.annotations.Arg;
@@ -58,9 +58,9 @@ public interface SearchApplicationMapper {
             @Arg(column="timestamp", javaType= Long.class, jdbcType= JdbcType.BIGINT),
             @Arg(column="count", javaType=Integer.class, jdbcType= JdbcType.INTEGER),
     })
-    List<UserListForApplicationSearchRecord> selectUserListForApplicationSearch(SelectStatementProvider select);
+    List<UserListForApplicationSearch> selectUserListForApplicationSearch(SelectStatementProvider select);
 
-    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<UserListForApplicationSearchRecord>>> selectUserListForApplicationSearch() {
+    default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<UserListForApplicationSearch>>> selectUserListForApplicationSearch() {
         return SelectDSL.selectWithMapper(this::selectUserListForApplicationSearch)
                 .from(ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord);
     }
@@ -85,7 +85,8 @@ public interface SearchApplicationMapper {
 
             query = "SELECT DISTINCT " +
                     "JSON_UNQUOTE(JSON_EXTRACT(`screenshot_data`.meta_data, '$.screenProctoringMetadataApplication')) AS screenProctoringMetadataApplication " +
-                    fromClause;
+                    fromClause +
+                    " ORDER BY screenProctoringMetadataApplication";
 
             return query;
         }
@@ -95,8 +96,9 @@ public interface SearchApplicationMapper {
             String fromClause = getFromClause(query);
 
             query = "SELECT DISTINCT " +
-                    "JSON_UNQUOTE(JSON_EXTRACT(`screenshot_data`.meta_data, '$.screenProctoringMetadataWindowTitle')) AS screenProctoringMetadataApplication " +
-                    fromClause;
+                    "JSON_UNQUOTE(JSON_EXTRACT(`screenshot_data`.meta_data, '$.screenProctoringMetadataWindowTitle')) AS screenProctoringMetadataWindowTitle " +
+                    fromClause +
+                    " ORDER BY screenProctoringMetadataWindowTitle";
 
             return query;
         }
@@ -111,7 +113,8 @@ public interface SearchApplicationMapper {
                     "MIN(`screenshot_data`.timestamp) AS timestamp, " +
                     "COUNT(*) as count " +
                     fromClause +
-                    " GROUP BY `session`.client_name";
+                    " GROUP BY `session`.client_name" +
+                    " ORDER BY `session`.client_name";
 
             return query;
         }
