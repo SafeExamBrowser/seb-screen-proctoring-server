@@ -11,8 +11,8 @@ INSERT IGNORE INTO `exam` VALUES
 ;
 
 INSERT IGNORE INTO `seb_group` VALUES
-    (1, '3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c', 'test_group', 'test-description', 'super-admin', 0, 0, null, null),
-    (2, '1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c', 'exam_group', 'exam_group description', 'super-admin', 1721743475058, 1721743475060, null, null)
+    (1, '3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c', 'test_group', 'test-description', 'super-admin', 0, 0, null, 1),
+    (2, '1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c', 'exam_group', 'exam_group description', 'super-admin', 1721743475058, 1721743475060, null, 1)
 ;
 
 INSERT IGNORE INTO `session` VALUES

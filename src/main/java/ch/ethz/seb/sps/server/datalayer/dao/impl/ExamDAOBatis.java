@@ -180,6 +180,31 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Collection<Exam>> getExamsStarted(final FilterMap filterMap) {
+
+        return Result.tryCatch(() -> {
+
+            final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
+            final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
+
+            return this.examRecordMapper
+                    .selectByExample()
+                    .where(
+                            ExamRecordDynamicSqlSupport.startTime,
+                            SqlBuilder.isGreaterThanOrEqualToWhenPresent(fromTime))
+                    .and(
+                            ExamRecordDynamicSqlSupport.startTime,
+                            SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                    .build()
+                    .execute()
+                    .stream()
+                    .map(this::toDomainModel)
+                    .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
         return Result.tryCatch(() -> {
             final List<Long> result = this.examRecordMapper

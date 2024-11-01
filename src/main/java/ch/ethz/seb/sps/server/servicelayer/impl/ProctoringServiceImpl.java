@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.service.*;
+import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -401,6 +402,14 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .forEach(this.proctoringCacheService::evictSession);
         }
         this.proctoringCacheService.evictGroup(groupUUID);
+    }
+
+    @Override
+    public DistinctMetadataWindowForExam getDistinctMetadataWindowForExam(final String metadataApplication, final List<Long> groupIds){
+        return new DistinctMetadataWindowForExam(
+                this.screenshotDataDAO.countDistinctMetadataWindowForExam(metadataApplication, groupIds).getOrThrow(),
+                this.screenshotDataDAO.getDistinctMetadataWindowForExam(metadataApplication, groupIds).getOrThrow()
+        );
     }
 
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {

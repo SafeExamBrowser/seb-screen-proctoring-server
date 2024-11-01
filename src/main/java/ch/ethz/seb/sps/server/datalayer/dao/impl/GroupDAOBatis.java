@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchApplicationMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -61,17 +63,20 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
 
     private final GroupRecordMapper groupRecordMapper;
     private final GroupViewMapper groupViewMapper;
+    private final SearchApplicationMapper searchApplicationMapper;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
     private final SessionDAO sessionDAO;
 
     public GroupDAOBatis(
             final GroupRecordMapper groupRecordMapper,
+            final GroupViewMapper groupViewMapper,
+            final SearchApplicationMapper searchApplicationMapper,
             final EntityPrivilegeDAO entityPrivilegeDAO,
-            final SessionDAO sessionDAO,
-            final GroupViewMapper groupViewMapper) {
+            final SessionDAO sessionDAO) {
 
         this.groupRecordMapper = groupRecordMapper;
         this.groupViewMapper = groupViewMapper;
+        this.searchApplicationMapper = searchApplicationMapper;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.sessionDAO = sessionDAO;
     }
@@ -529,6 +534,25 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                     .collect(Collectors.toSet()));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<Long>> getGroupIdsForExam(Long examId) {
+        return Result.tryCatch(() -> this.searchApplicationMapper
+                .selectDistinctGroupIds()
+                .join(ExamRecordDynamicSqlSupport.examRecord)
+                .on(
+                        ExamRecordDynamicSqlSupport.id,
+                        SqlBuilder.equalTo(GroupRecordDynamicSqlSupport.examId)
+                )
+                .where(
+                        GroupRecordDynamicSqlSupport.examId,
+                        isEqualTo(examId)
+                )
+                .build()
+                .execute()
+        );
+    }
+
     private Result<GroupRecord> recordByPK(final Long pk) {
         return Result.tryCatch(() -> {
 
@@ -619,19 +643,19 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
 
     private GroupViewData toGroupWithExamDomainModel(final GroupViewRecord record) {
         return new GroupViewData(
-                record.getId(),
-                record.getUuid(),
-                record.getName(),
-                record.getDescription(),
-                record.getOwner(),
-                record.getCreationTime(),
-                record.getLastUpdateTime(),
-                record.getTerminationTime(),
+                record.id(),
+                record.uuid(),
+                record.name(),
+                record.description(),
+                record.owner(),
+                record.creationTime(),
+                record.lastUpdateTime(),
+                record.terminationTime(),
                 new ExamViewData(
-                        record.getExamUuid(),
-                        record.getExamName(),
-                        record.getExamStartTime(),
-                        record.getExamEndTime()));
+                        record.examUuid(),
+                        record.examName(),
+                        record.examStartTime(),
+                        record.examEndTime()));
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id, final Long examId) {

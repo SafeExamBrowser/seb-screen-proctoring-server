@@ -138,7 +138,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                             description = "the sort parameter to sort the list of entities before paging"),
                     @Parameter(
                             name = "allRequestParams",
-                            description = "fwrgrwgwg",
+                            description = "other request params",
                             required = false,
                             hidden = true),
             })

@@ -138,9 +138,11 @@ public final class API {
 
     public static final String SPS_SERVER_HEALTH = "sps_server_health";
 
-    public static final String PARAM_EXAM_ID = "examUUID";
+    public static final String PARAM_EXAM_UUID = "examUUID";
+    public static final String PARAM_EXAM_ID = "examID";
     public static final String PARAM_EXAM_NAME = "examName";
-    public static final String PARAM_GROUP_ID = "groupUUID";
+    public static final String PARAM_GROUP_UUID = "groupUUID";
+    public static final String PARAM_GROUP_IDS = "groupIds";
     public static final String PARAM_GROUP_NAME = "groupName";
     public static final String PARAM_SESSION_ID = "sessionUUID";
     public static final String PARAM_FROM_TIME = "fromTime";
@@ -165,10 +167,20 @@ public final class API {
     public static final String SESSION_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/sessions";
     public static final String SESSION_DAY_SEARCH_ENDPOINT = SESSION_SEARCH_ENDPOINT + "/day";
     public static final String TIMELINE_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/timeline";
-    public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_ID + "}";
+    public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_UUID + "}";
     public static final String SESSION_ID_PATH_SEGMENT = "/{" + PARAM_SESSION_ID + "}";
     public static final String DIRECTION_PATH_SEGMENT = "/{" + PARAM_DIRECTION + "}";
     public static final String SESSION_ID_TIMESTAMP_PATH_SEGMENT =
             "/{" + PARAM_SESSION_ID + "}" + PARAM_TIMESTAMP_PATH_SEGMENT;
+
+
+    public static final String APPLICATION_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/applications";
+    public static final String EXAM_ID_PATH_SEGMENT = "/{" + PARAM_EXAM_ID + "}";
+    public static final String APPLICATION_SEARCH_EXAMS_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/exams";
+    public static final String APPLICATION_SEARCH_GROUP_IDS_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/groupIds" + EXAM_ID_PATH_SEGMENT;
+    public static final String APPLICATION_SEARCH_METADATA_APP_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/metadata/app";
+    public static final String APPLICATION_SEARCH_METADATA_WINDOW_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/metadata/window";
+    public static final String APPLICATION_SEARCH_USER_LIST_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/users";
+    public static final String APPLICATION_SEARCH_TIMESTAMP_LIST_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/timestamps";
 
 }
