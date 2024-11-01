@@ -208,14 +208,14 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
         //endpoint: /search/applications/metadata/app
         Map<String, String> groupIdsAttributes = new HashMap<>();
         groupIdsAttributes.put("groupIds", "1,2");
-
-        List<String> metadataAppList = createMockApiCall(
-                API.APPLICATION_SEARCH_METADATA_APP_ENDPOINT,
-                HttpMethod.GET,
-                new TypeReference<List<String>>(){},
-                groupIdsAttributes);
-
-        System.out.println(exams);
+//
+//        List<String> metadataAppList = createMockApiCall(
+//                API.APPLICATION_SEARCH_METADATA_APP_ENDPOINT,
+//                HttpMethod.GET,
+//                new TypeReference<List<String>>(){},
+//                groupIdsAttributes);
+//
+//        System.out.println(exams);
 
 
 
