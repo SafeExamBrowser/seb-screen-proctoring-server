@@ -166,6 +166,24 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<Group>> byExamUUID(String examUUD) {
+        return Result.tryCatch(() -> this.groupRecordMapper
+                .selectByExample()
+                .join(ExamRecordDynamicSqlSupport.examRecord)
+                .on(
+                        ExamRecordDynamicSqlSupport.id,
+                        SqlBuilder.equalTo(examId))
+                .where(ExamRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(examUUD))
+                .build()
+                .execute()
+                .stream()
+                .map(this::toDomainModel)
+                .collect(Collectors.toList()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<GroupViewData> getGroupWithExamData(final Long groupId) {
         return Result.tryCatch(() -> {
             final GroupViewRecord groupViewRecord = this.groupViewMapper
@@ -185,6 +203,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<Collection<Long>> getGroupIdsWithExamData(
             final FilterMap filterMap,
             final Collection<Long> prePredicated) {
@@ -195,7 +214,7 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
             final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
             final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
-            final List<Long> result = new ArrayList<>(this.groupViewMapper
+            return new ArrayList<Long>(this.groupViewMapper
                     .getGroupIdsWithExamData()
 
                     .where(
@@ -222,13 +241,12 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
 
                     .build()
                     .execute());
-
-            return result;
         });
 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<Collection<GroupViewData>> getGroupsWithExamData(
             final FilterMap filterMap,
             final Collection<Long> prePredicated) {

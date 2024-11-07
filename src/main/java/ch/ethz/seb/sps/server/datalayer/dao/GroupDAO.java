@@ -21,6 +21,8 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     boolean existsByUUID(String groupUUID);
 
+    Result<Collection<Group>> byExamUUID(String examUUD);
+
     Result<Group> createNew(String name);
 
     Result<Collection<Group>> byGroupName(FilterMap filterMap);

@@ -267,13 +267,6 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
     }
 
     default void deleteAllEntityPrivileges(final List<Long> allPks, final EntityPrivilegeDAO entityPrivilegeDAO) {
-        final EntityType entityType = entityType();
-        allPks
-                .forEach(pk -> entityPrivilegeDAO.deleteAllPrivileges(entityType, pk)
-                        .onError(error -> log.error(
-                                "Failed to delete all EntityPrivileges for entity type: {} and pk: {}",
-                                entityType,
-                                pk)));
+        
     }
-
 }

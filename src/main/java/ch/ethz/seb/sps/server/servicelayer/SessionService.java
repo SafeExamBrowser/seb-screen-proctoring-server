@@ -35,10 +35,11 @@ public interface SessionService {
             String clientOSName,
             String clientVersion);
 
-    Result<String> closeSession(String sessionUUID);
+    void closeSession(String sessionUUID);
 
     Result<Collection<EntityKey>> closeAllSessions(Collection<EntityKey> groupKeys);
 
     boolean hasAnySessionDataForExam(String examUUID);
 
+    boolean hasAnySessionDataForGroup(String groupUUID);
 }

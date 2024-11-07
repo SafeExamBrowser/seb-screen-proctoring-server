@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import ch.ethz.seb.sps.domain.model.service.*;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -370,6 +371,8 @@ public class AdminProctorController {
                     } catch (final NoResourceFoundException nre) {
                         log.error("Failed to stream image file: {}", nre.getMessage());
                         response.setStatus(HttpStatus.NOT_FOUND.value());
+                    } catch (final ClientAbortException cae) {
+                        log.info("Client aborted connection: {}", cae.getMessage());
                     } catch (final Exception e) {
                         log.error("Failed to stream image file: {}", e.getMessage());
                         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

@@ -8,10 +8,7 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
@@ -134,20 +131,24 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public Result<String> closeSession(final String sessionUUID) {
-        return this.sessionDAO.byModelId(sessionUUID)
-                .map(session -> {
-                    this.applicationEventPublisher.publishEvent(new SessionOnClosingEvent(sessionUUID));
-                    final Result<String> result = this.sessionDAO.closeSession(sessionUUID);
-                    if (!result.hasError()) {
-                        // caching update
-                        final String groupUUID = this.groupDAO.byPK(session.groupId).getOrThrow().uuid;
-                        this.proctoringCacheService.evictSession(sessionUUID);
-                        this.proctoringCacheService.evictSessionTokens(groupUUID);
-                    } else {
-                        result.getOrThrow();
+    public void closeSession(final String sessionUUID) {
+        this.sessionDAO
+                .byModelId(sessionUUID)
+                .onSuccess(session -> {
+                    try {
+                        this.applicationEventPublisher.publishEvent(new SessionOnClosingEvent(sessionUUID));
+                        final Result<String> result = this.sessionDAO.closeSession(sessionUUID);
+                        if (!result.hasError()) {
+                            // caching update
+                            final String groupUUID = this.groupDAO.byPK(session.groupId).getOrThrow().uuid;
+                            this.proctoringCacheService.evictSession(sessionUUID);
+                            this.proctoringCacheService.evictSessionTokens(groupUUID);
+                        } else {
+                            result.getOrThrow();
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to close session for sessionUUID: {} cause {}", sessionUUID, e.getMessage());
                     }
-                    return sessionUUID;
                 });
     }
 
@@ -183,6 +184,14 @@ public class SessionServiceImpl implements SessionService {
                 .allIdsForExamsIds(List.of(examDAO.modelIdToPK(examUUID)))
                 .flatMap(sessionDAO::hasAnySessionData)
                 .onError(error -> log.warn("Failed to check if there are any session data for Exam: {} error: {}", examUUID, error.getMessage()))
+                .getOr(true);
+    }
+
+    @Override
+    public boolean hasAnySessionDataForGroup(String groupUUID) {
+        return sessionDAO
+                .hasAnySessionData(Collections.singletonList(this.groupDAO.modelIdToPK(groupUUID)))
+                .onError(error -> log.warn("Failed to check if there are any session data for Group: {} error: {}", groupUUID, error.getMessage()))
                 .getOr(true);
     }
 

@@ -108,7 +108,6 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             log.info("Exam will not be deleted because it already has screenshot data assigned to it. Exam: {}", modelId);
             return Collections.emptyList();
         }
-
     }
 
     @Override

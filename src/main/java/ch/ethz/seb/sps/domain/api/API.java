@@ -18,7 +18,7 @@ public final class API {
     public static final String WRITE_SCOPE_NAME = "write";
     public static final String WEB_API_SCOPE_NAME = "web-api";
     public static final String SEB_API_SCOPE_NAME = "seb-api";
-    
+
     public enum UserRole {
         ADMIN,
         PROCTOR,
@@ -155,6 +155,7 @@ public final class API {
     public static final String PROCTORING_ENDPOINT = "/proctoring";
     public static final String EXAM_ENDPOINT = "/exam";
     public static final String GROUP_ENDPOINT = "/group";
+    public static final String GROUP_EXAM_UUID_PATH_SEGMENT = "/by-exam";
     public static final String SESSION_ENDPOINT = "/session";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
     public static final String SCREENSHOT_DATA_ENDPOINT = "/screenshot-data";

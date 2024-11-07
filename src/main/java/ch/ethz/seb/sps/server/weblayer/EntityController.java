@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -600,7 +599,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     }
 
     /** Gets the Entity instance that holds the grant for a given Entity instance.
-     * Usually this this are the same except the case, that a parent entity holds the grant information
+     * Usually these are the same except the case, that a parent entity holds the grant information
      * for a child entity. In this case this method must be overwritten to extract the get the parent entity
      *
      * @param entity the Entity to get the related Entity for granting access privileges
