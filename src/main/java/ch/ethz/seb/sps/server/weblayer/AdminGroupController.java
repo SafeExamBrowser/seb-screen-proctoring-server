@@ -72,7 +72,7 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
             path = API.GROUP_EXAM_UUID_PATH_SEGMENT + API.PARAM_MODEL_PATH_SEGMENT,
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Collection<Group> byExamUUID(@PathVariable final String examUUD) {
+    public Collection<Group> byExamUUID(@PathVariable(name = API.PARAM_MODEL_ID) final String examUUD) {
         return groupDAO.byExamUUID(examUUD)
                 .getOrThrow()
                 .stream()
@@ -124,8 +124,7 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
             method = RequestMethod.DELETE,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-
-    public Collection<EntityKey> requestDelete(@PathVariable final String groupUUID) {
+    public Collection<EntityKey> requestDelete(@PathVariable(name = API.PARAM_MODEL_ID) final String groupUUID) {
 
         if (!this.sessionService.hasAnySessionDataForGroup(groupUUID)) {
             return super.hardDelete(groupUUID);

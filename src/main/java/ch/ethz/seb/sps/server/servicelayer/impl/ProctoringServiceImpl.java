@@ -373,6 +373,8 @@ public class ProctoringServiceImpl implements ProctoringService {
     public Result<Collection<GroupSessionCount>> getActivateGroupSessionCounts() {
         return Result.tryCatch(() -> {
             this.userService.check(PrivilegeType.READ, EntityType.SEB_GROUP);
+            
+            // TODO try to do this only on cached groups
 
             return this.groupDAO
                     .activeGroupUUIDs()

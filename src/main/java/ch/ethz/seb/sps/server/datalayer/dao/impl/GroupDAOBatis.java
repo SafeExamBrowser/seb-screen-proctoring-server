@@ -20,7 +20,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchApplicationMapper;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -46,7 +45,6 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.GroupRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
@@ -173,7 +171,8 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                 .join(ExamRecordDynamicSqlSupport.examRecord)
                 .on(
                         ExamRecordDynamicSqlSupport.id,
-                        SqlBuilder.equalTo(examId))
+                        SqlBuilder.equalTo(GroupRecordDynamicSqlSupport.examId)
+                )
                 .where(ExamRecordDynamicSqlSupport.uuid, SqlBuilder.isEqualTo(examUUD))
                 .build()
                 .execute()
@@ -443,8 +442,6 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     public Result<Group> createNew(final Group data) {
         return Result.tryCatch(() -> {
 
-            checkUniqueName(data);
-
             final long millisecondsNow = Utils.getMillisecondsNow();
             final GroupRecord newRecord = new GroupRecord(
                     null,
@@ -478,8 +475,6 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
             if (pk == null) {
                 throw new BadRequestException("group save", "no group with uuid: " + data.uuid + "found");
             }
-
-            checkUniqueName(data);
 
             UpdateDSL.updateWithMapper(this.groupRecordMapper::update, groupRecord)
                     .set(name).equalTo(data.name)
@@ -707,21 +702,21 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
         }
     }
 
-    private void checkUniqueName(final Group group) {
-
-        final Long otherWithSameName = this.groupRecordMapper
-                .countByExample()
-                .where(GroupRecordDynamicSqlSupport.name, isEqualTo(group.name))
-                .and(GroupRecordDynamicSqlSupport.id, isNotEqualToWhenPresent(group.id))
-                .build()
-                .execute();
-
-        if (otherWithSameName != null && otherWithSameName > 0) {
-            throw new DuplicateEntityException(
-                    EntityType.SEB_GROUP,
-                    Domain.CLIENT_ACCESS.ATTR_NAME,
-                    "clientaccess:name:name.notunique");
-        }
-    }
+//    private void checkUniqueName(final Group group) {
+//
+//        final Long otherWithSameName = this.groupRecordMapper
+//                .countByExample()
+//                .where(GroupRecordDynamicSqlSupport.name, isEqualTo(group.name))
+//                .and(GroupRecordDynamicSqlSupport.id, isNotEqualToWhenPresent(group.id))
+//                .build()
+//                .execute();
+//
+//        if (otherWithSameName != null && otherWithSameName > 0) {
+//            throw new DuplicateEntityException(
+//                    EntityType.SEB_GROUP,
+//                    Domain.CLIENT_ACCESS.ATTR_NAME,
+//                    "clientaccess:name:name.notunique");
+//        }
+//    }
 
 }
