@@ -5,6 +5,7 @@ import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
 import ch.ethz.seb.sps.server.ServiceInfo;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringCacheService;
@@ -54,11 +55,15 @@ public class ProctoringServiceGroupTest {
     @Mock
     private ServiceInfo serviceInfo;
 
+    //@InjectMocks
     @Mock
     private ProctoringCacheService proctoringCacheService;
 
     @Mock
     private SessionDAO sessionDAO;
+    
+    @Mock
+    private GroupDAO groupDAO;
 
     @Mock
     private ScreenshotDataDAO screenshotDataDAO;
@@ -74,11 +79,12 @@ public class ProctoringServiceGroupTest {
 
 
 
-    @BeforeEach
-    public void setUp() {
-        when(this.serviceInfo.isDistributed())
-                .thenReturn(false);
-    }
+//    @BeforeEach
+//    public void setUp() {
+////        when(this.serviceInfo.isDistributed())
+////                .thenReturn(false);
+//   
+//    }
 
     @Test
     public void testGetSessionsByGroup_EmptyResult() throws JsonProcessingException {
@@ -143,9 +149,6 @@ public class ProctoringServiceGroupTest {
         when(this.proctoringCacheService.getLiveSessionTokens(any()))
                 .thenReturn(new ArrayList<>());
 
-        when(this.sessionDAO.allSessionCount(any()))
-                .thenReturn(Result.of(0L));
-
         when(this.screenshotDataDAO.allLatestIn(any()))
                 .thenReturn(Result.of(new HashMap<>()));
     }
@@ -172,9 +175,9 @@ public class ProctoringServiceGroupTest {
 
         when(this.examDAO.byModelId(any()))
                 .thenReturn(Result.of(createExam()));
-
-        when(this.sessionDAO.allSessionCount(any()))
-                .thenReturn(Result.of((long)NUMBER_OF_SESSIONS));
+        
+        when(this.proctoringCacheService.getTotalSessionCount(any(), any()))
+                .thenReturn(NUMBER_OF_SESSIONS);
     }
 
 }

@@ -20,20 +20,20 @@ import org.springframework.stereotype.Component;
 public class ServiceUpdateTask implements DisposableBean {
 
     private final ServiceInfo serviceInfo;
-    private final long updateInteval;
+    private final long updateInterval;
 
     public ServiceUpdateTask(
             final ServiceInfo serviceInfo,
-            @Value("${sps.webservice.distributed.update:15000}") final long updateInteval) {
+            @Value("${sps.webservice.distributed.update:15000}") final long updateInterval) {
 
         this.serviceInfo = serviceInfo;
-        this.updateInteval = updateInteval;
+        this.updateInterval = updateInterval;
     }
 
     @EventListener(ServiceInitEvent.class)
     private void init() {
         ServiceInit.INIT_LOGGER.info("------> Activate background update task");
-        ServiceInit.INIT_LOGGER.info("------> Task runs on an update interval of {}", this.updateInteval);
+        ServiceInit.INIT_LOGGER.info("------> Task runs on an update interval of {}", this.updateInterval);
 
         this.serviceInfo.updateMaster();
 
