@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
 import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.impl.SessionDAOBatis;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -71,7 +70,6 @@ public class AdminProctorController {
     private final Executor downloadExecutor;
     private final GroupDAO groupDAO;
     private final ScreenshotDataDAO screenshotDataDAO;
-    private final SessionDAOBatis sessionDAOBatis;
     private final ExamDAO examDAO;
     private final GroupService groupService;
     private final ProctoringService proctoringService;
@@ -82,7 +80,6 @@ public class AdminProctorController {
             final GroupDAO groupDAO,
             final ScreenshotDataDAO screenshotDataDAO,
             final ExamDAO examDAO,
-            final SessionDAOBatis sessionDAOBatis,
             final GroupService groupService,
             final ProctoringService proctoringService,
             final PaginationService paginationService,
@@ -93,7 +90,6 @@ public class AdminProctorController {
         this.groupDAO = groupDAO;
         this.examDAO = examDAO;
         this.screenshotDataDAO = screenshotDataDAO;
-        this.sessionDAOBatis = sessionDAOBatis;
         this.groupService = groupService;
         this.paginationService = paginationService;
         this.proctoringService = proctoringService;
@@ -348,8 +344,7 @@ public class AdminProctorController {
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
             @PathVariable(name = API.PARAM_TIMESTAMP, required = false) final String timestamp,
             final HttpServletResponse response) {
-
-        //this.userService.check(PrivilegeType.READ, EntityType.SESSION);
+        
         this.proctoringService.checkMonitoringSessionAccess(sessionUUID);
 
         return CompletableFuture.runAsync(

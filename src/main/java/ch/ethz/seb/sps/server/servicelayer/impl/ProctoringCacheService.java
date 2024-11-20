@@ -38,6 +38,9 @@ public class ProctoringCacheService {
     /** Active session cache. */
     public static final String ACTIVE_SESSION_CACHE = "ACTIVE_SESSION_CACHE";
 
+    /** Total session count cache. */
+    public static final String TOTAL_SESSION_COUNT = "TOTAL_SESSION_COUNT_CACHE";
+
     private final SessionDAO sessionDAO;
     private final GroupDAO groupDAO;
 
@@ -69,7 +72,7 @@ public class ProctoringCacheService {
     }
 
     @CacheEvict(
-            cacheNames = { ACTIVE_GROUP_CACHE, SESSION_TOKENS_CACHE },
+            cacheNames = { ACTIVE_GROUP_CACHE, SESSION_TOKENS_CACHE, TOTAL_SESSION_COUNT },
             key = "#groupUUID")
     public void evictGroup(final String groupUUID) {
         if (log.isTraceEnabled()) {
@@ -95,7 +98,7 @@ public class ProctoringCacheService {
     }
 
     @CacheEvict(
-            cacheNames = SESSION_TOKENS_CACHE,
+            cacheNames = { SESSION_TOKENS_CACHE, TOTAL_SESSION_COUNT },
             key = "#groupUUID")
     public void evictSessionTokens(final String groupUUID) {
         if (log.isTraceEnabled()) {
@@ -124,6 +127,20 @@ public class ProctoringCacheService {
         if (log.isTraceEnabled()) {
             log.trace("Eviction of session from cache, sessionUUID: {}", sessionUUID);
         }
+    }
+
+    @Cacheable(
+            cacheNames = TOTAL_SESSION_COUNT,
+            key = "#groupUUID",
+            unless = "#result == null")
+    public Integer getTotalSessionCount(final String groupUUID, final Long groupId) {
+        Result<Long> result = sessionDAO.allSessionCount(groupId);
+        
+        if (result.hasError()) {
+            log.warn("Failed to get total session count for group: {} cause: {}", groupId, result.getError().toString());
+        }
+        
+        return result.map(Long::intValue).getOr(null);
     }
 
 }

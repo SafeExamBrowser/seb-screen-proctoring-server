@@ -250,7 +250,7 @@ public class SessionDAOBatis implements SessionDAO {
                     .and(SessionRecordDynamicSqlSupport.lastUpdateTime, isNotIn(updateTimes))
                     .build()
                     .execute();
-            
+
             if (idsForUpdate != null && !idsForUpdate.isEmpty() && log.isDebugEnabled()) {
                 log.debug("Found {} session tokens to refresh on group {}", idsForUpdate.size(), groupId);
             }
