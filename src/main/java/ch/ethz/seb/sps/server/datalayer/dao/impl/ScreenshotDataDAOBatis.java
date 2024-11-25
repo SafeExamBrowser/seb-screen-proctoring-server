@@ -585,7 +585,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                                     SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
                             .where(
                                     ScreenshotDataRecordDynamicSqlSupport.metaData,
-                                    SqlBuilder.isLike(metadataAppValue)
+                                    SqlBuilder.isLike(metadataAppValue.replace("/", "%/"))
                             )
                             .and(
                                     SessionRecordDynamicSqlSupport.groupId,
@@ -616,7 +616,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                                     SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
                             .where(
                                     metaData,
-                                    SqlBuilder.isLike(metadataAppValue)
+                                    SqlBuilder.isLike(metadataAppValue.replace("/", "%/"))
                             ).and(
                                     SessionRecordDynamicSqlSupport.groupId,
                                     isIn(groupIds)
@@ -648,10 +648,10 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                                     SqlBuilder.equalTo(SessionRecordDynamicSqlSupport.uuid))
                             .where(
                                     metaData,
-                                    SqlBuilder.isLike(metadataAppValue)
+                                    SqlBuilder.isLike(metadataAppValue.replace("/", "%/"))
                             ).and(
                                     metaData,
-                                    SqlBuilder.isLike(metadataWindowValue)
+                                    SqlBuilder.isLike(metadataWindowValue.replace("/", "%/"))
                             ).and(
                                     SessionRecordDynamicSqlSupport.groupId,
                                     isIn(groupIds)
