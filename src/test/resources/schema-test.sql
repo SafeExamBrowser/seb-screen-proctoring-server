@@ -1,4 +1,4 @@
-DROP ALL OBJECTS;
+--DROP ALL OBJECTS;
 
 
 -- -----------------------------------------------------
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `screenshot` (
 -- -----------------------------------------------------
 -- Table `exam`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `exam` ;
+--DROP TABLE IF EXISTS `exam` ;
 
 CREATE TABLE IF NOT EXISTS `exam` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
