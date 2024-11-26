@@ -3,6 +3,7 @@ package ch.ethz.seb.sps.integrationtests.proctoring;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
+import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
 import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
@@ -10,17 +11,12 @@ import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
 import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
 import ch.ethz.seb.sps.domain.model.service.TimelineViewData;
-import ch.ethz.seb.sps.server.datalayer.dao.ClientAccessDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
-import ch.ethz.seb.sps.server.weblayer.AdminProctorController;
+import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -42,8 +38,8 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
         final int expectedAmountOfScreenshots = 2;
         final String expectedGroupUuid = "3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c";
         final String expectedSessionUuid = "9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c";
-        final String expectedGroupingKey = "Google Homepage";
-        final int expectedLengthOfGroupedScreenshotData = 10;
+        final String expectedGroupingKey = "Stackoverflow";
+        final int expectedLengthOfGroupedScreenshotData = 1;
         final List<Long> expectedScreenshotTimestamps = Arrays.asList(1721743482182l, 1721743483215l, 1721743484222l, 1721743485226l, 1721743486247l);
         final List<Date> expectedUniqueDays = Arrays.asList(Date.valueOf("2024-07-23"), Date.valueOf("2024-07-11"));
         final List<String> expectedSessionSearchUuids = Arrays.asList("9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c", "4461dec0-5579-4fef-a86f-0ec7b252c779", "c8ebdedc-1105-4ecb-bd04-c20ba2e221a5");
@@ -183,9 +179,9 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
     @Test
     public void testApplicationSearch() throws Exception {
         //GIVEN
-        Long expectedExamId = 1l;
-        List<Long> expectedGroupIds = Arrays.asList(1l, 2l);
-//        List<String> expectedMetadataApp = Arrays.asList("")
+        int expectedAmountOfDistinctMetadataApp = 3;
+        int expectedAmountOfDistinctMetadataWindow = 2;
+        int expectedAmountOfUsers = 4;
 
         //WHEN
         //1. get exams in the given time frame
@@ -199,29 +195,53 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
         //2. get groupIds for given exam
         //endpoint: /search/applications/groupdIds/<examId>
         List<Long> groupIds = createMockApiCall(
-                API.APPLICATION_SEARCH_ENDPOINT + "/groupIds/" + 1L,
+                API.APPLICATION_SEARCH_ENDPOINT + "/groupIds/" + exams.get(0).getId(),
                 HttpMethod.GET,
                 new TypeReference<List<Long>>(){},
                 new HashMap<>());
 
-        //2. get metadata application for given groupIds
+        //3. get metadata application for given groupIds
         //endpoint: /search/applications/metadata/app
-        Map<String, String> groupIdsAttributes = new HashMap<>();
-        groupIdsAttributes.put("groupIds", "1,2");
-//
-//        List<String> metadataAppList = createMockApiCall(
-//                API.APPLICATION_SEARCH_METADATA_APP_ENDPOINT,
-//                HttpMethod.GET,
-//                new TypeReference<List<String>>(){},
-//                groupIdsAttributes);
-//
-//        System.out.println(exams);
+        //set groupIds attributes (same for all calls)
+        Map<String, String> metadataAppAttributes = new HashMap<>();
+        metadataAppAttributes.put("groupIds", groupIds.get(0) + "," + groupIds.get(1));
+
+        List<String> metadataAppList = createMockApiCall(
+                API.APPLICATION_SEARCH_METADATA_APP_ENDPOINT,
+                HttpMethod.GET,
+                new TypeReference<List<String>>(){},
+                metadataAppAttributes);
+
+        //4. get metadata window titles for given groupIds
+        //endpoint: /search/applications/metadata/window
+        Map<String, String> metadataWindowAttributes = new HashMap<>();
+        metadataWindowAttributes.put("groupIds", groupIds.get(0) + "," + groupIds.get(1));
+        metadataWindowAttributes.put("screenProctoringMetadataApplication", metadataAppList.get(0));
+
+        DistinctMetadataWindowForExam metadataWindowList = createMockApiCall(
+                API.APPLICATION_SEARCH_METADATA_WINDOW_ENDPOINT,
+                HttpMethod.GET,
+                new TypeReference<DistinctMetadataWindowForExam>(){},
+                metadataWindowAttributes);
 
 
+        //5. get a list of users who match the metadata search
+        //endpoint: /search/applications/users
+        Map<String, String> usersAttributes = new HashMap<>();
+        usersAttributes.put("groupIds", groupIds.get(0) + "," + groupIds.get(1));
+        usersAttributes.put("screenProctoringMetadataApplication", metadataAppList.get(0));
+        usersAttributes.put("screenProctoringMetadataWindowTitle", metadataWindowList.distinctWindowTitles().stream().toList().get(0));
+
+        List<UserListForApplicationSearch> userList = createMockApiCall(
+                API.APPLICATION_SEARCH_USER_LIST_ENDPOINT,
+                HttpMethod.GET,
+                new TypeReference<List<UserListForApplicationSearch>>(){},
+                usersAttributes);
 
         //THEN
-
-
+        assertEquals(expectedAmountOfDistinctMetadataApp, metadataAppList.size());
+        assertEquals(expectedAmountOfDistinctMetadataWindow, metadataWindowList.distinctWindowTitles().size());
+        assertEquals(expectedAmountOfUsers, userList.size());
     }
 
 

@@ -1,20 +1,8 @@
 package ch.ethz.seb.sps.integrationtests.proctoring;
 
-import ch.ethz.seb.sps.domain.Domain;
-import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
-import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
-import ch.ethz.seb.sps.domain.model.service.Session;
-import ch.ethz.seb.sps.domain.model.user.ServerUser;
-import ch.ethz.seb.sps.domain.model.user.UserInfo;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.flywaydb.core.internal.jdbc.JdbcTemplate;
-import org.joda.time.DateTimeZone;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,8 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockServletContext;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -41,16 +27,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
-import jakarta.servlet.ServletContext;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -61,7 +40,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
