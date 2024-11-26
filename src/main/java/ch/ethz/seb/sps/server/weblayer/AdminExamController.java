@@ -147,12 +147,13 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 postParams.getString(EXAM.ATTR_URL),
                 postParams.getString(EXAM.ATTR_TYPE),
                 this.userService.getCurrentUserUUIDOrNull(),
-                postParams.getStringSet(Exam.ATTR_USER_IDS),
+                postParams.getStringSet(EXAM.ATTR_SUPPORTER),
                 null,
                 null,
                 null,
                 postParams.getLong(EXAM.ATTR_START_TIME),
-                postParams.getLong(EXAM.ATTR_END_TIME));
+                postParams.getLong(EXAM.ATTR_END_TIME),
+                postParams.getLong(EXAM.ATTR_DELETION_TIME));
     }
 
     @Override
@@ -188,12 +189,13 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 modifyData.url,
                 modifyData.type,
                 null,
-                modifyData.userIds,
+                modifyData.supporter,
                 null,
                 null,
                 null,
                 modifyData.startTime,
-                modifyData.endTime);
+                modifyData.endTime,
+                modifyData.deletionTime);
     }
 
     @Override

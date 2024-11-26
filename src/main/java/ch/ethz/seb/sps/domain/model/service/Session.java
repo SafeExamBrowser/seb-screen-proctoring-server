@@ -39,7 +39,7 @@ public class Session implements Entity, WithLifeCycle {
         public final String formatName;
         public final String mimeType;
 
-        private ImageFormat(
+        ImageFormat(
                 final int formatCode,
                 final String formatName,
                 final String mimeType) {
@@ -51,9 +51,9 @@ public class Session implements Entity, WithLifeCycle {
 
         public static ImageFormat valueOf(final int code) {
             final ImageFormat[] values = ImageFormat.values();
-            for (int i = 0; i < values.length; i++) {
-                if (code == values[i].code) {
-                    return values[i];
+            for (ImageFormat value : values) {
+                if (code == value.code) {
+                    return value;
                 }
             }
             return ImageFormat.PNG;
@@ -61,16 +61,15 @@ public class Session implements Entity, WithLifeCycle {
 
         public static ImageFormat byName(final String format) {
             final ImageFormat[] values = ImageFormat.values();
-            for (int i = 0; i < values.length; i++) {
-                if (Objects.equals(format, values[i].formatName)) {
-                    return values[i];
+            for (ImageFormat value : values) {
+                if (Objects.equals(format, value.formatName)) {
+                    return value;
                 }
             }
             return ImageFormat.PNG;
         }
 
         static String[] getAvailableFormats() {
-            // TODO Auto-generated method stub
             return null;
         }
 
@@ -239,41 +238,26 @@ public class Session implements Entity, WithLifeCycle {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("Session [id=");
-        builder.append(this.id);
-        builder.append(", groupId=");
-        builder.append(this.groupId);
-        builder.append(", uuid=");
-        builder.append(this.uuid);
-        builder.append(", clientName=");
-        builder.append(this.clientName);
-        builder.append(", clientIP=");
-        builder.append(this.clientIP);
-        builder.append(", clientMachineName=");
-        builder.append(this.clientMachineName);
-        builder.append(", clientOSName=");
-        builder.append(this.clientOSName);
-        builder.append(", clientVersion=");
-        builder.append(this.clientVersion);
-        builder.append(", imageFormat=");
-        builder.append(this.imageFormat);
-        builder.append(", creationTime=");
-        builder.append(this.creationTime);
-        builder.append(", lastUpdateTime=");
-        builder.append(this.lastUpdateTime);
-        builder.append(", terminationTime=");
-        builder.append(this.terminationTime);
-        builder.append("]");
-        return builder.toString();
+        return "Session{" +
+                "id=" + id +
+                ", groupId=" + groupId +
+                ", uuid='" + uuid + '\'' +
+                ", clientName='" + clientName + '\'' +
+                ", clientIP='" + clientIP + '\'' +
+                ", clientMachineName='" + clientMachineName + '\'' +
+                ", clientOSName='" + clientOSName + '\'' +
+                ", clientVersion='" + clientVersion + '\'' +
+                ", imageFormat=" + imageFormat +
+                ", creationTime=" + creationTime +
+                ", lastUpdateTime=" + lastUpdateTime +
+                ", terminationTime=" + terminationTime +
+                '}';
     }
 
     public static Comparator<Session> getComparator(final String field, final boolean descending) {
         Comparator<Session> result = DEFAULT_COMPARATOR;
 
-        if (field == null) {
-            result = DEFAULT_COMPARATOR;
-        } else if (SESSION.ATTR_CLIENT_NAME.equals(field)) {
+        if (SESSION.ATTR_CLIENT_NAME.equals(field)) {
             result = CLIENT_NAME_COMPARATOR;
         }
 
@@ -295,7 +279,6 @@ public class Session implements Entity, WithLifeCycle {
         public int compare(final Session s1, final Session s2) {
             return StringUtils.compare(s1.clientName, s2.clientName, true);
         }
-
     };
 
 }

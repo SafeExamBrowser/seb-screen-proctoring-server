@@ -127,6 +127,7 @@ public final class API {
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 
     public static final String ADMIN_SESSION_ENDPOINT = "/session";
+    public static final String SESSION_ENCRYPT_KEY_ENDPOINT = "/encrypt-key";
     public static final String ACTIVE_COUNTS_ENDPOINT = "/active_counts";
     public static final String GROUP_HEADER_UUID = "seb_group_uuid";
     public static final String SESSION_HEADER_UUID = "seb_session_uuid";
@@ -135,6 +136,8 @@ public final class API {
     public static final String SESSION_HEADER_SEB_MACHINE_NAME = "seb_machine_name";
     public static final String SESSION_HEADER_SEB_OS = "seb_os_name";
     public static final String SESSION_HEADER_SEB_VERSION = "seb_version";
+    public static final String SESSION_HEADER_ENCRYPT_KEY = "seb_session_encrypt_key";
+    
 
     public static final String SPS_SERVER_HEALTH = "sps_server_health";
 

@@ -135,7 +135,7 @@ public class ReplTest {
 
         final Exam exam = jsonMapper.readValue(json, Exam.class);
         assertEquals(
-                "exam [id=null, uuid=null, name=Demo Quiz 10 (MOCKUP), description=Starts in a minute and ends after five minutes, url=http://lms.address.alias/api/, type=BYOD, owner=null, creationTime=null, lastUpdateTime=null, terminationTime=null, startTime=1695884353000, endTime=1695884653000, entityPrivileges=null]",
+                "Exam{id=null, uuid='null', name='Demo Quiz 10 (MOCKUP)', description='Starts in a minute and ends after five minutes', url='http://lms.address.alias/api/', type='BYOD', owner='null', supporter=[], creationTime=null, lastUpdateTime=null, terminationTime=null, startTime=1695884353000, endTime=1695884653000, deletionTime=null, entityPrivileges=null}",
                 exam.toString());
     }
 
