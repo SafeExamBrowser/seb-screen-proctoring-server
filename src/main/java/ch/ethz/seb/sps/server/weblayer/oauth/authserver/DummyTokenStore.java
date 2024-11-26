@@ -29,7 +29,9 @@ public class DummyTokenStore implements OAuth2AuthorizationService  {
             return;
         }
         
-        logger.info("New token for: {}", authorization.getPrincipalName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("New token for: {} token: {}", authorization.getPrincipalName(), authorization.getAccessToken().getToken().getTokenValue());
+        }
 
         if (authorization.getRefreshToken() != null) {
             String token = authorization.getRefreshToken().getToken().getTokenValue();

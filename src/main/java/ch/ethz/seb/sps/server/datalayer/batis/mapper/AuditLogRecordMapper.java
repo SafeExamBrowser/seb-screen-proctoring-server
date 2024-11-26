@@ -32,20 +32,20 @@ import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
 @Mapper
 public interface AuditLogRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.433+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.433+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.433+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<AuditLogRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.433+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -58,7 +58,7 @@ public interface AuditLogRecordMapper {
     })
     AuditLogRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.433+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -71,22 +71,22 @@ public interface AuditLogRecordMapper {
     })
     List<AuditLogRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.433+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.433+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(auditLogRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.433+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, auditLogRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, auditLogRecord)
                 .where(id, isEqualTo(id_))
@@ -94,7 +94,7 @@ public interface AuditLogRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default int insert(AuditLogRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(auditLogRecord)
@@ -108,7 +108,7 @@ public interface AuditLogRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default int insertSelective(AuditLogRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(auditLogRecord)
@@ -122,19 +122,19 @@ public interface AuditLogRecordMapper {
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<AuditLogRecord>>> selectByExample() {
         return SelectDSL.selectWithMapper(this::selectMany, id, userUuid, timestamp, activityType, entityType, entityId, message)
                 .from(auditLogRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<AuditLogRecord>>> selectDistinctByExample() {
         return SelectDSL.selectDistinctWithMapper(this::selectMany, id, userUuid, timestamp, activityType, entityType, entityId, message)
                 .from(auditLogRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default AuditLogRecord selectByPrimaryKey(Long id_) {
         return SelectDSL.selectWithMapper(this::selectOne, id, userUuid, timestamp, activityType, entityType, entityId, message)
                 .from(auditLogRecord)
@@ -143,7 +143,7 @@ public interface AuditLogRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(AuditLogRecord record) {
         return UpdateDSL.updateWithMapper(this::update, auditLogRecord)
                 .set(userUuid).equalTo(record::getUserUuid)
@@ -154,7 +154,7 @@ public interface AuditLogRecordMapper {
                 .set(message).equalTo(record::getMessage);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(AuditLogRecord record) {
         return UpdateDSL.updateWithMapper(this::update, auditLogRecord)
                 .set(userUuid).equalToWhenPresent(record::getUserUuid)
@@ -165,7 +165,7 @@ public interface AuditLogRecordMapper {
                 .set(message).equalToWhenPresent(record::getMessage);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default int updateByPrimaryKey(AuditLogRecord record) {
         return UpdateDSL.updateWithMapper(this::update, auditLogRecord)
                 .set(userUuid).equalTo(record::getUserUuid)
@@ -179,7 +179,7 @@ public interface AuditLogRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.434+02:00", comments="Source Table: audit_log")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.612+01:00", comments="Source Table: audit_log")
     default int updateByPrimaryKeySelective(AuditLogRecord record) {
         return UpdateDSL.updateWithMapper(this::update, auditLogRecord)
                 .set(userUuid).equalToWhenPresent(record::getUserUuid)

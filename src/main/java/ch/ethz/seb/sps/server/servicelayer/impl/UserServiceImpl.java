@@ -280,7 +280,7 @@ public class UserServiceImpl implements UserService {
     public Result<Exam> applyExamPrivileges(Exam exam) {
         return Result.tryCatch(() -> {
 
-            if (exam.userIds == null || exam.userIds.isEmpty()) {
+            if (exam.supporter == null || exam.supporter.isEmpty()) {
                 return exam;
             }
 
@@ -291,7 +291,7 @@ public class UserServiceImpl implements UserService {
                             error.getMessage()));
 
             // add new privileges according to the user role of user ids
-            exam.userIds
+            exam.supporter
                     .forEach(userUUID -> {
                         Result<UserInfo> userInfoResult = this.userDAO.byModelId(userUUID);
                         if (userInfoResult.hasError()) {
