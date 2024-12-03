@@ -8,9 +8,16 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import ch.ethz.seb.sps.domain.api.JSONMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -285,16 +292,10 @@ public class SEBSessionController {
                 () -> {
                     try {
                         
-                        //  SEBSP-169 Patch Issue 2.0.2: Prevent error and queue overflow when SEB sends to long metadata
-                        // TODO replace this with attempt to fix metadata instead of complete skip
-                        if (metadata != null && metadata.length() > Constants.MAX_METADATA_SIZE) {
-                            
-                            log.warn("Sent metadata to long. Sent by SEB with session: {} metadata: {}", sessionUUID, metadata);
-                            
-                            // skip request here
-                            response.setStatus(HttpStatus.OK.value());
-                            return;
-                        }
+                        String trimmedMetadata = Utils.trimJSONMap(
+                                Utils.decodeFormURL_UTF_8(metadata), 
+                                Constants.MAX_METADATA_SIZE, 
+                                100);
 
                         // TODO inject session cache and get session by sessionUUID and check if it is still active (not terminated)
                         //      if inactive throw error for SEB client to notify session closed
@@ -307,7 +308,7 @@ public class SEBSessionController {
                                 sessionUUID,
                                 timestamp,
                                 imageFormat,
-                                Utils.decodeFormURL_UTF_8(metadata),
+                                trimmedMetadata,
                                 request.getInputStream());
 
                         response.setStatus(HttpStatus.OK.value());
@@ -322,5 +323,7 @@ public class SEBSessionController {
                 },
                 this.uploadExecutor);
     }
+
+    
 
 }
