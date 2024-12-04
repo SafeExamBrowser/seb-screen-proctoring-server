@@ -72,7 +72,8 @@ public class AutomatedDeletionServiceImpl implements AutomatedDeletionService {
                 DateTime now = Utils.toDateTimeUTC(Utils.getMillisecondsNow());
                 
                 // processed only in the morning hours (UTC)
-                if (now.hourOfDay().get() < APPLY_DELETION_BEFORE_HOUR_OF_DAY) {
+                int hd = now.hourOfDay().get();
+                if (APPLY_DELETION_AFTER_HOUR_OF_DAY < hd && hd < APPLY_DELETION_BEFORE_HOUR_OF_DAY) {
                     processDeletion();
                 } 
             }
