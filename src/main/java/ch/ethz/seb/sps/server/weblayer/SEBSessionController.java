@@ -8,16 +8,9 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import ch.ethz.seb.sps.domain.api.JSONMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.MapType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -237,8 +230,7 @@ public class SEBSessionController {
             })
     @RequestMapping(
             path = API.PARAM_MODEL_PATH_SEGMENT,
-            method = RequestMethod.DELETE,
-            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            method = RequestMethod.DELETE)
     public void closeSession(@PathVariable(name = API.PARAM_MODEL_ID, required = true) final String sessionUUID) {
         this.sessionService.closeSession(sessionUUID);
     }
@@ -300,6 +292,12 @@ public class SEBSessionController {
                         // TODO inject session cache and get session by sessionUUID and check if it is still active (not terminated)
                         //      if inactive throw error for SEB client to notify session closed
 
+                        // Check if session is active / open. Otherwise ignore request except for upload requests
+                        if (!sessionService.isSessionActive(sessionUUID)) {
+                            response.setStatus(HttpStatus.NOT_FOUND.value());
+                            return;
+                        }
+                        
                         final ImageFormat imageFormat = (StringUtils.isNotEmpty(format))
                                 ? ImageFormat.byName(format)
                                 : null;
@@ -324,6 +322,26 @@ public class SEBSessionController {
                 this.uploadExecutor);
     }
 
-    
+    @RequestMapping(
+            path = API.PARAM_MODEL_PATH_SEGMENT + API.SCREENSHOT_UPLOAD_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public void getEncryptionKeyForSessionUUID(
+            @PathVariable(name = API.PARAM_MODEL_ID) final String sessionUUID,
+            @RequestHeader(name = API.SESSION_HEADER_UUID) final String uploadSessionUUID,
+            final HttpServletResponse response) {
+        
+        if (!sessionService.isSessionActive(sessionUUID)) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            return;
+        }
+
+        final String encryptionKey = this.sessionService
+                .markSessionForUpload(sessionUUID, uploadSessionUUID)
+                .getOrThrow();
+
+        response.setHeader(API.SESSION_HEADER_ENCRYPT_KEY, encryptionKey);
+        response.setStatus(HttpStatus.OK.value());
+    }
 
 }

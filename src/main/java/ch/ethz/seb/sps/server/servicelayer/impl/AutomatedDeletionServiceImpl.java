@@ -16,12 +16,9 @@ import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.servicelayer.AutomatedDeletionService;
 import ch.ethz.seb.sps.utils.Constants;
-import ch.ethz.seb.sps.utils.Utils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
@@ -34,21 +31,16 @@ public class AutomatedDeletionServiceImpl implements AutomatedDeletionService {
     
     private final ExamDAO examDAO;
     private final TaskScheduler taskScheduler;
-    private final int APPLY_DELETION_AFTER_HOUR_OF_DAY;
-    private final int APPLY_DELETION_BEFORE_HOUR_OF_DAY;
     
     private final Set<Long> toDelete = new HashSet<>();
 
     public AutomatedDeletionServiceImpl(
             final ExamDAO examDAO,
-            @Qualifier(value = ServiceConfig.SYSTEM_SCHEDULER)  final TaskScheduler taskScheduler,
-            @Value("${sps.data.autodelete.only.after.hour.utc:0}") final int APPLY_DELETION_AFTER_HOUR_OF_DAY,
-            @Value("${sps.data.autodelete.only.after.hour.utc:6}") final int APPLY_DELETION_BEFORE_HOUR_OF_DAY) {
+            @Qualifier(value = ServiceConfig.SYSTEM_SCHEDULER)  final TaskScheduler taskScheduler) {
         
         this.examDAO = examDAO;
         this.taskScheduler = taskScheduler;
-        this.APPLY_DELETION_AFTER_HOUR_OF_DAY = APPLY_DELETION_AFTER_HOUR_OF_DAY;
-        this.APPLY_DELETION_BEFORE_HOUR_OF_DAY = APPLY_DELETION_BEFORE_HOUR_OF_DAY;
+
     }
     
     @Override
@@ -69,13 +61,7 @@ public class AutomatedDeletionServiceImpl implements AutomatedDeletionService {
             toDelete.addAll(examDAO.getAllForDeletion().getOr(Collections.emptyList()));
             
             if (!toDelete.isEmpty()) {
-                DateTime now = Utils.toDateTimeUTC(Utils.getMillisecondsNow());
-                
-                // processed only in the morning hours (UTC)
-                int hd = now.hourOfDay().get();
-                if (APPLY_DELETION_AFTER_HOUR_OF_DAY < hd && hd < APPLY_DELETION_BEFORE_HOUR_OF_DAY) {
-                    processDeletion();
-                } 
+                processDeletion();
             }
             
         } catch (Exception e) {

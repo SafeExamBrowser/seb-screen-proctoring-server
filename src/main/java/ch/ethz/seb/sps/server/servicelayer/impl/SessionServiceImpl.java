@@ -8,9 +8,13 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
+import static ch.ethz.seb.sps.server.datalayer.dao.AdditionalAttributesDAO.ATTRIBUTE_SESSION_ALSO_CLOSE;
+
 import java.util.*;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
+import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.server.datalayer.dao.AdditionalAttributesDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import org.slf4j.Logger;
@@ -40,6 +44,7 @@ public class SessionServiceImpl implements SessionService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ProctoringCacheService proctoringCacheService;
     private final ProctoringService proctoringService;
+    private final AdditionalAttributesDAO additionalAttributesDAO;
 
     public SessionServiceImpl(
             final ExamDAO examDAO,
@@ -47,7 +52,8 @@ public class SessionServiceImpl implements SessionService {
             final SessionDAO sessionDAO,
             final ApplicationEventPublisher applicationEventPublisher,
             final ProctoringCacheService proctoringCacheService,
-            final ProctoringService proctoringService) {
+            final ProctoringService proctoringService, 
+            final AdditionalAttributesDAO additionalAttributesDAO) {
 
         this.examDAO = examDAO;
         this.groupDAO = groupDAO;
@@ -55,6 +61,7 @@ public class SessionServiceImpl implements SessionService {
         this.applicationEventPublisher = applicationEventPublisher;
         this.proctoringCacheService = proctoringCacheService;
         this.proctoringService = proctoringService;
+        this.additionalAttributesDAO = additionalAttributesDAO;
     }
 
     @Override
@@ -153,7 +160,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public Result<Collection<EntityKey>> closeAllSessions(Collection<EntityKey> groupKeys) {
+    public Result<Collection<EntityKey>> closeAllSessions(final Collection<EntityKey> groupKeys) {
         return Result.tryCatch(() -> {
             Collection<EntityKey> result = new ArrayList<>(groupKeys);
             groupKeys.forEach(groupKey -> {
@@ -179,7 +186,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public boolean hasAnySessionDataForExam(String examUUID) {
+    public boolean hasAnySessionDataForExam(final String examUUID) {
         return this.groupDAO
                 .allIdsForExamsIds(List.of(examDAO.modelIdToPK(examUUID)))
                 .flatMap(sessionDAO::hasAnySessionData)
@@ -188,11 +195,44 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public boolean hasAnySessionDataForGroup(String groupUUID) {
+    public boolean hasAnySessionDataForGroup(final String groupUUID) {
         return sessionDAO
                 .hasAnySessionData(Collections.singletonList(this.groupDAO.modelIdToPK(groupUUID)))
                 .onError(error -> log.warn("Failed to check if there are any session data for Group: {} error: {}", groupUUID, error.getMessage()))
                 .getOr(true);
+    }
+
+    @Override
+    public boolean isSessionActive(final String sessionUUID) {
+        try {
+            return this.proctoringCacheService.getSession(sessionUUID).isActive();
+        } catch (Exception e) {
+            log.error("Failed to check if session is active: {} error: {}", sessionUUID, e.getMessage());
+            return true;
+        }
+    }
+
+    @Override
+    public Result<String> markSessionForUpload(final String sessionUUID, final String uploadSessionUUID) {
+        return this.sessionDAO.getEncryptionKey(uploadSessionUUID)
+                .map(key -> {
+                    
+                    // open the  session for upload
+                    this.sessionDAO
+                            .setActive(new EntityKey(uploadSessionUUID, EntityType.SESSION), true)
+                            .getOrThrow();
+                    
+                    // mark to close upload session too, when closing the current session
+                    additionalAttributesDAO
+                            .saveAdditionalAttribute(
+                                    EntityType.SESSION, 
+                                    sessionDAO.modelIdToPK(sessionUUID),
+                                    ATTRIBUTE_SESSION_ALSO_CLOSE + "_" + uploadSessionUUID, 
+                                    uploadSessionUUID)
+                            .getOrThrow();
+                    
+                    return key;
+                });
     }
 
     private Session checkUpdateIntegrity(final Session session) {

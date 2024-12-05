@@ -8,7 +8,6 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.examRecord;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.id;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.lastUpdateTime;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.terminationTime;
@@ -276,6 +275,7 @@ public class SessionDAOBatis implements SessionDAO {
                 .flatMap(rec -> cryptor.decrypt(rec.getEncryptionKey()))
                 .map(CharSequence::toString);
     }
+  
 
     @Override
     @Transactional(readOnly = true)
@@ -368,9 +368,6 @@ public class SessionDAOBatis implements SessionDAO {
 
             checkUniqueUUID(data.uuid);
             
-            final CharSequence encryptedEncryptionKey = this.cryptor
-                    .encrypt(UUID.randomUUID().toString())
-                    .getOrThrow();
             final long now = Utils.getMillisecondsNow();
             final SessionRecord record = new SessionRecord(
                     null,
@@ -385,7 +382,7 @@ public class SessionDAOBatis implements SessionDAO {
                     now, 
                     now, 
                     null,
-                    encryptedEncryptionKey.toString());
+                    generateEncryptedSecret().toString());
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -422,10 +419,6 @@ public class SessionDAOBatis implements SessionDAO {
                 groupPK = groupPKs.get(0);
             }
 
-            final CharSequence encryptedEncryptionKey = this.cryptor
-                    .encrypt(UUID.randomUUID().toString())
-                    .getOrThrow();
-
             final long now = Utils.getMillisecondsNow();
             final SessionRecord record = new SessionRecord(
                     null,
@@ -440,7 +433,7 @@ public class SessionDAOBatis implements SessionDAO {
                     now, 
                     now, 
                     null,
-                    encryptedEncryptionKey.toString());
+                    generateEncryptedSecret().toString());
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -598,6 +591,25 @@ public class SessionDAOBatis implements SessionDAO {
                             .execute();
 
                     return entityKey;
+                });
+    }
+
+    @Override
+    @Transactional
+    public Result<Long> closeAt(String sessionUUID, Long termination_time) {
+        return pkByUUID(sessionUUID)
+                .map(pk -> {
+        
+                    final long now = Utils.getMillisecondsNow();
+        
+                    UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
+                            .set(lastUpdateTime).equalTo(now)
+                            .set(terminationTime).equalTo(() -> termination_time)
+                            .where(id, isEqualTo(pk))
+                            .build()
+                            .execute();
+        
+                    return pk;
                 });
     }
 
@@ -772,5 +784,12 @@ public class SessionDAOBatis implements SessionDAO {
                         "UUID exists already");
             }
         }
+    }
+
+    private CharSequence generateEncryptedSecret() {
+        final String secret = UUID.randomUUID().toString().replace("-", StringUtils.EMPTY);
+        return this.cryptor
+                .encrypt(secret)
+                .getOrThrow();
     }
 }

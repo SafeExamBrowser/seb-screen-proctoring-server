@@ -525,6 +525,20 @@ public final class Utils {
         }
     }
 
+    public static String hash_SHA_256_Base_64(final CharSequence chars) {
+        if (chars == null) {
+            return null;
+        }
+
+        try {
+            final MessageDigest digest = MessageDigest.getInstance(Constants.SHA_256);
+            final byte[] encodedHash = digest.digest(toByteArray(chars));
+            return Base64.getEncoder().encodeToString(encodedHash);
+        } catch (final NoSuchAlgorithmException e) {
+            throw new RuntimeException("Failed to hash text: ", e);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> Predicate<T> truePredicate() {
         return (Predicate<T>) TRUE_PREDICATE;
