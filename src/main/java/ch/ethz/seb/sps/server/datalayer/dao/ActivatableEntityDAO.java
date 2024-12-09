@@ -23,7 +23,7 @@ public interface ActivatableEntityDAO<T extends Entity, M extends ModelIdAware> 
      * @param all The Collection of EntityKeys to set active or inactive
      * @param active The active flag
      * @return The Collection of Results refer to the EntityKey instance or refer to an error if happened */
-    Result<EntityKey> setActive(EntityKey entityKey, boolean active);
+    Result<EntityKey>  setActive(EntityKey entityKey, boolean active);
 
     default Result<T> setActive(final T entity, final boolean active) {
         return setActive(entity.getEntityKey(), active)

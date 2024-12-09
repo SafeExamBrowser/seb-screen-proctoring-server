@@ -11,16 +11,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -395,7 +386,9 @@ public class ProctoringServiceImpl implements ProctoringService {
     @Override
     public void clearGroupCache(final String groupUUID, final boolean fully) {
 
-        log.info("Clear group cache request for group: {}, full cache flush: {}", groupUUID, fully);
+        if (log.isDebugEnabled()) {
+            log.debug("Clear group cache request for group: {}, full cache flush: {}", groupUUID, fully);
+        }
 
         if (fully) {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);

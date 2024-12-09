@@ -74,7 +74,8 @@ public class ClientAccessDAOBatis implements ClientAccessDAO, OwnedEntityDAO {
         if (pk != null) {
             return pk;
         } else {
-            return pkByUUID(modelId).getOr(null);
+            return pkByUUID(modelId)
+                    .getOrThrow();
         }
     }
 

@@ -26,6 +26,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchSessionMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.*;
+import ch.ethz.seb.sps.utils.Cryptor;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -42,12 +44,6 @@ import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordMapper;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
@@ -66,19 +62,22 @@ public class SessionDAOBatis implements SessionDAO {
     private final GroupRecordMapper groupRecordMapper;
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
     private final ScreenshotDAO screenshotDAO;
+    private final Cryptor cryptor;
 
     public SessionDAOBatis(
             final SearchSessionMapper searchSessionMapper,
             final SessionRecordMapper sessionRecordMapper,
             final GroupRecordMapper groupRecordMapper,
             final ScreenshotDataRecordMapper screenshotDataRecordMapper,
-            final ScreenshotDAO screenshotDAO) {
+            final ScreenshotDAO screenshotDAO, 
+            final Cryptor cryptor) {
 
         this.searchSessionMapper = searchSessionMapper;
         this.sessionRecordMapper = sessionRecordMapper;
         this.groupRecordMapper = groupRecordMapper;
         this.screenshotDataRecordMapper = screenshotDataRecordMapper;
         this.screenshotDAO = screenshotDAO;
+        this.cryptor = cryptor;
     }
 
     @Override
@@ -218,8 +217,8 @@ public class SessionDAOBatis implements SessionDAO {
             // group constraint
             if (groupPKs != null) {
                 if (groupPKs.contains(Constants.LIST_SEPARATOR)) {
-                    final List<Long> pksAsList = Arrays.asList(StringUtils.split(groupPKs, Constants.LIST_SEPARATOR))
-                            .stream()
+                    final List<Long> pksAsList = Arrays.
+                            stream(StringUtils.split(groupPKs, Constants.LIST_SEPARATOR))
                             .map(Long::parseLong)
                             .collect(Collectors.toList());
                     queryBuilder = queryBuilder.and(
@@ -268,6 +267,15 @@ public class SessionDAOBatis implements SessionDAO {
             return Collections.emptyList();
         });
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<String> getEncryptionKey(String uuid) {
+        return recordByUUID(uuid)
+                .flatMap(rec -> cryptor.decrypt(rec.getEncryptionKey()))
+                .map(CharSequence::toString);
+    }
+  
 
     @Override
     @Transactional(readOnly = true)
@@ -324,8 +332,8 @@ public class SessionDAOBatis implements SessionDAO {
             // group constraint
             if (groupPKs != null) {
                 if (groupPKs.contains(Constants.LIST_SEPARATOR)) {
-                    final List<Long> pksAsList = Arrays.asList(StringUtils.split(groupPKs, Constants.LIST_SEPARATOR))
-                            .stream()
+                    final List<Long> pksAsList = Arrays
+                            .stream(StringUtils.split(groupPKs, Constants.LIST_SEPARATOR))
                             .map(Long::parseLong)
                             .collect(Collectors.toList());
                     queryBuilder = queryBuilder.and(
@@ -359,7 +367,7 @@ public class SessionDAOBatis implements SessionDAO {
         return Result.tryCatch(() -> {
 
             checkUniqueUUID(data.uuid);
-
+            
             final long now = Utils.getMillisecondsNow();
             final SessionRecord record = new SessionRecord(
                     null,
@@ -371,7 +379,10 @@ public class SessionDAOBatis implements SessionDAO {
                     data.clientMachineName,
                     data.clientOSName,
                     data.clientVersion,
-                    now, now, null);
+                    now, 
+                    now, 
+                    null,
+                    generateEncryptedSecret().toString());
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -419,7 +430,10 @@ public class SessionDAOBatis implements SessionDAO {
                     clientMachineName,
                     clientOSName,
                     clientVersion,
-                    now, now, null);
+                    now, 
+                    now, 
+                    null,
+                    generateEncryptedSecret().toString());
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -459,8 +473,7 @@ public class SessionDAOBatis implements SessionDAO {
                 .execute();
 
         // delete session data for each session
-        sessions.stream()
-                .forEach(this::deleteSessionScreenshots);
+        sessions.forEach(this::deleteSessionScreenshots);
 
         this.sessionRecordMapper
                 .deleteByExample()
@@ -530,7 +543,7 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
-    @Transactional(readOnly = false)
+    @Transactional
     public Result<Session> save(final Session data) {
         return Result.tryCatch(() -> {
 
@@ -564,6 +577,59 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional
+    public Result<EntityKey> setActive(EntityKey entityKey, boolean active) {
+        return pkByUUID(entityKey.modelId)
+                .map(pk -> {
+
+                    final long now = Utils.getMillisecondsNow();
+
+                    UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
+                            .set(lastUpdateTime).equalTo(now)
+                            .set(terminationTime).equalTo(() -> active ? null : now)
+                            .where(id, isEqualTo(pk))
+                            .build()
+                            .execute();
+
+                    return entityKey;
+                });
+    }
+
+    @Override
+    @Transactional
+    public Result<Long> closeAt(String sessionUUID, Long termination_time) {
+        return pkByUUID(sessionUUID)
+                .map(pk -> {
+        
+                    final long now = Utils.getMillisecondsNow();
+        
+                    UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
+                            .set(lastUpdateTime).equalTo(now)
+                            .set(terminationTime).equalTo(() -> termination_time)
+                            .where(id, isEqualTo(pk))
+                            .build()
+                            .execute();
+        
+                    return pk;
+                });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isActive(String modelId) {
+        if (StringUtils.isBlank(modelId)) {
+            return false;
+        }
+
+        return this.sessionRecordMapper
+                .countByExample()
+                .where(ExamRecordDynamicSqlSupport.id, isEqualTo(Long.valueOf(modelId)))
+                .and(ExamRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
+                .build()
+                .execute() > 0;
+    }
+
+    @Override
+    @Transactional
     public Result<String> closeSession(final String sessionUUID) {
         return Result.tryCatch(() -> {
 
@@ -582,7 +648,7 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
-    @Transactional(readOnly = false)
+    @Transactional(readOnly = true)
     public Long getNumberOfScreenshots(final String uuid, final FilterMap filterMap) {
 
         QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>>.QueryExpressionWhereBuilder queryBuilder =
@@ -713,11 +779,17 @@ public class SessionDAOBatis implements SessionDAO {
                     .build()
                     .execute();
 
-            if (count != null && count.longValue() > 0) {
+            if (count != null && count > 0) {
                 throw new DuplicateEntityException(EntityType.SESSION, Domain.SESSION.ATTR_UUID,
                         "UUID exists already");
             }
         }
     }
 
+    private CharSequence generateEncryptedSecret() {
+        final String secret = UUID.randomUUID().toString().replace("-", StringUtils.EMPTY);
+        return this.cryptor
+                .encrypt(secret)
+                .getOrThrow();
+    }
 }

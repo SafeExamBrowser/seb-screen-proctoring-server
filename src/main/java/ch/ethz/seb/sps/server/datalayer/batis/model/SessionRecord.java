@@ -3,44 +3,47 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import jakarta.annotation.Generated;
 
 public class SessionRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.group_id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.group_id")
     private Long groupId;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.uuid")
     private String uuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.image_format")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.image_format")
     private Integer imageFormat;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.client_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_name")
     private String clientName;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.client_ip")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_ip")
     private String clientIp;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.client_machine_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_machine_name")
     private String clientMachineName;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.408+02:00", comments="Source field: session.client_os_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_os_name")
     private String clientOsName;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.408+02:00", comments="Source field: session.client_version")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_version")
     private String clientVersion;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.408+02:00", comments="Source field: session.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.creation_time")
     private Long creationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.last_update_time")
     private Long lastUpdateTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.termination_time")
     private Long terminationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source Table: session")
-    public SessionRecord(Long id, Long groupId, String uuid, Integer imageFormat, String clientName, String clientIp, String clientMachineName, String clientOsName, String clientVersion, Long creationTime, Long lastUpdateTime, Long terminationTime) {
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.encryption_key")
+    private String encryptionKey;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source Table: session")
+    public SessionRecord(Long id, Long groupId, String uuid, Integer imageFormat, String clientName, String clientIp, String clientMachineName, String clientOsName, String clientVersion, Long creationTime, Long lastUpdateTime, Long terminationTime, String encryptionKey) {
         this.id = id;
         this.groupId = groupId;
         this.uuid = uuid;
@@ -53,73 +56,79 @@ public class SessionRecord {
         this.creationTime = creationTime;
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
+        this.encryptionKey = encryptionKey;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.group_id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.group_id")
     public Long getGroupId() {
         return groupId;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.uuid")
     public String getUuid() {
         return uuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.image_format")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.image_format")
     public Integer getImageFormat() {
         return imageFormat;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.client_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_name")
     public String getClientName() {
         return clientName;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.407+02:00", comments="Source field: session.client_ip")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_ip")
     public String getClientIp() {
         return clientIp;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.408+02:00", comments="Source field: session.client_machine_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_machine_name")
     public String getClientMachineName() {
         return clientMachineName;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.408+02:00", comments="Source field: session.client_os_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_os_name")
     public String getClientOsName() {
         return clientOsName;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.408+02:00", comments="Source field: session.client_version")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.client_version")
     public String getClientVersion() {
         return clientVersion;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.408+02:00", comments="Source field: session.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.creation_time")
     public Long getCreationTime() {
         return creationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.last_update_time")
     public Long getLastUpdateTime() {
         return lastUpdateTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-09-03T11:11:55.409+02:00", comments="Source field: session.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.termination_time")
     public Long getTerminationTime() {
         return terminationTime;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2024-11-18T10:46:20.602+01:00", comments="Source field: session.encryption_key")
+    public String getEncryptionKey() {
+        return encryptionKey;
     }
 
     /**
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table session
      *
-     * @mbg.generated Tue Sep 03 11:11:55 CEST 2024
+     * @mbg.generated Mon Nov 18 10:46:20 CET 2024
      */
     @Override
     public String toString() {
@@ -139,6 +148,7 @@ public class SessionRecord {
         sb.append(", creationTime=").append(creationTime);
         sb.append(", lastUpdateTime=").append(lastUpdateTime);
         sb.append(", terminationTime=").append(terminationTime);
+        sb.append(", encryptionKey=").append(encryptionKey);
         sb.append("]");
         return sb.toString();
     }
@@ -147,7 +157,7 @@ public class SessionRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table session
      *
-     * @mbg.generated Tue Sep 03 11:11:55 CEST 2024
+     * @mbg.generated Mon Nov 18 10:46:20 CET 2024
      */
     @Override
     public boolean equals(Object that) {
@@ -172,14 +182,15 @@ public class SessionRecord {
             && (this.getClientVersion() == null ? other.getClientVersion() == null : this.getClientVersion().equals(other.getClientVersion()))
             && (this.getCreationTime() == null ? other.getCreationTime() == null : this.getCreationTime().equals(other.getCreationTime()))
             && (this.getLastUpdateTime() == null ? other.getLastUpdateTime() == null : this.getLastUpdateTime().equals(other.getLastUpdateTime()))
-            && (this.getTerminationTime() == null ? other.getTerminationTime() == null : this.getTerminationTime().equals(other.getTerminationTime()));
+            && (this.getTerminationTime() == null ? other.getTerminationTime() == null : this.getTerminationTime().equals(other.getTerminationTime()))
+            && (this.getEncryptionKey() == null ? other.getEncryptionKey() == null : this.getEncryptionKey().equals(other.getEncryptionKey()));
     }
 
     /**
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table session
      *
-     * @mbg.generated Tue Sep 03 11:11:55 CEST 2024
+     * @mbg.generated Mon Nov 18 10:46:20 CET 2024
      */
     @Override
     public int hashCode() {
@@ -197,6 +208,7 @@ public class SessionRecord {
         result = prime * result + ((getCreationTime() == null) ? 0 : getCreationTime().hashCode());
         result = prime * result + ((getLastUpdateTime() == null) ? 0 : getLastUpdateTime().hashCode());
         result = prime * result + ((getTerminationTime() == null) ? 0 : getTerminationTime().hashCode());
+        result = prime * result + ((getEncryptionKey() == null) ? 0 : getEncryptionKey().hashCode());
         return result;
     }
 }

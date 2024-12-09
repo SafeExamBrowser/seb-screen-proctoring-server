@@ -8,12 +8,9 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
-import static org.flywaydb.core.internal.util.DateUtils.toDate;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -23,7 +20,6 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +54,6 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
 
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
-    private final WebsocketDataExtractor websocketDataExtractor;
     private final TaskScheduler taskScheduler;
     private final long batchInterval;
 
@@ -71,14 +66,12 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
     public ScreenshotStore_FullRDBMS(
             final SqlSessionFactory sqlSessionFactory,
             final PlatformTransactionManager transactionManager,
-            final WebsocketDataExtractor websocketDataExtractor,
             @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler,
             @Value("${sps.data.store.batch.interval:1000}") final long batchInterval) {
 
         this.sqlSessionFactory = sqlSessionFactory;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        this.websocketDataExtractor = websocketDataExtractor;
         this.taskScheduler = taskScheduler;
         this.batchInterval = batchInterval;
     }
@@ -160,11 +153,6 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
         } catch (final Exception e) {
             log.error("Failed to get screenshot from InputStream for session: {}", sessionUUID, e);
         }
-    }
-
-    @Override
-    public void storeScreenshot(final String sessionUUID, final InputStream in) {
-        this.websocketDataExtractor.storeScreenshot(sessionUUID, in, this);
     }
 
     private void processBatchStore(final Collection<ScreenshotQueueData> batch) {

@@ -220,18 +220,20 @@ public class OAuth2PasswordGrantAuthenticationProvider implements Authentication
        return OAuth2PasswordGrantAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
-    private Authentication getUsernamePasswordAuthentication(OAuth2PasswordGrantAuthenticationToken resouceOwnerPasswordAuthentication) {
+    private Authentication getUsernamePasswordAuthentication(OAuth2PasswordGrantAuthenticationToken resourceOwnerPasswordAuthentication) {
 
-        Map<String, Object> additionalParameters = resouceOwnerPasswordAuthentication.getAdditionalParameters();
+        Map<String, Object> additionalParameters = resourceOwnerPasswordAuthentication.getAdditionalParameters();
 
         String username = (String) additionalParameters.get(OAuth2ParameterNames.USERNAME);
         String password = (String) additionalParameters.get(OAuth2ParameterNames.PASSWORD);
 
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-        log.debug("got usernamePasswordAuthenticationToken=" + usernamePasswordAuthenticationToken);
+        
+        if (log.isDebugEnabled()) {
+            log.debug("got usernamePasswordAuthenticationToken={}", usernamePasswordAuthenticationToken);
+        }
 
-        Authentication usernamePasswordAuthentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-        return usernamePasswordAuthentication;
+        return authenticationManager.authenticate(usernamePasswordAuthenticationToken);
     }
 
     private OAuth2ClientAuthenticationToken getAuthenticatedClientElseThrowInvalidClient(Authentication authentication) {
@@ -244,6 +246,10 @@ public class OAuth2PasswordGrantAuthenticationProvider implements Authentication
 
         if (clientPrincipal != null && clientPrincipal.isAuthenticated()) {
             return clientPrincipal;
+        }
+        
+        if (clientPrincipal != null) {
+            log.warn("Invalid client credentials: {}", clientPrincipal);
         }
 
         throw new OAuth2AuthenticationException(OAuth2ErrorCodes.INVALID_CLIENT);

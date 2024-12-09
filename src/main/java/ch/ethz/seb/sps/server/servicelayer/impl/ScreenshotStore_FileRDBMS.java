@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.BlockingDeque;
@@ -53,7 +54,6 @@ public class ScreenshotStore_FileRDBMS implements ScreenshotStoreService {
 
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
-    private final WebsocketDataExtractor websocketDataExtractor;
     private final TaskScheduler taskScheduler;
     private final long batchInterval;
     private final String rootDir;
@@ -66,7 +66,6 @@ public class ScreenshotStore_FileRDBMS implements ScreenshotStoreService {
     public ScreenshotStore_FileRDBMS(
             final SqlSessionFactory sqlSessionFactory,
             final PlatformTransactionManager transactionManager,
-            final WebsocketDataExtractor websocketDataExtractor,
             @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler,
             @Value("${sps.data.store.batch.interval:1000}") final long batchInterval,
             @Value("${sps.data.store.file.dir:/screenshots/}") final String rootDir) {
@@ -74,7 +73,6 @@ public class ScreenshotStore_FileRDBMS implements ScreenshotStoreService {
         this.sqlSessionFactory = sqlSessionFactory;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        this.websocketDataExtractor = websocketDataExtractor;
         this.taskScheduler = taskScheduler;
         this.batchInterval = batchInterval;
         this.rootDir = rootDir;
@@ -98,14 +96,14 @@ public class ScreenshotStore_FileRDBMS implements ScreenshotStoreService {
             final Collection<ScreenshotQueueData> data1 = new ArrayList<>();
             this.taskScheduler.scheduleWithFixedDelay(
                     () -> processBatchStore(data1),
-                    DateTime.now(DateTimeZone.UTC).toDate(),
-                    this.batchInterval);
+                    DateTime.now(DateTimeZone.UTC).toDate().toInstant(),
+                    Duration.ofMillis(this.batchInterval));
 
             final Collection<ScreenshotQueueData> data2 = new ArrayList<>();
             this.taskScheduler.scheduleWithFixedDelay(
                     () -> processBatchStore(data2),
-                    DateTime.now(DateTimeZone.UTC).plus(500).toDate(),
-                    this.batchInterval);
+                    DateTime.now(DateTimeZone.UTC).plus(500).toDate().toInstant(),
+                    Duration.ofMillis(this.batchInterval));
 
             ServiceInit.INIT_LOGGER.info(
                     "----> Screenshot Store Strategy BATCH_STORE:FILESYS_RDBMS: 2 workers with update-interval: {} initialized",
@@ -136,11 +134,6 @@ public class ScreenshotStore_FileRDBMS implements ScreenshotStoreService {
             log.error("Failed to get screenshot from InputStream for session: {}", sessionUUID, e);
         }
 
-    }
-
-    @Override
-    public void storeScreenshot(final String sessionUUID, final InputStream in) {
-        this.websocketDataExtractor.storeScreenshot(sessionUUID, in, this);
     }
 
     @Override
@@ -195,11 +188,11 @@ public class ScreenshotStore_FileRDBMS implements ScreenshotStoreService {
                     .executeWithoutResult(status -> {
 
                         // store all screenshot data in batch and grab generated keys put back to records
-                        batch.stream().forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
+                        batch.forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
                         this.sqlSessionTemplate.flushStatements();
 
                         // now store all screenshots within the file system
-                        batch.stream().forEach(this::storeImage);
+                        batch.forEach(this::storeImage);
 
                     });
         } catch (final TransactionException te) {
@@ -221,12 +214,18 @@ public class ScreenshotStore_FileRDBMS implements ScreenshotStoreService {
 
             final FileSystemResource fileSystemResource = new FileSystemResource(dir);
             if (!fileSystemResource.exists()) {
-                fileSystemResource.getFile().mkdirs();
+                if (fileSystemResource.getFile().mkdirs()) {
+                    log.info("Made directory: {}", dir);
+                } else {
+                    log.error("Failed to create directory: {}", dir);
+                }
             }
 
             final FileSystemResource fileResource = (FileSystemResource) fileSystemResource.createRelative(fileName);
             if (!fileResource.exists()) {
-                fileResource.getFile().createNewFile();
+                if (!fileResource.getFile().createNewFile()) {
+                    log.error("Failed to create and open file");
+                }
             }
 
             outputStream = fileResource.getOutputStream();
@@ -234,7 +233,7 @@ public class ScreenshotStore_FileRDBMS implements ScreenshotStoreService {
             IOUtils.copy(data.screenshotIn, outputStream);
 
         } catch (final Exception e) {
-
+            log.error("Failed to store screenshot: {}", e.getMessage());
         } finally {
             if (outputStream != null) {
                 IOUtils.closeQuietly(outputStream);

@@ -10,12 +10,9 @@ package ch.ethz.seb.sps.server;
 
 import java.util.concurrent.Executor;
 
-import javax.sql.DataSource;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -34,6 +31,7 @@ public class ServiceConfig {
     public static final String SCREENSHOT_UPLOAD_API_EXECUTOR = "SCREENSHOT_UPLOAD_API_EXECUTOR";
     public static final String SCREENSHOT_DOWNLOAD_API_EXECUTOR = "SCREENSHOT_DOWNLOAD_API_EXECUTOR";
     public static final String SCREENSHOT_STORE_API_EXECUTOR = "SCREENSHOT_STORE_API_EXECUTOR";
+    public static final String SYSTEM_SCHEDULER = "SYSTEM_SCHEDULER";
 
     @Lazy
     @Bean
@@ -74,11 +72,23 @@ public class ServiceConfig {
     }
 
     @Bean(name = SCREENSHOT_STORE_API_EXECUTOR)
-    public TaskScheduler batchStoreScreenShotcheduler() {
+    public TaskScheduler batchStoreScreenScheduler() {
         final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 
         scheduler.setPoolSize(4);
         scheduler.setThreadNamePrefix("store-");
+        scheduler.setThreadPriority(Thread.NORM_PRIORITY);
+        scheduler.setDaemon(true);
+
+        return scheduler;
+    }
+
+    @Bean(name = SYSTEM_SCHEDULER)
+    public TaskScheduler systemScheduler() {
+        final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+
+        scheduler.setPoolSize(4);
+        scheduler.setThreadNamePrefix("system-");
         scheduler.setThreadPriority(Thread.NORM_PRIORITY);
         scheduler.setDaemon(true);
 

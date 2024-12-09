@@ -19,7 +19,7 @@ import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.utils.Result;
 
-public interface SessionDAO extends EntityDAO<Session, Session> {
+public interface SessionDAO extends ActivatableEntityDAO<Session, Session> {
 
     Result<Session> createNew(
             String groupUUID,
@@ -50,4 +50,8 @@ public interface SessionDAO extends EntityDAO<Session, Session> {
     Result<List<Date>> queryMatchingDaysForSessionSearch(final FilterMap filterMap);
 
     Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Set<Long> updateTimes);
+    
+    Result<String> getEncryptionKey(String uuid);
+
+    Result<Long> closeAt(String sessionUUID, Long termination_time);
 }

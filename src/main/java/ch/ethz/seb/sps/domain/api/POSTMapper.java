@@ -9,13 +9,7 @@
 package ch.ethz.seb.sps.domain.api;
 
 import java.nio.CharBuffer;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -255,5 +249,23 @@ public class POSTMapper {
     public <T extends POSTMapper> T put(final String key, final String name) {
         this.params.put(key, Arrays.asList(name));
         return (T) this;
+    }
+
+    public String getUUID(String attributeName, boolean generate) {
+        if (StringUtils.isBlank(attributeName)) {
+            return generate ? UUID.randomUUID().toString() : null;
+        }
+
+        String uuid = getString(attributeName);
+        if (StringUtils.isBlank(attributeName)) {
+            return generate ? UUID.randomUUID().toString() : null;
+        } else {
+            try {
+                return UUID.fromString(uuid).toString();
+            } catch (final Exception e) {
+                log.warn("Failed to parse UUID: {}", uuid);
+                return generate ? UUID.randomUUID().toString() : null;
+            }
+        }
     }
 }

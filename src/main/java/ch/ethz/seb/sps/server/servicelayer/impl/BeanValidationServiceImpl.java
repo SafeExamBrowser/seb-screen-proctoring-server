@@ -27,7 +27,7 @@ import ch.ethz.seb.sps.utils.Result;
 
 /** This service can be used to 'manually' validate a Bean that is annotated within bean
  * validation annotations.
- *
+ * <p>
  * On validation error BeanValidationException is used to collect all validation issues
  * and report them within the Result. */
 @Service

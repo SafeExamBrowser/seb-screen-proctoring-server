@@ -15,4 +15,8 @@ public interface ExamDAO extends ActivatableEntityDAO<Exam, Exam> {
     boolean isExamRunning(Long examId);
 
     Result<Collection<Exam>> getExamsStarted(final FilterMap filterMap);
+    
+    Result<Collection<Long>> getAllForDeletion();
+
+    boolean hasRunningLifeExams();
 }
