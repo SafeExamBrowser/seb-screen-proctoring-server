@@ -22,6 +22,7 @@ import io.minio.messages.LifecycleConfiguration;
 import io.minio.messages.LifecycleRule;
 import io.minio.messages.RuleFilter;
 import io.minio.messages.Status;
+import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -30,8 +31,14 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,23 +67,16 @@ public class S3DAO {
     public void init() throws Exception {
 
         BUCKET_NAME = this.environment.getProperty("sps.s3.bucketName", "sps.s3.defaultBucketName");
+        this.minioClient = createMinioClient();
 
-        this.minioClient =
-                MinioClient.builder()
-                        .endpoint(this.environment.getRequiredProperty("sps.s3.endpointUrl"))
-                        .credentials(
-                                this.environment.getRequiredProperty("sps.s3.accessKey"),
-                                this.environment.getRequiredProperty("sps.s3.secretKey")
-                        )
-                        .build();
+        printAllBucketsInService();
 
         if(!isBucketExisting()){
             createBucket();
-            setBucketLifecycle();
+//            setBucketLifecycle();
 //            getBucketLifecycle();
         }
     }
-
 
     public Result<InputStream> getItem(final String sessionUUID, final Long pk) {
         return Result.tryCatch(() ->
@@ -91,7 +91,7 @@ public class S3DAO {
 
     public Result<ObjectWriteResponse> uploadItem(final ByteArrayInputStream screenshotInputStream, final String sessionUUID, final Long pk){
         return Result.tryCatch(() ->
-            this.minioClient.putObject(
+                this.minioClient.putObject(
                         PutObjectArgs.builder()
                                 .bucket(BUCKET_NAME)
                                 .object(sessionUUID + Constants.UNDERLINE + pk)
@@ -102,12 +102,12 @@ public class S3DAO {
 
     public Result<ObjectWriteResponse> uploadItemBatch(final List<SnowballObject> batchItems){
         return Result.tryCatch(() ->
-            this.minioClient.uploadSnowballObjects(
-                    UploadSnowballObjectsArgs
-                            .builder()
-                            .bucket(BUCKET_NAME)
-                            .objects(batchItems)
-                            .build())
+                this.minioClient.uploadSnowballObjects(
+                        UploadSnowballObjectsArgs
+                                .builder()
+                                .bucket(BUCKET_NAME)
+                                .objects(batchItems)
+                                .build())
         );
     }
 
@@ -208,5 +208,52 @@ public class S3DAO {
         }catch(Exception e){
             log.error("");
         }
+    }
+
+    private MinioClient createMinioClient() throws Exception {
+        if(this.environment.getProperty("sps.s3.tls.cert") == null){
+            return MinioClient.builder()
+                    .endpoint(this.environment.getRequiredProperty("sps.s3.endpointUrl"))
+                    .credentials(
+                            this.environment.getRequiredProperty("sps.s3.accessKey"),
+                            this.environment.getRequiredProperty("sps.s3.secretKey")
+                    )
+                    .build();
+        }
+
+        return MinioClient.builder()
+                .endpoint(this.environment.getRequiredProperty("sps.s3.endpointUrl"))
+                .credentials(
+                        this.environment.getRequiredProperty("sps.s3.accessKey"),
+                        this.environment.getRequiredProperty("sps.s3.secretKey")
+                )
+                .httpClient(createOkHttpClientWithCert())
+                .build();
+    }
+
+    private OkHttpClient createOkHttpClientWithCert() throws Exception {
+        String pemCert = this.environment.getRequiredProperty("sps.s3.tls.cert");
+
+        // Convert PEM string to X509Certificate
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(pemCert.getBytes()));
+
+        // Create a KeyStore and load the certificate
+        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        keyStore.load(null, null);
+        keyStore.setCertificateEntry("custom-cert", cert);
+
+        // Initialize TrustManager with the KeyStore
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(keyStore);
+
+        // Set up SSLContext using the TrustManager
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, tmf.getTrustManagers(), new java.security.SecureRandom());
+
+        // Return the OkHttpClient with SSLContext configured
+        return new OkHttpClient.Builder()
+                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) tmf.getTrustManagers()[0])
+                .build();
     }
 }
