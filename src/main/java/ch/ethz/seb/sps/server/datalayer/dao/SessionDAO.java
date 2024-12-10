@@ -52,4 +52,6 @@ public interface SessionDAO extends ActivatableEntityDAO<Session, Session> {
     Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Set<Long> updateTimes);
     
     Result<String> getEncryptionKey(String uuid);
+
+    Result<Long> closeAt(String sessionUUID, Long termination_time);
 }

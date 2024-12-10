@@ -24,8 +24,6 @@ public interface ScreenshotStoreService {
             String metadata,
             InputStream in);
 
-    void storeScreenshot(String sessionUUID, InputStream in);
-
     @EventListener(ServiceInitEvent.class)
     void init();
 

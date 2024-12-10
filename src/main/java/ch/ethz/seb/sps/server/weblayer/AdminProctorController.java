@@ -110,15 +110,16 @@ public class AdminProctorController {
 
     @Operation(
             summary = "Get a page of all groups the requesting user can access for proctoring",
-            description = "Sorting: the sort parameter to sort the list of entities before paging\n"
-                    + "the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for\n"
-                    + "descending sort order. Note that not all entity-model attribute are suited for sorting while the most\n"
-                    + "are.\n"
-                    + "</p>\n"
-                    + "Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)\n"
-                    + "and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or type=EXAM. Usually\n"
-                    + "filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing\n"
-                    + "a given text-snippet.",
+            description = """
+                    Sorting: the sort parameter to sort the list of entities before paging
+                    the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for
+                    descending sort order. Note that not all entity-model attribute are suited for sorting while the most
+                    are.
+                    </p>
+                    Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)
+                    and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or type=EXAM. Usually
+                    filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing
+                    a given text-snippet.""",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -167,15 +168,16 @@ public class AdminProctorController {
 
     @Operation(
             summary = "Get a page of screen proctoring session data of a given group",
-            description = "Sorting: the sort parameter to sort the list of entities before paging\n"
-                    + "the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for\n"
-                    + "descending sort order. Note that not all entity-model attribute are suited for sorting while the most\n"
-                    + "are.\n"
-                    + "</p>\n"
-                    + "Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)\n"
-                    + "and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or type=EXAM. Usually\n"
-                    + "filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing\n"
-                    + "a given text-snippet.",
+            description = """
+                    Sorting: the sort parameter to sort the list of entities before paging
+                    the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for
+                    descending sort order. Note that not all entity-model attribute are suited for sorting while the most
+                    are.
+                    </p>
+                    Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)
+                    and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or type=EXAM. Usually
+                    filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing
+                    a given text-snippet.""",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -196,12 +198,11 @@ public class AdminProctorController {
                             description = "The sorting order"),
                     @Parameter(
                             name = "filterCriteria",
-                            description = "Additional search filter criteria \n" +
-                                    "This is a collecting map of all request parameter and used by the method to extract "
-                                    +
-                                    "known search filter criteria and if available in the mapping use it for the search request\n"
-                                    +
-                                    "NOTE: For OpenAPI 3 input please use the form: {\"columnName\":\"filterValue\"}",
+                            description = """
+                                    Additional search filter criteria\s
+                                    This is a collecting map of all request parameter and used by the method to extract \
+                                    known search filter criteria and if available in the mapping use it for the search request
+                                    NOTE: For OpenAPI 3 input please use the form: {"columnName":"filterValue"}""",
                             example = "{\"active\":true}",
                             required = false,
                             allowEmptyValue = true)
@@ -973,10 +974,9 @@ public class AdminProctorController {
             @RequestParam(name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, required = true) final String metadataWindowTitle,
             @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
 
-        return this.screenshotDataDAO.getUserListForApplicationSearch(metadataApplication, metadataWindowTitle, getIdListFromParameter(groupIds))
-                .getOrThrow()
-                .stream()
-                .toList();
+        return this.screenshotDataDAO
+                .getUserListForApplicationSearch(metadataApplication, metadataWindowTitle, getIdListFromParameter(groupIds))
+                .getOrThrow();
     }
 
     @Operation(
@@ -1005,10 +1005,9 @@ public class AdminProctorController {
             @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
             @RequestParam(name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, required = true) final String metadataWindowTitle){
 
-        return this.screenshotDataDAO.getTimestampListForApplicationSearch(sessionUuid, metadataApplication, metadataWindowTitle)
-                .getOrThrow()
-                .stream()
-                .toList();
+        return this.screenshotDataDAO
+                .getTimestampListForApplicationSearch(sessionUuid, metadataApplication, metadataWindowTitle)
+                .getOrThrow();
     }
 
 
@@ -1058,8 +1057,8 @@ public class AdminProctorController {
         String[] idsString = StringUtils.split(ids, Constants.LIST_SEPARATOR_CHAR);
         List<Long> idsList = new ArrayList<>();
 
-        for(int i = 0; i < idsString.length; i++){
-            idsList.add(Long.parseLong(idsString[i]));
+        for (String s : idsString) {
+            idsList.add(Long.parseLong(s));
         }
 
         return idsList;

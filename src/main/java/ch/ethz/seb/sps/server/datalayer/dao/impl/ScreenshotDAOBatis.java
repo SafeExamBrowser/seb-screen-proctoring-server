@@ -13,6 +13,8 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 import java.io.InputStream;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ import ch.ethz.seb.sps.utils.Result;
 @Service
 @ConditionalOnExpression("'${sps.data.store.adapter}'.equals('FULL_RDBMS')")
 public class ScreenshotDAOBatis implements ScreenshotDAO {
+
+    private static final Logger log = LoggerFactory.getLogger(ScreenshotDAOBatis.class);
 
     private final ScreenshotMapper screenshotMapper;
     private final ScreenshotRecordMapper screenshotRecordMapper;
@@ -52,11 +56,17 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
     public Result<InputStream> getImage(
             final Long pk,
             final String sessionUUID) {
-
-        return Result.tryCatch(() ->
-                this.screenshotMapper
-                    .selectScreenshotByPK(pk)
-                    .getImage());
+        
+        return Result.tryCatch(() -> {
+            BlobContent blobContent = this.screenshotMapper.selectScreenshotByPK(pk);
+            if (blobContent == null) {
+                log.warn("No screenshot with id: {} found on session {}", pk, sessionUUID);
+                return InputStream.nullInputStream();
+            }
+            return blobContent.getImage();
+        });
+                
+               
     }
 
     //todo: discuss if we have to remove this method

@@ -22,17 +22,18 @@ import ch.ethz.seb.sps.server.datalayer.batis.model.AdditionalAttributeRecord;
 import ch.ethz.seb.sps.utils.Result;
 
 /** Defines functionality to access additional attributes.
- *
+ * <p>
  * Additional attributes are name/value pairs associated with a specified entity but stored
  * in a separated data-base table. */
 public interface AdditionalAttributesDAO {
 
     Logger log = LoggerFactory.getLogger(AdditionalAttributesDAO.class);
+    
+    String ATTRIBUTE_SESSION_ALSO_CLOSE = "also_close_session";
 
     /** Use this to get all additional attribute records for a specific entity.
      *
-     * @param type the entity type
-     * @param entityId the entity identifier (primary key)
+     * @param entityKey The entity key
      * @return Result refer to the collection of additional attribute records or to an error if happened */
     default Result<Collection<AdditionalAttributeRecord>> getAdditionalAttributes(final EntityKey entityKey) {
         return Result.tryCatch(() -> getAdditionalAttributes(

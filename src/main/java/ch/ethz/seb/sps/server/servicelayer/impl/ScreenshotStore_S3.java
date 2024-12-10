@@ -37,8 +37,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -100,14 +100,14 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
         final Collection<ScreenshotQueueData> data1 = new ArrayList<>();
         this.taskScheduler.scheduleWithFixedDelay(
                 () -> processStore(data1),
-                DateTime.now(DateTimeZone.UTC).toDate(),
-                this.batchInterval);
+                DateTime.now(DateTimeZone.UTC).toDate().toInstant(),
+                Duration.ofMillis(this.batchInterval));
 
         final Collection<ScreenshotQueueData> data2 = new ArrayList<>();
         this.taskScheduler.scheduleWithFixedDelay(
                 () -> processStore(data2),
-                DateTime.now(DateTimeZone.UTC).plus(500).toDate(),
-                this.batchInterval);
+                DateTime.now(DateTimeZone.UTC).plus(500).toDate().toInstant(),
+                Duration.ofMillis(this.batchInterval));
 
     }
 
@@ -139,10 +139,6 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
         } catch (final Exception e) {
             log.error("Failed to get screenshot from InputStream for session: {}", sessionUUID, e);
         }
-    }
-
-    @Override
-    public void storeScreenshot(final String sessionUUID, final InputStream in) {
     }
 
     private void processStore(final Collection<ScreenshotQueueData> batch) {

@@ -271,7 +271,9 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
             return sessionUUIDs.stream()
                     .map(this::getLatestScreenshotDataRec)
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toMap(r -> r.getSessionUuid(), Function.identity()));
+                    .collect(Collectors.toMap(
+                            ScreenshotDataRecord::getSessionUuid, 
+                            Function.identity()));
         });
     }
 
@@ -364,8 +366,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
             // group constraint
             if (groupPKs != null) {
                 if (groupPKs.contains(Constants.LIST_SEPARATOR)) {
-                    final List<Long> pksAsList = Arrays.asList(StringUtils.split(groupPKs, Constants.LIST_SEPARATOR))
-                            .stream()
+                    final List<Long> pksAsList = Arrays.stream(StringUtils.split(groupPKs, Constants.LIST_SEPARATOR))
                             .map(Long::parseLong)
                             .collect(Collectors.toList());
                     queryBuilder = queryBuilder.and(
@@ -484,7 +485,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Transactional
     public Result<ScreenshotData> save(final ScreenshotData data) {
         return save(data.sessionUUID, data.timestamp, data.imageFormat, data.metaData)
-                .map(pk -> this.screenshotDataRecordMapper.selectByPrimaryKey(pk))
+                .map(this.screenshotDataRecordMapper::selectByPrimaryKey)
                 .map(this::toDomainModel);
     }
 
@@ -631,7 +632,11 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<UserListForApplicationSearch>> getUserListForApplicationSearch(final String metadataApplication, final String metadataWindowTitle, final List<Long> groupIds) {
+    public Result<List<UserListForApplicationSearch>> getUserListForApplicationSearch(
+            final String metadataApplication, 
+            final String metadataWindowTitle, 
+            final List<Long> groupIds) {
+        
         return Result.tryCatch(() -> {
 
             final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);
@@ -665,7 +670,11 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Long>> getTimestampListForApplicationSearch(final String sessionUuid, final String metadataApplication, final String metadataWindowTitle) {
+    public Result<List<Long>> getTimestampListForApplicationSearch(
+            final String sessionUuid, 
+            final String metadataApplication, 
+            final String metadataWindowTitle) {
+        
         return Result.tryCatch(() -> {
 
             final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);

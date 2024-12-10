@@ -203,6 +203,49 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Collection<Long>> getAllForDeletion() {
+        return Result.tryCatch(() -> {
+            long now = Utils.getMillisecondsNow();
+            return this.examRecordMapper
+                    .selectIdsByExample()
+                    .where(
+                            ExamRecordDynamicSqlSupport.deletionTime, 
+                            SqlBuilder.isNotNull())
+                    .and(
+                            ExamRecordDynamicSqlSupport.deletionTime,
+                            SqlBuilder.isLessThanOrEqualTo(now))
+                    .build()
+                    .execute();
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasRunningLifeExams() {
+        try {
+            long now = Utils.getMillisecondsNow();
+            return !this.examRecordMapper
+                    .selectByExample()
+                    .where(
+                            ExamRecordDynamicSqlSupport.endTime,
+                            SqlBuilder.isNotNull())
+                    .and(ExamRecordDynamicSqlSupport.endTime,
+                            SqlBuilder.isGreaterThan(now))
+                    .and(ExamRecordDynamicSqlSupport.startTime,
+                            SqlBuilder.isLessThanOrEqualTo((now)))
+                    .build()
+                    .execute()
+                    .isEmpty();
+            
+        } catch (Exception e) {
+            log.error("Failed to check if any running life exam exists: ", e);
+            // If we are not sure if at least one life running exam exists, we assume it does.
+            return true;
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Set<Long>> getAllOwnedIds(final String userUUID) {
         return Result.tryCatch(() -> {
             final List<Long> result = this.examRecordMapper
@@ -331,17 +374,6 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
             this.examRecordMapper.insert(newRecord);
 
-//            if (!data.userIds.isEmpty()) {
-//
-//                // save new user ids
-//                this.additionalAttributesDAO.saveAdditionalAttribute(
-//                        EntityType.EXAM,
-//                        newRecord.getId(),
-//                        Exam.ATTR_USER_IDS,
-//                        StringUtils.join(data.userIds, Constants.LIST_SEPARATOR)
-//                ).onError(error -> log.warn("Failed to store exam user ids: {}", data.userIds, error));
-//            }
-
             return this.examRecordMapper.selectByPrimaryKey(newRecord.getId());
         })
                 .map(this::toDomainModel)
@@ -380,23 +412,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
                     .build()
                     .execute();
-
-//            if (!data.userIds.isEmpty()) {
-//                // delete old user ids
-//                this.additionalAttributesDAO.delete(
-//                        EntityType.EXAM,
-//                        pk,
-//                        Exam.ATTR_USER_IDS);
-//
-//                // save new user ids
-//                this.additionalAttributesDAO.saveAdditionalAttribute(
-//                        EntityType.EXAM,
-//                        pk,
-//                        Exam.ATTR_USER_IDS,
-//                        StringUtils.join(data.userIds, Constants.LIST_SEPARATOR)
-//                ).onError(error -> log.warn("Failed to store exam user ids: {}", data.userIds, error));
-//            }
-
+            
             return this.examRecordMapper.selectByPrimaryKey(pk);
         })
                 .map(this::toDomainModel)

@@ -8,6 +8,8 @@
 
 package ch.ethz.seb.sps.server;
 
+import static ch.ethz.seb.sps.server.ServiceConfig.SYSTEM_SCHEDULER;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -47,20 +49,15 @@ public class ServiceUpdateTask implements DisposableBean {
 
     @Scheduled(
             fixedDelayString = "${sps.webservice.distributed.update:15000}",
-            initialDelay = 5000)
+            initialDelay = 5000,
+            scheduler = SYSTEM_SCHEDULER)
     private void examSessionUpdateTask() {
-
         this.serviceInfo.updateMaster();
-
-//        ServiceInit.INIT_LOGGER.info("--------> Service Health: {}",
-//                this.sessionServiceHealthControl.getOverallLoadIndicator());
-
     }
 
     @Override
     public void destroy() throws Exception {
-        // TODO Auto-generated method stub
-
+        ServiceInit.INIT_LOGGER.info("-----> Should down SPS Server...");
     }
 
 }
