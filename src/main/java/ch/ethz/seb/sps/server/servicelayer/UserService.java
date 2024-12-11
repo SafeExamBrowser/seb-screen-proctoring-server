@@ -164,4 +164,5 @@ public interface UserService {
 
     Result<Exam> applyExamPrivileges(Exam exam);
 
+    Result<Exam> deleteTeacherPrivileges(Exam entity);
 }

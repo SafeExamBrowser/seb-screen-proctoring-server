@@ -113,6 +113,17 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     @Override
     protected Exam doBeforeActivation(final Exam entity, final boolean activation) {
 
+        // SEBSP-182 delete all Teacher only entity privileges for the Exam
+        if (!activation) {
+            this.userService
+                    .deleteTeacherPrivileges(entity)
+                    .flatMap(exam -> this.proctoringService.updateCacheForExam(entity))
+                    .onError(error -> log.error(
+                            "Failed to update entity privileges for exam: {}",
+                            entity,
+                            error));
+        }
+        
         this.groupDAO
                 .applyActivationForAllOfExam(entity.id, activation)
                 .map(groupKeys -> {
@@ -165,10 +176,16 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
 
     @Override
     protected Exam notifySaved(Exam entity) {
-        return updateEntityPrivileges(super.notifySaved(entity));
+        // SEBSP-182 do nothing if exam is not 
+        if (!entity.isActive()) {
+            updateEntityPrivileges(super.notifySaved(entity));
+        }
+        
+        return entity;
     }
 
     private Exam updateEntityPrivileges(Exam entity) {
+        
         this.userService
                 .applyExamPrivileges(entity)
                 .flatMap(exam -> this.proctoringService.updateCacheForExam(entity))
@@ -176,6 +193,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                         "Failed to update entity privileges for exam: {}",
                         entity,
                         error));
+        
         return entity;
     }
 

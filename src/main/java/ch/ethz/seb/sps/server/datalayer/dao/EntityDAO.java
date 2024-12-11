@@ -266,7 +266,18 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
         }
     }
 
+    /** Deletes all existing entity privileges for all given entity identifiers
+     * 
+     * @param allPks All entity ids (PKs) for that all entity privileges shall be deleted
+     * @param entityPrivilegeDAO Reference to EntityPrivilegeDAO.*/
     default void deleteAllEntityPrivileges(final List<Long> allPks, final EntityPrivilegeDAO entityPrivilegeDAO) {
-        
+        EntityType entityType = entityType();
+        allPks. forEach( entityPK -> entityPrivilegeDAO
+                .deleteAllPrivileges(entityType, entityPK)
+                .onError(error -> log.warn(
+                        "Failed to delete all entity privileges for entity: {} with id: {} error: {}", 
+                        entityType, 
+                        entityPK, 
+                        error.getMessage())));
     }
 }

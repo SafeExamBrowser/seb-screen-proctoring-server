@@ -317,6 +317,36 @@ public class UserServiceImpl implements UserService {
         });
     }
 
+    @Override
+    public Result<Exam> deleteTeacherPrivileges(Exam exam) {
+        return Result.tryCatch(() -> {
+            
+            if (log.isDebugEnabled()) {
+                log.debug("Delete all entity privileges for Teacher only user for Exam: {}", exam);
+            }
+            
+            exam.supporter.forEach(supporter -> {
+                // if we have a user with only TEACHER role
+                if (userDAO
+                        .byModelId(supporter)
+                        .map(user -> user.roles.contains(UserRole.TEACHER.name()) && user.roles.size() == 1)
+                        .getOr(false)) {
+                    
+                    // delete the entity privileges for that teacher on the given exam
+                    this.entityPrivilegeDAO
+                            .deletePrivilege(EntityType.EXAM, exam.id, supporter)
+                            .onError(error -> log.warn(
+                                    "Failed to delete entity privilege for Teacher user: {} on Exam: {} error: {}",
+                                    supporter, 
+                                    exam, 
+                                    error.getMessage()));
+                }
+            });
+            
+            return exam;
+        });
+    }
+
     public interface ExtractUserFromAuthenticationStrategy {
         ServerUser extract(Principal principal);
     }
