@@ -233,14 +233,14 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
-
+            IOUtils.closeQuietly(screenshotIn);
         } catch (final Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {
                 throw new RuntimeException(e);
             }
-        }
+        } 
     }
 
     @Override
@@ -416,7 +416,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
-
+            IOUtils.closeQuietly(screenshotIn);
         } catch (final Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
@@ -438,7 +438,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
-
+            IOUtils.closeQuietly(screenshotIn);
         } catch (final Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
