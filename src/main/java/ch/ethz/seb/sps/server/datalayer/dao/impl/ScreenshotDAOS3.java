@@ -34,17 +34,14 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Result<InputStream> getImage(
             final Long pk,
             final String sessionUUID) {
 
-        return this.s3DAO.getItem(sessionUUID, pk)
-                .onError(error -> log.error("Failed to retrieve screenshot from S3 service: ", error));
+        return this.s3DAO.getItem(sessionUUID, pk);
     }
 
     @Override
-    @Transactional
     public Result<List<Long>> deleteAllForSession(
             final String sessionId,
             final List<Long> screenShotPKs) {
@@ -53,11 +50,7 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
             this.s3DAO.deleteItemBatch(createItemListForDeletion(sessionId, screenShotPKs));
             return screenShotPKs;
 
-        })
-        .onError(error -> {
-            log.error("Failed to delete items...", error);
-        })
-        .onError(TransactionHandler::rollback);
+        });
     }
 
     private List<DeleteObject> createItemListForDeletion(final String sessionId, final List<Long> screenShotPKs){

@@ -365,12 +365,12 @@ public class AdminProctorController {
                         log.error("Failed to parse timestamp: {}", timestamp);
                         response.setStatus(HttpStatus.BAD_REQUEST.value());
                     } catch (final NoResourceFoundException nre) {
-                        log.error("Failed to stream image file: {}", nre.getMessage());
+                        log.warn("Failed to stream image file: {}", nre.getMessage());
                         response.setStatus(HttpStatus.NOT_FOUND.value());
                     } catch (final ClientAbortException cae) {
                         log.info("Client aborted connection: {}", cae.getMessage());
                     } catch (final Exception e) {
-                        log.error("Failed to stream image file: {}", e.getMessage());
+                        log.warn("Failed to stream image file: {}", e.getMessage());
                         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
                     }
                 },

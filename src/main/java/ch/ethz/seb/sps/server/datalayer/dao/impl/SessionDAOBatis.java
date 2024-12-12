@@ -539,7 +539,9 @@ public class SessionDAOBatis implements SessionDAO {
                 .execute();
 
         // then all screenshots
-        this.screenshotDAO.deleteAllForSession(sessionRecord.getUuid(), screenShotPKs);
+        this.screenshotDAO
+                .deleteAllForSession(sessionRecord.getUuid(), screenShotPKs)
+                .onError(error -> log.error("Failed to delete Screenshots: {}", screenShotPKs, error ));
     }
 
     @Override
