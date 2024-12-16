@@ -65,9 +65,8 @@ public class BasicAuthUserDetailService implements UserDetailsService {
             throw new UsernameNotFoundException(username);
 
         } catch (final Exception e) {
-            log.error("Failed to verify basic auth user by name: {}", username, e);
+            log.error("Failed to verify basic auth user by name: {} error: {}", username, e.getMessage());
             throw new UsernameNotFoundException(e.getMessage());
         }
     }
-
 }

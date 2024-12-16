@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.weblayer.oauth;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +70,15 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .authenticationEntryPoint((request, response, exception) -> {
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    log.warn(
-                            "Unauthorized Request: {}",
-                            exception != null ? exception.getMessage() : Constants.EMPTY_NOTE);
+                    try {
+                        log.warn(
+                                "Unauthorized Request: {} request body: {} headers: {}",
+                                exception != null ? exception.getMessage() : Constants.EMPTY_NOTE, 
+                                IOUtils.toString(request.getReader()),
+                                request.getHeader("authorization"));
+                    } catch (final Exception e) {
+                        log.error("Failed to log Unauthorized Request:", e);
+                    }
                     response.getOutputStream().println("{ \"error\": \"" + exception.getMessage() + "\" }");
                 });
     }
