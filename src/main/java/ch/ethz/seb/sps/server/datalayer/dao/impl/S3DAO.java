@@ -91,7 +91,7 @@ public class S3DAO {
 
     public Result<ObjectWriteResponse> uploadItem(final ByteArrayInputStream screenshotInputStream, final String sessionUUID, final Long pk){
         return Result.tryCatch(() ->
-            this.minioClient.putObject(
+                this.minioClient.putObject(
                         PutObjectArgs.builder()
                                 .bucket(BUCKET_NAME)
                                 .object(sessionUUID + Constants.UNDERLINE + pk)
@@ -102,12 +102,12 @@ public class S3DAO {
 
     public Result<ObjectWriteResponse> uploadItemBatch(final List<SnowballObject> batchItems){
         return Result.tryCatch(() ->
-            this.minioClient.uploadSnowballObjects(
-                    UploadSnowballObjectsArgs
-                            .builder()
-                            .bucket(BUCKET_NAME)
-                            .objects(batchItems)
-                            .build())
+                this.minioClient.uploadSnowballObjects(
+                        UploadSnowballObjectsArgs
+                                .builder()
+                                .bucket(BUCKET_NAME)
+                                .objects(batchItems)
+                                .build())
         );
     }
 
