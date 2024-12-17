@@ -177,7 +177,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     @Override
     protected Exam notifySaved(Exam entity) {
         // SEBSP-182 do nothing if exam is not 
-        if (!entity.isActive()) {
+        if (entity.isActive()) {
             updateEntityPrivileges(super.notifySaved(entity));
         }
         
