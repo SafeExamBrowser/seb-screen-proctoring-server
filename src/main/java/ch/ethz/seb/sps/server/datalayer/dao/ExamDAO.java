@@ -10,11 +10,11 @@ public interface ExamDAO extends ActivatableEntityDAO<Exam, Exam> {
 
     boolean existsByUUID(String examUUID);
 
-    Result<Collection<Exam>> pksByExamName(final FilterMap filterMap);
+    Result<Collection<Exam>> pksByExamName(FilterMap filterMap);
 
     boolean isExamRunning(Long examId);
 
-    Result<Collection<Exam>> getExamsStarted(final FilterMap filterMap);
+    Result<Collection<Exam>> getExamsWithin(FilterMap filterMap, Collection<Long> prePredicated);
     
     Result<Collection<Long>> getAllForDeletion();
 

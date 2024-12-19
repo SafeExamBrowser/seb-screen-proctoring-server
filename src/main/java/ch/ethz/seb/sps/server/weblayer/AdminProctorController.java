@@ -14,9 +14,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
 import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import ch.ethz.seb.sps.server.servicelayer.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -46,10 +48,6 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamic
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
-import ch.ethz.seb.sps.server.servicelayer.GroupService;
-import ch.ethz.seb.sps.server.servicelayer.GroupingService;
-import ch.ethz.seb.sps.server.servicelayer.PaginationService;
-import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -75,6 +73,7 @@ public class AdminProctorController {
     private final ProctoringService proctoringService;
     private final PaginationService paginationService;
     private final GroupingService groupingService;
+    private final UserService userService;
 
     public AdminProctorController(
             final GroupDAO groupDAO,
@@ -84,6 +83,7 @@ public class AdminProctorController {
             final ProctoringService proctoringService,
             final PaginationService paginationService,
             final GroupingService groupingService,
+            final UserService userService,
             @Qualifier(value = ServiceConfig.SCREENSHOT_DOWNLOAD_API_EXECUTOR) final Executor downloadExecutor) {
 
         this.downloadExecutor = downloadExecutor;
@@ -94,6 +94,7 @@ public class AdminProctorController {
         this.paginationService = paginationService;
         this.proctoringService = proctoringService;
         this.groupingService = groupingService;
+        this.userService = userService;
     }
 
     @RequestMapping(
@@ -838,8 +839,8 @@ public class AdminProctorController {
 
 
     @Operation(
-            summary = "Get a list of all running exams in the given time frame",
-            description = "Get a list of all exams which don't have a termination time and their start time is in the given time frame",
+            summary = "Get a list of all exams in the given time frame",
+            description = "Get a list of all exams which start time is in the given time frame",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -863,10 +864,13 @@ public class AdminProctorController {
             @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
             @RequestParam(name = API.PARAM_TO_TIME, required = false) final Long toTime,
             final HttpServletRequest request){
-
+        
         final FilterMap filterMap = new FilterMap(request);
-
-        return this.examDAO.getExamsStarted(filterMap)
+        final Set<Long> granted = this.userService
+                .getIdsWithReadEntityPrivilege(EntityType.EXAM)
+                .getOrThrow();
+        return this.examDAO
+                .getExamsWithin(filterMap, granted)
                 .getOrThrow()
                 .stream()
                 .toList();
@@ -890,8 +894,17 @@ public class AdminProctorController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Long> getGroupIdsForExam(
             @PathVariable(name = API.PARAM_EXAM_ID) final Long examId){
-
-        return this.groupDAO.getGroupIdsForExam(examId)
+        
+        Exam exam = examDAO
+                .byPK(examId)
+                .getOrThrow();
+        
+        if (!userService.hasGrant(API.PrivilegeType.READ, exam)) {
+            return Collections.emptyList();
+        }
+        
+        return this.groupDAO
+                .getGroupIdsForExam(examId)
                 .getOrThrow()
                 .stream()
                 .toList();
@@ -915,14 +928,14 @@ public class AdminProctorController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> getDistinctMetadataAppForExam(
             @RequestParam(name = API.PARAM_GROUP_IDS, required = false) final String groupIds){
-
-        return this.screenshotDataDAO.getDistinctMetadataAppForExam(getIdListFromParameter(groupIds))
+        
+        return this.screenshotDataDAO
+                .getDistinctMetadataAppForExam(getIdListFromParameter(groupIds))
                 .getOrThrow()
                 .stream()
                 .toList();
     }
-
-
+    
     @Operation(
             summary = "Get a list of metadata window titles for a given exam",
             description = "Returns a list of distinct window titles for a given exam (via groupIds) & metadata application",
@@ -945,6 +958,7 @@ public class AdminProctorController {
             @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
             @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
 
+        // TODO Apply user rights
         return this.proctoringService.getDistinctMetadataWindowForExam(metadataApplication, getIdListFromParameter(groupIds));
     }
 
@@ -974,6 +988,7 @@ public class AdminProctorController {
             @RequestParam(name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, required = true) final String metadataWindowTitle,
             @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
 
+        // TODO Apply user rights?
         return this.screenshotDataDAO
                 .getUserListForApplicationSearch(metadataApplication, metadataWindowTitle, getIdListFromParameter(groupIds))
                 .getOrThrow();
@@ -1005,6 +1020,7 @@ public class AdminProctorController {
             @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
             @RequestParam(name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, required = true) final String metadataWindowTitle){
 
+        // TODO Apply user rights?
         return this.screenshotDataDAO
                 .getTimestampListForApplicationSearch(sessionUuid, metadataApplication, metadataWindowTitle)
                 .getOrThrow();
@@ -1054,11 +1070,21 @@ public class AdminProctorController {
     }
 
     private List<Long> getIdListFromParameter(final String ids){
+        // check if user at least has read right for a group
+        final Collection<Long> readPrivilegedPredication = this.groupService.getReadPrivilegedPredication();
+        
         String[] idsString = StringUtils.split(ids, Constants.LIST_SEPARATOR_CHAR);
         List<Long> idsList = new ArrayList<>();
 
         for (String s : idsString) {
-            idsList.add(Long.parseLong(s));
+            try {
+                Long id = Long.parseLong(s);
+                if (readPrivilegedPredication.contains(id)) {
+                    idsList.add(id);
+                }
+            } catch (Exception e) {
+                log.error("Failed to parse group id (pk): {} error: {}",s, e.getMessage());
+            }
         }
 
         return idsList;

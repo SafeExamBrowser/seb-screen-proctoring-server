@@ -178,12 +178,15 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Exam>> getExamsStarted(final FilterMap filterMap) {
+    public Result<Collection<Exam>> getExamsWithin(final FilterMap filterMap, Collection<Long> prePredicated) {
 
         return Result.tryCatch(() -> {
 
             final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
             final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
+            final Collection<Long> pre = prePredicated != null && !prePredicated.isEmpty()
+                    ? prePredicated
+                    : null;
 
             return this.examRecordMapper
                     .selectByExample()
@@ -193,6 +196,8 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     .and(
                             ExamRecordDynamicSqlSupport.startTime,
                             SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
+                    .and( ExamRecordDynamicSqlSupport.id,
+                            SqlBuilder.isInWhenPresent(pre))
                     .build()
                     .execute()
                     .stream()
