@@ -392,9 +392,11 @@ public class ProctoringServiceImpl implements ProctoringService {
 
         if (fully) {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
-            this.proctoringCacheService
-                    .getLiveSessionTokens(activeGroup.uuid)
-                    .forEach(this.proctoringCacheService::evictSession);
+            if (activeGroup != null) {
+                this.proctoringCacheService
+                        .getLiveSessionTokens(activeGroup.uuid)
+                        .forEach(this.proctoringCacheService::evictSession);
+            }
         }
         this.proctoringCacheService.evictGroup(groupUUID);
     }

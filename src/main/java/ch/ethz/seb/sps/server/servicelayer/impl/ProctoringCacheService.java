@@ -64,7 +64,7 @@ public class ProctoringCacheService {
         } else {
             final Group group = groupResult.get();
             if (group.terminationTime != null) {
-                log.error("Group: {} is not active anymore. Skip caching", group);
+                log.error("Group: {} is not active anymore. Skip caching", group.name);
                 return null;
             }
             return group;
