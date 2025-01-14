@@ -410,21 +410,24 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
+        InputStream screenshotIn = null;
         try {
 
-            final InputStream screenshotIn = this.screenshotDataDAO
+            screenshotIn = this.screenshotDataDAO
                     .getLatestImageId(sessionUUID)
                     .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
-            IOUtils.closeQuietly(screenshotIn);
+            
         } catch (final Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {
                 throw new RuntimeException(e);
             }
+        } finally {
+            IOUtils.closeQuietly(screenshotIn);
         }
     }
 
@@ -432,21 +435,24 @@ public class ProctoringServiceImpl implements ProctoringService {
             final String sessionUUID,
             final Long timestamp,
             final OutputStream out) {
+
+        InputStream screenshotIn = null;
         try {
 
-            final InputStream screenshotIn = this.screenshotDataDAO
+            screenshotIn = this.screenshotDataDAO
                     .getIdAt(sessionUUID, timestamp)
                     .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
-            IOUtils.closeQuietly(screenshotIn);
         } catch (final Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {
                 throw new RuntimeException(e);
             }
+        } finally {
+            IOUtils.closeQuietly(screenshotIn);
         }
     }
 

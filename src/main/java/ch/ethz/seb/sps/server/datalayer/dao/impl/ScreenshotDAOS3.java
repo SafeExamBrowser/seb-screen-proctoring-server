@@ -49,7 +49,6 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
         return Result.tryCatch(() -> {
             this.s3DAO.deleteItemBatch(createItemListForDeletion(sessionId, screenShotPKs));
             return screenShotPKs;
-
         });
     }
 

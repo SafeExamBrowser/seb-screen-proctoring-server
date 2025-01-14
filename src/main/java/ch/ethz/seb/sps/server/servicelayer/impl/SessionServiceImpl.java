@@ -187,11 +187,17 @@ public class SessionServiceImpl implements SessionService {
 
     @Override
     public boolean hasAnySessionDataForExam(final String examUUID) {
-        return this.groupDAO
-                .allIdsForExamsIds(List.of(examDAO.modelIdToPK(examUUID)))
-                .flatMap(sessionDAO::hasAnySessionData)
-                .onError(error -> log.warn("Failed to check if there are any session data for Exam: {} error: {}", examUUID, error.getMessage()))
-                .getOr(true);
+        Long pk = examDAO.modelIdToPK(examUUID);
+        if (pk != null) {
+            return this.groupDAO
+                    .allIdsForExamsIds(List.of())
+                    .flatMap(sessionDAO::hasAnySessionData)
+                    .onError(error -> log.warn("Failed to check if there are any session data for Exam: {} error: {}", examUUID, error.getMessage()))
+                    .getOr(true);
+        } else {
+            log.warn("Failed to check if exam has sessions because of exam not found for uuid: {}", examUUID);
+            return false;
+        }
     }
 
     @Override
