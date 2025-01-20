@@ -57,8 +57,6 @@ public class S3DAO {
 
     private String BUCKET_NAME;
 
-    private final int BUCKET_LIFECYCLE_DAYS = 365;
-
     public S3DAO(final Environment environment) {
         this.environment = environment;
     }
@@ -73,7 +71,6 @@ public class S3DAO {
 
         if(!isBucketExisting()){
             createBucket();
-//            setBucketLifecycle();
 //            getBucketLifecycle();
         }
     }
@@ -152,35 +149,6 @@ public class S3DAO {
 
         }catch(Exception e){
             throw new Exception("Failed to create bucket: " + BUCKET_NAME, e);
-        }
-    }
-
-    private void setBucketLifecycle() throws Exception {
-        try{
-            List<LifecycleRule> rules = new LinkedList<>();
-            rules.add(
-                    new LifecycleRule(
-                            Status.ENABLED,
-                            null,
-                            new Expiration((ZonedDateTime) null, BUCKET_LIFECYCLE_DAYS, null),
-                            new RuleFilter("logs/"),
-                            "rule1",
-                            null,
-                            null,
-                            null));
-            LifecycleConfiguration config = new LifecycleConfiguration(rules);
-
-            this.minioClient.setBucketLifecycle(
-                    SetBucketLifecycleArgs
-                            .builder()
-                            .bucket(BUCKET_NAME)
-                            .config(config)
-                            .build());
-
-            log.info("Bucket {} lifecycle set to {} days", BUCKET_NAME, BUCKET_LIFECYCLE_DAYS);
-
-        }catch(Exception e){
-            throw new Exception("Failed to set lifecycle of bucket: " + BUCKET_NAME, e);
         }
     }
 
