@@ -41,7 +41,8 @@ public class ExamUUID_ID_Test extends ServiceTest_FULL_RDBMS  {
                 null,
                 null,
                 0L,
-                100L);
+                100L,
+                null);
 
         // store exam1 with integer based uuid
         Result<Exam> saveExam = examDAO.createNew(exam1);
@@ -73,7 +74,8 @@ public class ExamUUID_ID_Test extends ServiceTest_FULL_RDBMS  {
                 null,
                 null,
                 0L,
-                100L);
+                100L,
+                null);
 
         // store exam2 with integer based uuid
         Result<Exam> saveExam2 = examDAO.createNew(exam2);
