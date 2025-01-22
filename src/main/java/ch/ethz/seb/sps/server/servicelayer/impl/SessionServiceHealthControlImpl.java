@@ -47,6 +47,8 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
     
     private long debug_log_time_interval = 1000;
     private long debug_log_last_log_time = 0;
+    
+    private int simulateHealthIssue = -1;
 
     public SessionServiceHealthControlImpl(
             @Qualifier(value = ServiceConfig.SCREENSHOT_UPLOAD_API_EXECUTOR) final Executor upload,
@@ -65,6 +67,17 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
     @EventListener(ServiceInitEvent.class)
     private void init() {
         ServiceInit.INIT_LOGGER.info("----> SessionServiceHealthControl initialized");
+    }
+
+    @Override
+    public void setSimulateHealthIssue(int simulateHealthIssue) {
+        this.simulateHealthIssue = simulateHealthIssue;
+        if (this.simulateHealthIssue > 10) {
+            this.simulateHealthIssue = 10;
+        }
+        if (this.simulateHealthIssue < 1) {
+            this.simulateHealthIssue = -1;
+        }
     }
 
     @Override
@@ -100,6 +113,10 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
 
     @Override
     public int getOverallLoadIndicator() {
+        if (simulateHealthIssue > 0) {
+            return simulateHealthIssue;
+        }
+        
         final int uploadHealthIndicator = getUploadHealthIndicator();
         final int downloadHealthIndicator = getDownloadHealthIndicator();
         final int storeHealthIndicator = getStoreHealthIndicator();

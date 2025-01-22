@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.server.datalayer.dao.*;
 import org.slf4j.Logger;
@@ -346,6 +347,15 @@ public class UserServiceImpl implements UserService {
             return exam;
         });
     }
+
+    @Override
+    public void checkIsAdmin() {
+        ServerUser currentUser = getCurrentUser();
+        if (!currentUser.getUserRoles().contains(UserRole.ADMIN)) {
+            throw APIErrorException.ofPermissionDenied(null, PrivilegeType.WRITE, currentUser.getUserInfo());
+        }
+    }
+
 
     public interface ExtractUserFromAuthenticationStrategy {
         ServerUser extract(Principal principal);

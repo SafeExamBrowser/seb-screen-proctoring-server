@@ -111,6 +111,9 @@ public final class API {
     public static final String PATH_VAR_ACTIVE = PARAM_MODEL_PATH_SEGMENT + ACTIVE_PATH_SEGMENT;
     public static final String PATH_VAR_INACTIVE = PARAM_MODEL_PATH_SEGMENT + INACTIVE_PATH_SEGMENT;
 
+    public static final String ADMIN_ENDPOINT = "/admin";
+    public static final String ADMIN_SIMULATE_HEALTH_ENDPOINT = ADMIN_ENDPOINT + "/simulate_health";
+    
     public static final String USER_ACCOUNT_ENDPOINT = "/useraccount";
     public static final String CURRENT_USER_PATH_SEGMENT = "/me";
     public static final String CURRENT_USER_ENDPOINT = API.USER_ACCOUNT_ENDPOINT + CURRENT_USER_PATH_SEGMENT;

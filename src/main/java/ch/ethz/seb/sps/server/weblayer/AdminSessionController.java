@@ -8,19 +8,15 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
-import java.util.UUID;
-
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringCacheService;
 import ch.ethz.seb.sps.utils.Result;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

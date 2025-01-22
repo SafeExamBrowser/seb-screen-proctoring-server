@@ -15,6 +15,12 @@ public interface SessionServiceHealthControl {
     int THREAD_POOL_SIZE_INDICATOR_MAP_MAX = 500;
     int THREAD_POOL_SIZE_INDICATOR_MAP_MIN = 100;
 
+    /** This is only be used for testing and apply a fake health value to propose to the SEB clients
+     * 
+     * @param simulateHealthIssue The health indicate value to simulate. < 0 if no simulation
+     */
+    void setSimulateHealthIssue(int simulateHealthIssue);
+
     int getUploadHealthIndicator();
 
     int getDownloadHealthIndicator();
