@@ -56,12 +56,20 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Long modelIdToPK(final String modelId) {
-        final Long pk = isPK(modelId);
-        if (pk != null) {
-            return pk;
+        
+        // SEBSP-192 Note since exam uuids also can be plain integer values this is not working properly for 
+        // exams from LMS using integers as identifier (Olat for example).
+        // final Long pk = isPK(modelId);
+        
+        // to support this cases we first check the modelId if there is an exam with the given uuid in the database
+        // and if true, interpret it as uuid otherwise as pk.
+        Result<ExamRecord> examRecordResult = recordByUUID(modelId);
+        if (examRecordResult.hasError()) {
+            return isPK(modelId);
         } else {
-            return pkByUUID(modelId).getOr(null);
+            return examRecordResult.get().getId();
         }
     }
 
@@ -74,13 +82,11 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     @Override
     public Result<Exam> byModelId(final String id) {
-        try {
-            final long pk = Long.parseLong(id);
-            return this.byPK(pk);
-        } catch (final Exception e) {
-            return recordByUUID(id)
-                    .map(this::toDomainModel);
+        Long pk = modelIdToPK(id);
+        if (pk == null) {
+            return Result.ofError(new NoResourceFoundException(EntityType.EXAM, id));
         }
+        return byPK(pk);
     }
 
     @Override
