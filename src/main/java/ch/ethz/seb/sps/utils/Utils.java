@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.FilterMap;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.commons.codec.binary.Hex;
@@ -817,5 +816,15 @@ public final class Utils {
         } catch (JsonProcessingException e) {
             return input;
         }
+    }
+    
+    public static boolean enoughHeapMemLeft(long spareInMB) {
+        // Get current size of heap in bytes.
+        long heapSize = Runtime.getRuntime().totalMemory();
+        // Get maximum size of heap in bytes. The heap cannot grow beyond this size.
+        // Any attempt will result in an OutOfMemoryException.
+        long heapMaxSize = Runtime.getRuntime().maxMemory();
+        
+        return heapMaxSize - ((spareInMB * 1000) + heapSize) > 0;
     }
 }

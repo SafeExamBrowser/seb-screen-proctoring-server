@@ -80,7 +80,6 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
     public void init() {
 
         try {
-
             this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
 
             final MapperRegistry mapperRegistry = this.sqlSessionTemplate.getConfiguration().getMapperRegistry();
@@ -242,10 +241,12 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
                     }
                 });
             } else {
-                log.error(
-                        "Failed to batch store screenshot data... put data back to queue. Cause: ",
-                        re);
-                this.screenshotDataQueue.addAll(batch);
+                log.error("Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: ", re);
+                if (Utils.enoughHeapMemLeft(1000)) {
+                    this.screenshotDataQueue.addAll(batch);
+                } else {
+                    log.warn("There is not enough heap memory left to store the screenshots that failed to store. {} Screenshots are skipped now", batch.size());
+                }
             }
         }
     }

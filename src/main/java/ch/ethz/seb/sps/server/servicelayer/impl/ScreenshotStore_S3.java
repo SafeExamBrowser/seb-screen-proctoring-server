@@ -16,6 +16,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.impl.S3DAO;
 import ch.ethz.seb.sps.server.servicelayer.ScreenshotStoreService;
 import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
 import ch.ethz.seb.sps.utils.Constants;
+import ch.ethz.seb.sps.utils.Utils;
 import io.minio.SnowballObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.binding.MapperRegistry;
@@ -209,7 +210,11 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
 
         } catch (final TransactionException te) {
             log.error("Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: ", te);
-            this.screenshotDataQueue.addAll(batch);
+            if (Utils.enoughHeapMemLeft(1000)) {
+                this.screenshotDataQueue.addAll(batch);
+            } else {
+                log.warn("There is not enough heap memory left to store the screenshots that failed to store. {} Screenshots are skipped now", batch.size());
+            }
         }
     }
 
