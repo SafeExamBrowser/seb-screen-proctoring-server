@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.catalina.filters.RemoteIpFilter;
+import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -118,8 +119,17 @@ public class WebConfig implements WebMvcConfigurer {
                 final AuthenticationException authenticationException) throws IOException {
 
             log.warn("{}: Unauthorized Request on: {}", name, request.getRequestURI());
-
+            String bearerTokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            if (bearerTokenHeader != null) {
+                bearerTokenHeader = bearerTokenHeader.replace("Bearer ", "");
+            }
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            String errorMsg = "{\n" +
+                    "  \"error\": \"invalid_token\",\n" +
+                    "  \"error_description\": \"Invalid access token: "+ bearerTokenHeader +"\"\n" +
+                    "}";
+            
+            response.getOutputStream().print(errorMsg);
             response.flushBuffer();
         }
     }
