@@ -716,7 +716,7 @@ public class SessionDAOBatis implements SessionDAO {
             final SessionRecord selectByPrimaryKey = this.sessionRecordMapper.selectByPrimaryKey(pk);
 
             if (selectByPrimaryKey == null) {
-                throw new NoResourceFoundException(EntityType.SEB_GROUP, String.valueOf(pk));
+                throw new NoResourceFoundException(EntityType.SESSION, String.valueOf(pk));
             }
 
             return selectByPrimaryKey;
@@ -732,7 +732,7 @@ public class SessionDAOBatis implements SessionDAO {
                     .execute();
 
             if (execute == null || execute.isEmpty()) {
-                throw new NoResourceFoundException(EntityType.SEB_GROUP, uuid);
+                throw new NoResourceFoundException(EntityType.SESSION, uuid);
             }
 
             return execute.get(0);
@@ -749,7 +749,7 @@ public class SessionDAOBatis implements SessionDAO {
                     .execute();
 
             if (execute == null || execute.isEmpty()) {
-                throw new NoResourceFoundException(EntityType.SEB_GROUP, uuid);
+                throw new NoResourceFoundException(EntityType.SESSION, uuid);
             }
 
             return execute.get(0);

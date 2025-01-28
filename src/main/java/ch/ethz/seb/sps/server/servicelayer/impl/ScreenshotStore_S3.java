@@ -138,7 +138,12 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
                     IOUtils.toByteArray(in)));
 
         } catch (final Exception e) {
-            log.error("Failed to get screenshot from InputStream for session: {}", sessionUUID, e);
+            String message = e.getMessage();
+            if (message != null && message.contains("Connection reset")) {
+                log.warn("Failed to get screenshot from InputStream for session: {} err: {}", sessionUUID, e.getMessage());
+            } else {
+                log.error("Failed to get screenshot from InputStream for session: {}", sessionUUID, e);
+            }
         }
     }
 

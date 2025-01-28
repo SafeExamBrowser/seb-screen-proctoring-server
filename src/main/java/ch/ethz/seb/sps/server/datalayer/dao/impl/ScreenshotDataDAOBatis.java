@@ -165,7 +165,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
             // still no screenshot... seems that there are none at this time
             if (record == null) {
-                throw new NoResourceFoundException(EntityType.SCREENSHOT, sessionUUID);
+                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
             }
 
             return record;
@@ -203,7 +203,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
             // still no screenshot... seems that there are none at this time
             if (result == null || result.isEmpty()) {
-                throw new NoResourceFoundException(EntityType.SCREENSHOT, sessionUUID);
+                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
             }
 
             return result.get(0);
