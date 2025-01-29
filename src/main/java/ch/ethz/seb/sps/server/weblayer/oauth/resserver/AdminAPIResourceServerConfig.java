@@ -61,14 +61,14 @@ public class AdminAPIResourceServerConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                .exceptionHandling( c -> c.authenticationEntryPoint(new WebConfig.UnauthoritedRequestHandler("AdminAPIResourceServerConfig")))
+                .exceptionHandling( c -> c.authenticationEntryPoint(new WebConfig.UnauthorizedRequestHandler("AdminAPIResourceServerConfig")))
         ;
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new AdminAPIJwtGrantedAuthoritiesConverter());
         http
                 .oauth2ResourceServer(resServer -> resServer
-                        .authenticationEntryPoint(new WebConfig.UnauthoritedRequestHandler("AdminAPIResourceServerConfig"))
+                        .authenticationEntryPoint(new WebConfig.UnauthorizedRequestHandler("AdminAPIResourceServerConfig"))
                         .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(jwtAuthenticationConverter))
                 );
 

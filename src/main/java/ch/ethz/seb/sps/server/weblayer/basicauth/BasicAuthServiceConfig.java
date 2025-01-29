@@ -47,7 +47,7 @@ public class BasicAuthServiceConfig implements ErrorController {
         http.securityMatcher(API.OAUTH_JWTTOKEN_ENDPOINT + "/**")
                 .authorizeHttpRequests((requests) -> requests
                 .anyRequest().authenticated())
-                .httpBasic(c -> c.authenticationEntryPoint(new WebConfig.UnauthoritedRequestHandler("Basic Auth")))
+                .httpBasic(c -> c.authenticationEntryPoint(new WebConfig.UnauthorizedRequestHandler("Basic Auth")))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));

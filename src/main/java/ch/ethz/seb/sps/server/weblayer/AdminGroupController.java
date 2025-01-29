@@ -129,7 +129,8 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
         if (!this.sessionService.hasAnySessionDataForGroup(groupUUID)) {
             return super.hardDelete(groupUUID);
         } else {
-            log.info("On Group deletion request: Group will not be deleted because it already has screenshot data assigned to it. Group: {}", groupUUID);
+            log.info("On Group deletion request: Group will not be deleted because it already has screenshot data assigned to it. But group will be closed/terminated. Group: {}", groupUUID);
+            super.deactivate(groupUUID);
             return Collections.emptyList();
         }
     }

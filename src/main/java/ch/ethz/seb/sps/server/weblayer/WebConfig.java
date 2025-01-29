@@ -99,16 +99,22 @@ public class WebConfig implements WebMvcConfigurer {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                .exceptionHandling( c -> c.authenticationEntryPoint(new UnauthoritedRequestHandler("root")));
+                .exceptionHandling( c -> c.authenticationEntryPoint(new UnauthorizedRequestHandler("root")));
         
         return http.build();
     }
 
-    public static final class UnauthoritedRequestHandler implements AuthenticationEntryPoint {
+    public static final class UnauthorizedRequestHandler implements AuthenticationEntryPoint {
+        
+        static final String ERROR_MSG_TEMPLATE = """
+                {
+                  "error": "invalid_token",
+                  "error_description": "Invalid access token: %s"
+                }""";
 
-        private static final Logger log = LoggerFactory.getLogger(UnauthoritedRequestHandler.class);
-        private String name;
-        public UnauthoritedRequestHandler(String name) {
+        private static final Logger log = LoggerFactory.getLogger(UnauthorizedRequestHandler.class);
+        private final String name;
+        public UnauthorizedRequestHandler(String name) {
             this.name = name;
         }
 
@@ -119,17 +125,18 @@ public class WebConfig implements WebMvcConfigurer {
                 final AuthenticationException authenticationException) throws IOException {
 
             log.warn("{}: Unauthorized Request on: {}", name, request.getRequestURI());
-            String bearerTokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-            if (bearerTokenHeader != null) {
-                bearerTokenHeader = bearerTokenHeader.replace("Bearer ", "");
-            }
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            String errorMsg = "{\n" +
-                    "  \"error\": \"invalid_token\",\n" +
-                    "  \"error_description\": \"Invalid access token: "+ bearerTokenHeader +"\"\n" +
-                    "}";
             
-            response.getOutputStream().print(errorMsg);
+            try {
+                String bearerTokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+                if (bearerTokenHeader != null) {
+                    bearerTokenHeader = bearerTokenHeader.replace("Bearer ", "");
+                }
+                response.getOutputStream().print(String.format(ERROR_MSG_TEMPLATE, bearerTokenHeader));
+            } catch (Exception e) {
+                log.error("Failed to create proper OAuth error: {}", e.getMessage());
+            }
+            
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.flushBuffer();
         }
     }

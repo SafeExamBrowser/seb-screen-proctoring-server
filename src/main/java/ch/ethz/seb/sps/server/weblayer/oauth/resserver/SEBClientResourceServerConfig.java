@@ -61,14 +61,14 @@ public class SEBClientResourceServerConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                .exceptionHandling( c -> c.authenticationEntryPoint(new WebConfig.UnauthoritedRequestHandler("SEBClientResourceServerConfig")))
+                .exceptionHandling( c -> c.authenticationEntryPoint(new WebConfig.UnauthorizedRequestHandler("SEBClientResourceServerConfig")))
         ;
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new SEBAPIJwtGrantedAuthoritiesConverter());
         http
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .authenticationEntryPoint(new WebConfig.UnauthoritedRequestHandler("SEBClientResourceServerConfig"))
+                        .authenticationEntryPoint(new WebConfig.UnauthorizedRequestHandler("SEBClientResourceServerConfig"))
                         .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(jwtAuthenticationConverter))
                 );
 
