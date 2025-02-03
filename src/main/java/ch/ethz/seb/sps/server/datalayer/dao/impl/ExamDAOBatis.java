@@ -203,7 +203,9 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                             ExamRecordDynamicSqlSupport.startTime,
                             SqlBuilder.isLessThanOrEqualToWhenPresent(toTime))
                     .and( ExamRecordDynamicSqlSupport.id,
-                            SqlBuilder.isInWhenPresent(pre))
+                            SqlBuilder.isInWhenPresent((prePredicated == null)
+                                    ? Collections.emptyList()
+                                    : prePredicated))
                     .build()
                     .execute()
                     .stream()
