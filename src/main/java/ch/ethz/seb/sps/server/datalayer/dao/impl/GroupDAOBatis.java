@@ -260,7 +260,9 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
                     .getGroupsWithExamData()
                     .where(
                             id,
-                            isInWhenPresent((prePredicated == null) ? Collections.emptyList() : prePredicated)
+                            isInWhenPresent((prePredicated == null) 
+                                    ? Collections.emptyList() 
+                                    : prePredicated)
                     );
 
             //if includePastExams is null or false (default), don't include finished exams
