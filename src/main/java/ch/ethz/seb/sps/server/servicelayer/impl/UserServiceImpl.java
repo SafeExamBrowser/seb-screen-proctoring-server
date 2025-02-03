@@ -187,6 +187,11 @@ public class UserServiceImpl implements UserService {
     public Result<Set<Long>> getIdsWithReadEntityPrivilege(final EntityType entityType) {
         return Result.tryCatch(() -> {
             final String userUUID = this.getCurrentUser().uuid();
+            
+            // check if user has overall read privileges on the entity type
+            if (hasGrant(PrivilegeType.READ, entityType)) {
+                return Collections.emptySet();
+            }
 
             // if owned entity type. get all owned entity id's if owned entity
             final Set<Long> ownedEntityIds = new HashSet<>();
