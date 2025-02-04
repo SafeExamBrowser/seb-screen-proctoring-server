@@ -45,10 +45,11 @@ public class AutomatedDeletionServiceImpl implements AutomatedDeletionService {
     
     @Override
     public void init() {
+        // TODO at the moment we do not have auto deletion. Maybe later
         // triggered every hour...
-        this.taskScheduler.scheduleWithFixedDelay(
-                this::update,
-                java.time.Duration.ofMillis(Constants.HOUR_IN_MILLIS));
+//        this.taskScheduler.scheduleWithFixedDelay(
+//                this::update,
+//                java.time.Duration.ofMillis(Constants.HOUR_IN_MILLIS));
     }
     
     private void update() {
