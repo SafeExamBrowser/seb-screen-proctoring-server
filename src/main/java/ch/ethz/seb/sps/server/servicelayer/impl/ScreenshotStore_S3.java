@@ -167,9 +167,12 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
         // probably less performant but in case S3 do not support batch store
         batch.forEach(data -> {
             try {
-                // store screenshot data of single screenshot within DB
-                screenshotDataRecordMapper.insert(data.record);
-                this.sqlSessionTemplate.flushStatements();
+                
+                // store screenshot data of single screenshot within DB only if it is not already in the DB
+                if (data.record.getId() == null) {
+                    screenshotDataRecordMapper.insert(data.record);
+                    this.sqlSessionTemplate.flushStatements();
+                }
 
                 // store single screenshot picture to S3
                 this.s3DAO.uploadItem(
@@ -180,7 +183,11 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
 
             } catch (Exception e) {
                 log.error("Failed to single store screenshot data... put data back to queue. Cause: {}", e.getMessage());
-                this.screenshotDataQueue.add(data);
+                if (Utils.enoughHeapMemLeft(1000)) {
+                    this.screenshotDataQueue.add(data);
+                } else {
+                    log.warn("There is not enough heap memory left to store the screenshots that failed to store. 1 Screenshot is skipped now");
+                }
             }
         });
     }
@@ -189,7 +196,12 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
         try {
             this.transactionTemplate.executeWithoutResult(status -> {
                 // store all screenshot data in batch and grab generated keys put back to records
-                batch.forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
+                batch.forEach(data -> {
+                    if (data.record.getId() == null) {
+                        // store only screenshot data that has not been stored before
+                        this.screenshotDataRecordMapper.insert(data.record);
+                    }
+                });
                 this.sqlSessionTemplate.flushStatements();
 
                 // now store all screenshots within respective generated ids in batch
@@ -206,15 +218,12 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
                 });
 
                 //upload batch to s3 store
-                this.s3DAO.uploadItemBatch(batchItems).onError(e -> {
-                    log.error("Failed to upload batch to S3 service. Transaction has failed... put data back to queue. Cause: ", e);
-                    this.screenshotDataQueue.addAll(batch);
-                });
+                this.s3DAO.uploadItemBatch(batchItems).getOrThrow();
 
             });
 
         } catch (final TransactionException te) {
-            log.error("Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: ", te);
+            log.error("Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: {}", te.getMessage());
             if (Utils.enoughHeapMemLeft(1000)) {
                 this.screenshotDataQueue.addAll(batch);
             } else {
