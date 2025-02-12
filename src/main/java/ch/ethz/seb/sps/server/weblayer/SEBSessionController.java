@@ -289,6 +289,10 @@ public class SEBSessionController {
                                 Constants.MAX_METADATA_SIZE, 
                                 100);
 
+                        //remove all backslashes
+                        trimmedMetadata = trimmedMetadata.replace("\\/", "");
+
+
                         // TODO inject session cache and get session by sessionUUID and check if it is still active (not terminated)
                         //      if inactive throw error for SEB client to notify session closed
 
