@@ -284,10 +284,12 @@ public class SEBSessionController {
                 () -> {
                     try {
                         
-                        String trimmedMetadata = Utils.trimJSONMap(
+                        String trimmedMetadata = Utils.removeBackSlashesBeforeSlashes(Utils.trimJSONMap(
                                 Utils.decodeFormURL_UTF_8(metadata), 
                                 Constants.MAX_METADATA_SIZE, 
-                                100);
+                                100));
+                        
+
 
                         // TODO inject session cache and get session by sessionUUID and check if it is still active (not terminated)
                         //      if inactive throw error for SEB client to notify session closed

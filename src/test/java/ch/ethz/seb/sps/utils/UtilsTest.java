@@ -63,5 +63,13 @@ public class UtilsTest {
                 Utils.prettyPrintJSON(Utils.trimJSONMap(value, 200, 10)));
     }
     
+    @Test
+    public void testRemoveBackSlashesBeforeSlashes() {
+        String testString = "{\"screenProctoringMetadataActiveApp\":\"SEB (Bundle ID: org.safeexambrowser.ios.seb)\",\"screenProctoringMetadataBrowser\":\"Main Window: Testkurs Dany 2024: quiz Dany | Testserver Exam-Moodle (Test)\",\"screenProctoringMetadataURL\":\"https:\\/\\/moodle-app6-test.let.ethz.ch\\/mod\\/quiz\\/view.php?id=7869\",\"screenProctoringMetadataUserAction\":\"Maximum interval of 5000ms has been reached.\",\"screenProctoringMetadataWindowTitle\":\"Testkurs Dany 2024: quiz Dany | Testserver Exam-Moodle (Test)\"}";
+        assertEquals(
+                "{\"screenProctoringMetadataActiveApp\":\"SEB (Bundle ID: org.safeexambrowser.ios.seb)\",\"screenProctoringMetadataBrowser\":\"Main Window: Testkurs Dany 2024: quiz Dany | Testserver Exam-Moodle (Test)\",\"screenProctoringMetadataURL\":\"https://moodle-app6-test.let.ethz.ch/mod/quiz/view.php?id=7869\",\"screenProctoringMetadataUserAction\":\"Maximum interval of 5000ms has been reached.\",\"screenProctoringMetadataWindowTitle\":\"Testkurs Dany 2024: quiz Dany | Testserver Exam-Moodle (Test)\"}", 
+                Utils.removeBackSlashesBeforeSlashes(testString));
+    }
+    
     
 }
