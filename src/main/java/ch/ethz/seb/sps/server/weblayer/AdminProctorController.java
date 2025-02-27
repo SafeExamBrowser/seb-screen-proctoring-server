@@ -958,7 +958,6 @@ public class AdminProctorController {
             @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
             @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
 
-        // TODO Apply user rights
         return this.proctoringService.getDistinctMetadataWindowForExam(metadataApplication, getIdListFromParameter(groupIds));
     }
 
@@ -988,7 +987,6 @@ public class AdminProctorController {
             @RequestParam(name = API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, required = true) final String metadataWindowTitle,
             @RequestParam(name = API.PARAM_GROUP_IDS, required = true) final String groupIds){
 
-        // TODO Apply user rights?
         return this.screenshotDataDAO
                 .getUserListForApplicationSearch(metadataApplication, metadataWindowTitle, getIdListFromParameter(groupIds))
                 .getOrThrow();
@@ -1079,7 +1077,7 @@ public class AdminProctorController {
         for (String s : idsString) {
             try {
                 Long id = Long.parseLong(s);
-                if (readPrivilegedPredication.contains(id)) {
+                if (readPrivilegedPredication.contains(id) || readPrivilegedPredication.isEmpty()) {
                     idsList.add(id);
                 }
             } catch (Exception e) {
