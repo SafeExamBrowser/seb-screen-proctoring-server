@@ -827,4 +827,12 @@ public final class Utils {
         
         return heapMaxSize - ((spareInMB * 1000) + heapSize) > 0;
     }
+
+    public static String removeBackSlashesBeforeSlashes(String s) {
+        if (s == null) {
+            return null;
+        }
+        
+        return s.replace("\\/", "/");
+    }
 }
