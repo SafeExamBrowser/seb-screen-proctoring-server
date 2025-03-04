@@ -11,11 +11,21 @@ package ch.ethz.seb.sps.repltests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
+import ch.ethz.seb.sps.utils.Utils;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,15 +40,32 @@ import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
 import io.swagger.v3.core.util.Constants;
+import org.springframework.security.crypto.keygen.KeyGenerators;
 
 public class ReplTest {
 
     @Test
     public void testPWDGen() {
-        final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(4);
+        final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         final String encode = bCryptPasswordEncoder.encode("test");
         System.out.print(encode);
     }
+//
+//    @Test
+//    public void encodeURL() throws UnsupportedEncodingException {
+//        String encoded = URLEncoder.encode("heute + morgen", "utf8");
+//        
+//        assertEquals("heute+%2B+morgen", encoded);
+//        String decodedOrig = URLDecoder.decode(encoded, "utf8");
+//        String decodedMe = Utils.decodeFormURL_UTF_8(encoded);
+//        assertEquals("heute+++morgen", decodedMe);
+//        assertEquals("heute + morgen", decodedOrig);
+//
+//        String encodedMacProbably = "heute+\\++morgen";
+//        String decodedMacMe = Utils.decodeFormURL_UTF_8(encodedMacProbably);
+//        assertEquals("heute+++morgen", decodedMacMe);
+//    }
+
 
     @Test
     public void intCast() {
@@ -115,8 +142,20 @@ public class ReplTest {
 
         final Exam exam = jsonMapper.readValue(json, Exam.class);
         assertEquals(
-                "exam [id=null, uuid=null, name=Demo Quiz 10 (MOCKUP), description=Starts in a minute and ends after five minutes, url=http://lms.address.alias/api/, type=BYOD, owner=null, creationTime=null, lastUpdateTime=null, terminationTime=null, startTime=1695884353000, endTime=1695884653000, entityPrivileges=null]",
+                "Exam{id=null, uuid='null', name='Demo Quiz 10 (MOCKUP)', description='Starts in a minute and ends after five minutes', url='http://lms.address.alias/api/', type='BYOD', owner='null', supporter=[], creationTime=null, lastUpdateTime=null, terminationTime=null, startTime=1695884353000, endTime=1695884653000, deletionTime=null, entityPrivileges=null}",
                 exam.toString());
     }
+
+    @Test
+    public void CurrentT()  {
+        
+    }
+    
+//    @Test
+//    public void testSecretKeyGen() throws NoSuchAlgorithmException, InvalidKeySpecException {
+//
+//        String string = UUID.randomUUID().toString().replace("-", "");
+//        assertEquals("",  string);
+//    }
 
 }

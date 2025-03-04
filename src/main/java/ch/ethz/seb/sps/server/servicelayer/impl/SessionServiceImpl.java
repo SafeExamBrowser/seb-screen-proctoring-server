@@ -8,12 +8,13 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import static ch.ethz.seb.sps.server.datalayer.dao.AdditionalAttributesDAO.ATTRIBUTE_SESSION_ALSO_CLOSE;
+
+import java.util.*;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
+import ch.ethz.seb.sps.domain.model.EntityType;
+import ch.ethz.seb.sps.server.datalayer.dao.AdditionalAttributesDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import org.slf4j.Logger;
@@ -43,6 +44,7 @@ public class SessionServiceImpl implements SessionService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ProctoringCacheService proctoringCacheService;
     private final ProctoringService proctoringService;
+    private final AdditionalAttributesDAO additionalAttributesDAO;
 
     public SessionServiceImpl(
             final ExamDAO examDAO,
@@ -50,7 +52,8 @@ public class SessionServiceImpl implements SessionService {
             final SessionDAO sessionDAO,
             final ApplicationEventPublisher applicationEventPublisher,
             final ProctoringCacheService proctoringCacheService,
-            final ProctoringService proctoringService) {
+            final ProctoringService proctoringService, 
+            final AdditionalAttributesDAO additionalAttributesDAO) {
 
         this.examDAO = examDAO;
         this.groupDAO = groupDAO;
@@ -58,6 +61,7 @@ public class SessionServiceImpl implements SessionService {
         this.applicationEventPublisher = applicationEventPublisher;
         this.proctoringCacheService = proctoringCacheService;
         this.proctoringService = proctoringService;
+        this.additionalAttributesDAO = additionalAttributesDAO;
     }
 
     @Override
@@ -134,25 +138,29 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public Result<String> closeSession(final String sessionUUID) {
-        return this.sessionDAO.byModelId(sessionUUID)
-                .map(session -> {
-                    this.applicationEventPublisher.publishEvent(new SessionOnClosingEvent(sessionUUID));
-                    final Result<String> result = this.sessionDAO.closeSession(sessionUUID);
-                    if (!result.hasError()) {
-                        // caching update
-                        final String groupUUID = this.groupDAO.byPK(session.groupId).getOrThrow().uuid;
-                        this.proctoringCacheService.evictSession(sessionUUID);
-                        this.proctoringCacheService.evictSessionTokens(groupUUID);
-                    } else {
-                        result.getOrThrow();
+    public void closeSession(final String sessionUUID) {
+        this.sessionDAO
+                .byModelId(sessionUUID)
+                .onSuccess(session -> {
+                    try {
+                        this.applicationEventPublisher.publishEvent(new SessionOnClosingEvent(sessionUUID));
+                        final Result<String> result = this.sessionDAO.closeSession(sessionUUID);
+                        if (!result.hasError()) {
+                            // caching update
+                            final String groupUUID = this.groupDAO.byPK(session.groupId).getOrThrow().uuid;
+                            this.proctoringCacheService.evictSession(sessionUUID);
+                            this.proctoringCacheService.evictSessionTokens(groupUUID);
+                        } else {
+                            result.getOrThrow();
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to close session for sessionUUID: {} cause {}", sessionUUID, e.getMessage());
                     }
-                    return sessionUUID;
                 });
     }
 
     @Override
-    public Result<Collection<EntityKey>> closeAllSessions(Collection<EntityKey> groupKeys) {
+    public Result<Collection<EntityKey>> closeAllSessions(final Collection<EntityKey> groupKeys) {
         return Result.tryCatch(() -> {
             Collection<EntityKey> result = new ArrayList<>(groupKeys);
             groupKeys.forEach(groupKey -> {
@@ -178,12 +186,59 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public boolean hasAnySessionDataForExam(String examUUID) {
-        return this.groupDAO
-                .allIdsForExamsIds(List.of(examDAO.modelIdToPK(examUUID)))
-                .flatMap(sessionDAO::hasAnySessionData)
-                .onError(error -> log.warn("Failed to check if there are any session data for Exam: {} error: {}", examUUID, error.getMessage()))
+    public boolean hasAnySessionDataForExam(final String examUUID) {
+        Long pk = examDAO.modelIdToPK(examUUID);
+        if (pk != null) {
+            return this.groupDAO
+                    .allIdsForExamsIds(List.of())
+                    .flatMap(sessionDAO::hasAnySessionData)
+                    .onError(error -> log.warn("Failed to check if there are any session data for Exam: {} error: {}", examUUID, error.getMessage()))
+                    .getOr(true);
+        } else {
+            log.warn("Failed to check if exam has sessions because of exam not found for uuid: {}", examUUID);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean hasAnySessionDataForGroup(final String groupUUID) {
+        return sessionDAO
+                .hasAnySessionData(Collections.singletonList(this.groupDAO.modelIdToPK(groupUUID)))
+                .onError(error -> log.warn("Failed to check if there are any session data for Group: {} error: {}", groupUUID, error.getMessage()))
                 .getOr(true);
+    }
+
+    @Override
+    public boolean isSessionActive(final String sessionUUID) {
+        try {
+            return this.proctoringCacheService.getSession(sessionUUID).isActive();
+        } catch (Exception e) {
+            log.error("Failed to check if session is active: {} error: {}", sessionUUID, e.getMessage());
+            return true;
+        }
+    }
+
+    @Override
+    public Result<String> markSessionForUpload(final String sessionUUID, final String uploadSessionUUID) {
+        return this.sessionDAO.getEncryptionKey(uploadSessionUUID)
+                .map(key -> {
+                    
+                    // open the  session for upload
+                    this.sessionDAO
+                            .setActive(new EntityKey(uploadSessionUUID, EntityType.SESSION), true)
+                            .getOrThrow();
+                    
+                    // mark to close upload session too, when closing the current session
+                    additionalAttributesDAO
+                            .saveAdditionalAttribute(
+                                    EntityType.SESSION, 
+                                    sessionDAO.modelIdToPK(sessionUUID),
+                                    ATTRIBUTE_SESSION_ALSO_CLOSE + "_" + uploadSessionUUID, 
+                                    uploadSessionUUID)
+                            .getOrThrow();
+                    
+                    return key;
+                });
     }
 
     private Session checkUpdateIntegrity(final Session session) {
@@ -213,7 +268,10 @@ public class SessionServiceImpl implements SessionService {
                 clientMachineName,
                 clientOSName,
                 clientVersion,
-                null, null, null, null));
+                null, 
+                null, 
+                null,
+                null));
 
         // caching update
         this.proctoringCacheService.evictSession(sessionUUID);

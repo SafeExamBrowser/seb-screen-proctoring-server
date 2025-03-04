@@ -37,7 +37,7 @@ public class ScreenshotSearchResult {
     public static final String ATTR_META_DATA = "metaData";
     public static final String ATTR_TIMESTAMP = "imageTimestamp";
 
-    @JsonProperty(API.PARAM_GROUP_ID)
+    @JsonProperty(API.PARAM_GROUP_UUID)
     public final String groupUUID;
 
     @JsonProperty(API.PARAM_GROUP_NAME)
@@ -84,7 +84,7 @@ public class ScreenshotSearchResult {
 
     @JsonCreator
     public ScreenshotSearchResult(
-            @JsonProperty(API.PARAM_GROUP_ID) final String groupUUID,
+            @JsonProperty(API.PARAM_GROUP_UUID) final String groupUUID,
             @JsonProperty(API.PARAM_GROUP_NAME) final String groupName,
             @JsonProperty(ATTR_GROUP_CREATION_TIME) final Long groupCreationTime,
             @JsonProperty(API.PARAM_SESSION_ID) final String sessionUUID,

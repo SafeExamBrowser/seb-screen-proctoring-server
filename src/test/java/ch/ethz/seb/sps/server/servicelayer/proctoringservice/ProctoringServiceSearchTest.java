@@ -4,6 +4,7 @@ import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
+import ch.ethz.seb.sps.server.ServiceInfo;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
@@ -54,7 +55,8 @@ public class ProctoringServiceSearchTest {
 
     @Mock
     private GroupDAO groupDAO;
-
+    @Mock
+    private ServiceInfo serviceInfo;
     @InjectMocks
     private ProctoringServiceImpl proctoringService;
 

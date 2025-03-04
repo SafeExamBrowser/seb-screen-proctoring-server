@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.server;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
@@ -15,6 +16,7 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 @SpringBootApplication(exclude = {
         UserDetailsServiceAutoConfiguration.class,
 }, scanBasePackages = { "ch.ethz.seb.sps" })
+@OpenAPIDefinition
 public class ScreenProctoringServer {
 
     public static void main(final String[] args) {

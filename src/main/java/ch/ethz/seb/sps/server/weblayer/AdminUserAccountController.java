@@ -12,12 +12,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,7 +41,6 @@ import ch.ethz.seb.sps.domain.model.user.UserAccount;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.domain.model.user.UserMod;
 import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
-import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeDAO;
@@ -52,7 +50,6 @@ import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
 import ch.ethz.seb.sps.server.servicelayer.EntityService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
-import ch.ethz.seb.sps.server.weblayer.oauth.RevokeTokenEndpoint;
 import ch.ethz.seb.sps.utils.Result;
 
 @RestController
@@ -76,7 +73,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
             final ApplicationEventPublisher applicationEventPublisher,
             final BeanValidationService beanValidationService,
             final EntityService entityService,
-            @Qualifier(ServiceConfig.USER_PASSWORD_ENCODER_BEAN_NAME) final PasswordEncoder userPasswordEncoder) {
+            final PasswordEncoder userPasswordEncoder) {
 
         super(userService, userDAO, auditLogDAO, paginationService, beanValidationService);
         this.entityPrivilegeDAO = entityPrivilegeDAO;
@@ -255,8 +252,9 @@ public class AdminUserAccountController extends ActivatableEntityController<User
 
     private Result<UserInfo> revokeAccessToken(final UserInfo userInfo) {
         return Result.tryCatch(() -> {
-            this.applicationEventPublisher.publishEvent(
-                    new RevokeTokenEndpoint.RevokeTokenEvent(userInfo, userInfo.username));
+            // TODO
+//            this.applicationEventPublisher.publishEvent(
+//                    new RevokeTokenEndpoint.RevokeTokenEvent(userInfo, userInfo.username));
             return userInfo;
         });
     }

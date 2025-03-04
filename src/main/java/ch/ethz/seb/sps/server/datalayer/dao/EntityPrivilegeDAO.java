@@ -9,6 +9,7 @@
 package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
@@ -43,4 +44,7 @@ public interface EntityPrivilegeDAO {
 
     Result<Collection<EntityKey>> deleteAllPrivileges(EntityType type, Long entityId);
 
+    void updatePrivileges(Long epId, PrivilegeType privilegeType);
+
+    void deleteAllPrivilegesForUser(String user_uuid);
 }

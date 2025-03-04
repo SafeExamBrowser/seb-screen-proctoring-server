@@ -11,8 +11,8 @@ package ch.ethz.seb.sps.server.weblayer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Utils;
@@ -46,7 +46,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("${sps.api.session.endpoint.v1}" + API.SESSION_ENDPOINT)
-@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_SEB_CLIENT)
+@SecurityRequirement(name = WebConfig.SWAGGER_AUTH_SEB_API)
 public class SEBSessionController {
 
     private static final Logger log = LoggerFactory.getLogger(SEBSessionController.class);
@@ -230,8 +230,7 @@ public class SEBSessionController {
             })
     @RequestMapping(
             path = API.PARAM_MODEL_PATH_SEGMENT,
-            method = RequestMethod.DELETE,
-            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            method = RequestMethod.DELETE)
     public void closeSession(@PathVariable(name = API.PARAM_MODEL_ID, required = true) final String sessionUUID) {
         this.sessionService.closeSession(sessionUUID);
     }
@@ -285,20 +284,22 @@ public class SEBSessionController {
                 () -> {
                     try {
                         
-                        //  SEBSP-169 Patch Issue 2.0.2: Prevent error and queue overflow when SEB sends to long metadata
-                        // TODO replace this with attempt to fix metadata instead of complete skip
-                        if (metadata != null && metadata.length() > Constants.MAX_METADATA_SIZE) {
-                            
-                            log.warn("Sent metadata to long. Sent by SEB with session: {} metadata: {}", sessionUUID, metadata);
-                            
-                            // skip request here
-                            response.setStatus(HttpStatus.OK.value());
-                            return;
-                        }
+                        String trimmedMetadata = Utils.removeBackSlashesBeforeSlashes(Utils.trimJSONMap(
+                                Utils.decodeFormURL_UTF_8(metadata), 
+                                Constants.MAX_METADATA_SIZE, 
+                                100));
+                        
+
 
                         // TODO inject session cache and get session by sessionUUID and check if it is still active (not terminated)
                         //      if inactive throw error for SEB client to notify session closed
 
+                        // Check if session is active / open. Otherwise ignore request except for upload requests
+                        if (!sessionService.isSessionActive(sessionUUID)) {
+                            response.setStatus(HttpStatus.NOT_FOUND.value());
+                            return;
+                        }
+                        
                         final ImageFormat imageFormat = (StringUtils.isNotEmpty(format))
                                 ? ImageFormat.byName(format)
                                 : null;
@@ -307,7 +308,7 @@ public class SEBSessionController {
                                 sessionUUID,
                                 timestamp,
                                 imageFormat,
-                                Utils.decodeFormURL_UTF_8(metadata),
+                                trimmedMetadata,
                                 request.getInputStream());
 
                         response.setStatus(HttpStatus.OK.value());
@@ -321,6 +322,28 @@ public class SEBSessionController {
                     }
                 },
                 this.uploadExecutor);
+    }
+
+    @RequestMapping(
+            path = API.PARAM_MODEL_PATH_SEGMENT + API.SCREENSHOT_UPLOAD_ENDPOINT,
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public void getEncryptionKeyForSessionUUID(
+            @PathVariable(name = API.PARAM_MODEL_ID) final String sessionUUID,
+            @RequestHeader(name = API.SESSION_HEADER_UUID) final String uploadSessionUUID,
+            final HttpServletResponse response) {
+        
+        if (!sessionService.isSessionActive(sessionUUID)) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            return;
+        }
+
+        final String encryptionKey = this.sessionService
+                .markSessionForUpload(sessionUUID, uploadSessionUUID)
+                .getOrThrow();
+
+        response.setHeader(API.SESSION_HEADER_ENCRYPT_KEY, encryptionKey);
+        response.setStatus(HttpStatus.OK.value());
     }
 
 }

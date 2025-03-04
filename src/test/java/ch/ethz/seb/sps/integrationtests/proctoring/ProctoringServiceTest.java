@@ -3,6 +3,7 @@ package ch.ethz.seb.sps.integrationtests.proctoring;
 import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
+import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.service.GroupViewData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
@@ -35,19 +36,19 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
     @Test
     public void testFullUseCaseSuccess() throws Exception {
         //GIVEN
-        Long expectedGroupId = 1l;
-        String expectedGroupName = "test_group";
-        Long expectedGroupCreationTime = 0l;
-        int expectedAmountOfScreenshots = 2;
-        String expectedGroupUuid = "3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c";
-        String expectedSessionUuid = "9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c";
-        String expectedGroupingKey = "Google Homepage";
-        int expectedLengthOfGroupedScreenshotData = 10;
-        List<Long> expectedScreenshotTimestamps = Arrays.asList(1721743482182l, 1721743483215l, 1721743484222l, 1721743485226l, 1721743486247l);
-        List<Date> expectedUniqueDays = Arrays.asList(Date.valueOf("2024-07-23"), Date.valueOf("2024-07-11"));
-        List<String> expectedSessionSearchUuids = Arrays.asList("9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c", "4461dec0-5579-4fef-a86f-0ec7b252c779", "c8ebdedc-1105-4ecb-bd04-c20ba2e221a5");
-        String expectedMetadataUserAction = "Ctrl c + Ctrl v";
-        String expectedMetadataURL = "https://google.com";
+        final Long expectedGroupId = 1l;
+        final String expectedGroupName = "test_group";
+        final Long expectedGroupCreationTime = 0l;
+        final int expectedAmountOfScreenshots = 2;
+        final String expectedGroupUuid = "3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c";
+        final String expectedSessionUuid = "9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c";
+        final String expectedGroupingKey = "Google Homepage";
+        final int expectedLengthOfGroupedScreenshotData = 10;
+        final List<Long> expectedScreenshotTimestamps = Arrays.asList(1721743482182l, 1721743483215l, 1721743484222l, 1721743485226l, 1721743486247l);
+        final List<Date> expectedUniqueDays = Arrays.asList(Date.valueOf("2024-07-23"), Date.valueOf("2024-07-11"));
+        final List<String> expectedSessionSearchUuids = Arrays.asList("9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c", "4461dec0-5579-4fef-a86f-0ec7b252c779", "c8ebdedc-1105-4ecb-bd04-c20ba2e221a5");
+        final String expectedMetadataUserAction = "Ctrl c + Ctrl v";
+        final String expectedMetadataURL = "https://google.com";
 
 
         //WHEN
@@ -178,6 +179,51 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
             assertTrue(screenshotSearchResult.content.get(i).metaData.containsValue(expectedMetadataURL));
         }
     }
+
+    @Test
+    public void testApplicationSearch() throws Exception {
+        //GIVEN
+        Long expectedExamId = 1l;
+        List<Long> expectedGroupIds = Arrays.asList(1l, 2l);
+//        List<String> expectedMetadataApp = Arrays.asList("")
+
+        //WHEN
+        //1. get exams in the given time frame
+        //endpoint: /search/applications/exams
+        List<Exam> exams = createMockApiCall(
+                API.APPLICATION_SEARCH_EXAMS_ENDPOINT,
+                HttpMethod.GET,
+                new TypeReference<List<Exam>>(){},
+                new HashMap<>());
+
+        //2. get groupIds for given exam
+        //endpoint: /search/applications/groupdIds/<examId>
+        List<Long> groupIds = createMockApiCall(
+                API.APPLICATION_SEARCH_ENDPOINT + "/groupIds/" + 1L,
+                HttpMethod.GET,
+                new TypeReference<List<Long>>(){},
+                new HashMap<>());
+
+        //2. get metadata application for given groupIds
+        //endpoint: /search/applications/metadata/app
+        Map<String, String> groupIdsAttributes = new HashMap<>();
+        groupIdsAttributes.put("groupIds", "1,2");
+//
+//        List<String> metadataAppList = createMockApiCall(
+//                API.APPLICATION_SEARCH_METADATA_APP_ENDPOINT,
+//                HttpMethod.GET,
+//                new TypeReference<List<String>>(){},
+//                groupIdsAttributes);
+//
+//        System.out.println(exams);
+
+
+
+        //THEN
+
+
+    }
+
 
     private <T> T createMockApiCall(String endpoint, HttpMethod httpMethod, TypeReference<T> typeReference, Map<String, String> attributes) throws Exception {
         return new RestAPITestHelper()

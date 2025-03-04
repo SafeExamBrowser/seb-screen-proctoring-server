@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlTable;
@@ -59,7 +59,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
  *
  * @param <T> The concrete Entity domain-model type used on all GET, PUT
  * @param <M> The concrete Entity domain-model type used for write methods (new, save) */
-@SecurityRequirement(name = WebServiceConfig.SWAGGER_AUTH_GUI_ADMIN)
+@SecurityRequirement(name = WebConfig.SWAGGER_AUTH_ADMIN_API)
 public abstract class EntityController<T extends Entity, M extends Entity> {
 
     protected final UserService userService;
@@ -137,13 +137,13 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                             description = "the sort parameter to sort the list of entities before paging"),
                     @Parameter(
                             name = "allRequestParams",
-                            description = "fwrgrwgwg",
+                            description = "other request params",
                             required = false,
                             hidden = true),
             })
     @RequestMapping(
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            //consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<T> getPage(
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
@@ -151,7 +151,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             @RequestParam(name = Page.ATTR_SORT, required = false) final String sort,
             @RequestParam(required = false) final MultiValueMap<String, String> allRequestParams,
             final HttpServletRequest request) {
-
+        
         // NOTE this must be done outside the paging supplier to do not interfere with Batis paging magic
         final Collection<Long> readPrivilegedPredication = getReadPrivilegedPredication();
         final FilterMap filterMap = new FilterMap(allRequestParams, request.getQueryString());
@@ -599,7 +599,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     }
 
     /** Gets the Entity instance that holds the grant for a given Entity instance.
-     * Usually this this are the same except the case, that a parent entity holds the grant information
+     * Usually these are the same except the case, that a parent entity holds the grant information
      * for a child entity. In this case this method must be overwritten to extract the get the parent entity
      *
      * @param entity the Entity to get the related Entity for granting access privileges

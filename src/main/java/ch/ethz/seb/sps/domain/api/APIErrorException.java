@@ -56,8 +56,12 @@ public class APIErrorException extends RuntimeException {
             final UserInfo userInfo) {
 
         final Map<String, String> attributes = new HashMap<>();
-        attributes.put("resource-type", entityType.name());
-        attributes.put("access-type", privilegeType.name());
+        if (entityType != null) {
+            attributes.put("resource-type", entityType.name());
+        }
+        if (privilegeType != null) {
+            attributes.put("access-type", privilegeType.name());
+        }
         if (userInfo != null) {
             attributes.put("user-uuid", userInfo.uuid);
             attributes.put("user-name", userInfo.name);

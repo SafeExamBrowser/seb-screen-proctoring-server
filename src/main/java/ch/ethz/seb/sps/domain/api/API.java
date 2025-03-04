@@ -14,6 +14,10 @@ import ch.ethz.seb.sps.domain.model.Entity;
 
 public final class API {
 
+    public static final String READ_SCOPE_NAME = "read";
+    public static final String WRITE_SCOPE_NAME = "write";
+    public static final String WEB_API_SCOPE_NAME = "web-api";
+    public static final String SEB_API_SCOPE_NAME = "seb-api";
 
     public enum UserRole {
         ADMIN,
@@ -88,6 +92,7 @@ public final class API {
     public static final String HEALTH_ENDPOINT = "/health";
     public static final String WEBSOCKET_SESSION_ENDPOINT = "/wsock";
     public static final String GUI_REDIRECT_ENDPOINT = "/gui-redirect-location";
+    public static final String OAUTH_JWTTOKEN_QUERY_PARAM = "access_token";
 
     public static final String PARAM_MODEL_ID = "modelId";
 
@@ -106,6 +111,9 @@ public final class API {
     public static final String PATH_VAR_ACTIVE = PARAM_MODEL_PATH_SEGMENT + ACTIVE_PATH_SEGMENT;
     public static final String PATH_VAR_INACTIVE = PARAM_MODEL_PATH_SEGMENT + INACTIVE_PATH_SEGMENT;
 
+    public static final String ADMIN_ENDPOINT = "/admin";
+    public static final String ADMIN_SIMULATE_HEALTH_ENDPOINT = ADMIN_ENDPOINT + "/simulate_health";
+    
     public static final String USER_ACCOUNT_ENDPOINT = "/useraccount";
     public static final String CURRENT_USER_PATH_SEGMENT = "/me";
     public static final String CURRENT_USER_ENDPOINT = API.USER_ACCOUNT_ENDPOINT + CURRENT_USER_PATH_SEGMENT;
@@ -122,6 +130,7 @@ public final class API {
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 
     public static final String ADMIN_SESSION_ENDPOINT = "/session";
+    public static final String SESSION_ENCRYPT_KEY_ENDPOINT = "/encrypt-key";
     public static final String ACTIVE_COUNTS_ENDPOINT = "/active_counts";
     public static final String GROUP_HEADER_UUID = "seb_group_uuid";
     public static final String SESSION_HEADER_UUID = "seb_session_uuid";
@@ -130,12 +139,15 @@ public final class API {
     public static final String SESSION_HEADER_SEB_MACHINE_NAME = "seb_machine_name";
     public static final String SESSION_HEADER_SEB_OS = "seb_os_name";
     public static final String SESSION_HEADER_SEB_VERSION = "seb_version";
+    public static final String SESSION_HEADER_ENCRYPT_KEY = "seb_session_encrypt_key";
 
     public static final String SPS_SERVER_HEALTH = "sps_server_health";
 
-    public static final String PARAM_EXAM_ID = "examUUID";
+    public static final String PARAM_EXAM_UUID = "examUUID";
+    public static final String PARAM_EXAM_ID = "examID";
     public static final String PARAM_EXAM_NAME = "examName";
-    public static final String PARAM_GROUP_ID = "groupUUID";
+    public static final String PARAM_GROUP_UUID = "groupUUID";
+    public static final String PARAM_GROUP_IDS = "groupIds";
     public static final String PARAM_GROUP_NAME = "groupName";
     public static final String PARAM_SESSION_ID = "sessionUUID";
     public static final String PARAM_FROM_TIME = "fromTime";
@@ -148,8 +160,10 @@ public final class API {
     public static final String PROCTORING_ENDPOINT = "/proctoring";
     public static final String EXAM_ENDPOINT = "/exam";
     public static final String GROUP_ENDPOINT = "/group";
+    public static final String GROUP_EXAM_UUID_PATH_SEGMENT = "/by-exam";
     public static final String SESSION_ENDPOINT = "/session";
     public static final String SCREENSHOT_ENDPOINT = "/screenshot";
+    public static final String SCREENSHOT_UPLOAD_ENDPOINT = "/upload";
     public static final String SCREENSHOT_DATA_ENDPOINT = "/screenshot-data";
     public static final String SCREENSHOT_TIMESTAMPS_ENDPOINT = "/screenshot-timestamps";
     public static final String SEARCH_ENDPOINT = "/search";
@@ -160,10 +174,20 @@ public final class API {
     public static final String SESSION_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/sessions";
     public static final String SESSION_DAY_SEARCH_ENDPOINT = SESSION_SEARCH_ENDPOINT + "/day";
     public static final String TIMELINE_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/timeline";
-    public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_ID + "}";
+    public static final String GROUP_ID_PATH_SEGMENT = "/{" + PARAM_GROUP_UUID + "}";
     public static final String SESSION_ID_PATH_SEGMENT = "/{" + PARAM_SESSION_ID + "}";
     public static final String DIRECTION_PATH_SEGMENT = "/{" + PARAM_DIRECTION + "}";
     public static final String SESSION_ID_TIMESTAMP_PATH_SEGMENT =
             "/{" + PARAM_SESSION_ID + "}" + PARAM_TIMESTAMP_PATH_SEGMENT;
+
+
+    public static final String APPLICATION_SEARCH_ENDPOINT = SEARCH_ENDPOINT + "/applications";
+    public static final String EXAM_ID_PATH_SEGMENT = "/{" + PARAM_EXAM_ID + "}";
+    public static final String APPLICATION_SEARCH_EXAMS_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/exams";
+    public static final String APPLICATION_SEARCH_GROUP_IDS_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/groupIds" + EXAM_ID_PATH_SEGMENT;
+    public static final String APPLICATION_SEARCH_METADATA_APP_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/metadata/app";
+    public static final String APPLICATION_SEARCH_METADATA_WINDOW_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/metadata/window";
+    public static final String APPLICATION_SEARCH_USER_LIST_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/users";
+    public static final String APPLICATION_SEARCH_TIMESTAMP_LIST_ENDPOINT = APPLICATION_SEARCH_ENDPOINT + "/timestamps";
 
 }

@@ -16,6 +16,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.impl.S3DAO;
 import ch.ethz.seb.sps.server.servicelayer.ScreenshotStoreService;
 import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
 import ch.ethz.seb.sps.utils.Constants;
+import ch.ethz.seb.sps.utils.Utils;
 import io.minio.SnowballObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.binding.MapperRegistry;
@@ -37,8 +38,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -100,14 +101,14 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
         final Collection<ScreenshotQueueData> data1 = new ArrayList<>();
         this.taskScheduler.scheduleWithFixedDelay(
                 () -> processStore(data1),
-                DateTime.now(DateTimeZone.UTC).toDate(),
-                this.batchInterval);
+                DateTime.now(DateTimeZone.UTC).toDate().toInstant(),
+                Duration.ofMillis(this.batchInterval));
 
         final Collection<ScreenshotQueueData> data2 = new ArrayList<>();
         this.taskScheduler.scheduleWithFixedDelay(
                 () -> processStore(data2),
-                DateTime.now(DateTimeZone.UTC).plus(500).toDate(),
-                this.batchInterval);
+                DateTime.now(DateTimeZone.UTC).plus(500).toDate().toInstant(),
+                Duration.ofMillis(this.batchInterval));
 
     }
 
@@ -137,12 +138,13 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
                     IOUtils.toByteArray(in)));
 
         } catch (final Exception e) {
-            log.error("Failed to get screenshot from InputStream for session: {}", sessionUUID, e);
+            String message = e.getMessage();
+            if (message != null && message.contains("Connection reset")) {
+                log.warn("Failed to get screenshot from InputStream for session: {} err: {}", sessionUUID, e.getMessage());
+            } else {
+                log.error("Failed to get screenshot from InputStream for session: {}", sessionUUID, e);
+            }
         }
-    }
-
-    @Override
-    public void storeScreenshot(final String sessionUUID, final InputStream in) {
     }
 
     private void processStore(final Collection<ScreenshotQueueData> batch) {
@@ -165,9 +167,12 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
         // probably less performant but in case S3 do not support batch store
         batch.forEach(data -> {
             try {
-                // store screenshot data of single screenshot within DB
-                screenshotDataRecordMapper.insert(data.record);
-                this.sqlSessionTemplate.flushStatements();
+                
+                // store screenshot data of single screenshot within DB only if it is not already in the DB
+                if (data.record.getId() == null) {
+                    screenshotDataRecordMapper.insert(data.record);
+                    this.sqlSessionTemplate.flushStatements();
+                }
 
                 // store single screenshot picture to S3
                 this.s3DAO.uploadItem(
@@ -178,7 +183,11 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
 
             } catch (Exception e) {
                 log.error("Failed to single store screenshot data... put data back to queue. Cause: {}", e.getMessage());
-                this.screenshotDataQueue.add(data);
+                if (Utils.enoughHeapMemLeft(1000)) {
+                    this.screenshotDataQueue.add(data);
+                } else {
+                    log.warn("There is not enough heap memory left to store the screenshots that failed to store. 1 Screenshot is skipped now");
+                }
             }
         });
     }
@@ -187,7 +196,12 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
         try {
             this.transactionTemplate.executeWithoutResult(status -> {
                 // store all screenshot data in batch and grab generated keys put back to records
-                batch.forEach(data -> this.screenshotDataRecordMapper.insert(data.record));
+                batch.forEach(data -> {
+                    if (data.record.getId() == null) {
+                        // store only screenshot data that has not been stored before
+                        this.screenshotDataRecordMapper.insert(data.record);
+                    }
+                });
                 this.sqlSessionTemplate.flushStatements();
 
                 // now store all screenshots within respective generated ids in batch
@@ -204,16 +218,17 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
                 });
 
                 //upload batch to s3 store
-                this.s3DAO.uploadItemBatch(batchItems).onError(e -> {
-                    log.error("Failed to upload batch to S3 service. Transaction has failed... put data back to queue. Cause: ", e);
-                    this.screenshotDataQueue.addAll(batch);
-                });
+                this.s3DAO.uploadItemBatch(batchItems).getOrThrow();
 
             });
 
         } catch (final TransactionException te) {
-            log.error("Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: ", te);
-            this.screenshotDataQueue.addAll(batch);
+            log.error("Failed to batch store screenshot data. Transaction has failed... put data back to queue. Cause: {}", te.getMessage());
+            if (Utils.enoughHeapMemLeft(1000)) {
+                this.screenshotDataQueue.addAll(batch);
+            } else {
+                log.warn("There is not enough heap memory left to store the screenshots that failed to store. {} Screenshots are skipped now", batch.size());
+            }
         }
     }
 

@@ -164,4 +164,8 @@ public interface UserService {
 
     Result<Exam> applyExamPrivileges(Exam exam);
 
+    Result<Exam> deleteTeacherPrivileges(Exam entity);
+
+    /** Checks if the current user has administrator privileges. Throws APIErrorException.ofPermissionDenied if not */
+    void checkIsAdmin();
 }

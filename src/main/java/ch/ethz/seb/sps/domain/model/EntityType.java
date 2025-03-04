@@ -1,8 +1,8 @@
 package ch.ethz.seb.sps.domain.model;
 
-import javax.annotation.Generated;
+import jakarta.annotation.Generated;
 
-@Generated(value="org.mybatis.generator.api.MyBatisGenerator",comments="ch.ethz.seb.sps.generator.DomainModelNameReferencePlugin",date="2024-05-14T14:28:54.530+02:00")
+@Generated(value="org.mybatis.generator.api.MyBatisGenerator",comments="ch.ethz.seb.sps.generator.DomainModelNameReferencePlugin",date="2024-11-18T10:46:20.589+01:00")
 public enum EntityType {
     USER,
     CLIENT_ACCESS,

@@ -21,16 +21,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.server.datalayer.dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -62,7 +60,6 @@ public class UserServiceImpl implements UserService {
     private final UserDAO userDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
     private final EntityService entityService;
-    private final AdditionalAttributesDAO additionalAttributesDAO;
 
     public UserServiceImpl(
             final UserDAO userDAO,
@@ -75,7 +72,6 @@ public class UserServiceImpl implements UserService {
         this.extractStrategies = extractStrategies;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.entityService = entityService;
-        this.additionalAttributesDAO = additionalAttributesDAO;
 
         // admin privileges
         this.rolePrivileges.put(
@@ -116,7 +112,7 @@ public class UserServiceImpl implements UserService {
                     return user;
                 }
             } catch (final Exception e) {
-                log.error("Unexpected error while trying to extract user form principal: ", e);
+                log.error("Unexpected error while trying to extract user from principal: ", e);
             }
         }
 
@@ -191,6 +187,11 @@ public class UserServiceImpl implements UserService {
     public Result<Set<Long>> getIdsWithReadEntityPrivilege(final EntityType entityType) {
         return Result.tryCatch(() -> {
             final String userUUID = this.getCurrentUser().uuid();
+            
+            // check if user has overall read privileges on the entity type
+            if (hasGrant(PrivilegeType.READ, entityType)) {
+                return Collections.emptySet();
+            }
 
             // if owned entity type. get all owned entity id's if owned entity
             final Set<Long> ownedEntityIds = new HashSet<>();
@@ -235,7 +236,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<UserInfo> synchronizeUserAccount(final UserMod userMod) {
-        return this.userDAO.synchronizeUserAccount(userMod);
+        return this.userDAO.synchronizeUserAccount(userMod)
+                .map(this::synchronizeUserPrivileges);
+    }
+    
+    private UserInfo synchronizeUserPrivileges(final UserInfo userInfo) {
+        try {
+
+            UserPrivileges privileges = getUserPrivileges(userInfo.uuid)
+                    .getOrThrow();
+            
+            boolean isAdmin = userInfo.roles.contains(UserRole.ADMIN.name());
+            privileges.entityPrivileges.forEach( p -> {
+                this.entityPrivilegeDAO.updatePrivileges(
+                        p.id,
+                        isAdmin ? PrivilegeType.WRITE : PrivilegeType.READ
+                );
+            });
+            
+        } catch (Exception e) {
+            log.error("Failed to sync user privileges for user: {}", userInfo, e);
+        }
+        return userInfo;
     }
 
     @Override
@@ -264,7 +286,7 @@ public class UserServiceImpl implements UserService {
     public Result<Exam> applyExamPrivileges(Exam exam) {
         return Result.tryCatch(() -> {
 
-            if (exam.userIds == null || exam.userIds.isEmpty()) {
+            if (exam.supporter == null || exam.supporter.isEmpty()) {
                 return exam;
             }
 
@@ -275,7 +297,7 @@ public class UserServiceImpl implements UserService {
                             error.getMessage()));
 
             // add new privileges according to the user role of user ids
-            exam.userIds
+            exam.supporter
                     .forEach(userUUID -> {
                         Result<UserInfo> userInfoResult = this.userDAO.byModelId(userUUID);
                         if (userInfoResult.hasError()) {
@@ -301,6 +323,45 @@ public class UserServiceImpl implements UserService {
         });
     }
 
+    @Override
+    public Result<Exam> deleteTeacherPrivileges(Exam exam) {
+        return Result.tryCatch(() -> {
+            
+            if (log.isDebugEnabled()) {
+                log.debug("Delete all entity privileges for Teacher only user for Exam: {}", exam);
+            }
+            
+            exam.supporter.forEach(supporter -> {
+                // if we have a user with only TEACHER role
+                if (userDAO
+                        .byModelId(supporter)
+                        .map(user -> user.roles.contains(UserRole.TEACHER.name()) && user.roles.size() == 1)
+                        .getOr(false)) {
+                    
+                    // delete the entity privileges for that teacher on the given exam
+                    this.entityPrivilegeDAO
+                            .deletePrivilege(EntityType.EXAM, exam.id, supporter)
+                            .onError(error -> log.warn(
+                                    "Failed to delete entity privilege for Teacher user: {} on Exam: {} error: {}",
+                                    supporter, 
+                                    exam, 
+                                    error.getMessage()));
+                }
+            });
+            
+            return exam;
+        });
+    }
+
+    @Override
+    public void checkIsAdmin() {
+        ServerUser currentUser = getCurrentUser();
+        if (!currentUser.getUserRoles().contains(UserRole.ADMIN)) {
+            throw APIErrorException.ofPermissionDenied(null, PrivilegeType.WRITE, currentUser.getUserInfo());
+        }
+    }
+
+
     public interface ExtractUserFromAuthenticationStrategy {
         ServerUser extract(Principal principal);
     }
@@ -309,22 +370,19 @@ public class UserServiceImpl implements UserService {
     @Lazy
     @Component
     public static class DefaultUserExtractStrategy implements ExtractUserFromAuthenticationStrategy {
+        
+        final UserDAO userDAO;
+
+        DefaultUserExtractStrategy(UserDAO userDAO) {
+            this.userDAO = userDAO;
+        }
 
         @Override
         public ServerUser extract(final Principal principal) {
-            if (principal instanceof OAuth2Authentication) {
-                final Authentication userAuthentication = ((OAuth2Authentication) principal).getUserAuthentication();
-                //UsernamePasswordAuthenticationToken == initial request with username & password | PreAuthenticatedAuthenticationToken == request with refresh token
-                if (userAuthentication instanceof UsernamePasswordAuthenticationToken
-                        || userAuthentication instanceof PreAuthenticatedAuthenticationToken) {
-                    final Object userPrincipal = userAuthentication.getPrincipal();
-                    if (userPrincipal instanceof ServerUser) {
-                        return (ServerUser) userPrincipal;
-                    }
-                }
-            }
-
-            return null;
+            String name = principal.getName();
+            return userDAO.byUsername(name)
+                    .onError(error -> log.warn("Failed to find user for token authentication: {}", name))
+                    .getOr(null);
         }
     }
 

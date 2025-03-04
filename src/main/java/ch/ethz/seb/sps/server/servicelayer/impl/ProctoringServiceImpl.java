@@ -11,20 +11,13 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.service.*;
+import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +61,8 @@ public class ProctoringServiceImpl implements ProctoringService {
     private final UserService userService;
     private final ServiceInfo serviceInfo;
     private final JSONMapper jsonMapper;
+    private final boolean isDistributedSetup;
+    private final long distributedUpdateInterval;
 
     public ProctoringServiceImpl(
             final ExamDAO examDAO,
@@ -89,7 +84,9 @@ public class ProctoringServiceImpl implements ProctoringService {
         this.userService = userService;
         this.serviceInfo = serviceInfo;
         this.jsonMapper = jsonMapper;
-    }
+        this.distributedUpdateInterval = serviceInfo.getDistributedUpdateInterval();
+        this.isDistributedSetup = serviceInfo.isDistributed();
+     }
 
     @Override
     public void checkMonitoringAccess(final String groupUUID) {
@@ -134,33 +131,25 @@ public class ProctoringServiceImpl implements ProctoringService {
             final FilterMap filterMap) {
 
         return Result.tryCatch(() -> {
-
-            if (serviceInfo.isDistributed()) {
-                updateSessionCache(groupUUID);
-            }
+            
+            updateSessionCache(groupUUID);
 
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             final Collection<String> liveSessionTokens = this.proctoringCacheService
                     .getLiveSessionTokens(activeGroup.uuid);
 
-
+            //SEBSP-145 modify "getLiveSessionTokens" to determine inactivity via screenshotData Table (join will likely cause performance issues)
+            
             final int liveSessionCount = liveSessionTokens.size();
-            // TODO this should be equals to liveSessionTokens.size() so we don't need an extra DB call here
-//            final int liveSessionCount = this.sessionDAO
-//                    .allLiveSessionCount(activeGroup.id)
-//                    .onError(error -> log.warn("Failed to count live sessions for group: {} message {}", groupUUID, error.getMessage()))
-//                    .getOr(-1L)
-//                    .intValue();
+            Integer totalSessionCount = this.proctoringCacheService.getTotalSessionCount(activeGroup.uuid, activeGroup.id);
+            final int sessionCount = totalSessionCount != null ? totalSessionCount : -1;
 
-            final int sessionCount = this.sessionDAO.allSessionCount(activeGroup.id)
-                    .onError(error -> log.warn("Failed to count sessions for group: {} message {}", groupUUID, error.getMessage()))
-                    .getOr(-1L)
-                    .intValue();
+            //SEBSP-145 - add count for inactive sessions
 
             final long millisecondsNow = Utils.getMillisecondsNow();
             final int pSize = (pageSize != null && pageSize < 20) ? pageSize : 9;
             final int pnum = (pageNumber == null || pageNumber < 1) ? 1
-                    : ((pageNumber - 1) * pSize > liveSessionTokens.size()) ? 1 : pageNumber;
+                    : ((pageNumber - 1) * pSize > liveSessionCount) ? 1 : pageNumber;
 
             final List<String> sessionIdsInOrder = liveSessionTokens
                     .stream()
@@ -181,11 +170,14 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             final List<ScreenshotViewData> page = sessionIdsInOrder.stream()
                     .map(sid -> createScreenshotViewData(sid, mapping.get(sid), millisecondsNow))
+                    //SEBSP-145 - remove inactive sessions from page / add flag to indicative inactivity
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             ExamViewData examViewData = ExamViewData.EMPTY_MODEL;
             if (activeGroup.getExam_id() != null) {
+                // TODO since Exam data is also needed on monitoring now and requested every update
+                //      we also need a cache for Exam to not make a DB request on every update
                 final Exam exam = this.examDAO.byModelId(activeGroup.exam_id.toString()).getOr(null);
                 examViewData = new ExamViewData(exam.uuid, exam.name, exam.startTime, exam.endTime);
             }
@@ -204,9 +196,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     examViewData);
         });
     }
-
-
-
+    
     @Override
     public void streamScreenshot(
             final String sessionUUID,
@@ -243,14 +233,14 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
-
+            IOUtils.closeQuietly(screenshotIn);
         } catch (final Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {
                 throw new RuntimeException(e);
             }
-        }
+        } 
     }
 
     @Override
@@ -377,19 +367,18 @@ public class ProctoringServiceImpl implements ProctoringService {
     public Result<Collection<GroupSessionCount>> getActivateGroupSessionCounts() {
         return Result.tryCatch(() -> {
             this.userService.check(PrivilegeType.READ, EntityType.SEB_GROUP);
-
+            
             return this.groupDAO
                     .activeGroupUUIDs()
                     .getOrThrow()
                     .stream()
+                    .peek(this::updateSessionCache)
                     .map(this.proctoringCacheService::getActiveGroup)
                     .filter(Objects::nonNull)
                     .map(group -> new GroupSessionCount(
                             group.uuid,
                             this.proctoringCacheService.getLiveSessionTokens(group.uuid).size(),
-                            this.sessionDAO.allSessionCount(group.id)
-                                    .getOr(-1L).intValue()
-                    ))
+                            this.proctoringCacheService.getTotalSessionCount(group.uuid, group.id)))
                     .collect(Collectors.toSet());
         });
     }
@@ -397,33 +386,48 @@ public class ProctoringServiceImpl implements ProctoringService {
     @Override
     public void clearGroupCache(final String groupUUID, final boolean fully) {
 
-        log.info("Clear group cache request for group: {}, full cache flush: {}", groupUUID, fully);
+        if (log.isDebugEnabled()) {
+            log.debug("Clear group cache request for group: {}, full cache flush: {}", groupUUID, fully);
+        }
 
         if (fully) {
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
-            this.proctoringCacheService
-                    .getLiveSessionTokens(activeGroup.uuid)
-                    .forEach(this.proctoringCacheService::evictSession);
+            if (activeGroup != null) {
+                this.proctoringCacheService
+                        .getLiveSessionTokens(activeGroup.uuid)
+                        .forEach(this.proctoringCacheService::evictSession);
+            }
         }
         this.proctoringCacheService.evictGroup(groupUUID);
     }
 
+    @Override
+    public DistinctMetadataWindowForExam getDistinctMetadataWindowForExam(final String metadataApplication, final List<Long> groupIds){
+        return new DistinctMetadataWindowForExam(
+                this.screenshotDataDAO.countDistinctMetadataWindowForExam(metadataApplication, groupIds).getOrThrow(),
+                this.screenshotDataDAO.getDistinctMetadataWindowForExam(metadataApplication, groupIds).getOrThrow()
+        );
+    }
+
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
+        InputStream screenshotIn = null;
         try {
 
-            final InputStream screenshotIn = this.screenshotDataDAO
+            screenshotIn = this.screenshotDataDAO
                     .getLatestImageId(sessionUUID)
                     .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
-
+            
         } catch (final Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {
                 throw new RuntimeException(e);
             }
+        } finally {
+            IOUtils.closeQuietly(screenshotIn);
         }
     }
 
@@ -431,21 +435,24 @@ public class ProctoringServiceImpl implements ProctoringService {
             final String sessionUUID,
             final Long timestamp,
             final OutputStream out) {
+
+        InputStream screenshotIn = null;
         try {
 
-            final InputStream screenshotIn = this.screenshotDataDAO
+            screenshotIn = this.screenshotDataDAO
                     .getIdAt(sessionUUID, timestamp)
                     .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
-
         } catch (final Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {
                 throw new RuntimeException(e);
             }
+        } finally {
+            IOUtils.closeQuietly(screenshotIn);
         }
     }
 
@@ -561,16 +568,23 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     private long lastUpdateTime = 0;
+    private final Set<String> GROUP_UUID_UPDATE_REG = ConcurrentHashMap.newKeySet();
     private void updateSessionCache(String groupUUID) {
+        if (!this.isDistributedSetup) {
+            return;
+        }
+        
         long now = Utils.getMillisecondsNow();
-        if (now - lastUpdateTime > this.serviceInfo.getDistributedUpdateInterval()) {
+        if (now - lastUpdateTime > this.distributedUpdateInterval) {
+            GROUP_UUID_UPDATE_REG.clear();
+            lastUpdateTime = now;
+        }
+        
+        if (!GROUP_UUID_UPDATE_REG.contains(groupUUID)) {
             Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             if (activeGroup == null) {
-                lastUpdateTime = now;
                 return;
             }
-
-            proctoringCacheService.evictSessionTokens(groupUUID);
 
             if (this.groupDAO.needsUpdate(groupUUID, activeGroup.lastUpdateTime)) {
                 this.clearGroupCache(groupUUID, true);
@@ -582,13 +596,15 @@ public class ProctoringServiceImpl implements ProctoringService {
                         .filter(Objects::nonNull)
                         .map(s -> s.lastUpdateTime)
                         .collect(Collectors.toSet());
-
+                
                 this.sessionDAO
                         .allTokensThatNeedsUpdate(activeGroup.id, updateTimes)
                         .getOr(Collections.emptyList())
                         .forEach(this.proctoringCacheService::evictSession);
+                
             }
-            lastUpdateTime = now;
+            proctoringCacheService.evictSessionTokens(groupUUID);
+            GROUP_UUID_UPDATE_REG.add(groupUUID);
         }
     }
 

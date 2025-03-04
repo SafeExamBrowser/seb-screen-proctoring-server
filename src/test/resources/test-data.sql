@@ -11,6 +11,6 @@ INSERT IGNORE INTO `seb_group` VALUES
 ;
 
 INSERT IGNORE INTO `session` VALUES
-    (1, 1, 'session_uuid', 0, 'student1', '111.111.111.111', 'mst1', 'Win', '3.5.0', 0, 0, null)
+    (1, 1, 'session_uuid', 0, 'student1', '111.111.111.111', 'mst1', 'Win', '3.5.0', 0, 0, null, null)
 ;
 

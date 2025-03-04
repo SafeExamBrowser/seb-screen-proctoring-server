@@ -8,17 +8,18 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
-import java.util.UUID;
-
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringCacheService;
 import ch.ethz.seb.sps.utils.Result;
-import org.apache.commons.lang3.StringUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.ethz.seb.sps.domain.Domain;
@@ -37,12 +38,13 @@ import ch.ethz.seb.sps.server.servicelayer.UserService;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.ADMIN_SESSION_ENDPOINT)
-public class AdminSessionController extends EntityController<Session, Session> {
+public class AdminSessionController extends ActivatableEntityController<Session, Session> {
 
     private static final Logger log = LoggerFactory.getLogger(AdminSessionController.class);
 
     private final GroupDAO groupDAO;
     private final ExamDAO examDAO;
+    private final SessionDAO sessionDAO;
     private final ProctoringCacheService proctoringCacheService;
 
     public AdminSessionController(
@@ -58,23 +60,33 @@ public class AdminSessionController extends EntityController<Session, Session> {
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.groupDAO = groupDAO;
         this.examDAO = examDAO;
+        this.sessionDAO = entityDAO;
         this.proctoringCacheService = proctoringCacheService;
+    }
+
+    @RequestMapping(
+            path = API.SESSION_ENCRYPT_KEY_ENDPOINT + API.PARAM_MODEL_PATH_SEGMENT,
+            method = RequestMethod.GET)
+    public void getEncryptKey(
+            @PathVariable(name = API.PARAM_MODEL_ID) final String sessionUUD,
+            final HttpServletResponse response) {
+
+        this.sessionDAO.byModelId(sessionUUD)
+                .map(this.userService::checkWrite)
+                .flatMap(session -> this.sessionDAO.getEncryptionKey(sessionUUD))
+                .onSuccess(key -> {
+                    response.setHeader(API.SESSION_HEADER_ENCRYPT_KEY, key);
+                    response.setStatus(HttpStatus.OK.value());
+                }).onError(error -> {
+                    log.error("Failed to get SEB Session encryption key: ", error);
+                    response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                });
     }
 
     @Override
     protected Session createNew(final POSTMapper postParams) {
-
-        String uuid = postParams.getString(Domain.SESSION.ATTR_UUID);
-        if (StringUtils.isNotBlank(uuid)) {
-            try {
-                UUID.fromString(uuid);
-            } catch (final Exception e) {
-                uuid = UUID.randomUUID().toString();
-            }
-        } else {
-            uuid = UUID.randomUUID().toString();
-        }
-
+        
+        final String uuid = postParams.getUUID(Domain.SESSION.ATTR_UUID, true);
         final String groupId = postParams.getString(Domain.SESSION.ATTR_GROUP_ID);
         final Long groupPK = this.groupDAO.modelIdToPK(groupId);
         

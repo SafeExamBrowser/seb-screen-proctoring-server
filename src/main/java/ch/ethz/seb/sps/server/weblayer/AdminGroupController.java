@@ -9,19 +9,19 @@
 package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.Collection;
+import java.util.Collections;
 
-import javax.servlet.http.HttpServletRequest;
+import ch.ethz.seb.sps.domain.model.EntityKey;
+import ch.ethz.seb.sps.server.servicelayer.*;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import jakarta.servlet.http.HttpServletRequest;
 
-import ch.ethz.seb.sps.domain.model.service.GroupSessionCount;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
@@ -32,10 +32,6 @@ import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
-import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
-import ch.ethz.seb.sps.server.servicelayer.GroupService;
-import ch.ethz.seb.sps.server.servicelayer.PaginationService;
-import ch.ethz.seb.sps.server.servicelayer.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -47,9 +43,11 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
 
     private static final Logger log = LoggerFactory.getLogger(AdminGroupController.class);
 
+    private final GroupDAO groupDAO;
     private final SessionDAO sessionDAO;
     private final ExamDAO examDAO;
     private final GroupService groupService;
+    private final SessionService sessionService;
 
     public AdminGroupController(
             final UserService userService,
@@ -59,12 +57,27 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
             final GroupService groupService,
             final AuditLogDAO auditLogDAO,
             final PaginationService paginationService,
-            final BeanValidationService beanValidationService) {
+            final BeanValidationService beanValidationService,
+            final SessionService sessionService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
+        this.groupDAO = entityDAO;
         this.sessionDAO = sessionDA;
         this.examDAO = examDAO;
         this.groupService = groupService;
+        this.sessionService = sessionService;
+    }
+
+    @RequestMapping(
+            path = API.GROUP_EXAM_UUID_PATH_SEGMENT + API.PARAM_MODEL_PATH_SEGMENT,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<Group> byExamUUID(@PathVariable(name = API.PARAM_MODEL_ID) final String examUUD) {
+        return groupDAO.byExamUUID(examUUD)
+                .getOrThrow()
+                .stream()
+                .filter(this::hasReadAccess)
+                .toList();
     }
 
     @Operation(
@@ -91,6 +104,35 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
             final HttpServletRequest request) {
 
         return super.create(formParameter, request);
+    }
+
+    @Operation(
+            summary = "Deletes a single entity (and all its dependencies) by its modelId.",
+            description = "To check or report what dependent object also would be deleted for a certain entity object, "
+                    +
+                    "please use the dependency endpoint to get a report of all dependend entity objects.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_MODEL_ID,
+                            description = "The model identifier of the entity object to get.",
+                            in = ParameterIn.PATH)
+            })
+    @RequestMapping(
+            path = API.PARAM_MODEL_PATH_SEGMENT + API.REQUEST_DELETE_ENDPOINT,
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<EntityKey> requestDelete(@PathVariable(name = API.PARAM_MODEL_ID) final String groupUUID) {
+
+        if (!this.sessionService.hasAnySessionDataForGroup(groupUUID)) {
+            return super.hardDelete(groupUUID);
+        } else {
+            log.info("On Group deletion request: Group will not be deleted because it already has screenshot data assigned to it. But group will be closed/terminated. Group: {}", groupUUID);
+            super.deactivate(groupUUID);
+            return Collections.emptyList();
+        }
     }
 
     @Override
@@ -146,7 +188,7 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
                 null,
                 null,
                 null,
-                modifyData.exam_id,
+                existingEntity.exam_id,
                 null);
     }
 

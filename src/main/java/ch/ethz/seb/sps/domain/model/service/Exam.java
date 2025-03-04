@@ -8,16 +8,11 @@
 
 package ch.ethz.seb.sps.domain.model.service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,8 +35,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntityPrivileges, WithLifeCycle {
-
-    public static final String ATTR_USER_IDS = "userUUIDs";
 
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     @JsonProperty(EXAM.ATTR_ID)
@@ -71,6 +64,9 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     @JsonProperty(EXAM.ATTR_OWNER)
     public final String owner;
+    
+    @JsonProperty(EXAM.ATTR_SUPPORTER)
+    public final Collection<String> supporter;
 
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     @JsonProperty(EXAM.ATTR_CREATION_TIME)
@@ -89,8 +85,10 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
 
     @JsonProperty(EXAM.ATTR_END_TIME)
     public final Long endTime;
-    @JsonProperty(ATTR_USER_IDS)
-    public final Collection<String> userIds;
+
+    @JsonProperty(EXAM.ATTR_DELETION_TIME)
+    public final Long deletionTime;
+    
     @JsonIgnore
     public final Collection<EntityPrivilege> entityPrivileges;
 
@@ -103,12 +101,13 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             @JsonProperty(EXAM.ATTR_URL) final String url,
             @JsonProperty(EXAM.ATTR_TYPE) final String type,
             @JsonProperty(EXAM.ATTR_OWNER) final String owner,
-            @JsonProperty(ATTR_USER_IDS) final Collection<String> userIds,
+            @JsonProperty(EXAM.ATTR_SUPPORTER)  Collection<String> supporter,
             @JsonProperty(EXAM.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(EXAM.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
             @JsonProperty(EXAM.ATTR_TERMINATION_TIME) final Long terminationTime,
             @JsonProperty(EXAM.ATTR_START_TIME) final Long startTime,
-            @JsonProperty(EXAM.ATTR_END_TIME) final Long endTime) {
+            @JsonProperty(EXAM.ATTR_END_TIME) final Long endTime,
+            @JsonProperty(EXAM.ATTR_DELETION_TIME) final Long deletionTime) {
 
         this.id = id;
         this.uuid = uuid;
@@ -117,13 +116,14 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         this.url = url;
         this.type = type;
         this.owner = owner;
+        this.supporter = Utils.immutableCollectionOf(supporter);
         this.creationTime = creationTime;
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.deletionTime = deletionTime;
         this.entityPrivileges = null;
-        this.userIds = Utils.immutableCollectionOf(userIds);
     }
 
     public Exam(
@@ -134,12 +134,13 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             final String url,
             final String type,
             final String owner,
-            final Collection<String> userIds,
+            final Collection<String> supporter,
             final Long creationTime,
             final Long lastUpdateTime,
             final Long terminationTime,
             final Long startTime,
-            final Long endTime,
+            final Long endTime, 
+            final Long deletionTime,
             final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
@@ -149,13 +150,14 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         this.url = url;
         this.type = type;
         this.owner = owner;
+        this.supporter = Utils.immutableCollectionOf(supporter);
         this.creationTime = creationTime;
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.deletionTime = deletionTime;
         this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
-        this.userIds =  Utils.immutableCollectionOf(userIds);
     }
 
     @Override
@@ -227,6 +229,18 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         return this.terminationTime;
     }
 
+    public String getOwner() {
+        return owner;
+    }
+
+    public Collection<String> getSupporter() {
+        return supporter;
+    }
+
+    public Long getDeletionTime() {
+        return deletionTime;
+    }
+
     @Override
     public Collection<EntityPrivilege> getEntityPrivileges() {
         return this.entityPrivileges;
@@ -251,42 +265,30 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("exam [id=");
-        builder.append(this.id);
-        builder.append(", uuid=");
-        builder.append(this.uuid);
-        builder.append(", name=");
-        builder.append(this.name);
-        builder.append(", description=");
-        builder.append(this.description);
-        builder.append(", url=");
-        builder.append(this.url);
-        builder.append(", type=");
-        builder.append(this.type);
-        builder.append(", owner=");
-        builder.append(this.owner);
-        builder.append(", creationTime=");
-        builder.append(this.creationTime);
-        builder.append(", lastUpdateTime=");
-        builder.append(this.lastUpdateTime);
-        builder.append(", terminationTime=");
-        builder.append(this.terminationTime);
-        builder.append(", startTime=");
-        builder.append(this.startTime);
-        builder.append(", endTime=");
-        builder.append(this.endTime);
-        builder.append(", entityPrivileges=");
-        builder.append(this.entityPrivileges);
-        builder.append("]");
-        return builder.toString();
+        return "Exam{" +
+                "id=" + id +
+                ", uuid='" + uuid + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", url='" + url + '\'' +
+                ", type='" + type + '\'' +
+                ", owner='" + owner + '\'' +
+                ", supporter=" + supporter +
+                ", creationTime=" + creationTime +
+                ", lastUpdateTime=" + lastUpdateTime +
+                ", terminationTime=" + terminationTime +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", deletionTime=" + deletionTime +
+                ", entityPrivileges=" + entityPrivileges +
+                '}';
     }
 
     public static final Function<Collection<Exam>, List<Exam>> examSort(final String sort) {
 
         final String sortBy = PageSortOrder.decode(sort);
         return exams -> {
-            final List<Exam> list = exams.stream().collect(Collectors.toList());
+            final List<Exam> list = new ArrayList<>(exams);
             if (StringUtils.isBlank(sort)) {
                 return list;
             }

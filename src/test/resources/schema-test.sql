@@ -87,17 +87,19 @@ DROP TABLE IF EXISTS `exam` ;
 
 CREATE TABLE IF NOT EXISTS `exam` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `uuid` VARCHAR(45) NOT NULL,
+  `uuid` VARCHAR(255) NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `description` VARCHAR(4000) NULL,
   `url` VARCHAR(255) NULL,
   `type` VARCHAR(45) NULL,
   `owner` VARCHAR(255) NOT NULL,
+  `supporter` VARCHAR(4000) NULL,
   `creation_time` BIGINT NOT NULL,
   `last_update_time` BIGINT NOT NULL,
   `termination_time` BIGINT NULL,
   `start_time` BIGINT NULL,
   `end_time` BIGINT NULL,
+  `deletion_time` BIGINT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `exam_UNIQUE` (`id` ASC));
 
@@ -144,6 +146,7 @@ CREATE TABLE IF NOT EXISTS `session` (
   `creation_time` BIGINT NOT NULL,
   `last_update_time` BIGINT NOT NULL,
   `termination_time` BIGINT NULL,
+  `encryption_key` VARCHAR(255) NULL,
   PRIMARY KEY (`id`),
   INDEX `group_ref_idx` (`group_id` ASC),
   UNIQUE INDEX `id_session` (`id` ASC),

@@ -1,6 +1,6 @@
 package ch.ethz.seb.sps.server.weblayer;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -108,12 +108,22 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             log.info("Exam will not be deleted because it already has screenshot data assigned to it. Exam: {}", modelId);
             return Collections.emptyList();
         }
-
     }
 
     @Override
     protected Exam doBeforeActivation(final Exam entity, final boolean activation) {
 
+        // SEBSP-182 delete all Teacher only entity privileges for the Exam
+        if (!activation) {
+            this.userService
+                    .deleteTeacherPrivileges(entity)
+                    .flatMap(exam -> this.proctoringService.updateCacheForExam(entity))
+                    .onError(error -> log.error(
+                            "Failed to update entity privileges for exam: {}",
+                            entity,
+                            error));
+        }
+        
         this.groupDAO
                 .applyActivationForAllOfExam(entity.id, activation)
                 .map(groupKeys -> {
@@ -148,12 +158,13 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 postParams.getString(EXAM.ATTR_URL),
                 postParams.getString(EXAM.ATTR_TYPE),
                 this.userService.getCurrentUserUUIDOrNull(),
-                postParams.getStringSet(Exam.ATTR_USER_IDS),
+                postParams.getStringSet(EXAM.ATTR_SUPPORTER),
                 null,
                 null,
                 null,
                 postParams.getLong(EXAM.ATTR_START_TIME),
-                postParams.getLong(EXAM.ATTR_END_TIME));
+                postParams.getLong(EXAM.ATTR_END_TIME),
+                postParams.getLong(EXAM.ATTR_DELETION_TIME));
     }
 
     @Override
@@ -165,10 +176,16 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
 
     @Override
     protected Exam notifySaved(Exam entity) {
-        return updateEntityPrivileges(super.notifySaved(entity));
+        // SEBSP-182 do nothing if exam is not 
+        if (entity.isActive()) {
+            updateEntityPrivileges(super.notifySaved(entity));
+        }
+        
+        return entity;
     }
 
     private Exam updateEntityPrivileges(Exam entity) {
+        
         this.userService
                 .applyExamPrivileges(entity)
                 .flatMap(exam -> this.proctoringService.updateCacheForExam(entity))
@@ -176,6 +193,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                         "Failed to update entity privileges for exam: {}",
                         entity,
                         error));
+        
         return entity;
     }
 
@@ -189,12 +207,13 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 modifyData.url,
                 modifyData.type,
                 null,
-                modifyData.userIds,
+                modifyData.supporter,
                 null,
                 null,
                 null,
                 modifyData.startTime,
-                modifyData.endTime);
+                modifyData.endTime,
+                modifyData.deletionTime);
     }
 
     @Override

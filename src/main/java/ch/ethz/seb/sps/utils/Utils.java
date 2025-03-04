@@ -9,7 +9,6 @@
 package ch.ethz.seb.sps.utils;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -22,25 +21,16 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.domain.model.FilterMap;
+import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -534,6 +524,20 @@ public final class Utils {
         }
     }
 
+    public static String hash_SHA_256_Base_64(final CharSequence chars) {
+        if (chars == null) {
+            return null;
+        }
+
+        try {
+            final MessageDigest digest = MessageDigest.getInstance(Constants.SHA_256);
+            final byte[] encodedHash = digest.digest(toByteArray(chars));
+            return Base64.getEncoder().encodeToString(encodedHash);
+        } catch (final NoSuchAlgorithmException e) {
+            throw new RuntimeException("Failed to hash text: ", e);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> Predicate<T> truePredicate() {
         return (Predicate<T>) TRUE_PREDICATE;
@@ -584,6 +588,7 @@ public final class Utils {
         return attributes
                 .entrySet()
                 .stream()
+
                 .reduce(
                         new StringBuilder(),
                         (sb, entry) -> {
@@ -604,7 +609,7 @@ public final class Utils {
                 .toString();
     }
 
-    public static String toAppFormUrlEncodedBody(@NotNull final String name, final Collection<String> array) {
+    public static String toAppFormUrlEncodedBody(final String name, final Collection<String> array) {
         if (array == null) {
             return StringUtils.EMPTY;
         }
@@ -625,6 +630,40 @@ public final class Utils {
                         },
                         StringBuilder::append)
                 .toString();
+    }
+
+    public static String trimJSONMap(final String jsonData, int max, int step) {
+        if (jsonData == null || jsonData.length() < max) {
+            return jsonData;
+        }
+        
+        try {
+            final MapType type = TypeFactory.defaultInstance().constructMapType(
+                    HashMap.class,
+                    String.class,
+                    String.class);
+
+            final JSONMapper jsonMapper = new JSONMapper();
+            int singleTrim = max;
+            String trimmed = jsonData;
+            while (trimmed.length() >= max && singleTrim > 0) {
+                final int trim = singleTrim;
+                Map<String, String> map = jsonMapper.readValue(trimmed, type);
+                map.entrySet().forEach(entry -> entry.setValue(Utils.truncateText(entry.getValue(), trim)));
+                trimmed = jsonMapper.writeValueAsString(map);
+                singleTrim -= step;
+            }
+            
+            if (trimmed.length() > max) {
+                log.warn("JSON names are more then max allowed size: {} data: {}", max, trimmed);
+                return null;
+            }
+
+            return trimmed;
+        } catch (Exception e) {
+            log.error("Failed to trim json: {}", jsonData, e);
+            return null;
+        }
     }
 
     public static String truncateText(final String text, final int toChars) {
@@ -766,4 +805,34 @@ public final class Utils {
         return false;
     }
 
+    public static String prettyPrintJSON(String input) {
+        if (input == null) {
+            return null;
+        }
+        
+        JSONMapper jsonMapper = new JSONMapper();
+        try {
+            return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonMapper.readTree(input));
+        } catch (JsonProcessingException e) {
+            return input;
+        }
+    }
+    
+    public static boolean enoughHeapMemLeft(long spareInMB) {
+        // Get current size of heap in bytes.
+        long heapSize = Runtime.getRuntime().totalMemory();
+        // Get maximum size of heap in bytes. The heap cannot grow beyond this size.
+        // Any attempt will result in an OutOfMemoryException.
+        long heapMaxSize = Runtime.getRuntime().maxMemory();
+        
+        return heapMaxSize - ((spareInMB * 1000) + heapSize) > 0;
+    }
+
+    public static String removeBackSlashesBeforeSlashes(String s) {
+        if (s == null) {
+            return null;
+        }
+        
+        return s.replace("\\/", "/");
+    }
 }
