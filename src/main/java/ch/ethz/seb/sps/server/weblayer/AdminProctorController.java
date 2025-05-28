@@ -869,6 +869,11 @@ public class AdminProctorController {
         final Set<Long> granted = this.userService
                 .getIdsWithReadEntityPrivilege(EntityType.EXAM)
                 .getOrThrow();
+        
+        if (granted.isEmpty() && !userService.hasGrant(API.PrivilegeType.READ, EntityType.EXAM)) {
+            return Collections.emptyList();
+        }
+        
         return this.examDAO
                 .getExamsWithin(filterMap, granted)
                 .getOrThrow()
