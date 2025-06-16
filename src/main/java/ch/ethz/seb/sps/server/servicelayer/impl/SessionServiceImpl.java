@@ -174,9 +174,7 @@ public class SessionServiceImpl implements SessionService {
                         // clear group cache
                         .onSuccess( results -> groupDAO
                                 .byModelId(groupKey.modelId)
-                                .onSuccess( gr -> proctoringService.clearGroupCache(
-                                        gr.uuid,
-                                        true))
+                                .onSuccess( gr -> proctoringService.clearGroupCache(gr.uuid, true))
                         )
                         // add results
                         .onSuccess(result::addAll);

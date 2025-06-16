@@ -150,6 +150,20 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Collection<String>> allSessionUUIDsByGroupId(final Long groupId) {
+        return Result.tryCatch(() -> {
+            return this.sessionRecordMapper.selectByExample()
+                    .where(SessionRecordDynamicSqlSupport.groupId, SqlBuilder.isEqualTo(groupId))
+                    .build()
+                    .execute()
+                    .stream()
+                    .map(SessionRecord::getUuid)
+                    .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Long> allLiveSessionCount(final Long groupId) {
         return Result.tryCatch(() -> this.sessionRecordMapper
                 .countByExample()
