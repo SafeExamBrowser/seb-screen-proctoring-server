@@ -391,12 +391,9 @@ public class ProctoringServiceImpl implements ProctoringService {
         }
 
         if (fully) {
-            final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
-            if (activeGroup != null) {
-                this.proctoringCacheService
-                        .getLiveSessionTokens(activeGroup.uuid)
-                        .forEach(this.proctoringCacheService::evictSession);
-            }
+            sessionDAO
+                    .allSessionUUIDsByGroupId(groupDAO.modelIdToPK(groupUUID))
+                    .onSuccess( all -> all.forEach(this.proctoringCacheService::evictSession));
         }
         this.proctoringCacheService.evictGroup(groupUUID);
     }
@@ -524,6 +521,7 @@ public class ProctoringServiceImpl implements ProctoringService {
         );
     }
 
+    private long lastUpdateTimeScreenshotViewData = 0;
     private ScreenshotViewData createScreenshotViewData(
             final String sessionUUID,
             final ScreenshotDataRecord data,
@@ -534,7 +532,16 @@ public class ProctoringServiceImpl implements ProctoringService {
         }
 
         try {
-
+            
+            // Note: for distributed setup we need to refresh the cache from time to time 
+            if (this.isDistributedSetup) {
+                long now = Utils.getMillisecondsNow();
+                if (now - lastUpdateTimeScreenshotViewData > this.distributedUpdateInterval) {
+                    this.proctoringCacheService.evictSession(sessionUUID);
+                    lastUpdateTimeScreenshotViewData = now;
+                }
+            }
+            
             final Session session = this.proctoringCacheService.getSession(sessionUUID);
             return createViewData(data, session);
 
@@ -573,13 +580,13 @@ public class ProctoringServiceImpl implements ProctoringService {
         if (!this.isDistributedSetup) {
             return;
         }
-        
+
         long now = Utils.getMillisecondsNow();
         if (now - lastUpdateTime > this.distributedUpdateInterval) {
             GROUP_UUID_UPDATE_REG.clear();
             lastUpdateTime = now;
         }
-        
+
         if (!GROUP_UUID_UPDATE_REG.contains(groupUUID)) {
             Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             if (activeGroup == null) {
@@ -596,12 +603,12 @@ public class ProctoringServiceImpl implements ProctoringService {
                         .filter(Objects::nonNull)
                         .map(s -> s.lastUpdateTime)
                         .collect(Collectors.toSet());
-                
+
                 this.sessionDAO
                         .allTokensThatNeedsUpdate(activeGroup.id, updateTimes)
                         .getOr(Collections.emptyList())
                         .forEach(this.proctoringCacheService::evictSession);
-                
+
             }
             proctoringCacheService.evictSessionTokens(groupUUID);
             GROUP_UUID_UPDATE_REG.add(groupUUID);

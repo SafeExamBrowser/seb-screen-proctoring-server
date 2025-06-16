@@ -33,6 +33,8 @@ public interface SessionDAO extends ActivatableEntityDAO<Session, Session> {
 
     Result<Collection<String>> allLiveSessionUUIDsByGroupId(Long groupId);
 
+    Result<Collection<String>> allSessionUUIDsByGroupId(Long groupId);
+
     Result<Long> allLiveSessionCount(Long groupId);
 
     Result<Long> allSessionCount(Long groupId);
