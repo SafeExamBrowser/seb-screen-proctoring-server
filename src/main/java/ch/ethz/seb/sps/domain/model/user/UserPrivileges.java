@@ -83,15 +83,10 @@ public class UserPrivileges {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("UserPrivileges [userUUID=");
-        builder.append(this.userUUID);
-        builder.append(", typePrivileges=");
-        builder.append(this.typePrivileges);
-        builder.append(", entityPrivileges=");
-        builder.append(this.entityPrivileges);
-        builder.append("]");
-        return builder.toString();
+        return "UserPrivileges [userUUID=" + this.userUUID +
+                ", typePrivileges=" + this.typePrivileges +
+                ", entityPrivileges=" + this.entityPrivileges +
+                "]";
     }
 
 }

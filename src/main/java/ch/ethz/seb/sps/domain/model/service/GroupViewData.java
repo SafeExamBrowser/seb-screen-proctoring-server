@@ -1,11 +1,7 @@
 package ch.ethz.seb.sps.domain.model.service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -140,11 +136,11 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
         return this.examViewData;
     }
 
-    public static final Function<Collection<GroupViewData>, List<GroupViewData>> groupSort(final String sort) {
+    public static Function<Collection<GroupViewData>, List<GroupViewData>> groupSort(final String sort) {
 
         final String sortBy = PageSortOrder.decode(sort);
         return groups -> {
-            final List<GroupViewData> list = groups.stream().collect(Collectors.toList());
+            final List<GroupViewData> list = new ArrayList<>(groups);
             if (StringUtils.isBlank(sort)) {
                 return list;
             }
@@ -157,7 +153,7 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
                         ? group.examViewData.name
                         : StringUtils.EMPTY));
             }
-            if (sortBy.equals(Group.FILTER_ATTR_CREATTION_TIME)) {
+            if (sortBy.equals(Group.FILTER_ATTR_CREATION_TIME)) {
                 list.sort(Comparator.comparing(group -> (group.creationTime != null) ? group.creationTime : 0L));
             }
 

@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 /** Joda DateTime resolver for MyBatis TIMESTAMP to DateTime conversion and vis versa. This is used to convert MyBatis
  * TIMESTAMP type to Joda-Time's DateTime
- *
+ * <p>
  * NOTE: The TIMESTAMP is always stored and read in UTC time-zone. */
 public class JodaTimeTypeResolver extends BaseTypeHandler<DateTime> {
 

@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface WithLifeCycle extends Activatable {
 
-    String FILTER_ATTR_CREATTION_TIME = "creationTime";
+    String FILTER_ATTR_CREATION_TIME = "creationTime";
 
     Long getCreationTime();
 

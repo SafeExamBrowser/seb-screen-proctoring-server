@@ -56,7 +56,7 @@ public class ServiceUpdateTask implements DisposableBean {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         ServiceInit.INIT_LOGGER.info("-----> Should down SPS Server...");
     }
 

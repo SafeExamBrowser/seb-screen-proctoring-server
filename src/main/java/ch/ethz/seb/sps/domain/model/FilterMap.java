@@ -49,9 +49,7 @@ public class FilterMap extends POSTMapper {
 
     public boolean containsAny(final Set<String> extFilter) {
         return extFilter.stream()
-                .filter(this.params::containsKey)
-                .findFirst()
-                .isPresent();
+                .anyMatch(this.params::containsKey);
     }
 
     public Integer getActiveAsInt() {

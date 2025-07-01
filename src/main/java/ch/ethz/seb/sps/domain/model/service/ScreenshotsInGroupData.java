@@ -154,29 +154,17 @@ public class ScreenshotsInGroupData {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("ScreenshotsInGroupData [groupUUID=");
-        builder.append(this.groupUUID);
-        builder.append(", groupName=");
-        builder.append(this.groupName);
-        builder.append(", groupDescription=");
-        builder.append(this.groupDescription);
-        builder.append(", numberOfLiveSessions=");
-        builder.append(this.numberOfLiveSessions);
-        builder.append(", numberOfSessions=");
-        builder.append(this.numberOfSessions);
-        builder.append(", pageNumber=");
-        builder.append(this.pageNumber);
-        builder.append(", pageSize=");
-        builder.append(this.pageSize);
-        builder.append(", sortBy=");
-        builder.append(this.sortBy);
-        builder.append(", sortOrder=");
-        builder.append(this.sortOrder);
-        builder.append(", screenshots=");
-        builder.append(this.screenshots);
-        builder.append("]");
-        return builder.toString();
+        return "ScreenshotsInGroupData [groupUUID=" + this.groupUUID +
+                ", groupName=" + this.groupName +
+                ", groupDescription=" + this.groupDescription +
+                ", numberOfLiveSessions=" + this.numberOfLiveSessions +
+                ", numberOfSessions=" + this.numberOfSessions +
+                ", pageNumber=" + this.pageNumber +
+                ", pageSize=" + this.pageSize +
+                ", sortBy=" + this.sortBy +
+                ", sortOrder=" + this.sortOrder +
+                ", screenshots=" + this.screenshots +
+                "]";
     }
 
 }

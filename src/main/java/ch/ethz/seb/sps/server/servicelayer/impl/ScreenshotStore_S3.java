@@ -205,7 +205,7 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
                 this.sqlSessionTemplate.flushStatements();
 
                 // now store all screenshots within respective generated ids in batch
-                List<SnowballObject> batchItems = new ArrayList<SnowballObject>();
+                List<SnowballObject> batchItems = new ArrayList<>();
                 batch.forEach(data -> {
                     String fileName = data.record.getSessionUuid() + Constants.UNDERLINE + data.record.getId();
 

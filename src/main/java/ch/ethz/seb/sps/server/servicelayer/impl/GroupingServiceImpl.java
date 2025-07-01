@@ -41,7 +41,7 @@ public class GroupingServiceImpl implements GroupingService {
                     new ArrayList<>());
 
             final List<ScreenshotSearchResult> screenshotSearchResultList = createScreenshotSearchResultList(filterMap);
-            if (screenshotSearchResultList.size() == 0) {
+            if (screenshotSearchResultList.isEmpty()) {
                 return timelineViewData;
             }
 

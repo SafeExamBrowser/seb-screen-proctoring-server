@@ -92,10 +92,10 @@ public class WebserviceInfoDAOImpl implements WebserviceInfoDAO {
             if (masters != null && !masters.isEmpty()) {
                 if (masters.size() > 1) {
 
-                    log.error("There are more then one master registered: ", masters);
+                    log.error("There are more then one master registered: {}", masters);
                     log.info("Reset masters and set this webservice as new master");
 
-                    masters.stream().forEach(masterRec -> this.webserviceInfoRecordMapper
+                    masters.forEach(masterRec -> this.webserviceInfoRecordMapper
                             .updateByPrimaryKeySelective(
                                     new WebserviceInfoRecord(
                                             masterRec.getId(),

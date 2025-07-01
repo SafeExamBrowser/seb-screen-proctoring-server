@@ -53,7 +53,7 @@ public class POSTMapper {
     public POSTMapper(final Map<String, String[]> params, final String uriQueryString) {
         this(
                 new LinkedMultiValueMap<>(params.entrySet().stream()
-                        .collect(Collectors.toMap(e -> e.getKey(), e -> Arrays.asList(e.getValue())))),
+                        .collect(Collectors.toMap(Map.Entry::getKey, e -> Arrays.asList(e.getValue())))),
                 uriQueryString);
 
     }
@@ -71,7 +71,7 @@ public class POSTMapper {
                         override.put(
                                 entry.getKey(),
                                 entry.getValue().stream()
-                                        .map(val -> decode(val))
+                                        .map(this::decode)
                                         .collect(Collectors.toList()));
                     }
                 });
@@ -133,7 +133,7 @@ public class POSTMapper {
         try {
             return Long.parseLong(value);
         } catch (final Exception e) {
-            log.error("Failed to parse long value for attribute: {}", name, e.getMessage(), e);
+            log.error("Failed to parse long value for attribute: {} cause: {}", name, e.getMessage());
             return null;
         }
     }

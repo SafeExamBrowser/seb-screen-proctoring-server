@@ -33,7 +33,7 @@ public class EntityServiceImpl implements EntityService {
         this.daoMapping = new EnumMap<>(EntityType.class);
         this.daoMapping.putAll(daos.stream()
                 .collect(Collectors
-                        .toMap(entry -> entry.entityType(), Function.identity())));
+                        .toMap(EntityDAO::entityType, Function.identity())));
     }
 
     @SuppressWarnings("unchecked")

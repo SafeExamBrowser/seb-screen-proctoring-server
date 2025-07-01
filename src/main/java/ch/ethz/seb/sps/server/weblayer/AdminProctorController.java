@@ -126,7 +126,7 @@ public class AdminProctorController {
             parameters = {
                     @Parameter(
                             name = Page.ATTR_PAGE_NUMBER,
-                            description = "The number of the page to get from the whole list. If the page does not exists, the API retruns with the first page."),
+                            description = "The number of the page to get from the whole list. If the page does not exists, the API reruns with the first page."),
                     @Parameter(
                             name = Page.ATTR_PAGE_SIZE,
                             description = "The size of the page to get."),

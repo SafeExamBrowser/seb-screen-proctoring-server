@@ -107,8 +107,8 @@ public class PaginationServiceImpl implements PaginationService {
     }
 
     /** Get the given pageSize as int type if it is not null and in the range of one to the defined maximum page size.
-     * If the given pageSize null or less then one, this returns the defined default page size.
-     * If the given pageSize is greater then the defined maximum page size this returns the the defined maximum page
+     * If the given pageSize null or less than one, this returns the defined default page size.
+     * If the given pageSize is greater than the defined maximum page size this returns the the defined maximum page
      * size
      *
      * @param pageSize the page size Integer value to convert

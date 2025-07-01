@@ -217,29 +217,17 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("ClientAccess [entityType=");
-        builder.append(this.entityType);
-        builder.append(", id=");
-        builder.append(this.id);
-        builder.append(", name=");
-        builder.append(this.name);
-        builder.append(", description=");
-        builder.append(this.description);
-        builder.append(", clientId=");
-        builder.append(this.clientId);
-        builder.append(", owner=");
-        builder.append(this.owner);
-        builder.append(", entityPrivileges=");
-        builder.append(this.entityPrivileges);
-        builder.append(", creationTime=");
-        builder.append(this.creationTime);
-        builder.append(", lastUpdateTime=");
-        builder.append(this.lastUpdateTime);
-        builder.append(", terminationTime=");
-        builder.append(this.terminationTime);
-        builder.append("]");
-        return builder.toString();
+        return "ClientAccess [entityType=" + this.entityType +
+                ", id=" + this.id +
+                ", name=" + this.name +
+                ", description=" + this.description +
+                ", clientId=" + this.clientId +
+                ", owner=" + this.owner +
+                ", entityPrivileges=" + this.entityPrivileges +
+                ", creationTime=" + this.creationTime +
+                ", lastUpdateTime=" + this.lastUpdateTime +
+                ", terminationTime=" + this.terminationTime +
+                "]";
     }
 
 }

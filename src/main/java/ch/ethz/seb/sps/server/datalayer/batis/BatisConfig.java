@@ -23,13 +23,13 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 /** The MyBatis - Spring configuration
- *
+ * <p>
  * All mapper- and model-classes in the specified sub-packages
  * are auto-generated from DB schema by an external generator
- *
+ * <p>
  * MyBatis is used on the lowest data - layer as an OR-Mapper with great flexibility and a good
  * SQL builder interface.
- *
+ * <p>
  * The Datasource is auto-configured by Spring and depends on the Spring property configuration so far */
 @Configuration
 @MapperScan(basePackages = "ch.ethz.seb.sps.server.datalayer.batis")

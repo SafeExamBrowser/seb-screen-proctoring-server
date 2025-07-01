@@ -89,19 +89,12 @@ public class EntityPrivilege {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("EntityPrivilege [id=");
-        builder.append(this.id);
-        builder.append(", entityType=");
-        builder.append(this.entityType);
-        builder.append(", entityId=");
-        builder.append(this.entityId);
-        builder.append(", userUUID=");
-        builder.append(this.userUUID);
-        builder.append(", privileges=");
-        builder.append(this.privileges);
-        builder.append("]");
-        return builder.toString();
+        return "EntityPrivilege [id=" + this.id +
+                ", entityType=" + this.entityType +
+                ", entityId=" + this.entityId +
+                ", userUUID=" + this.userUUID +
+                ", privileges=" + this.privileges +
+                "]";
     }
 
 }

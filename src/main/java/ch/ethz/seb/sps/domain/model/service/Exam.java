@@ -296,7 +296,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             if (sortBy.equals(Exam.FILTER_ATTR_NAME)) {
                 list.sort(Comparator.comparing(exam -> (exam.name != null) ? exam.name : StringUtils.EMPTY));
             }
-            if (sortBy.equals(Exam.FILTER_ATTR_CREATTION_TIME)) {
+            if (sortBy.equals(Exam.FILTER_ATTR_CREATION_TIME)) {
                 list.sort(Comparator.comparing(exam -> (exam.creationTime != null) ? exam.creationTime : 0L));
             }
 

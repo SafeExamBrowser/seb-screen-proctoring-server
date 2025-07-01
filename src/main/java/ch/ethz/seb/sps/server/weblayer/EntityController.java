@@ -114,15 +114,16 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
      * @return Page of domain-model-entities of specified type */
     @Operation(
             summary = "Get a page of the specific domain entity. Sorting and filtering is applied before paging",
-            description = "Sorting: the sort parameter to sort the list of entities before paging\n"
-                    + "the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for\n"
-                    + "descending sort order. Note that not all entity-model attribute are suited for sorting while the most\n"
-                    + "are.\n"
-                    + "</p>\n"
-                    + "Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)\n"
-                    + "and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc. Usually\n"
-                    + "filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing\n"
-                    + "a given text-snippet.",
+            description = """
+                    Sorting: the sort parameter to sort the list of entities before paging
+                    the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for
+                    descending sort order. Note that not all entity-model attribute are suited for sorting while the most
+                    are.
+                    </p>
+                    Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)
+                    and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc. Usually
+                    filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing
+                    a given text-snippet.""",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -171,12 +172,13 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
 
     @Operation(
             summary = "Get a filtered list of specific entity name keys.",
-            description = "An entity name key is a minimal entity data object with the entity-type, modelId and the name of the entity."
-                    + "</p>\n"
-                    + "Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)\n"
-                    + "and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or. Usually\n"
-                    + "filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing\n"
-                    + "a given text-snippet.",
+            description = """
+                    An entity name key is a minimal entity data object with the entity-type, modelId and the name of the entity.\
+                    </p>
+                    Filter: The filter attributes accepted by this API depend on the actual entity model (domain object)
+                    and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or. Usually
+                    filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing
+                    a given text-snippet.""",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {

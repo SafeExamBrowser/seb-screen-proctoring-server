@@ -59,9 +59,7 @@ public interface WithEntityPrivileges {
 
         return privileges.stream()
                 .filter(ep -> Objects.equals(userUUID, ep.userUUID))
-                .filter(ep -> ep.privileges.contains(flag.flag))
-                .findAny()
-                .isPresent();
+                .anyMatch(ep -> ep.privileges.contains(flag.flag));
     }
 
 }

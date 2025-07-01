@@ -49,7 +49,7 @@ public class BeanValidationServiceImpl implements BeanValidationService {
     }
 
     /** Validates a given bean that is annotated with Java bean validation annotations
-     *
+     * <p>
      * On validation error BeanValidationException is used to collect all validation issues
      * and report them within the Result.
      *

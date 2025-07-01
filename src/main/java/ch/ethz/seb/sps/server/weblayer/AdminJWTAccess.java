@@ -47,8 +47,8 @@ public class AdminJWTAccess {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public AutoLoginService.LoginInfo verifyJWTToken(@RequestParam(required = true) final String logintoken) {
-        return autoLoginService.verifyAutoLoginToken(logintoken);
+    public AutoLoginService.LoginInfo verifyJWTToken(@RequestParam(required = true) final String loginToken) {
+        return autoLoginService.verifyAutoLoginToken(loginToken);
     }
     
 }

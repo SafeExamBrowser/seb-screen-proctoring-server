@@ -1,6 +1,5 @@
 package ch.ethz.seb.sps.domain.model.service;
 
-import ch.ethz.seb.sps.domain.Domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
