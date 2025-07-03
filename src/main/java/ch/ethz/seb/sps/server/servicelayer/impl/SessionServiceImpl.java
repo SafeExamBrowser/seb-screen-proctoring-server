@@ -186,6 +186,7 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public boolean hasAnySessionDataForExam(final String examUUID) {
         Long pk = examDAO.modelIdToPK(examUUID);
+        System.out.println("*********************** requestDelete pk: " + pk);
         if (pk != null) {
             return this.groupDAO
                     .allIdsForExamsIds(List.of())

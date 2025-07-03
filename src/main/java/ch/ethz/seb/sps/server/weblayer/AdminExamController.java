@@ -101,7 +101,6 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             produces = MediaType.APPLICATION_JSON_VALUE)
 
     public Collection<EntityKey> requestDelete(@PathVariable final String modelId) {
-        System.out.println("*********************** requestDelete modelId: " + modelId);
         if (!this.sessionService.hasAnySessionDataForExam(modelId)) {
             return super.hardDelete(modelId);
         } else {
