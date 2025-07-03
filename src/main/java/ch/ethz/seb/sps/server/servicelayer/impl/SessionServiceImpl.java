@@ -189,7 +189,7 @@ public class SessionServiceImpl implements SessionService {
         System.out.println("*********************** requestDelete pk: " + pk);
         if (pk != null) {
             return this.groupDAO
-                    .allIdsForExamsIds(List.of())
+                    .allIdsForExamsIds(List.of(pk))
                     .flatMap(sessionDAO::hasAnySessionData)
                     .onError(error -> log.warn("Failed to check if there are any session data for Exam: {} error: {}", examUUID, error.getMessage()))
                     .getOr(true);
