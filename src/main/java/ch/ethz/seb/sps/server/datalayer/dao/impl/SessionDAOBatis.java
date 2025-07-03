@@ -704,15 +704,11 @@ public class SessionDAOBatis implements SessionDAO {
     public Result<Boolean> hasAnySessionData(Collection<Long> groupIds) {
         return Result.tryCatch(() -> {
 
-            System.out.println("*********************** hasAnySessionData groupIds: " + groupIds);
-
             List<Long> sessionIds = this.sessionRecordMapper
                     .selectIdsByExample()
                     .where(groupId, isIn(groupIds))
                     .build()
                     .execute();
-
-            System.out.println("*********************** hasAnySessionData sessionIds: " + sessionIds);
 
             if (sessionIds == null  || sessionIds.isEmpty()) {
                 return false;
@@ -723,8 +719,6 @@ public class SessionDAOBatis implements SessionDAO {
                     .where(ScreenshotDataRecordDynamicSqlSupport.id, isIn(sessionIds))
                     .build()
                     .execute();
-
-            System.out.println("*********************** hasAnySessionData dataNum: " + dataNum);
 
             return dataNum != null && dataNum.intValue() != 0;
         });
