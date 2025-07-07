@@ -47,6 +47,15 @@ public interface ProctoringService {
      * @return Result refer to the screenshot data or to an error when happened */
     Result<ScreenshotViewData> getRecordedImageDataAt(String sessionUUID, Long timestamp);
 
+    /** Get a page of sorted and filtered ScreenshotsInGroupData with latest screenshot view data.
+     * This is used for the gallery page to render the actual page of gallery screenshots
+     * @param groupUUID The group identifier 
+     * @param pageNumber The number of the page to get the data for
+     * @param pageSize The size of the page to get the data for
+     * @param sortBy The sort by criteria that is used to sort the sessions before paging
+     * @param sortOrder The sort order
+     * @param filterMap The filter criteria that is used to filter the session before paging.
+     * @return ScreenshotsInGroupData containing a page of sessions with the latest screenshot data of the session*/
     Result<ScreenshotsInGroupData> getSessionsByGroup(
             String groupUUID,
             Integer pageNumber,

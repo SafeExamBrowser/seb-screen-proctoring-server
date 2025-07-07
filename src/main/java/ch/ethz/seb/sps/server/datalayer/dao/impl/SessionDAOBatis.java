@@ -467,6 +467,10 @@ public class SessionDAOBatis implements SessionDAO {
     @Override
     @Transactional
     public Result<Collection<EntityKey>> deleteAllForGroups(final List<Long> groupPKs) {
+        if (groupPKs == null || groupPKs.isEmpty()) {
+            return Result.of(Collections.emptyList());
+        }
+        
         return Result.tryCatch(() -> this.sessionRecordMapper.selectIdsByExample()
                 .where(SessionRecordDynamicSqlSupport.groupId, isIn(groupPKs))
                 .build()
@@ -475,7 +479,6 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     private Collection<EntityKey> delete(final List<Long> pks) {
-
         if (pks == null || pks.isEmpty()) {
             return Collections.emptyList();
         }
@@ -674,9 +677,7 @@ public class SessionDAOBatis implements SessionDAO {
 
         // meta data constraint
         final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
-        for (int i = 0; i < metaData.length; i++) {
-            final ScreenshotMetadataType mc = metaData[i];
-
+        for (final ScreenshotMetadataType mc : metaData) {
             final String sqlWildcard = filterMap.getSQLWildcard(mc.parameterName);
             if (sqlWildcard == null) {
                 continue;
@@ -684,10 +685,10 @@ public class SessionDAOBatis implements SessionDAO {
 
             final String value =
                     Constants.PERCENTAGE_STRING +
-                            Constants.DOUBLE_QUOTE +
-                            mc.parameterName +
-                            Constants.DOUBLE_QUOTE +
-                            sqlWildcard;
+                    Constants.DOUBLE_QUOTE +
+                    mc.parameterName +
+                    Constants.DOUBLE_QUOTE +
+                    sqlWildcard;
 
             queryBuilder = queryBuilder.and(
                     ScreenshotDataRecordDynamicSqlSupport.metaData,

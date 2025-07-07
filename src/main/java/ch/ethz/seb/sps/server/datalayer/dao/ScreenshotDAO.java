@@ -15,12 +15,18 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface ScreenshotDAO {
 
-    Result<InputStream> getImage(
-            Long pk,
-            String sessionUUID);
+    /** Get an Image via InputStream.
+     * 
+     * @param pk The PK of the image to get
+     * @param sessionUUID The session UUID where the image belongs to.
+     * @return Result refer to an InputSteam for the image data */
+    Result<InputStream> getImage(Long pk, String sessionUUID);
 
-    Result<List<Long>> deleteAllForSession(
-            String sessionUUID,
-            List<Long> screenShotPKs);
+    /** Deletes all images for a specified session
+     * 
+     * @param sessionUUID The session UUID
+     * @param screenShotPKs List of all image PKs to delete.
+     * @return Result refer to the list of image PK that has been deleted or to an error when happened */
+    Result<List<Long>> deleteAllForSession(String sessionUUID, List<Long> screenShotPKs);
 
 }

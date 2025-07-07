@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
+import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -56,25 +57,24 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<EntityPrivilege>> getEntityPrivileges(final EntityType type, final Long entityId) {
+    public Result<Collection<EntityPrivilege>> getEntityPrivileges(final EntityType entityType, final Long entityId) {
         return Result.tryCatch(() -> {
 
             return this.entityPrivilegeRecordMapper.selectByExample()
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(entityType.name()))
                     .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
                     .build()
                     .execute()
                     .stream()
                     .map(this::toDomainObject)
                     .collect(Collectors.toList());
-
         });
     }
 
     @Override
     @Transactional(readOnly = true)
     public Result<Set<Long>> getEntityIdsWithPrivilegeForUser(
-            final EntityType type,
+            final EntityType entityType,
             final String userUUID,
             final PrivilegeType privilegeType) {
 
@@ -84,7 +84,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                     this.entityPrivilegeIdMapper::selectIds,
                     EntityPrivilegeRecordDynamicSqlSupport.entityId)
                     .from(EntityPrivilegeRecordDynamicSqlSupport.entityPrivilegeRecord)
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(entityType.name()))
                     .and(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
                     .build()
                     .execute();
@@ -109,7 +109,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
     @Override
     @Transactional
     public Result<EntityPrivilege> addPrivilege(
-            final EntityType type,
+            final EntityType entityType,
             final Long entityId,
             final String userUUID,
             final PrivilegeType privilegeType) {
@@ -118,7 +118,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
             // check duplication
             final List<Long> ids = this.entityPrivilegeRecordMapper.selectIdsByExample()
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(entityType.name()))
                     .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
                     .and(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
                     .build()
@@ -131,7 +131,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
             final EntityPrivilegeRecord entityPrivilegeRecord = new EntityPrivilegeRecord(
                     null,
-                    type.name(),
+                    entityType.name(),
                     entityId,
                     userUUID,
                     privilegeType.flag);
@@ -146,14 +146,14 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
     @Override
     @Transactional
     public Result<EntityKey> deletePrivilege(
-            final EntityType type,
+            final EntityType entityType,
             final Long entityId,
             final String userUUID) {
 
         return Result.tryCatch(() -> {
 
             final List<Long> ids = this.entityPrivilegeRecordMapper.selectIdsByExample()
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(entityType.name()))
                     .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
                     .and(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
                     .build()
@@ -161,11 +161,11 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
             if (ids == null || ids.isEmpty()) {
                 throw new NoResourceFoundException(EntityType.ENTITY_PRIVILEGE,
-                        "for type: " + type + " and id: " + entityId + " and userId: " + userUUID);
+                        "for entityType: " + entityType + " and id: " + entityId + " and userId: " + userUUID);
             }
 
             this.entityPrivilegeRecordMapper.deleteByExample()
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(entityType.name()))
                     .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
                     .and(EntityPrivilegeRecordDynamicSqlSupport.userUuid, SqlBuilder.isEqualTo(userUUID))
                     .build()
@@ -179,13 +179,13 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
     @Override
     @Transactional
     public Result<Collection<EntityKey>> deleteAllPrivileges(
-            final EntityType type,
+            final EntityType entityType,
             final Long entityId) {
 
         return Result.tryCatch(() -> {
 
             final List<Long> ids = this.entityPrivilegeRecordMapper.selectIdsByExample()
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(type.name()))
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.entityType, SqlBuilder.isEqualTo(entityType.name()))
                     .and(EntityPrivilegeRecordDynamicSqlSupport.entityId, SqlBuilder.isEqualTo(entityId))
                     .build()
                     .execute();
@@ -195,7 +195,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
             }
 
             this.entityPrivilegeRecordMapper.deleteByExample()
-                    .where(EntityPrivilegeRecordDynamicSqlSupport.id, SqlBuilder.isIn(ids))
+                    .where(EntityPrivilegeRecordDynamicSqlSupport.id, isIn(ids))
                     .build()
                     .execute();
 
@@ -207,7 +207,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
     @Override
     @Transactional
-    public void updatePrivileges(Long epId, PrivilegeType privilegeType) {
+    public void updatePrivilege(Long epId, PrivilegeType privilegeType) {
        try {
 
            UpdateDSL.updateWithMapper(
@@ -224,6 +224,32 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                    epId,
                    e.getMessage());
        }
+    }
+
+    @Override
+    @Transactional
+    public void updatePrivileges(Collection<Long> epIds, PrivilegeType privilegeType) {
+        try {
+            
+            if (epIds == null || epIds.isEmpty()) {
+                return;
+            }
+
+            UpdateDSL.updateWithMapper(
+                            this.entityPrivilegeRecordMapper::update,
+                            EntityPrivilegeRecordDynamicSqlSupport.entityPrivilegeRecord)
+                    .set(EntityPrivilegeRecordDynamicSqlSupport.privileges).equalTo(privilegeType.flag)
+                    .where(id, isIn(epIds))
+                    .build()
+                    .execute();
+
+        } catch (Exception e) {
+            log.warn(
+                    "Failed to update entity privileges for: {} with: {} error: {}",
+                    epIds,
+                    privilegeType,
+                    e.getMessage());
+        }
     }
 
     @Override

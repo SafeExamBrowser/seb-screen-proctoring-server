@@ -381,9 +381,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
             // meta data constraint
             final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
-            for (int i = 0; i < metaData.length; i++) {
-                final ScreenshotMetadataType mc = metaData[i];
-
+            for (final ScreenshotMetadataType mc : metaData) {
                 final String sqlWildcard = filterMap.getSQLWildcard(mc.parameterName);
                 if (sqlWildcard == null) {
                     continue;
@@ -427,9 +425,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
             // meta data constraint
             final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
-            for (int i = 0; i < metaData.length; i++) {
-                final ScreenshotMetadataType mc = metaData[i];
-
+            for (final ScreenshotMetadataType mc : metaData) {
                 final String sqlWildcard = filterMap.getSQLWildcard(mc.parameterName);
                 if (sqlWildcard == null) {
                     continue;
@@ -573,7 +569,9 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<Collection<String>> getDistinctMetadataWindowForExam(final String metadataApplication, final List<Long> groupIds) {
         return Result.tryCatch(() -> {
 
-            final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);
+            final String metadataAppValue = createMetadataSearchString(
+                    API.SCREENSHOT_META_DATA_APPLICATION, 
+                    metadataApplication);
 
             QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.searchApplicationMapper
@@ -639,8 +637,12 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
         
         return Result.tryCatch(() -> {
 
-            final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);
-            final String metadataWindowValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, metadataWindowTitle);
+            final String metadataAppValue = createMetadataSearchString(
+                    API.SCREENSHOT_META_DATA_APPLICATION, 
+                    metadataApplication);
+            final String metadataWindowValue = createMetadataSearchString(
+                    API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, 
+                    metadataWindowTitle);
 
             QueryExpressionDSL<MyBatis3SelectModelAdapter<List<UserListForApplicationSearch>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.searchApplicationMapper
@@ -677,8 +679,12 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
         
         return Result.tryCatch(() -> {
 
-            final String metadataAppValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_APPLICATION, metadataApplication);
-            final String metadataWindowValue = createMetadataSearchString(API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, metadataWindowTitle);
+            final String metadataAppValue = createMetadataSearchString(
+                    API.SCREENSHOT_META_DATA_APPLICATION, 
+                    metadataApplication);
+            final String metadataWindowValue = createMetadataSearchString(
+                    API.SCREENSHOT_META_DATA_ACTIVE_WINDOW_TITLE, 
+                    metadataWindowTitle);
 
             QueryExpressionDSL<MyBatis3SelectModelAdapter<List<Long>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.searchApplicationMapper
