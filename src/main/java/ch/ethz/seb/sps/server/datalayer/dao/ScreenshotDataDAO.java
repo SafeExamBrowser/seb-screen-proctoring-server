@@ -40,18 +40,6 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
 
     Result<ScreenshotDataRecord> getLatest(String sessionUUID);
 
-//    @Transactional(readOnly = true)
-//    default Result<Map<String, ScreenshotDataRecord>> allLatestOf(final String sessionUUIDList) {
-//        return Result.tryCatch(() -> {
-//
-//            final List<String> ids = sessionUUIDList.contains(Constants.LIST_SEPARATOR)
-//                    ? Arrays.asList(StringUtils.split(sessionUUIDList, Constants.LIST_SEPARATOR))
-//                    : Arrays.asList(sessionUUIDList);
-//
-//            return allLatestIn(ids).getOrThrow();
-//        });
-//    }
-
     Result<Map<String, ScreenshotDataRecord>> allLatestIn(List<String> sessionUUIDs);
 
     Result<Long> save(

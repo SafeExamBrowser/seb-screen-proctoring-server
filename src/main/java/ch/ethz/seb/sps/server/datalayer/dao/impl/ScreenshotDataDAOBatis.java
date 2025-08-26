@@ -126,6 +126,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<ScreenshotDataRecord> getAt(final String sessionUUID, final Long at) {
+        // TODO: this seems to produce performance issues when table is huge. Try to optimize query by reducing the time frame here
         return Result.tryCatch(() -> {
             ScreenshotDataRecord record = SelectDSL
                     .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
