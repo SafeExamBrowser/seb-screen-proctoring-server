@@ -3,37 +3,37 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import jakarta.annotation.Generated;
 
 public class ClientAccessRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.uuid")
     private String uuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.name")
     private String name;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.description")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.description")
     private String description;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.client_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.client_name")
     private String clientName;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.client_secret")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.client_secret")
     private String clientSecret;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.owner")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.owner")
     private String owner;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.creation_time")
     private Long creationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.last_update_time")
     private Long lastUpdateTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.termination_time")
     private Long terminationTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.422+01:00", comments="Source Table: client_access")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source Table: client_access")
     public ClientAccessRecord(Long id, String uuid, String name, String description, String clientName, String clientSecret, String owner, Long creationTime, Long lastUpdateTime, Long terminationTime) {
         this.id = id;
         this.uuid = uuid;
@@ -47,52 +47,52 @@ public class ClientAccessRecord {
         this.terminationTime = terminationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.uuid")
     public String getUuid() {
         return uuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.name")
     public String getName() {
         return name;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.description")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.description")
     public String getDescription() {
         return description;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.client_name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.client_name")
     public String getClientName() {
         return clientName;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.client_secret")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.client_secret")
     public String getClientSecret() {
         return clientSecret;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.owner")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.owner")
     public String getOwner() {
         return owner;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.creation_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.creation_time")
     public Long getCreationTime() {
         return creationTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.last_update_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.last_update_time")
     public Long getLastUpdateTime() {
         return lastUpdateTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.423+01:00", comments="Source field: client_access.termination_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.734+02:00", comments="Source field: client_access.termination_time")
     public Long getTerminationTime() {
         return terminationTime;
     }
@@ -101,7 +101,7 @@ public class ClientAccessRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table client_access
      *
-     * @mbg.generated Tue Mar 04 15:13:08 CET 2025
+     * @mbg.generated Tue Aug 26 16:02:14 CEST 2025
      */
     @Override
     public String toString() {
@@ -127,7 +127,7 @@ public class ClientAccessRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table client_access
      *
-     * @mbg.generated Tue Mar 04 15:13:08 CET 2025
+     * @mbg.generated Tue Aug 26 16:02:14 CEST 2025
      */
     @Override
     public boolean equals(Object that) {
@@ -157,7 +157,7 @@ public class ClientAccessRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table client_access
      *
-     * @mbg.generated Tue Mar 04 15:13:08 CET 2025
+     * @mbg.generated Tue Aug 26 16:02:14 CEST 2025
      */
     @Override
     public int hashCode() {

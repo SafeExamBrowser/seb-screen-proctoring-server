@@ -66,6 +66,17 @@ CREATE TABLE IF NOT EXISTS `screenshot_data` (
   INDEX `screenshot_data_session_uuid_ix` (`session_uuid` ASC),
   UNIQUE INDEX `id_screenshot_data` (`id` ASC));
 
+-- -----------------------------------------------------
+-- Table `screenshot_data_live_cache`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `screenshot_data_live_cache` ;
+
+CREATE TABLE IF NOT EXISTS `screenshot_data_live_cache` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `session_uuid` VARCHAR(45) NOT NULL,
+  `id_latest_ssd` BIGINT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_session_uuid` (`session_uuid` ASC));
 
 -- -----------------------------------------------------
 -- Table `screenshot`

@@ -6,25 +6,25 @@ import org.mybatis.dynamic.sql.SqlColumn;
 import org.mybatis.dynamic.sql.SqlTable;
 
 public final class AdditionalAttributeRecordDynamicSqlSupport {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.443+01:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.759+02:00", comments="Source Table: additional_attribute")
     public static final AdditionalAttributeRecord additionalAttributeRecord = new AdditionalAttributeRecord();
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.443+01:00", comments="Source field: additional_attribute.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.759+02:00", comments="Source field: additional_attribute.id")
     public static final SqlColumn<Long> id = additionalAttributeRecord.id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.443+01:00", comments="Source field: additional_attribute.entity_type")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.759+02:00", comments="Source field: additional_attribute.entity_type")
     public static final SqlColumn<String> entityType = additionalAttributeRecord.entityType;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.443+01:00", comments="Source field: additional_attribute.entity_id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.759+02:00", comments="Source field: additional_attribute.entity_id")
     public static final SqlColumn<Long> entityId = additionalAttributeRecord.entityId;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.443+01:00", comments="Source field: additional_attribute.name")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.759+02:00", comments="Source field: additional_attribute.name")
     public static final SqlColumn<String> name = additionalAttributeRecord.name;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.443+01:00", comments="Source field: additional_attribute.value")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.759+02:00", comments="Source field: additional_attribute.value")
     public static final SqlColumn<String> value = additionalAttributeRecord.value;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-03-04T15:13:08.443+01:00", comments="Source Table: additional_attribute")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2025-08-26T16:02:14.759+02:00", comments="Source Table: additional_attribute")
     public static final class AdditionalAttributeRecord extends SqlTable {
         public final SqlColumn<Long> id = column("id", JDBCType.BIGINT);
 
