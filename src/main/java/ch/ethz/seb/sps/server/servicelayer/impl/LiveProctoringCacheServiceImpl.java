@@ -125,7 +125,9 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
     @Override
     public Result<String> createCacheSlot(final String sessionUUID) {
-        return screenshotDataLiveCacheDAO.createCacheEntry(sessionUUID);
+        return screenshotDataLiveCacheDAO
+                .createCacheEntry(sessionUUID)
+                .map(ScreenshotDataLiveCacheRecord::getSessionUuid);
     }
 
     @Override
