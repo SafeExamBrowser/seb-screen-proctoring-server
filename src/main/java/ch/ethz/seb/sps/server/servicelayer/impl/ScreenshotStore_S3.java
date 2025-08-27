@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.ServiceConfig;
+import ch.ethz.seb.sps.server.ServiceInit;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.dao.impl.S3DAO;
@@ -52,6 +53,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class ScreenshotStore_S3 implements ScreenshotStoreService{
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotStore_S3.class);
+    public static final Logger INIT_LOGGER = LoggerFactory.getLogger("SERVICE_INIT");
 
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
@@ -84,31 +86,41 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
 
     @Override
     public void init() {
-        this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
 
-        final MapperRegistry mapperRegistry = this.sqlSessionTemplate.getConfiguration().getMapperRegistry();
-        final Collection<Class<?>> mappers = mapperRegistry.getMappers();
-        if (!mappers.contains(ScreenshotMapper.class)) {
-            mapperRegistry.addMapper(ScreenshotMapper.class);
+        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> Initialize ScreenshotStore_S3 Service");
+        INIT_LOGGER.info("---->");
+        
+        try {
+            this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
+
+            final MapperRegistry mapperRegistry = this.sqlSessionTemplate.getConfiguration().getMapperRegistry();
+            final Collection<Class<?>> mappers = mapperRegistry.getMappers();
+            if (!mappers.contains(ScreenshotMapper.class)) {
+                mapperRegistry.addMapper(ScreenshotMapper.class);
+            }
+            if (!mappers.contains(ScreenshotDataRecordMapper.class)) {
+                mapperRegistry.addMapper(ScreenshotDataRecordMapper.class);
+            }
+
+            this.screenshotDataRecordMapper = this.sqlSessionTemplate.getMapper(ScreenshotDataRecordMapper.class);
+
+            // we run with two scheduled tasks that process the queue in half second interval
+            final Collection<ScreenshotQueueData> data1 = new ArrayList<>();
+            this.taskScheduler.scheduleWithFixedDelay(
+                    () -> processStore(data1),
+                    DateTime.now(DateTimeZone.UTC).toDate().toInstant(),
+                    Duration.ofMillis(this.batchInterval));
+
+            final Collection<ScreenshotQueueData> data2 = new ArrayList<>();
+            this.taskScheduler.scheduleWithFixedDelay(
+                    () -> processStore(data2),
+                    DateTime.now(DateTimeZone.UTC).plus(500).toDate().toInstant(),
+                    Duration.ofMillis(this.batchInterval));
+        } catch (Exception e) {
+            ServiceInit.INIT_LOGGER.error("----> ScreenshotStore_S3 Store: failed to initialized", e);
+            throw e;
         }
-        if (!mappers.contains(ScreenshotDataRecordMapper.class)) {
-            mapperRegistry.addMapper(ScreenshotDataRecordMapper.class);
-        }
-
-        this.screenshotDataRecordMapper = this.sqlSessionTemplate.getMapper(ScreenshotDataRecordMapper.class);
-
-        // we run with two scheduled tasks that process the queue in half second interval
-        final Collection<ScreenshotQueueData> data1 = new ArrayList<>();
-        this.taskScheduler.scheduleWithFixedDelay(
-                () -> processStore(data1),
-                DateTime.now(DateTimeZone.UTC).toDate().toInstant(),
-                Duration.ofMillis(this.batchInterval));
-
-        final Collection<ScreenshotQueueData> data2 = new ArrayList<>();
-        this.taskScheduler.scheduleWithFixedDelay(
-                () -> processStore(data2),
-                DateTime.now(DateTimeZone.UTC).plus(500).toDate().toInstant(),
-                Duration.ofMillis(this.batchInterval));
 
     }
 
@@ -163,16 +175,20 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
     }
 
     private void applySingleStore(final Collection<ScreenshotQueueData> batch) {
+
+        // store all screenshot data in batch and grab generated keys put back to records
+        batch.forEach(data -> {
+            if (data.record.getId() == null) {
+                // store only screenshot data that has not been stored before
+                this.screenshotDataRecordMapper.insert(data.record);
+            }
+        });
+        this.sqlSessionTemplate.flushStatements();
+        
         // this stores the batch with single transactions and S3 store calls
         // probably less performant but in case S3 do not support batch store
         batch.forEach(data -> {
             try {
-                
-                // store screenshot data of single screenshot within DB only if it is not already in the DB
-                if (data.record.getId() == null) {
-                    screenshotDataRecordMapper.insert(data.record);
-                    this.sqlSessionTemplate.flushStatements();
-                }
 
                 // store single screenshot picture to S3
                 this.s3DAO.uploadItem(

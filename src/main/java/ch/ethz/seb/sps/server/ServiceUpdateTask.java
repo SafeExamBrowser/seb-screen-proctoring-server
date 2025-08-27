@@ -51,7 +51,7 @@ public class ServiceUpdateTask implements DisposableBean {
             fixedDelayString = "${sps.webservice.distributed.update:15000}",
             initialDelay = 5000,
             scheduler = SYSTEM_SCHEDULER)
-    private void examSessionUpdateTask() {
+    private void sessionUpdateTask() {
         this.serviceInfo.updateMaster();
     }
 

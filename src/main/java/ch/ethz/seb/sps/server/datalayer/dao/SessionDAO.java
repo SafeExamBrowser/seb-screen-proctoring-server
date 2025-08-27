@@ -135,4 +135,10 @@ public interface SessionDAO extends ActivatableEntityDAO<Session, Session> {
      * @param termination_time The timestamp on which to close the session (unix timestamp im milliseconds)
      * @return Result refer to the close timestamp or to an error when happened.*/
     Result<Long> closeAt(String sessionUUID, Long termination_time);
+
+    /** Reduces the given list of sessionUUIDs to a list of session UUIDs of all closed sessions include in the given set
+     * 
+     * @param sessionUUIDs the session UUIDs
+     * @return a list of session UUIDs of all closed sessions include in the given set*/
+    Result<List<String>> getAllClosedSessionsIn(Set<String> sessionUUIDs);
 }

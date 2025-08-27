@@ -51,6 +51,7 @@ import ch.ethz.seb.sps.utils.Utils;
 public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotStore_FullRDBMS.class);
+    public static final Logger INIT_LOGGER = LoggerFactory.getLogger("SERVICE_INIT");
 
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
@@ -78,6 +79,10 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
 
     @Override
     public void init() {
+
+        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> Initialize ScreenshotStore Full RDBMS Service");
+        INIT_LOGGER.info("---->");
 
         try {
             this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
@@ -109,14 +114,12 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
                     java.time.Duration.ofMillis(this.batchInterval));
 
             ServiceInit.INIT_LOGGER.info(
-                    "----> Screenshot Store: 2 workers with update-interval: {} initialized",
-                    this.batchInterval);
+                    "----> Screenshot Store: 2 workers with update-interval: {} initialized", this.batchInterval);
 
         } catch (final Exception e) {
-            ServiceInit.INIT_LOGGER.error(
-                    "----> Screenshot Store: failed to initialized", e);
+            ServiceInit.INIT_LOGGER.error("----> Screenshot Store: failed to initialized", e);
+            throw e;
         }
-
     }
 
     @Override
