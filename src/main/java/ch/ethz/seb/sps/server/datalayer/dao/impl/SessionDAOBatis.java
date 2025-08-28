@@ -658,9 +658,14 @@ public class SessionDAOBatis implements SessionDAO {
             return false;
         }
 
+        final Long pk = modelIdToPK(modelId);
+        if (pk == null) {
+            return false;
+        }
+
         return this.sessionRecordMapper
                 .countByExample()
-                .where(ExamRecordDynamicSqlSupport.id, isEqualTo(Long.valueOf(modelId)))
+                .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
                 .and(ExamRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                 .build()
                 .execute() > 0;

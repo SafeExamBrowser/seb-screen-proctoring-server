@@ -134,8 +134,13 @@ public class UserDAOBatis implements UserDAO {
             return false;
         }
 
+        final Long pk = modelIdToPK(modelId);
+        if (pk == null) {
+            return false;
+        }
+
         return this.userRecordMapper.countByExample()
-                .where(UserRecordDynamicSqlSupport.id, isEqualTo(Long.valueOf(modelId)))
+                .where(UserRecordDynamicSqlSupport.id, isEqualTo(pk))
                 .and(UserRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                 .build()
                 .execute() > 0;

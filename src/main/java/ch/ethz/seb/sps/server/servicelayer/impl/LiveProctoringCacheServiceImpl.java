@@ -118,6 +118,15 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     @Override
     public Long getLatestSSDataId(final String sessionUUID, final boolean createSlot) {
         if (!cache.containsKey(sessionUUID) && createSlot) {
+
+            if (!this.sessionDAO.isActive(sessionUUID)) {
+                return null;
+            }
+            
+            if (log.isDebugEnabled()) {
+                log.debug("Create ad-hoc cache slot for active session: {}", sessionUUID);
+            }
+            
             synchronized (this.cache) {
                 screenshotDataLiveCacheDAO
                         .createCacheEntry(sessionUUID)
@@ -128,18 +137,6 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
         
         return cache.get(sessionUUID);
     }
-
-//    @Override
-//    public Result<String> createCacheSlot(final String sessionUUID) {
-//        return screenshotDataLiveCacheDAO
-//                .createCacheEntry(sessionUUID)
-//                .map(ScreenshotDataLiveCacheRecord::getSessionUuid);
-//    }
-//
-//    @Override
-//    public Result<String> deleteCacheSlot(final String sessionUUID) {
-//        return screenshotDataLiveCacheDAO.deleteCacheEntry(sessionUUID);
-//    }
 
     @Override
     public void updateCacheStore(final Collection<ScreenshotQueueData> batch) {
@@ -181,15 +178,26 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     public void cleanup(final boolean isMaster) {
         try {
             
+            if (log.isTraceEnabled()) {
+                log.debug("Cleanup live session cache");
+            }
+            
             // if master cleanup the store cache
             if (isMaster) {
                 List<String> closedSession = sessionDAO
                         .getAllClosedSessionsIn(cache.keySet())
                         .getOrThrow();
-
-                screenshotDataLiveCacheDAO
-                        .deleteAll(closedSession)
-                        .getOrThrow();
+                
+                if (!closedSession.isEmpty()) {
+                    
+                    if (log.isDebugEnabled()) {
+                        log.debug("Delete all closed sessions form live screenshot cache storage: {}", closedSession);
+                    }
+                    
+                    screenshotDataLiveCacheDAO
+                            .deleteAll(closedSession)
+                            .getOrThrow();
+                }
             }
 
             // just cleanup the local cache
@@ -200,17 +208,19 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                     .map(ScreenshotDataLiveCacheRecord::getSessionUuid)
                     .collect(Collectors.toSet());
 
+
             Set<String> cacheKeys = new HashSet<>(cache.keySet());
             cacheKeys.forEach(key -> {
                 if (!openSession.contains(key)) {
+                    
+                    if (log.isDebugEnabled()) {
+                        log.debug("Clear entry from local cache for session: {}", key);
+                    }
+                    
                     cache.remove(key);
                 }
             });
-
-            synchronized (cache) {
-                cache.clear();
-                updateFromStoreCache();
-            }
+            
             
         } catch (Exception e) {
             log.error("Failed to cleanup cache: ", e);

@@ -110,28 +110,27 @@ public class ProctoringServiceImpl implements ProctoringService {
 
     @Override
     public Result<ScreenshotViewData> getRecordedImageDataAt(final String sessionUUID, final Long timestamp) {
-        if (timestamp != null) {
-            return this.screenshotDataDAO
-                    .getAt(sessionUUID, timestamp)
-                    .map(data -> createScreenshotViewData(sessionUUID, data, null));
-        } else {
-            Long latestSSDataId = this.liveProctoringCacheService.getLatestSSDataId(sessionUUID, true);
-            if (latestSSDataId != null && latestSSDataId != -1L) {
-                return screenshotDataDAO
-                        .recordByPK(latestSSDataId)
-                        .map(data -> createScreenshotViewData(sessionUUID, data, null));
+        return Result.tryCatch(() -> {
+            if (timestamp != null) {
+
+                return createScreenshotViewData(
+                        sessionUUID,
+                        this.proctoringCacheService.getSessionScreenshotData(sessionUUID).getAt(timestamp));
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("No latest screenshot available yet for session: {}", sessionUUID);
+                Long latestSSDataId = this.liveProctoringCacheService.getLatestSSDataId(sessionUUID, true);
+                if (latestSSDataId != null && latestSSDataId != -1L) {
+                    return screenshotDataDAO
+                            .recordByPK(latestSSDataId)
+                            .map(data -> createScreenshotViewData(sessionUUID, data))
+                            .getOrThrow();
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No latest screenshot available yet for session: {}", sessionUUID);
+                    }
+                    throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, "No latest screenshot available yet");
                 }
-                return Result.ofError(new NoResourceFoundException(
-                        EntityType.SCREENSHOT_DATA, 
-                        "No latest screenshot available yet"));
             }
-//            return this.screenshotDataDAO
-//                    .getLatest(sessionUUID)
-//                    .map(data -> createScreenshotViewData(sessionUUID, data, null));
-        }
+        });
     }
 
     @Override
@@ -186,7 +185,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .getOrThrow();
 
             final List<ScreenshotViewData> page = sessionIdsInOrder.stream()
-                    .map(sid -> createScreenshotViewData(sid, mapping.get(sid), millisecondsNow))
+                    .map(sid -> createScreenshotViewData(sid, mapping.get(sid)))
                     //SEBSP-145 - remove inactive sessions from page / add flag to indicative inactivity
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -462,10 +461,18 @@ public class ProctoringServiceImpl implements ProctoringService {
         InputStream screenshotIn = null;
         try {
 
-            screenshotIn = this.screenshotDataDAO
-                    .getIdAt(sessionUUID, timestamp)
-                    .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
+            final ScreenshotDataRecord at = this.proctoringCacheService
+                    .getSessionScreenshotData(sessionUUID)
+                    .getAt(timestamp);
+
+            screenshotIn = this.screenshotDAO
+                    .getImage(at.getId(), sessionUUID)
                     .getOrThrow();
+
+//            screenshotIn = this.screenshotDataDAO
+//                    .getIdAt(sessionUUID, timestamp)
+//                    .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
+//                    .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
         } catch (final Exception e) {
@@ -548,10 +555,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     private long lastUpdateTimeScreenshotViewData = 0;
-    private ScreenshotViewData createScreenshotViewData(
-            final String sessionUUID,
-            final ScreenshotDataRecord data,
-            final Long timestamp) {
+    private ScreenshotViewData createScreenshotViewData(final String sessionUUID, final ScreenshotDataRecord data) {
 
         if (data == null) {
             return null;

@@ -102,9 +102,14 @@ public class ClientAccessDAOBatis implements ClientAccessDAO, OwnedEntityDAO {
             return false;
         }
 
+        final Long pk = modelIdToPK(modelId);
+        if (pk == null) {
+            return false;
+        }
+
         return this.clientAccessRecordMapper
                 .countByExample()
-                .where(ClientAccessRecordDynamicSqlSupport.id, isEqualTo(Long.valueOf(modelId)))
+                .where(ClientAccessRecordDynamicSqlSupport.id, isEqualTo(pk))
                 .and(ClientAccessRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                 .build()
                 .execute() > 0;

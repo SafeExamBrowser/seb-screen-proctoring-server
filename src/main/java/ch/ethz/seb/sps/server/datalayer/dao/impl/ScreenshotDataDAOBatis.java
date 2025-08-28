@@ -113,108 +113,105 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<ScreenshotData>> allOfSession(final String sessionUUID) {
+    public Result<Collection<ScreenshotDataRecord>> allOfSession(final String sessionUUID) {
         return Result.tryCatch(() -> this.screenshotDataRecordMapper.selectByExample()
                 .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                 .build()
-                .execute()
-                .stream()
-                .map(this::toDomainModel)
-                .collect(Collectors.toList()));
+                .execute());
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Result<ScreenshotDataRecord> getAt(final String sessionUUID, final Long at) {
-        
-        System.out.print("******************** getAt called for session: " + sessionUUID + " with at: " + at);
-        
-        // TODO: this seems to produce performance issues when table is huge. Try to optimize query by reducing the time frame here
-        return Result.tryCatch(() -> {
-            ScreenshotDataRecord record = SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
-                            id,
-                            sessionUuid,
-                            timestamp,
-                            imageFormat,
-                            metaData,
-                            timestamp)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
-                    .orderBy(timestamp.descending())
-                    .limit(1)
-                    .build()
-                    .execute();
+//    @Override
+//    @Transactional(readOnly = true)
+//    public Result<ScreenshotDataRecord> getAt(final String sessionUUID, final Long at) {
+//        
+//        System.out.print("******************** getAt called for session: " + sessionUUID + " with at: " + at);
+//        
+//        // TODO: this seems to produce performance issues when table is huge. Try to optimize query by reducing the time frame here
+//        return Result.tryCatch(() -> {
+//            ScreenshotDataRecord record = SelectDSL
+//                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
+//                            id,
+//                            sessionUuid,
+//                            timestamp,
+//                            imageFormat,
+//                            metaData,
+//                            timestamp)
+//                    .from(screenshotDataRecord)
+//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+//                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
+//                    .orderBy(timestamp.descending())
+//                    .limit(1)
+//                    .build()
+//                    .execute();
+//
+//            if (record != null) {
+//                return record;
+//            }
+//
+//            // there is no screenshot at the time of given timestamp. Try to get first image for the session
+//            record = SelectDSL
+//                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
+//                            id,
+//                            sessionUuid,
+//                            timestamp,
+//                            imageFormat,
+//                            metaData,
+//                            timestamp)
+//                    .from(screenshotDataRecord)
+//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+//                    .orderBy(timestamp)
+//                    .limit(1)
+//                    .build()
+//                    .execute();
+//
+//            // still no screenshot... seems that there are none at this time
+//            if (record == null) {
+//                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+//            }
+//
+//            return record;
+//        });
+//    }
 
-            if (record != null) {
-                return record;
-            }
-
-            // there is no screenshot at the time of given timestamp. Try to get first image for the session
-            record = SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
-                            id,
-                            sessionUuid,
-                            timestamp,
-                            imageFormat,
-                            metaData,
-                            timestamp)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .orderBy(timestamp)
-                    .limit(1)
-                    .build()
-                    .execute();
-
-            // still no screenshot... seems that there are none at this time
-            if (record == null) {
-                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
-            }
-
-            return record;
-        });
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Result<Long> getIdAt(final String sessionUUID, final Long at) {
-        return Result.tryCatch(() -> {
-
-            System.out.println("******************** getIdAt called for session: " + sessionUUID + " with at: " + at);
-
-            List<Long> result = SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
-                    .orderBy(timestamp.descending())
-                    .limit(1)
-                    .build()
-                    .execute();
-
-            if (result != null && !result.isEmpty()) {
-                return result.get(0);
-            }
-
-            // there is no screenshot at the time of given timestamp. Try to get first image for the session
-            result = SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .orderBy(timestamp)
-                    .limit(1)
-                    .build()
-                    .execute();
-
-            // still no screenshot... seems that there are none at this time
-            if (result == null || result.isEmpty()) {
-                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
-            }
-
-            return result.get(0);
-        });
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public Result<Long> getIdAt(final String sessionUUID, final Long at) {
+//        return Result.tryCatch(() -> {
+//
+//            System.out.println("******************** getIdAt called for session: " + sessionUUID + " with at: " + at);
+//
+//            List<Long> result = SelectDSL
+//                    .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
+//                    .from(screenshotDataRecord)
+//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+//                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
+//                    .orderBy(timestamp.descending())
+//                    .limit(1)
+//                    .build()
+//                    .execute();
+//
+//            if (result != null && !result.isEmpty()) {
+//                return result.get(0);
+//            }
+//
+//            // there is no screenshot at the time of given timestamp. Try to get first image for the session
+//            result = SelectDSL
+//                    .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
+//                    .from(screenshotDataRecord)
+//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+//                    .orderBy(timestamp)
+//                    .limit(1)
+//                    .build()
+//                    .execute();
+//
+//            // still no screenshot... seems that there are none at this time
+//            if (result == null || result.isEmpty()) {
+//                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+//            }
+//
+//            return result.get(0);
+//        });
+//    }
 
 //    @Override
 //    @Transactional(readOnly = true)

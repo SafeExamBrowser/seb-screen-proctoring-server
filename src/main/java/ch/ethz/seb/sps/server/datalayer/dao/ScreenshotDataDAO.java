@@ -28,11 +28,11 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotData> {
 
-    Result<Collection<ScreenshotData>> allOfSession(String sessionUUID);
+    Result<Collection<ScreenshotDataRecord>> allOfSession(String sessionUUID);
 
-    Result<ScreenshotDataRecord> getAt(String sessionUUID, Long at);
+    //Result<ScreenshotDataRecord> getAt(String sessionUUID, Long at);
 
-    Result<Long> getIdAt(String sessionUUID, Long at);
+    //Result<Long> getIdAt(String sessionUUID, Long at);
 
     //Result<Long> getLatestImageId(String sessionUUID);
 
