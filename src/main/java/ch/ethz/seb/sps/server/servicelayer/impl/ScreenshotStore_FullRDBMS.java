@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.session.ExecutorType;
@@ -56,6 +57,7 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
     private final TaskScheduler taskScheduler;
+    private final LiveProctoringCacheService liveProctoringCacheService;
     private final long batchInterval;
 
     private SqlSessionTemplate sqlSessionTemplate;
@@ -67,11 +69,13 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
     public ScreenshotStore_FullRDBMS(
             final SqlSessionFactory sqlSessionFactory,
             final PlatformTransactionManager transactionManager,
-            @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler,
+            @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler, 
+            final LiveProctoringCacheService liveProctoringCacheService,
             @Value("${sps.data.store.batch.interval:1000}") final long batchInterval) {
 
         this.sqlSessionFactory = sqlSessionFactory;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
+        this.liveProctoringCacheService = liveProctoringCacheService;
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.taskScheduler = taskScheduler;
         this.batchInterval = batchInterval;
@@ -257,6 +261,9 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
                 putBatchBackToQueue(batch, re);
             }
         }
+
+        // update store cache
+        liveProctoringCacheService.updateCacheStore(batch);
     }
 
     private void putBatchBackToQueue(Collection<ScreenshotQueueData> batch, RuntimeException re) {

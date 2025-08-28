@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.service.*;
 import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
+import ch.ethz.seb.sps.server.datalayer.dao.*;
+import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,11 +37,6 @@ import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.ServiceInfo;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.ProctoringService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
@@ -58,6 +55,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     private final ScreenshotDAO screenshotDAO;
     private final ScreenshotDataDAO screenshotDataDAO;
     private final ProctoringCacheService proctoringCacheService;
+    private final LiveProctoringCacheService liveProctoringCacheService;
     private final UserService userService;
     private final ServiceInfo serviceInfo;
     private final JSONMapper jsonMapper;
@@ -70,7 +68,8 @@ public class ProctoringServiceImpl implements ProctoringService {
             final SessionDAO sessionDAO,
             final ScreenshotDAO screenshotDAO,
             final ScreenshotDataDAO screenshotDataDAO,
-            final ProctoringCacheService proctoringCacheService,
+            final ProctoringCacheService proctoringCacheService, 
+            final LiveProctoringCacheService liveProctoringCacheService,
             final UserService userService,
             final ServiceInfo serviceInfo,
             final JSONMapper jsonMapper) {
@@ -81,6 +80,7 @@ public class ProctoringServiceImpl implements ProctoringService {
         this.screenshotDAO = screenshotDAO;
         this.screenshotDataDAO = screenshotDataDAO;
         this.proctoringCacheService = proctoringCacheService;
+        this.liveProctoringCacheService = liveProctoringCacheService;
         this.userService = userService;
         this.serviceInfo = serviceInfo;
         this.jsonMapper = jsonMapper;
@@ -115,9 +115,22 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .getAt(sessionUUID, timestamp)
                     .map(data -> createScreenshotViewData(sessionUUID, data, null));
         } else {
-            return this.screenshotDataDAO
-                    .getLatest(sessionUUID)
-                    .map(data -> createScreenshotViewData(sessionUUID, data, null));
+            Long latestSSDataId = this.liveProctoringCacheService.getLatestSSDataId(sessionUUID, true);
+            if (latestSSDataId != null && latestSSDataId != -1L) {
+                return screenshotDataDAO
+                        .recordByPK(latestSSDataId)
+                        .map(data -> createScreenshotViewData(sessionUUID, data, null));
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("No latest screenshot available yet for session: {}", sessionUUID);
+                }
+                return Result.ofError(new NoResourceFoundException(
+                        EntityType.SCREENSHOT_DATA, 
+                        "No latest screenshot available yet"));
+            }
+//            return this.screenshotDataDAO
+//                    .getLatest(sessionUUID)
+//                    .map(data -> createScreenshotViewData(sessionUUID, data, null));
         }
     }
 
@@ -162,10 +175,14 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .skip((long) (pnum - 1) * pSize)
                     .limit(pSize)
                     .map(Session::getUuid)
-                    .collect(Collectors.toList());
-
+                    .toList();
+            
             final Map<String, ScreenshotDataRecord> mapping = this.screenshotDataDAO
-                    .allLatestIn(sessionIdsInOrder)
+                    .allOfMappedToSession(
+                            sessionIdsInOrder
+                                    .stream()
+                                    .map(uuid -> liveProctoringCacheService.getLatestSSDataId(uuid, true))
+                                    .toList())
                     .getOrThrow();
 
             final List<ScreenshotViewData> page = sessionIdsInOrder.stream()
@@ -409,11 +426,15 @@ public class ProctoringServiceImpl implements ProctoringService {
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
         InputStream screenshotIn = null;
         try {
-
-            screenshotIn = this.screenshotDataDAO
-                    .getLatestImageId(sessionUUID)
-                    .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
+            
+            screenshotIn =  this.screenshotDAO
+                    .getImage(this.liveProctoringCacheService.getLatestSSDataId(sessionUUID, true), sessionUUID)
                     .getOrThrow();
+//
+//            screenshotIn = this.screenshotDataDAO
+//                    .getLatestImageId(sessionUUID)
+//                    .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
+//                    .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
             
@@ -432,6 +453,11 @@ public class ProctoringServiceImpl implements ProctoringService {
             final String sessionUUID,
             final Long timestamp,
             final OutputStream out) {
+        
+        if (timestamp == null) {
+            streamLatestScreenshot(sessionUUID, out);
+            return;
+        }
 
         InputStream screenshotIn = null;
         try {

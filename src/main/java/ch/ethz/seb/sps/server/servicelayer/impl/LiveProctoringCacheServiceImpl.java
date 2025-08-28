@@ -11,9 +11,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
 import java.time.Duration;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -27,7 +25,6 @@ import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataLiveCacheRecor
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataLiveCacheDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
-import ch.ethz.seb.sps.utils.Result;
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -107,7 +104,7 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
             this.screenshotDataLiveCacheRecordMapper = this.sqlSessionTemplate.getMapper(ScreenshotDataLiveCacheRecordMapper.class);
             
             this.taskScheduler.scheduleWithFixedDelay(
-                    this::updateCache,
+                    this::updateFromStoreCache,
                     DateTime.now(DateTimeZone.UTC).toDate().toInstant(),
                     Duration.ofMillis(this.batchInterval));
 
@@ -119,32 +116,51 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     }
 
     @Override
-    public Long getLatestSSDataId(final String sessionUUID) {
+    public Long getLatestSSDataId(final String sessionUUID, final boolean createSlot) {
+        if (!cache.containsKey(sessionUUID) && createSlot) {
+            synchronized (this.cache) {
+                screenshotDataLiveCacheDAO
+                        .createCacheEntry(sessionUUID)
+                        .onError(error -> log.error("Failed to create slot for session: {}", sessionUUID));
+                cache.put(sessionUUID, -1L);
+            }
+        }
+        
         return cache.get(sessionUUID);
     }
 
-    @Override
-    public Result<String> createCacheSlot(final String sessionUUID) {
-        return screenshotDataLiveCacheDAO
-                .createCacheEntry(sessionUUID)
-                .map(ScreenshotDataLiveCacheRecord::getSessionUuid);
-    }
-
-    @Override
-    public Result<String> deleteCacheSlot(final String sessionUUID) {
-        return screenshotDataLiveCacheDAO.deleteCacheEntry(sessionUUID);
-    }
+//    @Override
+//    public Result<String> createCacheSlot(final String sessionUUID) {
+//        return screenshotDataLiveCacheDAO
+//                .createCacheEntry(sessionUUID)
+//                .map(ScreenshotDataLiveCacheRecord::getSessionUuid);
+//    }
+//
+//    @Override
+//    public Result<String> deleteCacheSlot(final String sessionUUID) {
+//        return screenshotDataLiveCacheDAO.deleteCacheEntry(sessionUUID);
+//    }
 
     @Override
     public void updateCacheStore(final Collection<ScreenshotQueueData> batch) {
         try {
             
+//            // TODO check if this is really necessary 
+//            // fist ensure that all slots are existing
+//            batch.forEach(data -> {
+//                if (!cache.containsKey(data.record.getSessionUuid())) {
+//                    log.warn("Missing cache slot, try to create one...");
+//                    screenshotDataLiveCacheDAO.createCacheEntry(data.record.getSessionUuid())
+//                            .onError(error -> log.error("Failed to create cache entry: {}", error.getMessage()));
+//                }
+//            });
+//            
+            // then batch update
             this.transactionTemplate.executeWithoutResult(status -> {
-
                 batch.forEach(data -> {
                     if (data.record.getId() != null) {
                         UpdateDSL.updateWithMapper(
-                                screenshotDataLiveCacheRecordMapper::update, 
+                                        screenshotDataLiveCacheRecordMapper::update,
                                         ScreenshotDataLiveCacheRecordDynamicSqlSupport.screenshotDataLiveCacheRecord)
                                 .set(ScreenshotDataLiveCacheRecordDynamicSqlSupport.idLatestSsd).equalTo(data.record.getId())
                                 .where(ScreenshotDataLiveCacheRecordDynamicSqlSupport.sessionUuid, isEqualTo(data.record.getSessionUuid()))
@@ -162,23 +178,46 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     }
 
     @Override
-    public void cleanup() {
+    public void cleanup(final boolean isMaster) {
         try {
+            
+            // if master cleanup the store cache
+            if (isMaster) {
+                List<String> closedSession = sessionDAO
+                        .getAllClosedSessionsIn(cache.keySet())
+                        .getOrThrow();
 
-            List<String> closedSession = sessionDAO
-                    .getAllClosedSessionsIn(cache.keySet())
-                    .getOrThrow();
+                screenshotDataLiveCacheDAO
+                        .deleteAll(closedSession)
+                        .getOrThrow();
+            }
 
-            screenshotDataLiveCacheDAO
-                    .deleteAll(closedSession)
-                    .getOrThrow();
+            // just cleanup the local cache
+            Set<String> openSession = screenshotDataLiveCacheDAO
+                    .getAll()
+                    .getOrThrow()
+                    .stream()
+                    .map(ScreenshotDataLiveCacheRecord::getSessionUuid)
+                    .collect(Collectors.toSet());
+
+            Set<String> cacheKeys = new HashSet<>(cache.keySet());
+            cacheKeys.forEach(key -> {
+                if (!openSession.contains(key)) {
+                    cache.remove(key);
+                }
+            });
+
+            synchronized (cache) {
+                cache.clear();
+                updateFromStoreCache();
+            }
             
         } catch (Exception e) {
             log.error("Failed to cleanup cache: ", e);
         }
     }
     
-    private void updateCache() {
+    private void updateFromStoreCache() {
         try {
 
             Map<String, Long> newValues = screenshotDataLiveCacheDAO

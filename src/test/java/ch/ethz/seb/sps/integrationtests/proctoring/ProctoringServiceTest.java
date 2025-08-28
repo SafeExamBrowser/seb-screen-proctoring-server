@@ -13,6 +13,7 @@ import ch.ethz.seb.sps.domain.model.service.TimelineViewData;
 import ch.ethz.seb.sps.server.datalayer.dao.ClientAccessDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
+import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
 import ch.ethz.seb.sps.server.weblayer.AdminProctorController;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Test;
@@ -31,6 +32,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ProctoringServiceTest extends ServiceTest_PROCTORING {
+    
+    @Autowired
+    private LiveProctoringCacheService liveProctoringCacheService;
 
     //tests a full use case of the screen proctoring
     @Test
@@ -57,7 +61,7 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
         Map<String, String> groupAttributes = new HashMap<>();
         groupAttributes.put("includePastExams", "true");
         groupAttributes.put("includeUpcomingExams", "true");
-
+        
         Page<GroupViewData> groups = createMockApiCall(
                 API.GROUP_ENDPOINT,
                 HttpMethod.GET,
@@ -183,8 +187,8 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
     @Test
     public void testApplicationSearch() throws Exception {
         //GIVEN
-        Long expectedExamId = 1l;
-        List<Long> expectedGroupIds = Arrays.asList(1l, 2l);
+        Long expectedExamId = 1L;
+        List<Long> expectedGroupIds = Arrays.asList(1L, 2L);
 //        List<String> expectedMetadataApp = Arrays.asList("")
 
         //WHEN
