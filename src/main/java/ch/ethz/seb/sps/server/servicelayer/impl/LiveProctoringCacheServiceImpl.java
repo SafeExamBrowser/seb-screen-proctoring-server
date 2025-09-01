@@ -107,7 +107,6 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                     this::updateFromStoreCache,
                     DateTime.now(DateTimeZone.UTC).toDate().toInstant(),
                     Duration.ofMillis(this.batchInterval));
-
            
         } catch (Exception e) {
             ServiceInit.INIT_LOGGER.error("----> Live Proctoring Cache Service : failed to initialized", e);
@@ -142,16 +141,10 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     public void updateCacheStore(final Collection<ScreenshotQueueData> batch) {
         try {
             
-//            // TODO check if this is really necessary 
-//            // fist ensure that all slots are existing
-//            batch.forEach(data -> {
-//                if (!cache.containsKey(data.record.getSessionUuid())) {
-//                    log.warn("Missing cache slot, try to create one...");
-//                    screenshotDataLiveCacheDAO.createCacheEntry(data.record.getSessionUuid())
-//                            .onError(error -> log.error("Failed to create cache entry: {}", error.getMessage()));
-//                }
-//            });
-//            
+            if (log.isDebugEnabled()) {
+                log.debug("Update store cache with batch of: {}", batch.size());
+            }
+            
             // then batch update
             this.transactionTemplate.executeWithoutResult(status -> {
                 batch.forEach(data -> {
@@ -236,7 +229,7 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                     .stream()
                     .collect(Collectors.toMap(
                             ScreenshotDataLiveCacheRecord::getSessionUuid,
-                            ScreenshotDataLiveCacheRecord::getIdLatestSsd
+                            rec -> rec.getIdLatestSsd() == null ? -1L : rec.getIdLatestSsd()
                     ));
 
             cache.putAll(newValues);

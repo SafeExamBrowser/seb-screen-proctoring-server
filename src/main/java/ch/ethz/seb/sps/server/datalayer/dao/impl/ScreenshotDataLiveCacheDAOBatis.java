@@ -37,7 +37,7 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
     @Transactional
     public Result<ScreenshotDataLiveCacheRecord> createCacheEntry(String sessionUUID) {
         return Result
-            .tryCatch(() ->  screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(createSlot(sessionUUID, -1L)))
+            .tryCatch(() ->  screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(createSlot(sessionUUID, null)))
             .onError(TransactionHandler::rollback);
     }
 
@@ -87,14 +87,20 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
     @Override
     @Transactional(readOnly = true)
     public Result<Collection<ScreenshotDataLiveCacheRecord>> getAll() {
-        return Result.tryCatch(() -> screenshotDataLiveCacheRecordMapper.selectByExample().build().execute());
+        return Result.tryCatch(() -> {
+            final List<ScreenshotDataLiveCacheRecord> execute = screenshotDataLiveCacheRecordMapper
+                    .selectByExample()
+                    .build()
+                    .execute();
+            return execute;
+        });
     }
 
     private synchronized Long createSlot(String sessionUUID, Long value) {
         final ScreenshotDataLiveCacheRecord rec = new ScreenshotDataLiveCacheRecord(
                 null,
                 sessionUUID,
-                value );
+                value != null && value >= 0 ? value : null );
 
         screenshotDataLiveCacheRecordMapper.insert(rec);
         return rec.getId();

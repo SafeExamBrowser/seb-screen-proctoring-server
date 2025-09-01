@@ -255,6 +255,11 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
             if (pks == null || pks.isEmpty()) {
                 return Collections.emptyMap();
             }
+            
+            // TODO only for testing remove this
+            if (log.isDebugEnabled()) {
+                log.debug("Get Screenshotdata for gallery view: {}", pks);
+            }
 
             return screenshotDataRecordMapper
                     .selectByExample()
@@ -262,7 +267,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                     .build()
                     .execute()
                     .stream()
-                    .collect(Collectors.toMap(r -> r.getSessionUuid(), Function.identity()));
+                    .collect(Collectors.toMap(ScreenshotDataRecord::getSessionUuid, Function.identity()));
         });
     }
 
