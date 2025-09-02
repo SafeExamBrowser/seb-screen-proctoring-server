@@ -596,19 +596,21 @@ public class ProctoringServiceImpl implements ProctoringService {
             if (this.groupDAO.needsUpdate(groupUUID, activeGroup.lastUpdateTime)) {
                 this.clearGroupCache(groupUUID, true);
             } else {
-                Set<Long> updateTimes = this.proctoringCacheService
+                
+                // TODO use CacheManager to get all actual cached sessions to update
+                Map<String, Long> updateTimes = this.proctoringCacheService
                         .getLiveSessionTokens(activeGroup.uuid)
                         .stream()
                         .map(this.proctoringCacheService::getSession)
                         .filter(Objects::nonNull)
-                        .map(s -> s.lastUpdateTime)
-                        .collect(Collectors.toSet());
-
-                this.sessionDAO
-                        .allTokensThatNeedsUpdate(activeGroup.id, updateTimes)
-                        .getOr(Collections.emptyList())
-                        .forEach(this.proctoringCacheService::evictSession);
-
+                        .collect(Collectors.toMap( s -> s.uuid, s -> s.lastUpdateTime));
+                
+                if (!updateTimes.isEmpty()) {
+                    this.sessionDAO
+                            .allTokensThatNeedsUpdate(activeGroup.id, updateTimes)
+                            .getOr(Collections.emptyList())
+                            .forEach(this.proctoringCacheService::evictSession);
+                }
             }
             proctoringCacheService.evictSessionTokens(groupUUID);
             GROUP_UUID_UPDATE_REG.add(groupUUID);

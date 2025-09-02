@@ -16,13 +16,7 @@ import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamic
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchSessionMapper;
@@ -251,16 +245,21 @@ public class SessionDAOBatis implements SessionDAO {
                     .execute();
         });
     }
-
-    // TODO this seems to not work as expected. Seems to get always all ids of the group!?
+    
     @Override
-    public Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Set<Long> updateTimes) {
+    public Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Map<String, Long> updateTimes) {
         return Result.tryCatch(() -> {
+            
+            
+            if (updateTimes == null || updateTimes.isEmpty()) {
+                return Collections.emptyList();
+            }
 
             List<Long> idsForUpdate = this.sessionRecordMapper
                     .selectIdsByExample()
                     .where(SessionRecordDynamicSqlSupport.groupId, isEqualTo(groupId))
-                    .and(SessionRecordDynamicSqlSupport.lastUpdateTime, isNotIn(updateTimes))
+                    .and(uuid, isIn(updateTimes.keySet()))
+                    .and(SessionRecordDynamicSqlSupport.lastUpdateTime, isNotIn(updateTimes.values()))
                     .build()
                     .execute();
 

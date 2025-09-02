@@ -28,6 +28,7 @@ import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotDataMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchApplicationMapper;
 import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
+import ch.ethz.seb.sps.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -126,50 +127,8 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<ScreenshotDataRecord> getAt(final String sessionUUID, final Long at) {
-        // TODO: this seems to produce performance issues when table is huge. Try to optimize query by reducing the time frame here
         return Result.tryCatch(() -> {
-            ScreenshotDataRecord record = SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
-                            id,
-                            sessionUuid,
-                            timestamp,
-                            imageFormat,
-                            metaData,
-                            timestamp)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
-                    .orderBy(timestamp.descending())
-                    .limit(1)
-                    .build()
-                    .execute();
-
-            if (record != null) {
-                return record;
-            }
-
-            // there is no screenshot at the time of given timestamp. Try to get first image for the session
-            record = SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
-                            id,
-                            sessionUuid,
-                            timestamp,
-                            imageFormat,
-                            metaData,
-                            timestamp)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .orderBy(timestamp)
-                    .limit(1)
-                    .build()
-                    .execute();
-
-            // still no screenshot... seems that there are none at this time
-            if (record == null) {
-                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
-            }
-
-            return record;
+            return  getScreenshotDataAt(sessionUUID, at);
         });
     }
 
@@ -177,37 +136,13 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Transactional(readOnly = true)
     public Result<Long> getIdAt(final String sessionUUID, final Long at) {
         return Result.tryCatch(() -> {
-
-            List<Long> result = SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThanOrEqualTo(at))
-                    .orderBy(timestamp.descending())
-                    .limit(1)
-                    .build()
-                    .execute();
-
-            if (result != null && !result.isEmpty()) {
-                return result.get(0);
+            ScreenshotDataRecord screenshotDataAt = getScreenshotDataAt(sessionUUID, at);
+            
+            if (screenshotDataAt != null) {
+                return screenshotDataAt.getId();
             }
 
-            // there is no screenshot at the time of given timestamp. Try to get first image for the session
-            result = SelectDSL
-                    .selectWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .orderBy(timestamp)
-                    .limit(1)
-                    .build()
-                    .execute();
-
-            // still no screenshot... seems that there are none at this time
-            if (result == null || result.isEmpty()) {
-                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
-            }
-
-            return result.get(0);
+            throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
         });
     }
 
@@ -216,16 +151,12 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<Long> getLatestImageId(final String sessionUUID) {
         return Result.tryCatch(() -> {
 
-            final List<Long> execute = SelectDSL
-                    .selectDistinctWithMapper(this.screenshotDataRecordMapper::selectIds, id, timestamp)
-                    .from(screenshotDataRecord)
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                    .orderBy(timestamp.descending())
-                    .limit(1)
-                    .build()
-                    .execute();
+            ScreenshotDataRecord screenshotDataAt = getScreenshotDataAt(sessionUUID, null);
+            if (screenshotDataAt != null) {
+                return screenshotDataAt.getId();
+            }
 
-            return execute.get(0);
+            throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
         });
     }
 
@@ -233,7 +164,8 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Transactional(readOnly = true)
     public Result<ScreenshotDataRecord> getLatest(final String sessionUUID) {
         return Result.tryCatch(() -> {
-            final ScreenshotDataRecord latestScreenshotDataRec = getLatestScreenshotDataRec(sessionUUID);
+            
+            final ScreenshotDataRecord latestScreenshotDataRec = getScreenshotDataAt(sessionUUID, null);
             if (latestScreenshotDataRec == null) {
                 throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
             }
@@ -249,28 +181,10 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                 return Collections.emptyMap();
             }
 
-            // NOTE: This was not working as expected since limit does not work with group (groupBy)
-//            return SelectDSL
-//                    .selectWithMapper(this.screenshotDataRecordMapper::selectMany,
-//                            id,
-//                            sessionUuid,
-//                            timestamp,
-//                            imageFormat,
-//                            metaData)
-//                    .from(screenshotDataRecord)
-//                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isIn(sessionUUIDs))
-//                    .groupBy(ScreenshotDataRecordDynamicSqlSupport.sessionUuid)
-//                    .orderBy(timestamp.descending())
-//                    .limit(1)
-//                    .build()
-//                    .execute()
-//                    .stream()
-//                    .collect(Collectors.toMap(r -> r.getSessionUuid(), Function.identity()));
-
             // NOTE: For now we use a less efficient version that uses getLatest(final String sessionUUID) for
             //       all requested sessions but in the future we should solve this problem on DB layer
             return sessionUUIDs.stream()
-                    .map(this::getLatestScreenshotDataRec)
+                    .map(sessionUUID -> getScreenshotDataAt(sessionUUID, null))
                     .filter(Objects::nonNull)
                     .collect(Collectors.toMap(
                             ScreenshotDataRecord::getSessionUuid, 
@@ -744,6 +658,61 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                 Constants.PERCENTAGE_STRING +
                 metadataValue +
                 Constants.PERCENTAGE_STRING;
+    }
+
+    private ScreenshotDataRecord getScreenshotDataAt(final String sessionUUID, final Long at) {
+        final Long ts = at != null ? at : Utils.getMillisecondsNow();
+
+        ScreenshotDataRecord record = getLastScreenshotDataRecordInRange(sessionUUID, ts, ts - 30 * Constants.SECOND_IN_MILLIS);
+        if (record != null) {
+            return record;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Did not find screenshot within 30s interval, try 1 hour interval");
+        }
+
+        record = getLastScreenshotDataRecordInRange(sessionUUID, ts, ts - Constants.HOUR_IN_MILLIS);
+        if (record != null) {
+            return record;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Did not find screenshot within 1 hour interval, get first image: {}", sessionUUID);
+        }
+
+        return SelectDSL
+                .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
+                        id,
+                        sessionUuid,
+                        timestamp,
+                        imageFormat,
+                        metaData,
+                        timestamp)
+                .from(screenshotDataRecord)
+                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                .limit(1)
+                .build()
+                .execute();
+    }
+
+    private ScreenshotDataRecord getLastScreenshotDataRecordInRange(final String sessionUUID, final Long upper, final Long lower) {
+        return SelectDSL
+                .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
+                        id,
+                        sessionUuid,
+                        timestamp,
+                        imageFormat,
+                        metaData,
+                        timestamp)
+                .from(screenshotDataRecord)
+                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThan(upper))
+                .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isGreaterThanOrEqualToWhenPresent(lower))
+                .orderBy(timestamp.descending())
+                .limit(1)
+                .build()
+                .execute();
     }
 
 }

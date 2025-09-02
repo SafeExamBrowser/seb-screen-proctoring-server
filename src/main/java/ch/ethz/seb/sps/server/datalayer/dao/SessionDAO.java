@@ -11,7 +11,7 @@ package ch.ethz.seb.sps.server.datalayer.dao;
 import java.sql.Date;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.FilterMap;
@@ -121,7 +121,7 @@ public interface SessionDAO extends ActivatableEntityDAO<Session, Session> {
      * @param groupId The group id (PK)
      * @param updateTimes List of update_time timestamps of all cached sessions.
      * @return Result refer to the list of session UUIDs that needs update, ot to an error when happened*/
-    Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Set<Long> updateTimes);
+    Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Map<String, Long> updateTimes);
 
     /** Get the encryption key of the session used to encrypt/decrypt client side stored screenshot data.
      * 
