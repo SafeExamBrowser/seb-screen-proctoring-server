@@ -121,9 +121,18 @@ public class ProctoringServiceImpl implements ProctoringService {
         return Result.tryCatch(() -> {
             final SessionScreenshotCacheData sessionScreenshotData = this.proctoringCacheService
                     .getSessionScreenshotData(sessionUUID);
-            return createScreenshotViewData(
-                    sessionUUID,
-                    sessionScreenshotData.getAt(timestamp));
+            if (timestamp == null) {
+                // check if the session is active if so, get last, otherwise get first screenshot
+                Long latestSSDataId = liveProctoringCacheService.getLatestSSDataId(sessionUUID, false);
+                if (latestSSDataId != null) {
+                    return screenshotDataDAO.recordByPK(latestSSDataId)
+                            .map(rec -> createScreenshotViewData(sessionUUID, rec))
+                            .getOr(createScreenshotViewData(sessionUUID, sessionScreenshotData.getAt(timestamp)));
+                }
+            } 
+            
+            // get first screenshot
+            return createScreenshotViewData(sessionUUID, sessionScreenshotData.getAt(timestamp));
         });
     }
 
