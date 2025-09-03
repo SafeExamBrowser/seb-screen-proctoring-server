@@ -8,6 +8,7 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
+import javax.cache.Cache;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Date;
@@ -21,8 +22,12 @@ import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
 import ch.ethz.seb.sps.server.datalayer.dao.*;
 import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.ehcache.core.Ehcache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.jcache.JCacheCache;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -59,6 +64,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     private final UserService userService;
     private final ServiceInfo serviceInfo;
     private final JSONMapper jsonMapper;
+    private final CacheManager cacheManager;
     private final boolean isDistributedSetup;
     private final long distributedUpdateInterval;
 
@@ -68,11 +74,12 @@ public class ProctoringServiceImpl implements ProctoringService {
             final SessionDAO sessionDAO,
             final ScreenshotDAO screenshotDAO,
             final ScreenshotDataDAO screenshotDataDAO,
-            final ProctoringCacheService proctoringCacheService, 
+            final ProctoringCacheService proctoringCacheService,
             final LiveProctoringCacheService liveProctoringCacheService,
             final UserService userService,
             final ServiceInfo serviceInfo,
-            final JSONMapper jsonMapper) {
+            final JSONMapper jsonMapper, 
+            final CacheManager cacheManager) {
 
         this.examDAO = examDAO;
         this.groupDAO = groupDAO;
@@ -86,7 +93,8 @@ public class ProctoringServiceImpl implements ProctoringService {
         this.jsonMapper = jsonMapper;
         this.distributedUpdateInterval = serviceInfo.getDistributedUpdateInterval();
         this.isDistributedSetup = serviceInfo.isDistributed();
-     }
+        this.cacheManager = cacheManager;
+    }
 
     @Override
     public void checkMonitoringAccess(final String groupUUID) {
@@ -109,32 +117,18 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public Result<ScreenshotViewData> getRecordedImageDataAt(final String sessionUUID, final Long timestamp) {
+    public synchronized Result<ScreenshotViewData> getRecordedImageDataAt(final String sessionUUID, final Long timestamp) {
         return Result.tryCatch(() -> {
-            if (timestamp != null) {
-
-                return createScreenshotViewData(
-                        sessionUUID,
-                        this.proctoringCacheService.getSessionScreenshotData(sessionUUID).getAt(timestamp));
-            } else {
-                Long latestSSDataId = this.liveProctoringCacheService.getLatestSSDataId(sessionUUID, true);
-                if (latestSSDataId != null && latestSSDataId != -1L) {
-                    return screenshotDataDAO
-                            .recordByPK(latestSSDataId)
-                            .map(data -> createScreenshotViewData(sessionUUID, data))
-                            .getOrThrow();
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("No latest screenshot available yet for session: {}", sessionUUID);
-                    }
-                    throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, "No latest screenshot available yet");
-                }
-            }
+            final SessionScreenshotCacheData sessionScreenshotData = this.proctoringCacheService
+                    .getSessionScreenshotData(sessionUUID);
+            return createScreenshotViewData(
+                    sessionUUID,
+                    sessionScreenshotData.getAt(timestamp));
         });
     }
 
     @Override
-    public Result<ScreenshotsInGroupData> getSessionsByGroup(
+    public synchronized Result<ScreenshotsInGroupData> getSessionsByGroup(
             final String groupUUID,
             final Integer pageNumber,
             final Integer pageSize,
@@ -429,11 +423,6 @@ public class ProctoringServiceImpl implements ProctoringService {
             screenshotIn =  this.screenshotDAO
                     .getImage(this.liveProctoringCacheService.getLatestSSDataId(sessionUUID, true), sessionUUID)
                     .getOrThrow();
-//
-//            screenshotIn = this.screenshotDataDAO
-//                    .getLatestImageId(sessionUUID)
-//                    .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
-//                    .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
             
@@ -468,11 +457,6 @@ public class ProctoringServiceImpl implements ProctoringService {
             screenshotIn = this.screenshotDAO
                     .getImage(at.getId(), sessionUUID)
                     .getOrThrow();
-
-//            screenshotIn = this.screenshotDataDAO
-//                    .getIdAt(sessionUUID, timestamp)
-//                    .flatMap(pk -> this.screenshotDAO.getImage(pk, sessionUUID))
-//                    .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
         } catch (final Exception e) {
@@ -627,7 +611,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                 this.clearGroupCache(groupUUID, true);
             } else {
                 
-                // TODO use CacheManager to get all actual cached sessions to update
                 Map<String, Long> updateTimes = this.proctoringCacheService
                         .getLiveSessionTokens(activeGroup.uuid)
                         .stream()

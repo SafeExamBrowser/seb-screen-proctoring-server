@@ -110,7 +110,6 @@ public class AdminProctorController {
         return this.proctoringService
                 .getActivateGroupSessionCounts()
                 .getOrThrow();
-
     }
 
     @Operation(
@@ -226,16 +225,6 @@ public class AdminProctorController {
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
         
-        // TODO test this criticalRequestBucket strategy to prevent to many not responded requests 
-        //  that possibly stuck on DB level
-        if (criticalRequestBucket.get() <= 0) {
-            if (log.isDebugEnabled()) {
-                log.warn("criticalRequestBucket empty! This will deny request in the future");
-            }
-        }
-        int token = criticalRequestBucket.decrementAndGet();
-        System.out.println("******************* token" + token);
-        
         this.proctoringService.checkMonitoringAccess(groupUUID);
 
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
@@ -293,22 +282,7 @@ public class AdminProctorController {
             @PathVariable(name = API.PARAM_TIMESTAMP, required = true) final String timestamp) {
 
         this.proctoringService.checkMonitoringSessionAccess(sessionUUID);
-
-        // TODO test this criticalRequestBucket strategy to prevent to many not responded requests 
-        //  that possibly stuck on DB level
-        if (criticalRequestBucket.get() <= 0) {
-            if (log.isDebugEnabled()) {
-                log.warn("criticalRequestBucket empty! This will deny request in the future");
-                throw new TooManyRequests();
-            }
-        }
-        int token = criticalRequestBucket.decrementAndGet();
-        System.out.println("******************* token " + token);
         
-        try {
-            Thread.sleep(10000);
-        } catch (Exception e) {}
-
         Long ts = null;
         if (StringUtils.isNotBlank(timestamp)) {
             try {

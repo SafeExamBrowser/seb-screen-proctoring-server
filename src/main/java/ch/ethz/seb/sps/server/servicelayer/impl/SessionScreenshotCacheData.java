@@ -25,7 +25,7 @@ public class SessionScreenshotCacheData {
             final Collection<ScreenshotDataRecord> data) {
         
         this.sessionUUID = sessionUUID;
-        this.data = data.toArray(new ScreenshotDataRecord[data.size()]);
+        this.data = data.toArray(new ScreenshotDataRecord[0]);
         Arrays.sort(
                 this.data, 
                 Comparator.comparing(ScreenshotDataRecord::getTimestamp));
@@ -36,6 +36,10 @@ public class SessionScreenshotCacheData {
     }
     
     public ScreenshotDataRecord getAt(Long timestamp) {
+        if (timestamp == null) {
+            return data[0];
+        }
+        
         final int i = Arrays.binarySearch(timestamps, timestamp);
         if (i >= 0) {
             return data[i];

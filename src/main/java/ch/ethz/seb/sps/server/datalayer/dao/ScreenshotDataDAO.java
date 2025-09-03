@@ -30,18 +30,11 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
 
     Result<Collection<ScreenshotDataRecord>> allOfSession(String sessionUUID);
 
-    //Result<ScreenshotDataRecord> getAt(String sessionUUID, Long at);
-
-    //Result<Long> getIdAt(String sessionUUID, Long at);
-
-    //Result<Long> getLatestImageId(String sessionUUID);
-
     Result<Collection<Long>> getScreenshotTimestamps(String sessionUUID, Long timestamp, PageSortOrder sortOrder);
 
     Result<ScreenshotDataRecord> getLatest(String sessionUUID);
 
     Result<Map<String, ScreenshotDataRecord>> allOfMappedToSession(List<Long> pks);
-    //Result<Map<String, ScreenshotDataRecord>> allLatestIn(List<String> sessionUUIDs);
 
     Result<Long> save(
             String sessionId,

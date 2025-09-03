@@ -162,9 +162,13 @@ public class ProctoringCacheService {
         if (result.hasError()) {
             log.warn("Failed to get all screenshot data for session: {}", sessionUUID);
             return null;
+        } else {
+            Collection<ScreenshotDataRecord> screenshotDataRecords = result.get();
+            if (log.isDebugEnabled()) {
+                log.debug("Got SessionScreenshotCacheData for session: {} with {} entries", sessionUUID, screenshotDataRecords.size());
+            }
+            return new SessionScreenshotCacheData(sessionUUID, screenshotDataRecords);
         }
-        
-        return new SessionScreenshotCacheData(sessionUUID, result.get());
     }
 
     @CacheEvict(
