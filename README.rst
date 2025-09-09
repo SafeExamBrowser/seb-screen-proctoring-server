@@ -29,7 +29,7 @@ SEB Client Compatibility:
 .. csv-table::
     :header: "Platform / OS", "Release Version"
     
-    "SEB Client for iOS", "3.5"
+    "SEB Client for iOS", "3.6"
     "SEB Client for Mac", "3.6"
     "SEB Client for Windows", "3.10"
 
