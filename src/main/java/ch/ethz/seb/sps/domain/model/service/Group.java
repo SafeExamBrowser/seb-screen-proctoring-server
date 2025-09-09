@@ -8,13 +8,8 @@
 
 package ch.ethz.seb.sps.domain.model.service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -210,36 +205,24 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("Group [id=");
-        builder.append(this.id);
-        builder.append(", uuid=");
-        builder.append(this.uuid);
-        builder.append(", name=");
-        builder.append(this.name);
-        builder.append(", description=");
-        builder.append(this.description);
-        builder.append(", owner=");
-        builder.append(this.owner);
-        builder.append(", creationTime=");
-        builder.append(this.creationTime);
-        builder.append(", lastUpdateTime=");
-        builder.append(this.lastUpdateTime);
-        builder.append(", terminationTime=");
-        builder.append(this.terminationTime);
-        builder.append(", entityPrivileges=");
-        builder.append(this.exam_id);
-        builder.append(", exam_id=");
-        builder.append(this.entityPrivileges);
-        builder.append("]");
-        return builder.toString();
+        return "Group [id=" + this.id +
+                ", uuid=" + this.uuid +
+                ", name=" + this.name +
+                ", description=" + this.description +
+                ", owner=" + this.owner +
+                ", creationTime=" + this.creationTime +
+                ", lastUpdateTime=" + this.lastUpdateTime +
+                ", terminationTime=" + this.terminationTime +
+                ", entityPrivileges=" + this.exam_id +
+                ", exam_id=" + this.entityPrivileges +
+                "]";
     }
 
-    public static final Function<Collection<Group>, List<Group>> groupSort(final String sort) {
+    public static Function<Collection<Group>, List<Group>> groupSort(final String sort) {
 
         final String sortBy = PageSortOrder.decode(sort);
         return groups -> {
-            final List<Group> list = groups.stream().collect(Collectors.toList());
+            final List<Group> list = new ArrayList<>(groups);
             if (StringUtils.isBlank(sort)) {
                 return list;
             }
@@ -247,7 +230,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
             if (sortBy.equals(Group.FILTER_ATTR_NAME)) {
                 list.sort(Comparator.comparing(group -> (group.name != null) ? group.name : StringUtils.EMPTY));
             }
-            if (sortBy.equals(Group.FILTER_ATTR_CREATTION_TIME)) {
+            if (sortBy.equals(Group.FILTER_ATTR_CREATION_TIME)) {
                 list.sort(Comparator.comparing(group -> (group.creationTime != null) ? group.creationTime : 0L));
             }
             if (PageSortOrder.DESCENDING == PageSortOrder.getSortOrder(sort)) {

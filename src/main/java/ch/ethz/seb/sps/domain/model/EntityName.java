@@ -73,15 +73,10 @@ public class EntityName extends EntityKey {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("EntityName [entityType=");
-        builder.append(this.entityType);
-        builder.append(", modelId=");
-        builder.append(this.modelId);
-        builder.append(", name=");
-        builder.append(this.name);
-        builder.append("]");
-        return builder.toString();
+        return "EntityName [entityType=" + this.entityType +
+                ", modelId=" + this.modelId +
+                ", name=" + this.name +
+                "]";
     }
 
 }

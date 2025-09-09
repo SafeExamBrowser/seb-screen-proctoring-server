@@ -54,7 +54,7 @@ public interface PaginationService {
     int getPageSize(final Integer pageSize);
 
     /** Get a Page of specified domain models from given pagination attributes within collection supplier delegate.
-     *
+     * <p>
      * NOTE: Paging always depends on SQL level. It depends on the collection given by the SQL select statement
      * that is executed within MyBatis by using the MyBatis page service.
      * Be aware that if the delegate that is given here applies an additional filter to the filtering done
@@ -78,7 +78,7 @@ public interface PaginationService {
             Supplier<Result<Collection<T>>> delegate);
 
     /** Get a Page of specified domain models from given pagination attributes within collection supplier delegate.
-     *
+     * <p>
      * NOTE: Paging always depends on SQL level. It depends on the collection given by the SQL select statement
      * that is executed within MyBatis by using the MyBatis page service.
      * Be aware that if the delegate that is given here applies an additional filter to the filtering done
@@ -106,7 +106,7 @@ public interface PaginationService {
             Supplier<Result<Collection<T>>> delegate);
 
     /** Fetches a paged batch of objects
-     *
+     * <p>
      * NOTE: Paging always depends on SQL level. It depends on the collection given by the SQL select statement
      * that is executed within MyBatis by using the MyBatis page service.
      * Be aware that if the delegate that is given here applies an additional filter to the filtering done
@@ -130,7 +130,7 @@ public interface PaginationService {
             Supplier<Result<Collection<T>>> delegate);
 
     /** Fetches a paged batch of objects
-     *
+     * <p>
      * NOTE: Paging always depends on SQL level. It depends on the collection given by the SQL select statement
      * that is executed within MyBatis by using the MyBatis page service.
      * Be aware that if the delegate that is given here applies an additional filter to the filtering done

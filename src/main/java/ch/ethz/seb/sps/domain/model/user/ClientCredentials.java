@@ -93,11 +93,7 @@ public final class ClientCredentials {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("ClientCredentials [clientId=");
-        builder.append(this.clientId);
-        builder.append("]");
-        return builder.toString();
+        return "ClientCredentials [clientId=" + this.clientId + "]";
     }
 
 }

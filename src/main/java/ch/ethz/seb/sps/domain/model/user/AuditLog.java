@@ -132,25 +132,15 @@ public class AuditLog implements Entity {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("UserActivityLog [id=");
-        builder.append(this.id);
-        builder.append(", userUUID=");
-        builder.append(this.userUUID);
-        builder.append(", username=");
-        builder.append(this.username);
-        builder.append(", timestamp=");
-        builder.append(this.timestamp);
-        builder.append(", activityType=");
-        builder.append(this.activityType);
-        builder.append(", entityType=");
-        builder.append(this.entityType);
-        builder.append(", entityId=");
-        builder.append(this.entityId);
-        builder.append(", message=");
-        builder.append(this.message);
-        builder.append("]");
-        return builder.toString();
+        return "UserActivityLog [id=" + this.id +
+                ", userUUID=" + this.userUUID +
+                ", username=" + this.username +
+                ", timestamp=" + this.timestamp +
+                ", activityType=" + this.activityType +
+                ", entityType=" + this.entityType +
+                ", entityId=" + this.entityId +
+                ", message=" + this.message +
+                "]";
     }
 
 }

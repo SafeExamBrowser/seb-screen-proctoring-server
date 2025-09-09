@@ -42,10 +42,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 
 /** The user info domain model contains primary user information
- *
+ * <p>
  * This domain model is annotated and fully serializable and deserializable
  * to and from JSON within the Jackson library.
- *
+ * <p>
  * This domain model is immutable and thread-save */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivileges, WithLifeCycle, Serializable {
@@ -324,31 +324,18 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("UserInfo [uuid=");
-        builder.append(this.uuid);
-        builder.append(", name=");
-        builder.append(this.name);
-        builder.append(", surname=");
-        builder.append(this.surname);
-        builder.append(", username=");
-        builder.append(this.username);
-        builder.append(", email=");
-        builder.append(this.email);
-        builder.append(", language=");
-        builder.append(this.language);
-        builder.append(", timeZone=");
-        builder.append(this.timeZone);
-        builder.append(", roles=");
-        builder.append(this.roles);
-        builder.append(", creationTime=");
-        builder.append(this.creationTime);
-        builder.append(", lastUpdateTime=");
-        builder.append(this.lastUpdateTime);
-        builder.append(", terminationTime=");
-        builder.append(this.terminationTime);
-        builder.append("]");
-        return builder.toString();
+        return "UserInfo [uuid=" + this.uuid +
+                ", name=" + this.name +
+                ", surname=" + this.surname +
+                ", username=" + this.username +
+                ", email=" + this.email +
+                ", language=" + this.language +
+                ", timeZone=" + this.timeZone +
+                ", roles=" + this.roles +
+                ", creationTime=" + this.creationTime +
+                ", lastUpdateTime=" + this.lastUpdateTime +
+                ", terminationTime=" + this.terminationTime +
+                "]";
     }
 
     /** Use this to create a copy of a given UserInfo instance.

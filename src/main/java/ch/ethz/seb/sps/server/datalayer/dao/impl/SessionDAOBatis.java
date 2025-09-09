@@ -16,13 +16,7 @@ import static ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamic
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchSessionMapper;
@@ -150,6 +144,20 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Collection<String>> allSessionUUIDsByGroupId(final Long groupId) {
+        return Result.tryCatch(() -> {
+            return this.sessionRecordMapper.selectByExample()
+                    .where(SessionRecordDynamicSqlSupport.groupId, SqlBuilder.isEqualTo(groupId))
+                    .build()
+                    .execute()
+                    .stream()
+                    .map(SessionRecord::getUuid)
+                    .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Long> allLiveSessionCount(final Long groupId) {
         return Result.tryCatch(() -> this.sessionRecordMapper
                 .countByExample()
@@ -237,16 +245,21 @@ public class SessionDAOBatis implements SessionDAO {
                     .execute();
         });
     }
-
-    // TODO this seems to not work as expected. Seems to get always all ids of the group!?
+    
     @Override
-    public Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Set<Long> updateTimes) {
+    public Result<List<String>> allTokensThatNeedsUpdate(Long groupId, Map<String, Long> updateTimes) {
         return Result.tryCatch(() -> {
+            
+            
+            if (updateTimes == null || updateTimes.isEmpty()) {
+                return Collections.emptyList();
+            }
 
             List<Long> idsForUpdate = this.sessionRecordMapper
                     .selectIdsByExample()
                     .where(SessionRecordDynamicSqlSupport.groupId, isEqualTo(groupId))
-                    .and(SessionRecordDynamicSqlSupport.lastUpdateTime, isNotIn(updateTimes))
+                    .and(uuid, isIn(updateTimes.keySet()))
+                    .and(SessionRecordDynamicSqlSupport.lastUpdateTime, isNotIn(updateTimes.values()))
                     .build()
                     .execute();
 
@@ -453,6 +466,10 @@ public class SessionDAOBatis implements SessionDAO {
     @Override
     @Transactional
     public Result<Collection<EntityKey>> deleteAllForGroups(final List<Long> groupPKs) {
+        if (groupPKs == null || groupPKs.isEmpty()) {
+            return Result.of(Collections.emptyList());
+        }
+        
         return Result.tryCatch(() -> this.sessionRecordMapper.selectIdsByExample()
                 .where(SessionRecordDynamicSqlSupport.groupId, isIn(groupPKs))
                 .build()
@@ -461,7 +478,6 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     private Collection<EntityKey> delete(final List<Long> pks) {
-
         if (pks == null || pks.isEmpty()) {
             return Collections.emptyList();
         }
@@ -660,9 +676,7 @@ public class SessionDAOBatis implements SessionDAO {
 
         // meta data constraint
         final ScreenshotMetadataType[] metaData = API.ScreenshotMetadataType.values();
-        for (int i = 0; i < metaData.length; i++) {
-            final ScreenshotMetadataType mc = metaData[i];
-
+        for (final ScreenshotMetadataType mc : metaData) {
             final String sqlWildcard = filterMap.getSQLWildcard(mc.parameterName);
             if (sqlWildcard == null) {
                 continue;
@@ -670,10 +684,10 @@ public class SessionDAOBatis implements SessionDAO {
 
             final String value =
                     Constants.PERCENTAGE_STRING +
-                            Constants.DOUBLE_QUOTE +
-                            mc.parameterName +
-                            Constants.DOUBLE_QUOTE +
-                            sqlWildcard;
+                    Constants.DOUBLE_QUOTE +
+                    mc.parameterName +
+                    Constants.DOUBLE_QUOTE +
+                    sqlWildcard;
 
             queryBuilder = queryBuilder.and(
                     ScreenshotDataRecordDynamicSqlSupport.metaData,

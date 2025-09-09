@@ -248,7 +248,7 @@ public class AdditionalAttributesDAOImpl implements AdditionalAttributesDAO {
                     .build()
                     .execute();
         } catch (final Exception e) {
-            log.error("Failed to delete all additional attributes for: {} cause: {}", entityId, e);
+            log.error("Failed to delete all additional attributes for: {} cause: ", entityId, e);
         }
     }
 

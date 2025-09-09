@@ -38,7 +38,7 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
     private final MigrationStrategy sebServerMigrationStrategy;
     private final AdminUserInitializer adminUserInitializer;
 
-    private final boolean initialized = false;
+    private boolean initialized = false;
 
     public ServiceInit(
             final ApplicationContext applicationContext,
@@ -164,6 +164,7 @@ public class ServiceInit implements ApplicationListener<ApplicationReadyEvent> {
         INIT_LOGGER.info("----> *** Webservice successfully started up!               ***");
         INIT_LOGGER.info("----> *********************************************************");
 
+        initialized = true;
     }
 
     private boolean registerWebservice() {

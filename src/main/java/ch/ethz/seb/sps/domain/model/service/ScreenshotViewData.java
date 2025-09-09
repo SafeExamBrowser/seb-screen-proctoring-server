@@ -222,35 +222,20 @@ public final class ScreenshotViewData {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("ScreenshotViewData [startTime=");
-        builder.append(this.startTime);
-        builder.append(", timestamp=");
-        builder.append(this.timestamp);
-        builder.append(", endTime=");
-        builder.append(this.endTime);
-        builder.append(", uuid=");
-        builder.append(this.uuid);
-        builder.append(", clientName=");
-        builder.append(this.clientName);
-        builder.append(", clientIP=");
-        builder.append(this.clientIP);
-        builder.append(", clientMachineName=");
-        builder.append(this.clientMachineName);
-        builder.append(", clientOSName=");
-        builder.append(this.clientOSName);
-        builder.append(", clientVersion=");
-        builder.append(this.clientVersion);
-        builder.append(", imageFormat=");
-        builder.append(this.imageFormat);
-        builder.append(", latestImageLink=");
-        builder.append(this.latestImageLink);
-        builder.append(", imageLink=");
-        builder.append(this.imageLink);
-        builder.append(", metaData=");
-        builder.append(this.metaData);
-        builder.append("]");
-        return builder.toString();
+        return "ScreenshotViewData [startTime=" + this.startTime +
+                ", timestamp=" + this.timestamp +
+                ", endTime=" + this.endTime +
+                ", uuid=" + this.uuid +
+                ", clientName=" + this.clientName +
+                ", clientIP=" + this.clientIP +
+                ", clientMachineName=" + this.clientMachineName +
+                ", clientOSName=" + this.clientOSName +
+                ", clientVersion=" + this.clientVersion +
+                ", imageFormat=" + this.imageFormat +
+                ", latestImageLink=" + this.latestImageLink +
+                ", imageLink=" + this.imageLink +
+                ", metaData=" + this.metaData +
+                "]";
     }
 
 }

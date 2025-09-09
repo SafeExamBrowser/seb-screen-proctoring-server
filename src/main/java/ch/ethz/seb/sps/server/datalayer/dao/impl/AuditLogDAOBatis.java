@@ -142,7 +142,7 @@ public class AuditLogDAOBatis implements AuditLogDAO {
         return Result.tryCatch(() -> {
             final List<AuditLog> result = pks
                     .stream()
-                    .map(pk -> this.auditLogRecordMapper.selectByPrimaryKey(pk))
+                    .map(this.auditLogRecordMapper::selectByPrimaryKey)
                     .filter(Objects::nonNull)
                     .map(this::toDomainModel)
                     .collect(Collectors.toList());

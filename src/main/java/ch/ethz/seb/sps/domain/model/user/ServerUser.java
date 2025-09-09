@@ -24,7 +24,7 @@ import org.springframework.util.CollectionUtils;
 import ch.ethz.seb.sps.domain.api.API.UserRole;
 
 /** SEBServerUser defines web-service internal user-account based authentication principal
- *
+ * <p>
  * This implements Spring's UserDetails and CredentialsContainer to act as a principal
  * within internal authentication and authorization processes. */
 public final class ServerUser implements UserDetails, CredentialsContainer, Authentication {
@@ -41,11 +41,10 @@ public final class ServerUser implements UserDetails, CredentialsContainer, Auth
         this.id = id;
         this.userInfo = userInfo;
         this.password = password;
-        this.authorities = Collections.unmodifiableList(
-                userInfo.getRoles()
-                        .stream()
-                        .map(role -> new SimpleGrantedAuthority(role))
-                        .collect(Collectors.toList()));
+        this.authorities = userInfo.getRoles()
+                .stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toUnmodifiableList());
 
         if (CollectionUtils.isEmpty(userInfo.roles)) {
             this.userRoles = EnumSet.noneOf(UserRole.class);

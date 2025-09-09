@@ -17,7 +17,6 @@ import jakarta.validation.Valid;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.FieldError;
@@ -57,8 +56,7 @@ import ch.ethz.seb.sps.utils.Result;
 public class AdminUserAccountController extends ActivatableEntityController<UserInfo, UserMod> {
 
     private static final Logger log = LoggerFactory.getLogger(AdminUserAccountController.class);
-
-    private final ApplicationEventPublisher applicationEventPublisher;
+    
     private final UserDAO userDAO;
     private final PasswordEncoder userPasswordEncoder;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
@@ -70,14 +68,12 @@ public class AdminUserAccountController extends ActivatableEntityController<User
             final EntityPrivilegeDAO entityPrivilegeDAO,
             final UserService userService,
             final PaginationService paginationService,
-            final ApplicationEventPublisher applicationEventPublisher,
             final BeanValidationService beanValidationService,
             final EntityService entityService,
             final PasswordEncoder userPasswordEncoder) {
 
         super(userService, userDAO, auditLogDAO, paginationService, beanValidationService);
         this.entityPrivilegeDAO = entityPrivilegeDAO;
-        this.applicationEventPublisher = applicationEventPublisher;
         this.userDAO = userDAO;
         this.entityService = entityService;
         this.userPasswordEncoder = userPasswordEncoder;

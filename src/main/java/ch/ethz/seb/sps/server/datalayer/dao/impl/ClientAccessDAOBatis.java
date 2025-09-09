@@ -342,7 +342,7 @@ public class ClientAccessDAOBatis implements ClientAccessDAO, OwnedEntityDAO {
 
     private ClientAccess toDomainModel(final ClientAccessRecord record) {
         final String clientSecret = record.getClientSecret();
-        CharSequence plainPWD = clientSecret;
+        CharSequence plainPWD;
         try {
             plainPWD = this.clientCredentialService.decrypt(clientSecret).getOrThrow();
         } catch (final Exception e) {

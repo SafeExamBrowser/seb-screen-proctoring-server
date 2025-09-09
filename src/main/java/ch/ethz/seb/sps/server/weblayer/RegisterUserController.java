@@ -15,7 +15,6 @@ import java.util.Locale;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.joda.time.DateTimeZone;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.FieldError;
@@ -34,7 +33,6 @@ import ch.ethz.seb.sps.domain.api.TooManyRequests;
 import ch.ethz.seb.sps.domain.model.user.PasswordChange;
 import ch.ethz.seb.sps.domain.model.user.UserInfo;
 import ch.ethz.seb.sps.domain.model.user.UserMod;
-import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.dao.AuditLogDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;

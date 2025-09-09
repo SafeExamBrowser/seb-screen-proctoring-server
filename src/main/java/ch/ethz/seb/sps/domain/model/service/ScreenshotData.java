@@ -114,19 +114,12 @@ public class ScreenshotData implements Entity {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("ScreenshotData [id=");
-        builder.append(this.id);
-        builder.append(", sessionUUID=");
-        builder.append(this.sessionUUID);
-        builder.append(", timestamp=");
-        builder.append(this.timestamp);
-        builder.append(", imageFormat=");
-        builder.append(this.imageFormat);
-        builder.append(", metaData=");
-        builder.append(this.metaData);
-        builder.append("]");
-        return builder.toString();
+        return "ScreenshotData [id=" + this.id +
+                ", sessionUUID=" + this.sessionUUID +
+                ", timestamp=" + this.timestamp +
+                ", imageFormat=" + this.imageFormat +
+                ", metaData=" + this.metaData +
+                "]";
     }
 
 }

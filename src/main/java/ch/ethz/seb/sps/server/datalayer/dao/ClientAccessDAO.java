@@ -13,6 +13,11 @@ import ch.ethz.seb.sps.utils.Result;
 
 public interface ClientAccessDAO extends ActivatableEntityDAO<ClientAccess, ClientAccess> {
 
-    public Result<CharSequence> getEncodedClientPWD(String clientId, boolean checkActive);
+    /** Get the encoded client password that is used by a SEB client to authenticate.
+     * 
+     * @param clientId The client authentication entity id.
+     * @param checkActive Only gets the password if the client authentication entity is active.
+     * @return Result refer to CharSequence with the encoded client password. */
+    Result<CharSequence> getEncodedClientPWD(String clientId, boolean checkActive);
 
 }

@@ -52,10 +52,12 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
 
     @Operation(
             summary = "Get a page of all specific domain entity that are currently active.",
-            description = "Sorting: the sort parameter to sort the list of entities before paging\n"
-                    + "the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for\n"
-                    + "descending sort order. Note that not all entity-model attribute are suited for sorting while the most\n"
-                    + "are.\n",
+            description = """
+                    Sorting: the sort parameter to sort the list of entities before paging
+                    the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for
+                    descending sort order. Note that not all entity-model attribute are suited for sorting while the most
+                    are.
+                    """,
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
@@ -93,10 +95,12 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
 
     @Operation(
             summary = "Get a page of all specific domain entity that are currently inactive.",
-            description = "Sorting: the sort parameter to sort the list of entities before paging\n"
-                    + "the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for\n"
-                    + "descending sort order. Note that not all entity-model attribute are suited for sorting while the most\n"
-                    + "are.\n",
+            description = """
+                    Sorting: the sort parameter to sort the list of entities before paging
+                    the sort parameter is the name of the entity-model attribute to sort with a leading '-' sign for
+                    descending sort order. Note that not all entity-model attribute are suited for sorting while the most
+                    are.
+                    """,
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {

@@ -22,16 +22,16 @@ SEB - SEB Server Compatibility
 The table below shows available and upcoming SEB client versions that has SEB Server integration support and are compatible with particular
 SEB Server versions. There is an entry for each platform with a beta or testing release date and an official release date.
 
-**SPS webservice version 1.0 is fully compatible with SEB Server version 2.0**
+**SPS webservice version 1.2 is fully compatible with SEB Server version 2.2**
 
 SEB Client Compatibility:
 
 .. csv-table::
     :header: "Platform / OS", "Release Version"
     
-    "SEB Client for iOS", "3.4"
-    "SEB Client for Mac", "3.4"
-    "SEB Client for Windows", "3.8"
+    "SEB Client for iOS", "3.5"
+    "SEB Client for Mac", "3.6"
+    "SEB Client for Windows", "3.10"
 
 Install SEB Server
 ------------------

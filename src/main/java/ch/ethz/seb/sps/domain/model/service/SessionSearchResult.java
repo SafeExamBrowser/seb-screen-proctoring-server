@@ -216,35 +216,20 @@ public class SessionSearchResult implements Entity {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("SessionSearchResult [groupUUID=");
-        builder.append(this.groupUUID);
-        builder.append(", groupName=");
-        builder.append(this.groupName);
-        builder.append(", groupCreationTime=");
-        builder.append(this.groupCreationTime);
-        builder.append(", sessionUUID=");
-        builder.append(this.sessionUUID);
-        builder.append(", startTime=");
-        builder.append(this.startTime);
-        builder.append(", endTime=");
-        builder.append(this.endTime);
-        builder.append(", clientName=");
-        builder.append(this.clientName);
-        builder.append(", clientIP=");
-        builder.append(this.clientIP);
-        builder.append(", clientMachineName=");
-        builder.append(this.clientMachineName);
-        builder.append(", clientOSName=");
-        builder.append(this.clientOSName);
-        builder.append(", clientVersion=");
-        builder.append(this.clientVersion);
-        builder.append(", imageFormat=");
-        builder.append(this.imageFormat);
-        builder.append(", nrOfScreenshots=");
-        builder.append(this.nrOfScreenshots);
-        builder.append("]");
-        return builder.toString();
+        return "SessionSearchResult [groupUUID=" + this.groupUUID +
+                ", groupName=" + this.groupName +
+                ", groupCreationTime=" + this.groupCreationTime +
+                ", sessionUUID=" + this.sessionUUID +
+                ", startTime=" + this.startTime +
+                ", endTime=" + this.endTime +
+                ", clientName=" + this.clientName +
+                ", clientIP=" + this.clientIP +
+                ", clientMachineName=" + this.clientMachineName +
+                ", clientOSName=" + this.clientOSName +
+                ", clientVersion=" + this.clientVersion +
+                ", imageFormat=" + this.imageFormat +
+                ", nrOfScreenshots=" + this.nrOfScreenshots +
+                "]";
     }
 
 }

@@ -11,17 +11,12 @@ import io.minio.MinioClient;
 import io.minio.ObjectWriteResponse;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectsArgs;
-import io.minio.SetBucketLifecycleArgs;
 import io.minio.SnowballObject;
 import io.minio.UploadSnowballObjectsArgs;
 import io.minio.messages.Bucket;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
-import io.minio.messages.Expiration;
 import io.minio.messages.LifecycleConfiguration;
-import io.minio.messages.LifecycleRule;
-import io.minio.messages.RuleFilter;
-import io.minio.messages.Status;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +34,6 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.time.ZonedDateTime;
-import java.util.LinkedList;
 import java.util.List;
 
 

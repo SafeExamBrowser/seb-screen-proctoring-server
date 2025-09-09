@@ -113,13 +113,7 @@ public class EntityKey implements ModelIdAware, Serializable, Comparable<EntityK
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("EntityKey [modelId=");
-        builder.append(this.modelId);
-        builder.append(", entityType=");
-        builder.append(this.entityType);
-        builder.append("]");
-        return builder.toString();
+        return "EntityKey [modelId=" + this.modelId + ", entityType=" + this.entityType + "]";
     }
 
     @Override
@@ -131,7 +125,6 @@ public class EntityKey implements ModelIdAware, Serializable, Comparable<EntityK
         final int compareTo = Constants.DEFAULT_ENGLISH_COLLATOR.compare(
                 this.entityType.name(),
                 other.entityType.name());
-        //this.entityType.name().compareTo(other.entityType.name());
 
         if (compareTo == 0) {
             return this.modelId.compareTo(other.modelId);

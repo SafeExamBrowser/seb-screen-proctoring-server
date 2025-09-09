@@ -145,7 +145,7 @@ public class AdminSessionController extends ActivatableEntityController<Session,
                 modifyData.clientMachineName,
                 modifyData.clientOSName,
                 modifyData.clientVersion,
-                modifyData.imageFormat != null ? modifyData.imageFormat : existingEntity.imageFormat,
+                modifyData.imageFormat,
                 existingEntity.creationTime,
                 null,
                 null);

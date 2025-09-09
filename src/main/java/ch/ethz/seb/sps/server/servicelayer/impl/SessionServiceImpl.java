@@ -174,9 +174,7 @@ public class SessionServiceImpl implements SessionService {
                         // clear group cache
                         .onSuccess( results -> groupDAO
                                 .byModelId(groupKey.modelId)
-                                .onSuccess( gr -> proctoringService.clearGroupCache(
-                                        gr.uuid,
-                                        true))
+                                .onSuccess( gr -> proctoringService.clearGroupCache(gr.uuid, true))
                         )
                         // add results
                         .onSuccess(result::addAll);
@@ -190,7 +188,7 @@ public class SessionServiceImpl implements SessionService {
         Long pk = examDAO.modelIdToPK(examUUID);
         if (pk != null) {
             return this.groupDAO
-                    .allIdsForExamsIds(List.of())
+                    .allIdsForExamsIds(List.of(pk))
                     .flatMap(sessionDAO::hasAnySessionData)
                     .onError(error -> log.warn("Failed to check if there are any session data for Exam: {} error: {}", examUUID, error.getMessage()))
                     .getOr(true);

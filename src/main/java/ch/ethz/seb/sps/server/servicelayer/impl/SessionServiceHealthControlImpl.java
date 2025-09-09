@@ -97,18 +97,23 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
 
     @Override
     public int getDataSourceHealthIndicator() {
-        if (this.dataSource instanceof HikariDataSource) {
-            final HikariDataSource hds = (HikariDataSource) this.dataSource;
-            final HikariPoolMXBean hikariPoolMXBean = hds.getHikariPoolMXBean();
-            final int idleConnections = hikariPoolMXBean.getIdleConnections();
-            final int activeConnections = hikariPoolMXBean.getActiveConnections();
+        try {
+            if (this.dataSource instanceof HikariDataSource) {
+                final HikariDataSource hds = (HikariDataSource) this.dataSource;
+                final HikariPoolMXBean hikariPoolMXBean = hds.getHikariPoolMXBean();
+                final int idleConnections = hikariPoolMXBean.getIdleConnections();
+                final int activeConnections = hikariPoolMXBean.getActiveConnections();
+            }
+            final Health health = this.dataSourceHealthIndicator.getHealth(true);
+            final Map<String, Object> details = health.getDetails();
+            // TODO check what is in details
+            final Status status = health.getStatus();
+            // TODO
+            return 0;
+        } catch (Exception e) {
+            log.warn("Failed to check data source health: {}", e.getMessage());
+            return 10;
         }
-        final Health health = this.dataSourceHealthIndicator.getHealth(true);
-        final Map<String, Object> details = health.getDetails();
-        // TODO check what is in details
-        final Status status = health.getStatus();
-        // TODO
-        return 0;
     }
 
     @Override
@@ -117,33 +122,34 @@ public class SessionServiceHealthControlImpl implements SessionServiceHealthCont
             return simulateHealthIssue;
         }
         
-        final int uploadHealthIndicator = getUploadHealthIndicator();
-        final int downloadHealthIndicator = getDownloadHealthIndicator();
-        final int storeHealthIndicator = getStoreHealthIndicator();
-        final int dataSourceHealthIndicator = getDataSourceHealthIndicator();
         
-        if (log.isDebugEnabled()) {
-            long now = Utils.getMillisecondsNow();
-            if (now - debug_log_last_log_time > debug_log_time_interval) {
-                debug_log_last_log_time = now;
-                if (uploadHealthIndicator > 0) {
-                    log.info("uploadHealthIndicator: {}", uploadHealthIndicator);
-                }
-                if (downloadHealthIndicator > 0) {
-                    log.info("downloadHealthIndicator: {}", downloadHealthIndicator);
-                }
-                if (storeHealthIndicator > 0) {
-                    log.info("storeHealthIndicator: {}", storeHealthIndicator);
-                }
-                if (dataSourceHealthIndicator > 0) {
-                    log.info("dataSourceHealthIndicator: {}", dataSourceHealthIndicator);
+            final int uploadHealthIndicator = getUploadHealthIndicator();
+            final int downloadHealthIndicator = getDownloadHealthIndicator();
+            final int storeHealthIndicator = getStoreHealthIndicator();
+            final int dataSourceHealthIndicator = getDataSourceHealthIndicator();
+            
+            if (log.isDebugEnabled()) {
+                long now = Utils.getMillisecondsNow();
+                if (now - debug_log_last_log_time > debug_log_time_interval) {
+                    debug_log_last_log_time = now;
+                    if (uploadHealthIndicator > 0) {
+                        log.info("uploadHealthIndicator: {}", uploadHealthIndicator);
+                    }
+                    if (downloadHealthIndicator > 0) {
+                        log.info("downloadHealthIndicator: {}", downloadHealthIndicator);
+                    }
+                    if (storeHealthIndicator > 0) {
+                        log.info("storeHealthIndicator: {}", storeHealthIndicator);
+                    }
+                    if (dataSourceHealthIndicator > 0) {
+                        log.info("dataSourceHealthIndicator: {}", dataSourceHealthIndicator);
+                    }
                 }
             }
-        }
-
-        return Math.max(
-                Math.max(uploadHealthIndicator, downloadHealthIndicator),
-                Math.max(storeHealthIndicator, dataSourceHealthIndicator));
+    
+            return Math.max(
+                    Math.max(uploadHealthIndicator, downloadHealthIndicator),
+                    Math.max(storeHealthIndicator, dataSourceHealthIndicator));
     }
 
     // map size between THREAD_POOL_SIZE_INDICATOR_MAP_MIN ... THREAD_POOL_SIZE_INDICATOR_MAP_MAX to 0 ... HEALTH_INDICATOR_MAX

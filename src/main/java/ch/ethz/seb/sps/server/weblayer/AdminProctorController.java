@@ -12,6 +12,7 @@ import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.EntityType;
@@ -74,6 +75,8 @@ public class AdminProctorController {
     private final PaginationService paginationService;
     private final GroupingService groupingService;
     private final UserService userService;
+    
+    private AtomicInteger criticalRequestBucket = new AtomicInteger(10);
 
     public AdminProctorController(
             final GroupDAO groupDAO,
@@ -126,7 +129,7 @@ public class AdminProctorController {
             parameters = {
                     @Parameter(
                             name = Page.ATTR_PAGE_NUMBER,
-                            description = "The number of the page to get from the whole list. If the page does not exists, the API retruns with the first page."),
+                            description = "The number of the page to get from the whole list. If the page does not exists, the API reruns with the first page."),
                     @Parameter(
                             name = Page.ATTR_PAGE_SIZE,
                             description = "The size of the page to get."),
@@ -221,12 +224,23 @@ public class AdminProctorController {
             @RequestParam(name = ScreenshotsInGroupData.ATTR_SORT_ORDER, required = false) final PageSortOrder sortOrder,
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
-
+        
+        // TODO test this criticalRequestBucket strategy to prevent to many not responded requests 
+        //  that possibly stuck on DB level
+        if (criticalRequestBucket.get() <= 0) {
+            if (log.isDebugEnabled()) {
+                log.warn("criticalRequestBucket empty! This will deny request in the future");
+            }
+        }
+        criticalRequestBucket.decrementAndGet();
+        
         this.proctoringService.checkMonitoringAccess(groupUUID);
 
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
         return this.proctoringService
                 .getSessionsByGroup(groupUUID, pageNumber, pageSize, sortBy, sortOrder, filterMap)
+                .onError(e -> { criticalRequestBucket.incrementAndGet(); })
+                .onSuccess(r -> { criticalRequestBucket.incrementAndGet(); })
                 .getOrThrow();
     }
 
@@ -278,6 +292,15 @@ public class AdminProctorController {
 
         this.proctoringService.checkMonitoringSessionAccess(sessionUUID);
 
+        // TODO test this criticalRequestBucket strategy to prevent to many not responded requests 
+        //  that possibly stuck on DB level
+        if (criticalRequestBucket.get() <= 0) {
+            if (log.isDebugEnabled()) {
+                log.warn("criticalRequestBucket empty! This will deny request in the future");
+            }
+        }
+        criticalRequestBucket.decrementAndGet();
+
         Long ts = null;
         if (StringUtils.isNotBlank(timestamp)) {
             try {
@@ -289,6 +312,8 @@ public class AdminProctorController {
 
         return this.proctoringService
                 .getRecordedImageDataAt(sessionUUID, ts)
+                .onError(e -> { criticalRequestBucket.incrementAndGet(); })
+                .onSuccess(r -> { criticalRequestBucket.incrementAndGet(); })
                 .getOrThrow();
     }
 
@@ -869,6 +894,11 @@ public class AdminProctorController {
         final Set<Long> granted = this.userService
                 .getIdsWithReadEntityPrivilege(EntityType.EXAM)
                 .getOrThrow();
+        
+        if (granted.isEmpty() && !userService.hasGrant(API.PrivilegeType.READ, EntityType.EXAM)) {
+            return Collections.emptyList();
+        }
+        
         return this.examDAO
                 .getExamsWithin(filterMap, granted)
                 .getOrThrow()
