@@ -88,7 +88,7 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
         INIT_LOGGER.info("---->");
         INIT_LOGGER.info("----> Initialize Live Proctoring Cache Service");
-        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("---->     with update interval: " + batchInterval);
         
         try {
             this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
