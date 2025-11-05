@@ -34,6 +34,8 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
     @Test
     @Order(1)
     public void i1_testFullUseCaseSuccess() throws Exception {
+
+        Thread.sleep(10000);
         //GIVEN
         final Long expectedGroupId = 1l;
         final String expectedGroupName = "test_group";
