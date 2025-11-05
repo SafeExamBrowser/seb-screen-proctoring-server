@@ -22,12 +22,9 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheReco
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataLiveCacheRecord;
-import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataLiveCacheDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
-import ch.ethz.seb.sps.utils.Result;
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
