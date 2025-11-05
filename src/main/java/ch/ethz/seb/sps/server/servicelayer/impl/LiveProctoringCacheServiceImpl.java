@@ -224,8 +224,6 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     private void updateFromStoreCache() {
         try {
 
-            System.out.println("*************** before updated live cache: "+ cache);
-
             Map<String, Long> newValues = screenshotDataLiveCacheDAO
                     .getAll()
                     .getOrThrow()
@@ -236,8 +234,6 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                     ));
 
             cache.putAll(newValues);
-
-            System.out.println("*************** updated live cache: "+ cache);
 
         } catch (Exception e) {
             log.error("Failed to update cache: ", e);
