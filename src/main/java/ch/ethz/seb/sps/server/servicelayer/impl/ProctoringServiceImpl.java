@@ -119,7 +119,8 @@ public class ProctoringServiceImpl implements ProctoringService {
                 if (sessionActive) {
                     // get latest screenshot data form DB and check if we need an update on session cache
                     Long pk = liveProctoringCacheService.getLatestSSDataId(sessionUUID, false);
-                    if (pk == null) {
+                    System.out.println("************* pk: " + pk);
+                    if (pk == null || pk < 0) {
                         if (log.isDebugEnabled()) {
                             log.warn("Failed to get live screenshot id for session: {}", sessionUUID );
                         }

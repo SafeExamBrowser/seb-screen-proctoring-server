@@ -130,6 +130,7 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                 screenshotDataLiveCacheDAO
                         .createCacheEntry(sessionUUID)
                         .onError(error -> log.error("Failed to create slot for session: {}", sessionUUID));
+
                 cache.put(sessionUUID, -1L);
             }
         }
@@ -223,6 +224,8 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     private void updateFromStoreCache() {
         try {
 
+
+
             Map<String, Long> newValues = screenshotDataLiveCacheDAO
                     .getAll()
                     .getOrThrow()
@@ -233,6 +236,8 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                     ));
 
             cache.putAll(newValues);
+
+            System.out.println("*************** updated live cache: "+ cache);
 
         } catch (Exception e) {
             log.error("Failed to update cache: ", e);
