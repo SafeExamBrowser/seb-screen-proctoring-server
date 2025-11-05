@@ -121,15 +121,14 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public Result<ScreenshotDataRecord> getLatest(final String sessionUUID) {
         return Result.tryCatch(() -> {
-
-            System.out.println("******************** getLatest called for session: " + sessionUUID );
-            
             final ScreenshotDataRecord latestScreenshotDataRec = getLatestScreenshotDataRec(sessionUUID);
             if (latestScreenshotDataRec == null) {
                 throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
             }
+
             return latestScreenshotDataRec;
         });
     }
@@ -140,11 +139,6 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
             if (pks == null || pks.isEmpty()) {
                 return Collections.emptyMap();
-            }
-            
-            // TODO only for testing remove this
-            if (log.isDebugEnabled()) {
-                log.debug("Get Screenshotdata for gallery view: {}", pks);
             }
 
             return screenshotDataRecordMapper
@@ -594,9 +588,6 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     }
 
     private ScreenshotDataRecord getLatestScreenshotDataRec(final String sessionUUID) {
-
-        System.out.println("******************** getLatestScreenshotDataRec called for session: " + sessionUUID );
-        
         return SelectDSL
                 .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
                         id,

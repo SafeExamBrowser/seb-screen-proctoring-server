@@ -10,7 +10,9 @@ package ch.ethz.seb.sps.server.servicelayer;
 
 import java.util.Collection;
 
+import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
+import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.servicelayer.impl.ScreenshotQueueData;
 import ch.ethz.seb.sps.utils.Result;
 import org.springframework.context.event.EventListener;
@@ -23,13 +25,16 @@ public interface LiveProctoringCacheService {
     /** Get the PK id of the last screenshot_data row for a given live session.
      * 
      * @param sessionUUID The live session UUID
-     * @return PK id of the last screenshot_data row if available or -1 if there is no screenshot yet or null if there is no slot for the given sessionUUID*/
+     * @return PK id of the last screenshot_data row if available or -1 if there is no screenshot yet or null
+     *         if there is no slot for the given sessionUUID*/
     Long getLatestSSDataId(String sessionUUID, boolean createSlot);
-    
+
     /** Called by the batch store services to update latest cache entries on storage
      * @param batch The batch with the latest screenshot_data ids */
     void updateCacheStore(Collection<ScreenshotQueueData> batch);
 
     /** Goes through all cache slots and deletes the one that has a closed session */
     void cleanup(boolean isMaster);
+
+
 }

@@ -8,7 +8,6 @@
 
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
-import javax.cache.Cache;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Date;
@@ -22,12 +21,8 @@ import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
 import ch.ethz.seb.sps.server.datalayer.dao.*;
 import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.ehcache.core.Ehcache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.jcache.JCacheCache;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -64,7 +59,6 @@ public class ProctoringServiceImpl implements ProctoringService {
     private final UserService userService;
     private final ServiceInfo serviceInfo;
     private final JSONMapper jsonMapper;
-    private final CacheManager cacheManager;
     private final boolean isDistributedSetup;
     private final long distributedUpdateInterval;
 
@@ -78,8 +72,7 @@ public class ProctoringServiceImpl implements ProctoringService {
             final LiveProctoringCacheService liveProctoringCacheService,
             final UserService userService,
             final ServiceInfo serviceInfo,
-            final JSONMapper jsonMapper, 
-            final CacheManager cacheManager) {
+            final JSONMapper jsonMapper) {
 
         this.examDAO = examDAO;
         this.groupDAO = groupDAO;
@@ -93,7 +86,6 @@ public class ProctoringServiceImpl implements ProctoringService {
         this.jsonMapper = jsonMapper;
         this.distributedUpdateInterval = serviceInfo.getDistributedUpdateInterval();
         this.isDistributedSetup = serviceInfo.isDistributed();
-        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -119,19 +111,38 @@ public class ProctoringServiceImpl implements ProctoringService {
     @Override
     public synchronized Result<ScreenshotViewData> getRecordedImageDataAt(final String sessionUUID, final Long timestamp) {
         return Result.tryCatch(() -> {
-            final SessionScreenshotCacheData sessionScreenshotData = this.proctoringCacheService
-                    .getSessionScreenshotData(sessionUUID);
+
+            boolean sessionActive = this.proctoringCacheService.getSession(sessionUUID).isActive();
+
             if (timestamp == null) {
-                // check if the session is active if so, get last, otherwise get first screenshot
-                Long latestSSDataId = liveProctoringCacheService.getLatestSSDataId(sessionUUID, false);
-                if (latestSSDataId != null) {
-                    return screenshotDataDAO.recordByPK(latestSSDataId)
+                // this means last timestamp and only should be called on live recording views
+                if (sessionActive) {
+                    // get latest screenshot data form DB and check if we need an update on session cache
+                    Long pk = liveProctoringCacheService.getLatestSSDataId(sessionUUID, false);
+                    if (pk == null) {
+                        if (log.isDebugEnabled()) {
+                            log.warn("Failed to get live screenshot id for session: {}", sessionUUID );
+                        }
+                        throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+                    }
+                    return screenshotDataDAO.recordByPK(pk)
                             .map(rec -> createScreenshotViewData(sessionUUID, rec))
-                            .getOr(createScreenshotViewData(sessionUUID, sessionScreenshotData.getAt(timestamp)));
+                            .getOrThrow();
                 }
-            } 
-            
-            // get first screenshot
+            }
+
+            // in this case we do have a timestamp, we can use the cache
+            SessionScreenshotCacheData sessionScreenshotData = this.proctoringCacheService
+                    .getSessionScreenshotData(sessionUUID);
+
+            if (sessionActive) {
+                // check first if cache is up to date if timestamp is after last timestamp in cache, reload cache first
+                if (sessionScreenshotData.timestamps[sessionScreenshotData.timestamps.length - 1] < timestamp) {
+                    proctoringCacheService.evictSessionScreenshotData(sessionUUID);
+                    sessionScreenshotData = this.proctoringCacheService.getSessionScreenshotData(sessionUUID);
+                }
+            }
+
             return createScreenshotViewData(sessionUUID, sessionScreenshotData.getAt(timestamp));
         });
     }
@@ -459,9 +470,17 @@ public class ProctoringServiceImpl implements ProctoringService {
         InputStream screenshotIn = null;
         try {
 
-            final ScreenshotDataRecord at = this.proctoringCacheService
-                    .getSessionScreenshotData(sessionUUID)
-                    .getAt(timestamp);
+            SessionScreenshotCacheData sessionScreenshotData = this.proctoringCacheService
+                    .getSessionScreenshotData(sessionUUID);
+
+            if (timestamp - sessionScreenshotData.timestamps[sessionScreenshotData.timestamps.length - 1] > 5 * Constants.SECOND_IN_MILLIS ) {
+                // refresh the session cache
+                this.proctoringCacheService.evictSessionScreenshotData(sessionUUID);
+                this.proctoringCacheService
+                        .getSessionScreenshotData(sessionUUID);
+            }
+
+            final ScreenshotDataRecord at = sessionScreenshotData.getAt(timestamp);
 
             screenshotIn = this.screenshotDAO
                     .getImage(at.getId(), sessionUUID)

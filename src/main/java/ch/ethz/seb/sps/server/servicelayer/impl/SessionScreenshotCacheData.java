@@ -26,15 +26,22 @@ public class SessionScreenshotCacheData {
         
         this.sessionUUID = sessionUUID;
         this.data = data.toArray(new ScreenshotDataRecord[0]);
-        Arrays.sort(
-                this.data, 
-                Comparator.comparing(ScreenshotDataRecord::getTimestamp));
+
+        Arrays.sort(this.data, Comparator.comparing(ScreenshotDataRecord::getTimestamp));
+
         this.timestamps = new long[this.data.length];
         for (int i = 0; i < this.data.length; i++) {
             this.timestamps[i] = this.data[i].getTimestamp();
         }
     }
-    
+
+    /** Get the screenshot record at the given time or the last screenshot since the given time or the first
+     *  screenshot in the list, if the given time is before the first timestamp in the list.
+     * <p>
+     *  Uses binary search to find the needed timestamp in a list of timestamps (long)
+     *
+      * @param timestamp the timestamp for the given point in time of the screenshot to get
+     * @return  ScreenshotDataRecord data found for given time. */
     public ScreenshotDataRecord getAt(Long timestamp) {
         if (timestamp == null) {
             return data[0];
@@ -42,16 +49,16 @@ public class SessionScreenshotCacheData {
         
         final int i = Arrays.binarySearch(timestamps, timestamp);
         if (i >= 0) {
-            return data[i];
+            return data[i]; // take exact screenshot
         } else {
-            int i1 = Math.abs(i) - 2;
+
+            int i1 = Math.abs(i) - 2; // take previous
             if (i1 < 0) {
-                i1 = 0;
+                i1 = 0; // take first screenshot
             } else if (i1 > data.length - 1) {
-                i1 = data.length - 1;
+                i1 = data.length - 1; // last screenshot
             }
             return data[i1];
         }
     }
-
 }
