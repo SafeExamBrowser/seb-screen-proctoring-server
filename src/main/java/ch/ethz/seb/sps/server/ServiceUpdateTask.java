@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server;
 
 import static ch.ethz.seb.sps.server.ServiceConfig.SYSTEM_SCHEDULER;
 
+import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -22,13 +23,16 @@ import org.springframework.stereotype.Component;
 public class ServiceUpdateTask implements DisposableBean {
 
     private final ServiceInfo serviceInfo;
+    private final LiveProctoringCacheService liveProctoringCacheService;
     private final long updateInterval;
 
     public ServiceUpdateTask(
-            final ServiceInfo serviceInfo,
+            final ServiceInfo serviceInfo, 
+            final LiveProctoringCacheService liveProctoringCacheService,
             @Value("${sps.webservice.distributed.update:15000}") final long updateInterval) {
 
         this.serviceInfo = serviceInfo;
+        this.liveProctoringCacheService = liveProctoringCacheService;
         this.updateInterval = updateInterval;
     }
 
@@ -51,8 +55,10 @@ public class ServiceUpdateTask implements DisposableBean {
             fixedDelayString = "${sps.webservice.distributed.update:15000}",
             initialDelay = 5000,
             scheduler = SYSTEM_SCHEDULER)
-    private void examSessionUpdateTask() {
+    private void sessionUpdateTask() {
         this.serviceInfo.updateMaster();
+
+        liveProctoringCacheService.cleanup(this.serviceInfo.isMaster());
     }
 
     @Override

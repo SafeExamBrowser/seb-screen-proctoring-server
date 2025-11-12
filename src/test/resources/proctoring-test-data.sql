@@ -198,3 +198,16 @@ INSERT INTO `screenshot_data` VALUES
     (99, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707643510, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 2","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}'),
     (100, '830c4164-8167-4952-ab6c-2a72b585465b', 1720707644517, 0, '{"screenProctoringMetadataUserAction":"Moodle Page 1","screenProctoringMetadataURL":"bla:14öéééè_––","screenProctoringMetadataWindowTitle":"Safe Exam Browser.Client"}')
 ;
+
+INSERT INTO `screenshot_data_live_cache` VALUES
+    (1, '9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 10),
+    (2, 'a9ecf98e-4fe9-45d8-b513-ec30d82ae22f', 20),
+    (3, '4461dec0-5579-4fef-a86f-0ec7b252c779', 30),
+    (4, 'a21f4778-2d8a-49be-8ee2-7750682ca424', 40),
+    (5, 'c8ebdedc-1105-4ecb-bd04-c20ba2e221a5', 50),
+    (6, 'cbb6ace2-4840-41c1-8b45-0752e1fb1ecd', 60),
+    (7, 'e0fd98d7-7617-4fa9-8ef3-e46c00f8b6d3', 70),
+    (8, '7022e48e-955f-4ff5-8db0-c9db166af31a', 80),
+    (9, '620b8ad2-da0d-48bf-be0d-55962f9bc8f4', 90),
+    (10, '830c4164-8167-4952-ab6c-2a72b585465b', 100)
+;

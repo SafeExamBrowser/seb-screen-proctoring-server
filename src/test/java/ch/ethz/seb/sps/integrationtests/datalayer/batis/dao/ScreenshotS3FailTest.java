@@ -18,6 +18,7 @@ import ch.ethz.seb.sps.server.ServiceConfig;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.impl.S3DAO;
+import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
 import ch.ethz.seb.sps.server.servicelayer.impl.ScreenshotStore_S3;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -81,6 +82,7 @@ public class ScreenshotS3FailTest extends ServiceTest_FULL_RDBMS {
         ScreenshotStore_S3 screenshotStore_S3 = new ScreenshotStore_S3(
                 sqlSessionFactory,
                 transactionManager,
+                Mockito.mock(LiveProctoringCacheService.class),
                 s3DAO,
                 taskScheduler,
                 1000, 

@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -28,7 +27,6 @@ import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotDataMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchApplicationMapper;
 import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
-import ch.ethz.seb.sps.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
@@ -114,81 +112,42 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<ScreenshotData>> allOfSession(final String sessionUUID) {
+    public Result<Collection<ScreenshotDataRecord>> allOfSession(final String sessionUUID) {
         return Result.tryCatch(() -> this.screenshotDataRecordMapper.selectByExample()
                 .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
                 .build()
-                .execute()
-                .stream()
-                .map(this::toDomainModel)
-                .collect(Collectors.toList()));
+                .execute());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Result<ScreenshotDataRecord> getAt(final String sessionUUID, final Long at) {
-        return Result.tryCatch(() -> {
-            return  getScreenshotDataAt(sessionUUID, at);
-        });
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Result<Long> getIdAt(final String sessionUUID, final Long at) {
-        return Result.tryCatch(() -> {
-            ScreenshotDataRecord screenshotDataAt = getScreenshotDataAt(sessionUUID, at);
-            
-            if (screenshotDataAt != null) {
-                return screenshotDataAt.getId();
-            }
-
-            throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
-        });
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Result<Long> getLatestImageId(final String sessionUUID) {
-        return Result.tryCatch(() -> {
-
-            ScreenshotDataRecord screenshotDataAt = getScreenshotDataAt(sessionUUID, null);
-            if (screenshotDataAt != null) {
-                return screenshotDataAt.getId();
-            }
-
-            throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
-        });
-    }
-
-    @Override
-    @Transactional(readOnly = true)
+    @Deprecated
     public Result<ScreenshotDataRecord> getLatest(final String sessionUUID) {
         return Result.tryCatch(() -> {
-            
-            final ScreenshotDataRecord latestScreenshotDataRec = getScreenshotDataAt(sessionUUID, null);
+            final ScreenshotDataRecord latestScreenshotDataRec = getLatestScreenshotDataRec(sessionUUID);
             if (latestScreenshotDataRec == null) {
                 throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
             }
+
             return latestScreenshotDataRec;
         });
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Result<Map<String, ScreenshotDataRecord>> allLatestIn(final List<String> sessionUUIDs) {
+    public Result<Map<String, ScreenshotDataRecord>> allOfMappedToSession(final List<Long> pks) {
         return Result.tryCatch(() -> {
-            if (sessionUUIDs == null || sessionUUIDs.isEmpty()) {
+
+            if (pks == null || pks.isEmpty()) {
                 return Collections.emptyMap();
             }
 
-            // NOTE: For now we use a less efficient version that uses getLatest(final String sessionUUID) for
-            //       all requested sessions but in the future we should solve this problem on DB layer
-            return sessionUUIDs.stream()
-                    .map(sessionUUID -> getScreenshotDataAt(sessionUUID, null))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toMap(
-                            ScreenshotDataRecord::getSessionUuid, 
-                            Function.identity()));
+            return screenshotDataRecordMapper
+                    .selectByExample()
+                    .where(id, isIn(pks))
+                    .build()
+                    .execute()
+                    .stream()
+                    .collect(Collectors.toMap(ScreenshotDataRecord::getSessionUuid, Function.identity()));
         });
     }
 
@@ -623,6 +582,11 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
         });
     }
 
+    @Override
+    public Result<ScreenshotDataRecord> recordByPK(Long pk) {
+        return Result.tryCatch(() ->  this.screenshotDataRecordMapper.selectByPrimaryKey(pk));
+    }
+
     private ScreenshotDataRecord getLatestScreenshotDataRec(final String sessionUUID) {
         return SelectDSL
                 .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
@@ -658,61 +622,6 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                 Constants.PERCENTAGE_STRING +
                 metadataValue +
                 Constants.PERCENTAGE_STRING;
-    }
-
-    private ScreenshotDataRecord getScreenshotDataAt(final String sessionUUID, final Long at) {
-        final Long ts = at != null ? at : Utils.getMillisecondsNow();
-
-        ScreenshotDataRecord record = getLastScreenshotDataRecordInRange(sessionUUID, ts, ts - 30 * Constants.SECOND_IN_MILLIS);
-        if (record != null) {
-            return record;
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Did not find screenshot within 30s interval, try 1 hour interval");
-        }
-
-        record = getLastScreenshotDataRecordInRange(sessionUUID, ts, ts - Constants.HOUR_IN_MILLIS);
-        if (record != null) {
-            return record;
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Did not find screenshot within 1 hour interval, get first image: {}", sessionUUID);
-        }
-
-        return SelectDSL
-                .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
-                        id,
-                        sessionUuid,
-                        timestamp,
-                        imageFormat,
-                        metaData,
-                        timestamp)
-                .from(screenshotDataRecord)
-                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                .limit(1)
-                .build()
-                .execute();
-    }
-
-    private ScreenshotDataRecord getLastScreenshotDataRecordInRange(final String sessionUUID, final Long upper, final Long lower) {
-        return SelectDSL
-                .selectWithMapper(this.screenshotDataRecordMapper::selectOne,
-                        id,
-                        sessionUuid,
-                        timestamp,
-                        imageFormat,
-                        metaData,
-                        timestamp)
-                .from(screenshotDataRecord)
-                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
-                .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isLessThan(upper))
-                .and(ScreenshotDataRecordDynamicSqlSupport.timestamp, SqlBuilder.isGreaterThanOrEqualToWhenPresent(lower))
-                .orderBy(timestamp.descending())
-                .limit(1)
-                .build()
-                .execute();
     }
 
 }

@@ -633,14 +633,38 @@ public class SessionDAOBatis implements SessionDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<List<String>> getAllClosedSessionsIn(Set<String> sessionUUIDs) {
+        return Result.tryCatch(() -> {
+            if (sessionUUIDs == null || sessionUUIDs.isEmpty()) {
+                return Collections.emptyList();
+            }
+            
+            return sessionRecordMapper.selectByExample()
+                    .where(ExamRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNotNull())
+                    .and( ExamRecordDynamicSqlSupport.uuid, SqlBuilder.isIn(sessionUUIDs))
+                    .build()
+                    .execute()
+                    .stream()
+                    .map(SessionRecord::getUuid)
+                    .toList();
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean isActive(String modelId) {
         if (StringUtils.isBlank(modelId)) {
             return false;
         }
 
+        final Long pk = modelIdToPK(modelId);
+        if (pk == null) {
+            return false;
+        }
+
         return this.sessionRecordMapper
                 .countByExample()
-                .where(ExamRecordDynamicSqlSupport.id, isEqualTo(Long.valueOf(modelId)))
+                .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
                 .and(ExamRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                 .build()
                 .execute() > 0;

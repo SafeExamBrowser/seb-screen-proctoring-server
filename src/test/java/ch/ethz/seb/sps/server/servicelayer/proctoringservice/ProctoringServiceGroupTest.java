@@ -8,6 +8,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
+import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
 import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringCacheService;
 import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringServiceImpl;
 import ch.ethz.seb.sps.utils.Result;
@@ -44,6 +45,7 @@ import static ch.ethz.seb.sps.server.servicelayer.proctoringservice.utils.Procto
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,6 +60,9 @@ public class ProctoringServiceGroupTest {
     //@InjectMocks
     @Mock
     private ProctoringCacheService proctoringCacheService;
+    
+    @Mock
+    private LiveProctoringCacheService liveProctoringCacheService;
 
     @Mock
     private SessionDAO sessionDAO;
@@ -143,17 +148,22 @@ public class ProctoringServiceGroupTest {
     }
 
     private void mockDependenciesForEmptyResult(){
+
+        
         when(this.proctoringCacheService.getActiveGroup(any()))
                 .thenReturn(createGenericGroup());
 
         when(this.proctoringCacheService.getLiveSessionTokens(any()))
                 .thenReturn(new ArrayList<>());
 
-        when(this.screenshotDataDAO.allLatestIn(any()))
+        when(this.screenshotDataDAO.allOfMappedToSession(any()))
                 .thenReturn(Result.of(new HashMap<>()));
     }
 
     private void mockDependenciesForRealisticResult() throws JsonProcessingException {
+        when( this.liveProctoringCacheService.getLatestSSDataId(any(), anyBoolean()))
+                .thenReturn(-1L);
+        
         when(this.proctoringCacheService.getActiveGroup(any()))
                 .thenReturn(createRealisticGroup());
 
@@ -170,7 +180,7 @@ public class ProctoringServiceGroupTest {
         }
 
         Map<String, ScreenshotDataRecord> screenshotDataRecordMap = createScreenshotDataRecordMap();
-        when(this.screenshotDataDAO.allLatestIn(any()))
+        when(this.screenshotDataDAO.allOfMappedToSession(any()))
                 .thenReturn(Result.of(screenshotDataRecordMap));
 
         when(this.examDAO.byModelId(any()))

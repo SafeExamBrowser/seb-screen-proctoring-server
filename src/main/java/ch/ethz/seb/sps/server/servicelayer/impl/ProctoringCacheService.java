@@ -10,6 +10,9 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.util.Collection;
 
+import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
+import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
@@ -35,19 +38,25 @@ public class ProctoringCacheService {
     /** Active session token cache. Tokens per active group */
     public static final String SESSION_TOKENS_CACHE = "SESSION_TOKENS_CACHE";
 
+    /** Total session count cache. */
+    public static final String SESSION_SCREENSHOT_DATA_CACHE = "SESSION_SCREENSHOT_DATA_CACHE";
+
     /** Active session cache. */
     public static final String ACTIVE_SESSION_CACHE = "ACTIVE_SESSION_CACHE";
 
     /** Total session count cache. */
     public static final String TOTAL_SESSION_COUNT = "TOTAL_SESSION_COUNT_CACHE";
 
+    private final ScreenshotDataDAO screenshotDataDAO;
     private final SessionDAO sessionDAO;
     private final GroupDAO groupDAO;
 
     public ProctoringCacheService(
+            final ScreenshotDataDAO screenshotDataDAO, 
             final SessionDAO sessionDAO,
             final GroupDAO groupDAO) {
-
+        
+        this.screenshotDataDAO = screenshotDataDAO;
         this.sessionDAO = sessionDAO;
         this.groupDAO = groupDAO;
     }
@@ -141,6 +150,34 @@ public class ProctoringCacheService {
         }
         
         return result.map(Long::intValue).getOr(null);
+    }
+
+    @Cacheable(
+            cacheNames = SESSION_SCREENSHOT_DATA_CACHE,
+            key = "#sessionUUID",
+            unless = "#result == null")
+    public SessionScreenshotCacheData getSessionScreenshotData(final String sessionUUID) {
+        Result<Collection<ScreenshotDataRecord>> result = screenshotDataDAO.allOfSession(sessionUUID);
+        
+        if (result.hasError()) {
+            log.warn("Failed to get all screenshot data for session: {}", sessionUUID);
+            return null;
+        } else {
+            Collection<ScreenshotDataRecord> screenshotDataRecords = result.get();
+            if (log.isDebugEnabled()) {
+                log.debug("Got SessionScreenshotCacheData for session: {} with {} entries", sessionUUID, screenshotDataRecords.size());
+            }
+            return new SessionScreenshotCacheData(sessionUUID, screenshotDataRecords);
+        }
+    }
+
+    @CacheEvict(
+            cacheNames = SESSION_SCREENSHOT_DATA_CACHE,
+            key = "#sessionUUID")
+    public void evictSessionScreenshotData(final String sessionUUID) {
+        if (log.isTraceEnabled()) {
+            log.trace("Eviction of session screenshot data from cache, sessionUUID: {}", sessionUUID);
+        }
     }
 
 }
