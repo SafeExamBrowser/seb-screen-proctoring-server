@@ -10,17 +10,14 @@ import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
 import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
 import ch.ethz.seb.sps.domain.model.service.TimelineViewData;
-import ch.ethz.seb.sps.server.datalayer.dao.ClientAccessDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
-import ch.ethz.seb.sps.server.weblayer.AdminProctorController;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.Order;
+import org.junit.runners.MethodSorters;
 import org.springframework.http.HttpMethod;
 
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -30,11 +27,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ProctoringServiceTest extends ServiceTest_PROCTORING {
 
     //tests a full use case of the screen proctoring
     @Test
-    public void testFullUseCaseSuccess() throws Exception {
+    @Order(1)
+    public void i1_testFullUseCaseSuccess() throws Exception {
+
+        Thread.sleep(2000);
         //GIVEN
         final Long expectedGroupId = 1l;
         final String expectedGroupName = "test_group";
@@ -57,7 +58,7 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
         Map<String, String> groupAttributes = new HashMap<>();
         groupAttributes.put("includePastExams", "true");
         groupAttributes.put("includeUpcomingExams", "true");
-
+        
         Page<GroupViewData> groups = createMockApiCall(
                 API.GROUP_ENDPOINT,
                 HttpMethod.GET,
@@ -181,10 +182,11 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
     }
 
     @Test
-    public void testApplicationSearch() throws Exception {
+    @Order(1)
+    public void i2_testApplicationSearch() throws Exception {
         //GIVEN
-        Long expectedExamId = 1l;
-        List<Long> expectedGroupIds = Arrays.asList(1l, 2l);
+        Long expectedExamId = 1L;
+        List<Long> expectedGroupIds = Arrays.asList(1L, 2L);
 //        List<String> expectedMetadataApp = Arrays.asList("")
 
         //WHEN

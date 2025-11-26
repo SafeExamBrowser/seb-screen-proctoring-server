@@ -382,9 +382,14 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
             return false;
         }
 
+        final Long pk = modelIdToPK(modelId);
+        if (pk == null) {
+            return false;
+        }
+        
         return this.groupRecordMapper
                 .countByExample()
-                .where(GroupRecordDynamicSqlSupport.id, isEqualTo(Long.valueOf(modelId)))
+                .where(GroupRecordDynamicSqlSupport.id, isEqualTo(pk))
                 .and(GroupRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                 .build()
                 .execute() > 0;

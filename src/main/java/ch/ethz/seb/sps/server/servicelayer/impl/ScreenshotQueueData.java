@@ -13,7 +13,7 @@ import java.io.ByteArrayInputStream;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 
-final class ScreenshotQueueData {
+public final class ScreenshotQueueData {
 
     final ScreenshotDataRecord record;
     final ByteArrayInputStream screenshotIn;

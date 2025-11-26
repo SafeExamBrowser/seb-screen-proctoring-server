@@ -328,9 +328,14 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
             return false;
         }
 
+        final Long pk = modelIdToPK(modelId);
+        if (pk == null) {
+            return false;
+        }
+
         return this.examRecordMapper
                 .countByExample()
-                .where(ExamRecordDynamicSqlSupport.id, isEqualTo(Long.valueOf(modelId)))
+                .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
                 .and(ExamRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                 .build()
                 .execute() > 0;

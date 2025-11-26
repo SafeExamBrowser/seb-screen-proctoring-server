@@ -9,38 +9,29 @@
 package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.sql.Date;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
-import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 
 public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotData> {
 
-    Result<Collection<ScreenshotData>> allOfSession(String sessionUUID);
-
-    Result<ScreenshotDataRecord> getAt(String sessionUUID, Long at);
-
-    Result<Long> getIdAt(String sessionUUID, Long at);
-
-    Result<Long> getLatestImageId(String sessionUUID);
+    Result<Collection<ScreenshotDataRecord>> allOfSession(String sessionUUID);
 
     Result<Collection<Long>> getScreenshotTimestamps(String sessionUUID, Long timestamp, PageSortOrder sortOrder);
 
+    @Deprecated
     Result<ScreenshotDataRecord> getLatest(String sessionUUID);
 
-    Result<Map<String, ScreenshotDataRecord>> allLatestIn(List<String> sessionUUIDs);
+    Result<Map<String, ScreenshotDataRecord>> allOfMappedToSession(List<Long> pks);
 
     Result<Long> save(
             String sessionId,
@@ -62,4 +53,5 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
 
     Result<List<Long>> getTimestampListForApplicationSearch(String sessionUuid, String metadataApplication, String metadataWindowTitle);
 
+    Result<ScreenshotDataRecord> recordByPK(Long latestSSDataId);
 }

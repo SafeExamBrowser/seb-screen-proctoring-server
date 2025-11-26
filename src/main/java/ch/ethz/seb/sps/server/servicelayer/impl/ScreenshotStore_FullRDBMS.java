@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.session.ExecutorType;
@@ -51,10 +52,12 @@ import ch.ethz.seb.sps.utils.Utils;
 public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotStore_FullRDBMS.class);
+    public static final Logger INIT_LOGGER = LoggerFactory.getLogger("SERVICE_INIT");
 
     private final SqlSessionFactory sqlSessionFactory;
     private final TransactionTemplate transactionTemplate;
     private final TaskScheduler taskScheduler;
+    private final LiveProctoringCacheService liveProctoringCacheService;
     private final long batchInterval;
 
     private SqlSessionTemplate sqlSessionTemplate;
@@ -66,11 +69,13 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
     public ScreenshotStore_FullRDBMS(
             final SqlSessionFactory sqlSessionFactory,
             final PlatformTransactionManager transactionManager,
-            @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler,
+            @Qualifier(value = ServiceConfig.SCREENSHOT_STORE_API_EXECUTOR) final TaskScheduler taskScheduler, 
+            final LiveProctoringCacheService liveProctoringCacheService,
             @Value("${sps.data.store.batch.interval:1000}") final long batchInterval) {
 
         this.sqlSessionFactory = sqlSessionFactory;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
+        this.liveProctoringCacheService = liveProctoringCacheService;
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.taskScheduler = taskScheduler;
         this.batchInterval = batchInterval;
@@ -78,6 +83,10 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
 
     @Override
     public void init() {
+
+        INIT_LOGGER.info("---->");
+        INIT_LOGGER.info("----> Initialize ScreenshotStore Full RDBMS Service");
+        INIT_LOGGER.info("---->");
 
         try {
             this.sqlSessionTemplate = new SqlSessionTemplate(this.sqlSessionFactory, ExecutorType.BATCH);
@@ -109,14 +118,12 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
                     java.time.Duration.ofMillis(this.batchInterval));
 
             ServiceInit.INIT_LOGGER.info(
-                    "----> Screenshot Store: 2 workers with update-interval: {} initialized",
-                    this.batchInterval);
+                    "----> Screenshot Store: 2 workers with update-interval: {} initialized", this.batchInterval);
 
         } catch (final Exception e) {
-            ServiceInit.INIT_LOGGER.error(
-                    "----> Screenshot Store: failed to initialized", e);
+            ServiceInit.INIT_LOGGER.error("----> Screenshot Store: failed to initialized", e);
+            throw e;
         }
-
     }
 
     @Override
@@ -254,6 +261,9 @@ public class ScreenshotStore_FullRDBMS implements ScreenshotStoreService {
                 putBatchBackToQueue(batch, re);
             }
         }
+
+        // update store cache
+        liveProctoringCacheService.updateCacheStore(batch);
     }
 
     private void putBatchBackToQueue(Collection<ScreenshotQueueData> batch, RuntimeException re) {

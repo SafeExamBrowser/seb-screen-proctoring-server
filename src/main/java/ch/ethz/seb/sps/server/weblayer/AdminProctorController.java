@@ -15,6 +15,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.domain.api.TooManyRequests;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
 import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;
@@ -76,7 +77,7 @@ public class AdminProctorController {
     private final GroupingService groupingService;
     private final UserService userService;
     
-    private AtomicInteger criticalRequestBucket = new AtomicInteger(10);
+    private AtomicInteger criticalRequestBucket = new AtomicInteger(2);
 
     public AdminProctorController(
             final GroupDAO groupDAO,
@@ -109,7 +110,6 @@ public class AdminProctorController {
         return this.proctoringService
                 .getActivateGroupSessionCounts()
                 .getOrThrow();
-
     }
 
     @Operation(
@@ -225,15 +225,6 @@ public class AdminProctorController {
             @RequestParam(name = "filterCriteria", required = false) final MultiValueMap<String, String> filterCriteria,
             final HttpServletRequest request) {
         
-        // TODO test this criticalRequestBucket strategy to prevent to many not responded requests 
-        //  that possibly stuck on DB level
-        if (criticalRequestBucket.get() <= 0) {
-            if (log.isDebugEnabled()) {
-                log.warn("criticalRequestBucket empty! This will deny request in the future");
-            }
-        }
-        criticalRequestBucket.decrementAndGet();
-        
         this.proctoringService.checkMonitoringAccess(groupUUID);
 
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
@@ -291,16 +282,7 @@ public class AdminProctorController {
             @PathVariable(name = API.PARAM_TIMESTAMP, required = true) final String timestamp) {
 
         this.proctoringService.checkMonitoringSessionAccess(sessionUUID);
-
-        // TODO test this criticalRequestBucket strategy to prevent to many not responded requests 
-        //  that possibly stuck on DB level
-        if (criticalRequestBucket.get() <= 0) {
-            if (log.isDebugEnabled()) {
-                log.warn("criticalRequestBucket empty! This will deny request in the future");
-            }
-        }
-        criticalRequestBucket.decrementAndGet();
-
+        
         Long ts = null;
         if (StringUtils.isNotBlank(timestamp)) {
             try {
