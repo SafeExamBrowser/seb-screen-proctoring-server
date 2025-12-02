@@ -165,17 +165,21 @@ public class ScreenshotStore_S3 implements ScreenshotStoreService{
     }
 
     private void processStore(final Collection<ScreenshotQueueData> batch) {
-        batch.clear();
-        this.screenshotDataQueue.drainTo(batch);
+        try {
+            batch.clear();
+            this.screenshotDataQueue.drainTo(batch);
 
-        if (batch.isEmpty()) {
-            return;
-        }
+            if (batch.isEmpty()) {
+                return;
+            }
 
-        if (batchStore) {
-            applyBatchStore(batch);
-        } else {
-            applySingleStore(batch);
+            if (batchStore) {
+                applyBatchStore(batch);
+            } else {
+                applySingleStore(batch);
+            }
+        } catch (Exception e) {
+            log.error("Failed to drain and process batch - should never happen: ", e);
         }
     }
 
