@@ -112,7 +112,22 @@ public class ProctoringServiceImpl implements ProctoringService {
     public synchronized Result<ScreenshotViewData> getRecordedImageDataAt(final String sessionUUID, final Long timestamp) {
         return Result.tryCatch(() -> {
 
-            boolean sessionActive = this.proctoringCacheService.getSession(sessionUUID).isActive();
+            Session session = this.proctoringCacheService.getSession(sessionUUID);
+            if (session == null) {
+                log.warn("Failed to get Session for: {}", sessionUUID);
+                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+            }
+
+            // NOTE: if we have a distributed setup, refresh the cache to be sure we have the actual session from DB
+            // TODO  This is patch fix for SEBSP-217 and should be handled by overall session cache update for
+            //       distributed setup within the next release version
+            if (isDistributedSetup) {
+                proctoringCacheService.evictSession(sessionUUID);
+                session = this.proctoringCacheService.getSession(sessionUUID);
+            }
+
+            boolean sessionActive = session.isActive();
+
 
             if (timestamp == null) {
                 // this means last timestamp and only should be called on live recording views
