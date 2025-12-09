@@ -18,8 +18,6 @@ public interface ScreenshotDataLiveCacheDAO {
     
     Result<ScreenshotDataLiveCacheRecord> createCacheEntry(String sessionUUID);
 
-    Result<ScreenshotDataLiveCacheRecord> createCacheEntry(String sessionUUID, Long value);
-
     Result<String> deleteCacheEntry(String sessionUUID);
     
     Result<List<String>> deleteAll(List<String> sessionUUIDs);

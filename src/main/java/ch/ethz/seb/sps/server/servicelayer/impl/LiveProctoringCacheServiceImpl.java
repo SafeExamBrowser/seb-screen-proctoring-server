@@ -115,8 +115,8 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     }
 
     @Override
-    public Long getLatestSSDataId(final String sessionUUID, final boolean createSlot) {
-        if (!cache.containsKey(sessionUUID) && createSlot) {
+    public Long getLatestSSDataId(final String sessionUUID) {
+        if (!cache.containsKey(sessionUUID)) {
 
             if (!this.sessionDAO.isActive(sessionUUID)) {
                 return null;
@@ -129,9 +129,8 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
             synchronized (this.cache) {
                 screenshotDataLiveCacheDAO
                         .createCacheEntry(sessionUUID)
-                        .onError(error -> log.error("Failed to create slot for session: {}", sessionUUID));
-
-                cache.put(sessionUUID, -1L);
+                        .onError(error -> log.error("Failed to create slot for session: {}", sessionUUID))
+                        .onSuccess(rec -> cache.put(sessionUUID, rec.getIdLatestSsd()));
             }
         }
         
