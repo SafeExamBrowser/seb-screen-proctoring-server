@@ -133,7 +133,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                 // this means last timestamp and only should be called on live recording views
                 if (sessionActive) {
                     // get latest screenshot data form DB and check if we need an update on session cache
-                    Long pk = liveProctoringCacheService.getLatestSSDataId(sessionUUID, false);
+                    Long pk = liveProctoringCacheService.getLatestSSDataId(sessionUUID);
                     if (pk == null || pk < 0) {
                         if (log.isDebugEnabled()) {
                             log.warn("Failed to get live screenshot id for session: {}", sessionUUID );
@@ -151,11 +151,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .getSessionScreenshotData(sessionUUID);
 
             if (sessionActive) {
-                // check first if cache is up to date if timestamp is after last timestamp in cache, reload cache first
-                if (sessionScreenshotData.timestamps[sessionScreenshotData.timestamps.length - 1] < timestamp) {
-                    proctoringCacheService.evictSessionScreenshotData(sessionUUID);
-                    sessionScreenshotData = this.proctoringCacheService.getSessionScreenshotData(sessionUUID);
-                }
+                sessionScreenshotData = getActualSessionScreenshotCacheData(timestamp, sessionUUID, sessionScreenshotData);
             }
 
             return createScreenshotViewData(sessionUUID, sessionScreenshotData.getAt(timestamp));
@@ -209,7 +205,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .allOfMappedToSession(
                             sessionIdsInOrder
                                     .stream()
-                                    .map(uuid -> liveProctoringCacheService.getLatestSSDataId(uuid, true))
+                                    .map(liveProctoringCacheService::getLatestSSDataId)
                                     .toList())
                     .getOrThrow();
 
@@ -454,9 +450,14 @@ public class ProctoringServiceImpl implements ProctoringService {
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
         InputStream screenshotIn = null;
         try {
-            
+
+            Long latestSSDataId = this.liveProctoringCacheService.getLatestSSDataId(sessionUUID);
+            if (latestSSDataId == null) {
+                return;
+            }
+
             screenshotIn =  this.screenshotDAO
-                    .getImage(this.liveProctoringCacheService.getLatestSSDataId(sessionUUID, true), sessionUUID)
+                    .getImage(latestSSDataId, sessionUUID)
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
@@ -477,7 +478,7 @@ public class ProctoringServiceImpl implements ProctoringService {
             final Long timestamp,
             final OutputStream out) {
         
-        if (timestamp == null) {
+        if (timestamp == null || Utils.getMillisecondsNow() - timestamp < 5 * Constants.SECOND_IN_MILLIS) {
             streamLatestScreenshot(sessionUUID, out);
             return;
         }
@@ -487,14 +488,6 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             SessionScreenshotCacheData sessionScreenshotData = this.proctoringCacheService
                     .getSessionScreenshotData(sessionUUID);
-
-            if (timestamp - sessionScreenshotData.timestamps[sessionScreenshotData.timestamps.length - 1] > 5 * Constants.SECOND_IN_MILLIS ) {
-                // refresh the session cache
-                this.proctoringCacheService.evictSessionScreenshotData(sessionUUID);
-                this.proctoringCacheService
-                        .getSessionScreenshotData(sessionUUID);
-            }
-
             final ScreenshotDataRecord at = sessionScreenshotData.getAt(timestamp);
 
             screenshotIn = this.screenshotDAO
@@ -671,6 +664,24 @@ public class ProctoringServiceImpl implements ProctoringService {
             proctoringCacheService.evictSessionTokens(groupUUID);
             GROUP_UUID_UPDATE_REG.add(groupUUID);
         }
+    }
+
+    // this can be used if we still have a live session, but it might be outdated or abandoned by SEB...
+    // check first if cache is up to date with the last image from live cache and refresh the cache only if needed
+    private SessionScreenshotCacheData getActualSessionScreenshotCacheData(
+            final Long timestamp,
+            final String sessionUUID,
+            final SessionScreenshotCacheData data) {
+
+        Long pk = liveProctoringCacheService.getLatestSSDataId(sessionUUID);
+        ScreenshotDataRecord lastCacheEntry = data.data[data.data.length - 1];
+        if (pk != null) {
+            if (lastCacheEntry.getTimestamp() < timestamp && !Objects.equals(pk, lastCacheEntry.getId())) {
+                proctoringCacheService.evictSessionScreenshotData(sessionUUID);
+                return this.proctoringCacheService.getSessionScreenshotData(sessionUUID);
+            }
+        }
+        return data;
     }
 
 }

@@ -161,7 +161,7 @@ public class ProctoringServiceGroupTest {
     }
 
     private void mockDependenciesForRealisticResult() throws JsonProcessingException {
-        when( this.liveProctoringCacheService.getLatestSSDataId(any(), anyBoolean()))
+        when( this.liveProctoringCacheService.getLatestSSDataId(any()))
                 .thenReturn(-1L);
         
         when(this.proctoringCacheService.getActiveGroup(any()))
