@@ -45,7 +45,13 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
     @Transactional
     public Result<ScreenshotDataLiveCacheRecord> createCacheEntry(String sessionUUID) {
         return Result
-            .tryCatch(() ->  screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(createSlot(sessionUUID)))
+            .tryCatch(() -> {
+                Long slotId = createSlot(sessionUUID);
+                if (slotId == null) {
+                    throw new RuntimeException("Failed to get or create live cache slot for session: " + sessionUUID);
+                }
+                return screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(slotId);
+            })
             .onError(TransactionHandler::rollback);
     }
 
@@ -114,7 +120,7 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
 
             ScreenshotDataLiveCacheRecord rec = existing.get(0);
             if (rec.getIdLatestSsd() != null) {
-                return rec.getIdLatestSsd();
+                return rec.getId();
             } else {
                 // get value, update with value and return PK
                 Long lastScreenshotEntryId = getLastScreenshotEntryId(sessionUUID);

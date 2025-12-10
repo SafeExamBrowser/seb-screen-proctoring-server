@@ -129,7 +129,7 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
             synchronized (this.cache) {
                 screenshotDataLiveCacheDAO
                         .createCacheEntry(sessionUUID)
-                        .onError(error -> log.error("Failed to create slot for session: {}", sessionUUID))
+                        .onError(error -> log.error("Failed to create slot for session: {}: error: {}", sessionUUID, error.getMessage()))
                         .onSuccess(rec -> cache.put(sessionUUID, rec.getIdLatestSsd()));
             }
         }
