@@ -101,6 +101,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             produces = MediaType.APPLICATION_JSON_VALUE)
 
     public Collection<EntityKey> requestDelete(@PathVariable final String modelId) {
+        // TODO this should never block here do this in background with balk action
         if (!this.sessionService.hasAnySessionDataForExam(modelId)) {
             return super.hardDelete(modelId);
         } else {
