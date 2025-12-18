@@ -125,7 +125,7 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<EntityKey> requestDelete(@PathVariable(name = API.PARAM_MODEL_ID) final String groupUUID) {
-
+        // TODO this should never block here do this in background with balk action
         if (!this.sessionService.hasAnySessionDataForGroup(groupUUID)) {
             return super.hardDelete(groupUUID);
         } else {

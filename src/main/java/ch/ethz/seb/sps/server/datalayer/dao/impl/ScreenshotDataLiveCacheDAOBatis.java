@@ -161,11 +161,11 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
                     .build()
                     .execute();
 
-            if (all != null) {
+            if (all != null && !all.isEmpty()) {
                 return all.get(all.size() - 1);
             }
 
-            log.warn("No screenshot entry found for session: {}", sessionUUID);
+            log.info("No screenshot entry found for session: {}", sessionUUID);
             return null;
         } catch (Exception e) {
             log.error("Failed to get last screenshot entry for session: {} error: {}", sessionUUID, e.getMessage());
