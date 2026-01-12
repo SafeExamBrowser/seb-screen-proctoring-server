@@ -150,6 +150,7 @@ public class SessionServiceImpl implements SessionService {
                             final String groupUUID = this.groupDAO.byPK(session.groupId).getOrThrow().uuid;
                             this.proctoringCacheService.evictSession(sessionUUID);
                             this.proctoringCacheService.evictSessionTokens(groupUUID);
+                            this.proctoringCacheService.evictSessionScreenshotData(sessionUUID);
                         } else {
                             result.getOrThrow();
                         }
