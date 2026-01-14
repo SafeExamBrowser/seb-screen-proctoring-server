@@ -330,8 +330,7 @@ public class SEBSessionController {
 
     @RequestMapping(
             path = API.PARAM_MODEL_PATH_SEGMENT + API.SCREENSHOT_UPLOAD_ENDPOINT,
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            method = RequestMethod.GET)
     public void getEncryptionKeyForSessionUUID(
             @PathVariable(name = API.PARAM_MODEL_ID) final String sessionUUID,
             @RequestHeader(name = API.SESSION_HEADER_UUID) final String uploadSessionUUID,

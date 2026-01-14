@@ -124,8 +124,6 @@ public class AdminProctorController {
                     and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or type=EXAM. Usually
                     filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing
                     a given text-snippet.""",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = Page.ATTR_PAGE_NUMBER,
@@ -148,7 +146,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.GROUP_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<GroupViewData> getGroups(
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
@@ -182,8 +179,6 @@ public class AdminProctorController {
                     and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or type=EXAM. Usually
                     filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing
                     a given text-snippet.""",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_GROUP_UUID,
@@ -214,7 +209,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.GROUP_ENDPOINT + API.GROUP_ID_PATH_SEGMENT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ScreenshotsInGroupData getSessionsByGroup(
             @PathVariable(name = API.PARAM_GROUP_UUID) final String groupUUID,
@@ -238,8 +232,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get the latest screenshot view and meta data for a given session",
             description = "TODO",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_SESSION_ID,
@@ -248,7 +240,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.SCREENSHOT_DATA_ENDPOINT + API.SESSION_ID_PATH_SEGMENT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ScreenshotViewData getScreenshotViewData(
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID) {
@@ -262,8 +253,6 @@ public class AdminProctorController {
                     "this method checks if there is any existing screenshot in the future and if so, this will " +
                     "return the data for that screenshot. If there is no screenshot for the given session yet " +
                     "this will respond with a an respecting error response",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_SESSION_ID,
@@ -275,7 +264,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.SCREENSHOT_DATA_ENDPOINT + API.SESSION_ID_TIMESTAMP_PATH_SEGMENT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ScreenshotViewData getScreenshotViewData(
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
@@ -302,8 +290,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get the latest screenshot image data for a given session",
             description = "TODO",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             responses = @ApiResponse(
                     description = "This response with binary image data",
                     content = { @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE) }),
@@ -329,8 +315,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get the latest screenshot image data for a given session",
             description = "TODO",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             responses = @ApiResponse(
                     description = "This response with binary image data",
                     content = { @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE) }),
@@ -388,8 +372,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get the requested page of a given screenshot search result",
             description = "The search query includes specific and generic filter criteria and paging as well as sorting. See detailed description for each part in the parameter description",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_GROUP_UUID,
@@ -480,7 +462,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.SCREENSHOT_SEARCH_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<ScreenshotSearchResult> searchScreenshots(
             @RequestParam(name = API.PARAM_GROUP_UUID, required = false) final String groupUUID,
@@ -508,8 +489,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Returns a list of of dates where at least one session matches the given search criteria.",
             description = "This search takes all available data into account and checks if min. 1 session a day for the given timeframe matches search criteria.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_GROUP_UUID,
@@ -589,7 +568,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.SESSION_DAY_SEARCH_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Date> getMatchingDaysForSessionSearch(
             @RequestParam(name = API.PARAM_EXAM_NAME, required = false) final String examName,
@@ -611,8 +589,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get the requested page of a given session search result",
             description = "This search is an extension to the generic session search to apply more screenshot specific data as a result. The search query includes specific and generic filter criteria and paging as well as sorting. See detailed description for each part in the parameter description",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_GROUP_UUID,
@@ -708,7 +684,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.SESSION_SEARCH_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<SessionSearchResult> searchSessions(
             @RequestParam(name = API.PARAM_EXAM_NAME, required = false) final String examName,
@@ -760,8 +735,6 @@ public class AdminProctorController {
             description = "Groups all the screenshots for a given session. Currently the grouping is done via the Metadata 'WindowTitle'. "
                     +
                     "By providing additional metadata, only screenshot data with the given metadata will be returned",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_SESSION_ID,
@@ -796,7 +769,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.TIMELINE_SEARCH_ENDPOINT + API.SESSION_ID_PATH_SEGMENT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public TimelineViewData getTimelineViewData(
             @PathVariable(name = API.PARAM_SESSION_ID, required = true) final String sessionUUID,
@@ -810,8 +782,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get a list of timestamps of a sessions",
             description = "Returns a list of session timestamps that were captured later or earlier than the specified timestamp.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_SESSION_ID,
@@ -848,8 +818,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get a list of all exams in the given time frame",
             description = "Get a list of all exams which start time is in the given time frame",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_FROM_TIME,
@@ -865,7 +833,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.APPLICATION_SEARCH_EXAMS_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Exam> getExamsStarted(
             @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
@@ -892,8 +859,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get a list of distinct groupIds for a given exam",
             description = "Returns a list including each groupId of the given exam.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_EXAM_ID,
@@ -902,7 +867,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.APPLICATION_SEARCH_GROUP_IDS_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Long> getGroupIdsForExam(
             @PathVariable(name = API.PARAM_EXAM_ID) final Long examId){
@@ -926,8 +890,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get a list of metadata application for a given exam",
             description = "Returns a list of distinct metadata application for a given exam (via groupIds)",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_GROUP_IDS,
@@ -936,7 +898,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.APPLICATION_SEARCH_METADATA_APP_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> getDistinctMetadataAppForExam(
             @RequestParam(name = API.PARAM_GROUP_IDS, required = false) final String groupIds){
@@ -951,8 +912,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get a list of metadata window titles for a given exam",
             description = "Returns a list of distinct window titles for a given exam (via groupIds) & metadata application",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.SCREENSHOT_META_DATA_APPLICATION,
@@ -964,7 +923,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.APPLICATION_SEARCH_METADATA_WINDOW_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DistinctMetadataWindowForExam getDistinctMetadataWindowForExam(
             @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
@@ -976,8 +934,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get a list of users who match the metadata search",
             description = "Returns a list containing user data and a count. The list represents the users who at least have one screenshot matching the metadata of the given exam.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.SCREENSHOT_META_DATA_APPLICATION,
@@ -992,7 +948,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.APPLICATION_SEARCH_USER_LIST_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UserListForApplicationSearch> getUserListForApplicationSearch(
             @RequestParam(name = API.SCREENSHOT_META_DATA_APPLICATION, required = true) final String metadataApplication,
@@ -1007,8 +962,6 @@ public class AdminProctorController {
     @Operation(
             summary = "Get a list of timestamps which match the session & metadata search",
             description = "The list represents all screenshots of the matching session & metadata search of the given exam.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_SESSION_ID,
@@ -1023,7 +976,6 @@ public class AdminProctorController {
     @RequestMapping(
             path = API.APPLICATION_SEARCH_TIMESTAMP_LIST_ENDPOINT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Long> getTimestampListForApplicationSearch(
             @RequestParam(name = API.PARAM_SESSION_ID, required = true) final String sessionUuid,

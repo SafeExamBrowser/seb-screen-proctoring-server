@@ -58,8 +58,6 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
                     descending sort order. Note that not all entity-model attribute are suited for sorting while the most
                     are.
                     """,
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = Page.ATTR_PAGE_NUMBER,
@@ -74,7 +72,6 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
     @RequestMapping(
             path = API.ACTIVE_PATH_SEGMENT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<T> allActive(
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
@@ -101,8 +98,6 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
                     descending sort order. Note that not all entity-model attribute are suited for sorting while the most
                     are.
                     """,
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = Page.ATTR_PAGE_NUMBER,
@@ -118,7 +113,6 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
     @RequestMapping(
             path = API.INACTIVE_PATH_SEGMENT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<T> allInactive(
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,

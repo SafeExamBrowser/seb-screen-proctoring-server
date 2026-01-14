@@ -124,8 +124,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                     and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc. Usually
                     filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing
                     a given text-snippet.""",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = Page.ATTR_PAGE_NUMBER,
@@ -144,7 +142,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
             })
     @RequestMapping(
             method = RequestMethod.GET,
-            //consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<T> getPage(
             @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
@@ -179,8 +176,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                     and are of the form [domain-attribute-name]=[filter-value]. E.g.: name=abc or. Usually
                     filter attributes of text type are treated as SQL wildcard with %[text]% to filter all text containing
                     a given text-snippet.""",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = "allRequestParams",
@@ -191,7 +186,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     @RequestMapping(
             path = API.NAMES_PATH_SEGMENT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<EntityName> getNames(
             @RequestParam(required = false) final MultiValueMap<String, String> allRequestParams,
@@ -214,8 +208,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
 
     @Operation(
             summary = "Get a single entity by its modelId.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_MODEL_ID,
@@ -225,7 +217,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     @RequestMapping(
             path = API.PARAM_MODEL_PATH_SEGMENT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public T getBy(@PathVariable final String modelId) {
         return this.entityDAO
@@ -240,8 +231,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
 
     @Operation(
             summary = "Get a list of entity objects by a given list of model identifiers of entities.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
             parameters = {
                     @Parameter(
                             name = API.PARAM_MODEL_ID_LIST,
@@ -250,7 +239,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     @RequestMapping(
             path = API.LIST_PATH_SEGMENT,
             method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<T> getForIds(@RequestParam(name = API.PARAM_MODEL_ID_LIST, required = true) final String modelIds) {
 
