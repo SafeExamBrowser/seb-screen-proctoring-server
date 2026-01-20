@@ -10,9 +10,10 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.util.Collection;
 
-import ch.ethz.seb.sps.domain.model.service.ScreenshotData;
+import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
@@ -47,18 +48,23 @@ public class ProctoringCacheService {
     /** Total session count cache. */
     public static final String TOTAL_SESSION_COUNT = "TOTAL_SESSION_COUNT_CACHE";
 
+    public static final String SERVER_USER_CACHE = "SERVER_USER_CACHE";
+
     private final ScreenshotDataDAO screenshotDataDAO;
     private final SessionDAO sessionDAO;
     private final GroupDAO groupDAO;
+    private final UserDAO userDAO;
 
     public ProctoringCacheService(
-            final ScreenshotDataDAO screenshotDataDAO, 
+            final ScreenshotDataDAO screenshotDataDAO,
             final SessionDAO sessionDAO,
-            final GroupDAO groupDAO) {
+            final GroupDAO groupDAO,
+            final UserDAO userDAO) {
         
         this.screenshotDataDAO = screenshotDataDAO;
         this.sessionDAO = sessionDAO;
         this.groupDAO = groupDAO;
+        this.userDAO = userDAO;
     }
 
     @Cacheable(
@@ -177,6 +183,25 @@ public class ProctoringCacheService {
     public void evictSessionScreenshotData(final String sessionUUID) {
         if (log.isTraceEnabled()) {
             log.trace("Eviction of session screenshot data from cache, sessionUUID: {}", sessionUUID);
+        }
+    }
+
+    @Cacheable(
+            cacheNames = SERVER_USER_CACHE,
+            key = "#name",
+            unless = "#result == null")
+    public ServerUser serverUserByName(String name) {
+        return userDAO.byUsername(name)
+                .onError(error -> log.error("Failed to get ServerUser by name: {} cause: {}", name, error.getMessage()))
+                .getOr(null);
+    }
+
+    @CacheEvict(
+            cacheNames = SERVER_USER_CACHE,
+            key = "#name")
+    public void evictServerUserByName(String name) {
+        if (log.isTraceEnabled()) {
+            log.trace("Eviction of ServerUser from cache, name: {}", name);
         }
     }
 
