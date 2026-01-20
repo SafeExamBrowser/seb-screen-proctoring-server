@@ -42,12 +42,8 @@ public class SEBClientResourceServerConfig {
 
     @Autowired
     private JwtDecoder jwtDecoder;
-    @Value("${server.error.path}")
-    private String errorPath;
     @Value("${sps.api.session.endpoint}")
     private String sessionAPIEndpoint;
-    @Value("${sps.http.redirect}")
-    private String unauthorizedRedirect;
 
     @Bean
     @Order(2)

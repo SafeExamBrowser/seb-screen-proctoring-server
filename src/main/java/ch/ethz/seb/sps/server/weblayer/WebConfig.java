@@ -47,9 +47,6 @@ public class WebConfig implements WebMvcConfigurer {
             API.HEALTH_ENDPOINT + "/",
             API.GUI_REDIRECT_ENDPOINT,
             API.OAUTH_JWTTOKEN_ENDPOINT + "/**",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/api-docs/**"
     };
 
     /** Used to get real remote IP address by using "X-Forwarded-For" and "X-Forwarded-Proto" header.
