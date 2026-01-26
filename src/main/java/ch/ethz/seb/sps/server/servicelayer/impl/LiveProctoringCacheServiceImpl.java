@@ -162,7 +162,7 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
             });
 
-        } catch (final TransactionException te) {
+        } catch (final Exception te) {
             log.error("Failed to batch update screenshot data live cache store. Transaction has failed. Cause: {}", te.getMessage());
         }
     }
