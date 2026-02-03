@@ -49,6 +49,8 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
                 Long slotId = createSlot(sessionUUID);
                 if (slotId == null) {
                     throw new RuntimeException("Failed to get or create live cache slot for session: " + sessionUUID);
+                } else if (slotId == -1L) {
+                    throw new RuntimeException("There is no first/last image yet for session: " + sessionUUID);
                 }
                 return screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(slotId);
             })
@@ -147,7 +149,8 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
                 screenshotDataLiveCacheRecordMapper.insert(rec);
                 return rec.getId();
             } else {
-                return null;
+                // there seems not to exist a first/last image for the session yet
+                return -1L;
             }
         }
     }

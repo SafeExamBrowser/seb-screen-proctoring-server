@@ -41,7 +41,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Lazy
@@ -118,7 +117,9 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     public Long getLatestSSDataId(final String sessionUUID) {
         if (!cache.containsKey(sessionUUID)) {
 
+            // check if session still active
             if (!this.sessionDAO.isActive(sessionUUID)) {
+
                 return null;
             }
             
