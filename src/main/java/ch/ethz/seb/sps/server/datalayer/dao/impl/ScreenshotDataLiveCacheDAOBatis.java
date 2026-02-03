@@ -59,7 +59,6 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
             .onError(TransactionHandler::rollback);
     }
 
-
     @Override
     @Transactional
     public Result<String> deleteCacheEntry(String sessionUUID) {
