@@ -10,10 +10,10 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.util.Collection;
 
+import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.UserDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
@@ -23,8 +23,6 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.Session;
-import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.utils.Result;
 
 @Lazy
@@ -50,21 +48,26 @@ public class ProctoringCacheService {
 
     public static final String SERVER_USER_CACHE = "SERVER_USER_CACHE";
 
+    public static final String PROCTORING_EXAM_CACHE = "PROCTORING_EXAM_CACHE";
+
     private final ScreenshotDataDAO screenshotDataDAO;
     private final SessionDAO sessionDAO;
     private final GroupDAO groupDAO;
     private final UserDAO userDAO;
+    private final ExamDAO examDAO;
 
     public ProctoringCacheService(
             final ScreenshotDataDAO screenshotDataDAO,
             final SessionDAO sessionDAO,
             final GroupDAO groupDAO,
-            final UserDAO userDAO) {
+            final UserDAO userDAO,
+            final ExamDAO examDAO) {
         
         this.screenshotDataDAO = screenshotDataDAO;
         this.sessionDAO = sessionDAO;
         this.groupDAO = groupDAO;
         this.userDAO = userDAO;
+        this.examDAO = examDAO;
     }
 
     @Cacheable(
@@ -126,13 +129,10 @@ public class ProctoringCacheService {
             key = "#sessionUUID",
             unless = "#result == null")
     public Session getSession(final String sessionUUID) {
-        final Result<Session> sessionByModelId = this.sessionDAO.byModelId(sessionUUID);
-        if (sessionByModelId.hasError()) {
-            log.error("Failed to load session by model id: {}", sessionUUID, sessionByModelId.getError());
-            return null;
-        }
-
-        return sessionByModelId.get();
+        return this.sessionDAO
+                .byModelId(sessionUUID)
+                .onError(error -> log.error("Failed to load session by model id: {}", sessionUUID, error))
+                .getOr(null);
     }
 
     @CacheEvict(
@@ -202,6 +202,26 @@ public class ProctoringCacheService {
     public void evictServerUserByName(String name) {
         if (log.isTraceEnabled()) {
             log.trace("Eviction of ServerUser from cache, name: {}", name);
+        }
+    }
+
+    @Cacheable(
+            cacheNames = PROCTORING_EXAM_CACHE,
+            key = "#modelId",
+            unless = "#result == null")
+    public Exam getExamForProctoring(String modelId) {
+        return examDAO
+                .byModelId(modelId)
+                .onError(error -> log.error("Failed to get Exam for proctoring modelId: {} cause: {}", modelId, error.getMessage()))
+                .getOr(null);
+    }
+
+    @CacheEvict(
+            cacheNames = PROCTORING_EXAM_CACHE,
+            key = "#modelId")
+    public void evictExamForProctoring(String modelId) {
+        if (log.isTraceEnabled()) {
+            log.trace("Eviction of Exam from cache, modelId: {}", modelId);
         }
     }
 

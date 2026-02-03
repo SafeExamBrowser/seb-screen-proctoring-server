@@ -104,4 +104,6 @@ public interface ProctoringService {
     void clearGroupCache(final String groupUUID, final boolean fully);
 
     DistinctMetadataWindowForExam getDistinctMetadataWindowForExam(String metadataApplication, List<Long> groupIds);
+
+    void updateSessionCache();
 }

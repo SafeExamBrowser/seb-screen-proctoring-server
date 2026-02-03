@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Date;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -49,7 +48,6 @@ public class ProctoringServiceImpl implements ProctoringService {
 
     private static final Logger log = LoggerFactory.getLogger(ProctoringServiceImpl.class);
 
-    private final ExamDAO examDAO;
     private final GroupDAO groupDAO;
     private final SessionDAO sessionDAO;
     private final ScreenshotDAO screenshotDAO;
@@ -63,7 +61,6 @@ public class ProctoringServiceImpl implements ProctoringService {
     private final long distributedUpdateInterval;
 
     public ProctoringServiceImpl(
-            final ExamDAO examDAO,
             final GroupDAO groupDAO,
             final SessionDAO sessionDAO,
             final ScreenshotDAO screenshotDAO,
@@ -74,7 +71,6 @@ public class ProctoringServiceImpl implements ProctoringService {
             final ServiceInfo serviceInfo,
             final JSONMapper jsonMapper) {
 
-        this.examDAO = examDAO;
         this.groupDAO = groupDAO;
         this.sessionDAO = sessionDAO;
         this.screenshotDAO = screenshotDAO;
@@ -118,14 +114,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                 throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
             }
 
-            // NOTE: if we have a distributed setup, refresh the cache to be sure we have the actual session from DB
-            // TODO  This is patch fix for SEBSP-217 and should be handled by overall session cache update for
-            //       distributed setup within the next release version
-            if (isDistributedSetup) {
-                proctoringCacheService.evictSession(sessionUUID);
-                session = this.proctoringCacheService.getSession(sessionUUID);
-            }
-
             boolean sessionActive = session.isActive();
 
 
@@ -134,12 +122,12 @@ public class ProctoringServiceImpl implements ProctoringService {
                 if (sessionActive) {
                     // get latest screenshot data form DB and check if we need an update on session cache
                     Long pk = liveProctoringCacheService.getLatestSSDataId(sessionUUID);
+
                     if (pk == null || pk < 0) {
-                        if (log.isDebugEnabled()) {
-                            log.warn("Failed to get live screenshot id for session: {}", sessionUUID );
-                        }
-                        throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+                        return handleNoLiveCacheDataAvailable(sessionUUID);
                     }
+
+                    // get the actual record form DB
                     return screenshotDataDAO.recordByPK(pk)
                             .map(rec -> createScreenshotViewData(sessionUUID, rec))
                             .getOrThrow();
@@ -168,8 +156,6 @@ public class ProctoringServiceImpl implements ProctoringService {
             final FilterMap filterMap) {
 
         return Result.tryCatch(() -> {
-            
-            updateSessionCache(groupUUID);
 
             final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
             final Collection<String> liveSessionTokens = this.proctoringCacheService
@@ -217,9 +203,7 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             ExamViewData examViewData = ExamViewData.EMPTY_MODEL;
             if (activeGroup.getExam_id() != null) {
-                // TODO since Exam data is also needed on monitoring now and requested every update
-                //      we also need a cache for Exam to not make a DB request on every update
-                final Exam exam = this.examDAO.byModelId(activeGroup.exam_id.toString()).getOr(null);
+                final Exam exam = proctoringCacheService.getExamForProctoring(activeGroup.exam_id.toString());
                 examViewData = new ExamViewData(exam.uuid, exam.name, exam.startTime, exam.endTime);
             }
 
@@ -413,7 +397,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .activeGroupUUIDs()
                     .getOrThrow()
                     .stream()
-                    .peek(this::updateSessionCache)
                     .map(this.proctoringCacheService::getActiveGroup)
                     .filter(Objects::nonNull)
                     .map(group -> new GroupSessionCount(
@@ -445,6 +428,20 @@ public class ProctoringServiceImpl implements ProctoringService {
                 this.screenshotDataDAO.countDistinctMetadataWindowForExam(metadataApplication, groupIds).getOrThrow(),
                 this.screenshotDataDAO.getDistinctMetadataWindowForExam(metadataApplication, groupIds).getOrThrow()
         );
+    }
+
+    @Override
+    public void updateSessionCache() {
+        try {
+
+            this.groupDAO
+                    .activeGroupUUIDs()
+                    .getOrThrow()
+                    .forEach(this::updateSessionCache);
+
+        } catch (Exception e) {
+            log.error("Failed to update proctoring session cache: ", e);
+        }
     }
 
     private void streamLatestScreenshot(final String sessionUUID, final OutputStream out) {
@@ -624,46 +621,35 @@ public class ProctoringServiceImpl implements ProctoringService {
                 metaData);
     }
 
-    private long lastUpdateTime = 0;
-    private final Set<String> GROUP_UUID_UPDATE_REG = ConcurrentHashMap.newKeySet();
     private void updateSessionCache(String groupUUID) {
         if (!this.isDistributedSetup) {
             return;
         }
 
-        long now = Utils.getMillisecondsNow();
-        if (now - lastUpdateTime > this.distributedUpdateInterval) {
-            GROUP_UUID_UPDATE_REG.clear();
-            lastUpdateTime = now;
+        Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
+        if (activeGroup == null) {
+            return;
         }
 
-        if (!GROUP_UUID_UPDATE_REG.contains(groupUUID)) {
-            Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
-            if (activeGroup == null) {
-                return;
-            }
+        if (this.groupDAO.needsUpdate(groupUUID, activeGroup.lastUpdateTime)) {
+            this.clearGroupCache(groupUUID, true);
+        } else {
 
-            if (this.groupDAO.needsUpdate(groupUUID, activeGroup.lastUpdateTime)) {
-                this.clearGroupCache(groupUUID, true);
-            } else {
-                
-                Map<String, Long> updateTimes = this.proctoringCacheService
-                        .getLiveSessionTokens(activeGroup.uuid)
-                        .stream()
-                        .map(this.proctoringCacheService::getSession)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toMap( s -> s.uuid, s -> s.lastUpdateTime));
-                
-                if (!updateTimes.isEmpty()) {
-                    this.sessionDAO
-                            .allTokensThatNeedsUpdate(activeGroup.id, updateTimes)
-                            .getOr(Collections.emptyList())
-                            .forEach(this.proctoringCacheService::evictSession);
-                }
+            Map<String, Long> updateTimes = this.proctoringCacheService
+                    .getLiveSessionTokens(activeGroup.uuid)
+                    .stream()
+                    .map(this.proctoringCacheService::getSession)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toMap( s -> s.uuid, s -> s.lastUpdateTime));
+
+            if (!updateTimes.isEmpty()) {
+                this.sessionDAO
+                        .allTokensThatNeedsUpdate(activeGroup.id, updateTimes)
+                        .getOr(Collections.emptyList())
+                        .forEach(this.proctoringCacheService::evictSession);
             }
-            proctoringCacheService.evictSessionTokens(groupUUID);
-            GROUP_UUID_UPDATE_REG.add(groupUUID);
         }
+        proctoringCacheService.evictSessionTokens(groupUUID);
     }
 
     // this can be used if we still have a live session, but it might be outdated or abandoned by SEB...
@@ -682,6 +668,40 @@ public class ProctoringServiceImpl implements ProctoringService {
             }
         }
         return data;
+    }
+
+    // Handles the absence of live cache session slot for a session that is still marked as active
+    // 1. updates the cache and get actual session data
+    // 2. if the session is still active we assume that there is no first/last image yet for the session
+    //    and throw a NoResourceFoundException
+    // 3. if the session is now inactive we try to get the last image from the recorded session cache
+    //    if this does also not work we throw a NoResourceFoundException
+    private ScreenshotViewData handleNoLiveCacheDataAvailable(String sessionUUID) {
+
+        if (log.isDebugEnabled()) {
+            log.warn("Failed to get live screenshot id for session: {}", sessionUUID);
+        }
+
+        // update the cache so that we are sure to get and put the actual session data
+        proctoringCacheService.evictSession(sessionUUID);
+        Session session = this.proctoringCacheService.getSession(sessionUUID);
+
+        if (session.isActive()) {
+            // it seems there is not a first or last image for this session (SEB client didn't send an image yet)
+            throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+        } else {
+            // session was not up to date and is now closed. provide last image if possible
+            try {
+                return createScreenshotViewData(
+                        sessionUUID,
+                        this.proctoringCacheService
+                                .getSessionScreenshotData(sessionUUID)
+                                .getAt(Utils.getMillisecondsNow()));
+            } catch (Exception e) {
+                log.warn("Failed to get last image from inactive session: {} cause: {}", session, e.getMessage());
+                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+            }
+        }
     }
 
 }

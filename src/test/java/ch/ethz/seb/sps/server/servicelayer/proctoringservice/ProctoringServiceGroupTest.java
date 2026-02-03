@@ -166,6 +166,8 @@ public class ProctoringServiceGroupTest {
         
         when(this.proctoringCacheService.getActiveGroup(any()))
                 .thenReturn(createRealisticGroup());
+        when(this.proctoringCacheService.getExamForProctoring(any()))
+                .thenReturn(createExam());
 
         when(this.serviceInfo.getScreenshotRequestURI())
                 .thenReturn(IMAGE_LINK);
@@ -182,9 +184,6 @@ public class ProctoringServiceGroupTest {
         Map<String, ScreenshotDataRecord> screenshotDataRecordMap = createScreenshotDataRecordMap();
         when(this.screenshotDataDAO.allOfMappedToSession(any()))
                 .thenReturn(Result.of(screenshotDataRecordMap));
-
-        when(this.examDAO.byModelId(any()))
-                .thenReturn(Result.of(createExam()));
         
         when(this.proctoringCacheService.getTotalSessionCount(any(), any()))
                 .thenReturn(NUMBER_OF_SESSIONS);

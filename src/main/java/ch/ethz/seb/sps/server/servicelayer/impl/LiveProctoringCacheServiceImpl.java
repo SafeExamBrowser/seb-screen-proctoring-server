@@ -145,8 +145,8 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                 log.debug("Update store cache with batch of: {}", batch.size());
             }
             
-            // then batch update
-            this.transactionTemplate.executeWithoutResult(status -> {
+            // then batch update (no transaction)
+            // this.transactionTemplate.executeWithoutResult(status -> {
                 batch.forEach(data -> {
                     if (data.record.getId() != null) {
                         UpdateDSL.updateWithMapper(
@@ -160,7 +160,7 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                 });
                 this.sqlSessionTemplate.flushStatements();
 
-            });
+            // });
 
         } catch (final Exception te) {
             log.error("Failed to batch update screenshot data live cache store. Transaction has failed. Cause: {}", te.getMessage());
@@ -203,16 +203,24 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
 
             Set<String> cacheKeys = new HashSet<>(cache.keySet());
-            cacheKeys.forEach(key -> {
-                if (!openSession.contains(key)) {
-                    
-                    if (log.isDebugEnabled()) {
-                        log.debug("Clear entry from local cache for session: {}", key);
-                    }
-                    
-                    cache.remove(key);
+            cacheKeys.removeAll(openSession);
+            if (!cacheKeys.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Clear entries from local cache for sessions: {}", cacheKeys);
                 }
-            });
+                cache.keySet().removeAll(cacheKeys);
+            }
+
+//            cacheKeys.forEach(key -> {
+//                if (!openSession.contains(key)) {
+//
+//                    if (log.isDebugEnabled()) {
+//                        log.debug("Clear entry from local cache for session: {}", key);
+//                    }
+//
+//                    cache.remove(key);
+//                }
+//            });
             
             
         } catch (Exception e) {
