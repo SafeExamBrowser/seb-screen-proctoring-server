@@ -11,10 +11,12 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 import java.util.Collection;
 import java.util.List;
 
+import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataLiveCacheRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataLiveCacheDAO;
 import ch.ethz.seb.sps.utils.Result;
 import org.mybatis.dynamic.sql.SqlBuilder;
@@ -50,7 +52,7 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
                 if (slotId == null) {
                     throw new RuntimeException("Failed to get or create live cache slot for session: " + sessionUUID);
                 } else if (slotId == -1L) {
-                    throw new RuntimeException("There is no first/last image yet for session: " + sessionUUID);
+                    throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
                 }
                 return screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(slotId);
             })

@@ -22,6 +22,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheReco
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataLiveCacheRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataLiveCacheDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
@@ -130,7 +131,13 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
             synchronized (this.cache) {
                 screenshotDataLiveCacheDAO
                         .createCacheEntry(sessionUUID)
-                        .onError(error -> log.error("Failed to create slot for session: {}: error: {}", sessionUUID, error.getMessage()))
+                        .onError(error -> {
+                            if (error instanceof NoResourceFoundException) {
+                                log.info("No first/last image yet for session: {}", sessionUUID);
+                            } else {
+                                log.error("Failed to create slot for session: {}: error: {}", sessionUUID, error.getMessage());
+                            }
+                        })
                         .onSuccess(rec -> cache.put(sessionUUID, rec.getIdLatestSsd()));
             }
         }
