@@ -56,7 +56,11 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
                 }
                 return screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(slotId);
             })
-            .onError(TransactionHandler::rollback);
+            .onError(error -> {
+                if (!(error instanceof NoResourceFoundException)) {
+                    TransactionHandler.rollback(error);
+                }
+            });
     }
 
     @Override
