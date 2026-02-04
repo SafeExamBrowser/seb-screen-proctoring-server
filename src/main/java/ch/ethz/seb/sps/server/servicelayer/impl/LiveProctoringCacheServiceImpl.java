@@ -22,6 +22,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheReco
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataLiveCacheRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataLiveCacheDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
@@ -41,7 +42,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Lazy
@@ -118,7 +118,9 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     public Long getLatestSSDataId(final String sessionUUID) {
         if (!cache.containsKey(sessionUUID)) {
 
+            // check if session still active
             if (!this.sessionDAO.isActive(sessionUUID)) {
+
                 return null;
             }
             
@@ -129,7 +131,13 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
             synchronized (this.cache) {
                 screenshotDataLiveCacheDAO
                         .createCacheEntry(sessionUUID)
-                        .onError(error -> log.error("Failed to create slot for session: {}: error: {}", sessionUUID, error.getMessage()))
+                        .onError(error -> {
+                            if (error instanceof NoResourceFoundException) {
+                                log.info("No first/last image yet for session: {}", sessionUUID);
+                            } else {
+                                log.error("Failed to create slot for session: {}: error: {}", sessionUUID, error.getMessage());
+                            }
+                        })
                         .onSuccess(rec -> cache.put(sessionUUID, rec.getIdLatestSsd()));
             }
         }
@@ -149,8 +157,8 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
             // in undefined order, it really took the last one and not override one that is later
             Map<String, Long> mapping = new HashMap<>();
             
-            // then batch update
-            this.transactionTemplate.executeWithoutResult(status -> {
+            // then batch update (no transaction) SEBSP-218
+            // this.transactionTemplate.executeWithoutResult(status -> {
                 batch.forEach(data -> {
                     if (data.record.getId() != null) {
                         final String sessionId = data.record.getSessionUuid();
@@ -174,9 +182,9 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                 });
                 this.sqlSessionTemplate.flushStatements();
 
-            });
+            // });
 
-        } catch (final TransactionException te) {
+        } catch (final Exception te) {
             log.error("Failed to batch update screenshot data live cache store. Transaction has failed. Cause: {}", te.getMessage());
         }
     }
@@ -217,16 +225,24 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
 
             Set<String> cacheKeys = new HashSet<>(cache.keySet());
-            cacheKeys.forEach(key -> {
-                if (!openSession.contains(key)) {
-                    
-                    if (log.isDebugEnabled()) {
-                        log.debug("Clear entry from local cache for session: {}", key);
-                    }
-                    
-                    cache.remove(key);
+            cacheKeys.removeAll(openSession);
+            if (!cacheKeys.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Clear entries from local cache for sessions: {}", cacheKeys);
                 }
-            });
+                cache.keySet().removeAll(cacheKeys);
+            }
+
+//            cacheKeys.forEach(key -> {
+//                if (!openSession.contains(key)) {
+//
+//                    if (log.isDebugEnabled()) {
+//                        log.debug("Clear entry from local cache for session: {}", key);
+//                    }
+//
+//                    cache.remove(key);
+//                }
+//            });
             
             
         } catch (Exception e) {
