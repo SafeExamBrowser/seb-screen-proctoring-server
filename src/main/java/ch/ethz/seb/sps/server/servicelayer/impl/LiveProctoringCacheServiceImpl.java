@@ -153,7 +153,7 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                 log.debug("Update store cache with batch of: {}", batch.size());
             }
             
-            // then batch update (no transaction)
+            // then batch update (no transaction) SEBSP-218
             // this.transactionTemplate.executeWithoutResult(status -> {
                 batch.forEach(data -> {
                     if (data.record.getId() != null) {
