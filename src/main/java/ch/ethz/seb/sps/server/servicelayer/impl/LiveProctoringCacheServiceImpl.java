@@ -153,15 +153,20 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                 log.debug("Update store cache with batch of: {}", batch.size());
             }
 
+            // TODO is this really worth it?
+            // filter incoming data so that if there are several screenshots for one session
+            // in undefined order, it really took the last one and not override one that is later
+            //Map<String, Long> mapping = new HashMap<>();
+
             // then batch update (way faster with transaction, see SEBSERV-856 and SEBSP-218)
             this.transactionTemplate.executeWithoutResult(status -> {
                 batch.forEach(data -> {
                     if (data.record.getId() != null) {
                         final String sessionId = data.record.getSessionUuid();
                         final Long timestamp = data.record.getTimestamp();
-                        if (mapping.containsKey(sessionId) && timestamp != null && mapping.get(sessionId) > timestamp) {
-                            return; // skip this one since we already have a newer
-                        }
+//                        if (mapping.containsKey(sessionId) && timestamp != null && mapping.get(sessionId) > timestamp) {
+//                            return; // skip this one since we already have a newer
+//                        }
 
                         // add to update batch
                         UpdateDSL.updateWithMapper(
@@ -171,6 +176,9 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
                                 .where(ScreenshotDataLiveCacheRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionId))
                                 .build()
                                 .execute();
+
+                        // register as processed
+                        // mapping.put(sessionId, timestamp);
                     }
                 });
                 this.sqlSessionTemplate.flushStatements();
