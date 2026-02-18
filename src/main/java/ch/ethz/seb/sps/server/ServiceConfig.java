@@ -75,7 +75,7 @@ public class ServiceConfig {
     public TaskScheduler batchStoreScreenScheduler() {
         final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 
-        scheduler.setPoolSize(4);
+        scheduler.setPoolSize(10);
         scheduler.setThreadNamePrefix("store-");
         scheduler.setThreadPriority(Thread.NORM_PRIORITY);
         scheduler.setDaemon(true);
