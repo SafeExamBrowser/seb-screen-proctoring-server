@@ -15,7 +15,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import ch.ethz.seb.sps.domain.api.TooManyRequests;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.service.DistinctMetadataWindowForExam;
 import ch.ethz.seb.sps.domain.model.service.UserListForApplicationSearch;

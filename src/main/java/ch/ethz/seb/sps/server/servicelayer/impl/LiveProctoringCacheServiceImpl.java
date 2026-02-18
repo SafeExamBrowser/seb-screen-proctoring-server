@@ -11,6 +11,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -147,31 +148,9 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
     @Override
     public void updateCacheStore(final Collection<ScreenshotQueueData> batch) {
-        try {
-            
-            if (log.isDebugEnabled()) {
-                log.debug("Update store cache with batch of: {}", batch.size());
-            }
-
-            // then batch update (way faster with transaction, see SEBSERV-856 and SEBSP-218)
-            this.transactionTemplate.executeWithoutResult(status -> {
-                batch.forEach(data -> {
-                    if (data.record.getId() != null) {
-                        UpdateDSL.updateWithMapper(
-                                        screenshotDataLiveCacheRecordMapper::update,
-                                        ScreenshotDataLiveCacheRecordDynamicSqlSupport.screenshotDataLiveCacheRecord)
-                                .set(ScreenshotDataLiveCacheRecordDynamicSqlSupport.idLatestSsd).equalTo(data.record.getId())
-                                .where(ScreenshotDataLiveCacheRecordDynamicSqlSupport.sessionUuid, isEqualTo(data.record.getSessionUuid()))
-                                .build()
-                                .execute();
-                    }
-                });
-                this.sqlSessionTemplate.flushStatements();
-            });
-
-        } catch (final Exception te) {
-            log.error("Failed to batch update screenshot data live cache store. Transaction has failed. Cause: {}", te.getMessage());
-        }
+        taskScheduler.schedule(
+                () -> updateCacheStoreTask(batch),
+                Instant.now());
     }
 
     @Override
@@ -238,6 +217,34 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
         } catch (Exception e) {
             log.error("Failed to update cache: ", e);
+        }
+    }
+
+    private void updateCacheStoreTask(final Collection<ScreenshotQueueData> batch) {
+        try {
+
+            if (log.isDebugEnabled()) {
+                log.debug("Update store cache with batch of: {}", batch.size());
+            }
+
+            // then batch update (way faster with transaction, see SEBSERV-856 and SEBSP-218)
+            this.transactionTemplate.executeWithoutResult(status -> {
+                batch.forEach(data -> {
+                    if (data.record.getId() != null) {
+                        UpdateDSL.updateWithMapper(
+                                        screenshotDataLiveCacheRecordMapper::update,
+                                        ScreenshotDataLiveCacheRecordDynamicSqlSupport.screenshotDataLiveCacheRecord)
+                                .set(ScreenshotDataLiveCacheRecordDynamicSqlSupport.idLatestSsd).equalTo(data.record.getId())
+                                .where(ScreenshotDataLiveCacheRecordDynamicSqlSupport.sessionUuid, isEqualTo(data.record.getSessionUuid()))
+                                .build()
+                                .execute();
+                    }
+                });
+                this.sqlSessionTemplate.flushStatements();
+            });
+
+        } catch (final Exception te) {
+            log.error("Failed to batch update screenshot data live cache store. Transaction has failed. Cause: {}", te.getMessage());
         }
     }
 }
