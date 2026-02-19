@@ -2,7 +2,7 @@ package ch.ethz.seb.sps.domain.model;
 
 import jakarta.annotation.Generated;
 
-@Generated(value="org.mybatis.generator.api.MyBatisGenerator",comments="ch.ethz.seb.sps.generator.DomainModelNameReferencePlugin",date="2025-08-26T16:02:14.734+02:00")
+@Generated(value="org.mybatis.generator.api.MyBatisGenerator",comments="ch.ethz.seb.sps.generator.DomainModelNameReferencePlugin",date="2026-02-19T13:37:36.134+01:00")
 public enum EntityType {
     USER,
     CLIENT_ACCESS,
@@ -17,5 +17,7 @@ public enum EntityType {
     ENTITY_PRIVILEGE,
     ADDITIONAL_ATTRIBUTE,
     WEBSERVICE_SERVER_INFO,
-    AUDIT_LOG;
+    AUDIT_LOG,
+    SCHEDULED_DELETE,
+    SCHEDULED_DELETE_INFO;
 }
