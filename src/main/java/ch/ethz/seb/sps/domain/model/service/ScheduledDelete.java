@@ -4,6 +4,7 @@ import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.model.Entity;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.utils.Utils;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,6 +32,7 @@ public record ScheduledDelete(
         FINISHED
     }
 
+    @JsonCreator
     public ScheduledDelete(
             @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_ID) final Long id,
             @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_STATE) final State state,
