@@ -244,7 +244,7 @@ public class AuditLogDAOBatis implements AuditLogDAO {
             }
 
             //writes log into DB
-            writeLogIntoDB(userInfo.uuid, logType, entity.entityType(), entity.getId(), _message);
+            writeLogIntoDB(userInfo.uuid, logType, entity.entityType(), entity.id(), _message);
 
             return entity;
         })

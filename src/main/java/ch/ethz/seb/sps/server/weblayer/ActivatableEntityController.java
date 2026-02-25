@@ -171,7 +171,7 @@ public abstract class ActivatableEntityController<T extends Entity & Activatable
                 .getOrThrow();
     }
 
-    private Result<T> setActiveSingle(final String modelId, final boolean active) {
+    protected Result<T> setActiveSingle(final String modelId, final boolean active) {
         return this.entityDAO
                 .byModelId(modelId)
                 .map(this.userService::checkWrite)

@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.*;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
@@ -29,10 +30,6 @@ import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.PageSortOrder;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotSearchResult;
 import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.SessionRecordDynamicSqlSupport;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.UserRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.utils.Result;
 
@@ -377,6 +374,15 @@ public class PaginationServiceImpl implements PaginationService {
         this.defaultSortColumn.put(
                 ScreenshotDataRecordDynamicSqlSupport.screenshotDataRecord.tableNameAtRuntime(),
                 Domain.SCREENSHOT_DATA.ATTR_TIMESTAMP);
+
+
+        // ScheduledDelete table mapping
+        final Map<String, String> scheduledDeleteTableMap = new HashMap<>();
+        userTableMap.put(Domain.SCHEDULED_DELETE.ATTR_STATE, ScheduledDeleteRecordDynamicSqlSupport.state.name());
+        userTableMap.put(Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, ScheduledDeleteRecordDynamicSqlSupport.deleteDueTime.name());
+        userTableMap.put(Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME, ScheduledDeleteRecordDynamicSqlSupport.scheduleTime.name());
+        this.sortColumnMapping.put(ScheduledDeleteRecordDynamicSqlSupport.scheduledDeleteRecord.tableNameAtRuntime(), scheduledDeleteTableMap);
+        this.defaultSortColumn.put(ScheduledDeleteRecordDynamicSqlSupport.scheduledDeleteRecord.tableNameAtRuntime(), Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME);
 
         // TODO define sort mapping for other tables
 

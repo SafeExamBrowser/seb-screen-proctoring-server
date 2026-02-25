@@ -94,7 +94,7 @@ public class GroupViewData implements Entity, OwnedEntity, WithNameDescription, 
     }
 
     @Override
-    public Long getId() {
+    public Long id() {
         return this.id;
     }
 

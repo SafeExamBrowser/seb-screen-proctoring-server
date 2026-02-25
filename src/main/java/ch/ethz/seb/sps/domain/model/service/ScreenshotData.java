@@ -75,7 +75,7 @@ public class ScreenshotData implements Entity {
     }
 
     @Override
-    public Long getId() {
+    public Long id() {
         return this.id;
     }
 

@@ -6,19 +6,19 @@ import org.mybatis.dynamic.sql.SqlColumn;
 import org.mybatis.dynamic.sql.SqlTable;
 
 public final class ScreenshotDataLiveCacheRecordDynamicSqlSupport {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.159+01:00", comments="Source Table: screenshot_data_live_cache")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.646+01:00", comments="Source Table: screenshot_data_live_cache")
     public static final ScreenshotDataLiveCacheRecord screenshotDataLiveCacheRecord = new ScreenshotDataLiveCacheRecord();
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.159+01:00", comments="Source field: screenshot_data_live_cache.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.646+01:00", comments="Source field: screenshot_data_live_cache.id")
     public static final SqlColumn<Long> id = screenshotDataLiveCacheRecord.id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.159+01:00", comments="Source field: screenshot_data_live_cache.session_uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.646+01:00", comments="Source field: screenshot_data_live_cache.session_uuid")
     public static final SqlColumn<String> sessionUuid = screenshotDataLiveCacheRecord.sessionUuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.159+01:00", comments="Source field: screenshot_data_live_cache.id_latest_ssd")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.646+01:00", comments="Source field: screenshot_data_live_cache.id_latest_ssd")
     public static final SqlColumn<Long> idLatestSsd = screenshotDataLiveCacheRecord.idLatestSsd;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.159+01:00", comments="Source Table: screenshot_data_live_cache")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.646+01:00", comments="Source Table: screenshot_data_live_cache")
     public static final class ScreenshotDataLiveCacheRecord extends SqlTable {
         public final SqlColumn<Long> id = column("id", JDBCType.BIGINT);
 

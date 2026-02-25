@@ -1,14 +1,26 @@
 package ch.ethz.seb.sps.server.weblayer;
 
+import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.model.FilterMap;
+import ch.ethz.seb.sps.domain.model.Page;
+import ch.ethz.seb.sps.domain.model.service.ScheduledDelete;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScheduledDeleteRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.dao.ScheduledDeleteDAO;
+import io.swagger.v3.core.util.Constants;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.server.servicelayer.*;
 import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTimeZone;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +50,8 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     private final GroupDAO groupDAO;
     private final SessionService sessionService;
     private final ProctoringService proctoringService;
+    private final ScheduledDeleteDAO scheduledDeleteDAO;
+    private final ScheduledDeleteService scheduledDeleteService;
 
     public AdminExamController(
             final UserService userService,
@@ -47,12 +61,17 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             final BeanValidationService beanValidationService,
             final GroupDAO groupDAO,
             final SessionService sessionService,
-            final ProctoringService proctoringService) {
+            final ProctoringService proctoringService,
+            final ScheduledDeleteDAO scheduledDeleteDAO,
+            final ScheduledDeleteService scheduledDeleteService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.groupDAO = groupDAO;
         this.sessionService = sessionService;
         this.proctoringService = proctoringService;
+        this.scheduledDeleteDAO = scheduledDeleteDAO;
+        this.scheduledDeleteService = scheduledDeleteService;
+
     }
 
     @Operation(
@@ -99,15 +118,126 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             method = RequestMethod.DELETE,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-
     public Collection<EntityKey> requestDelete(@PathVariable final String modelId) {
-        // TODO this should never block here do this in background with balk action
         if (!this.sessionService.hasAnySessionDataForExam(modelId)) {
             return super.hardDelete(modelId);
         } else {
             log.info("Exam will not be deleted because it already has screenshot data assigned to it. Exam: {}", modelId);
+
+            setActiveSingle(modelId, false)
+                    .onError(error -> log.error("Failed to close exam on deletion request: {}", error.getMessage()))
+                    .onSuccess(exam -> log.info("Closed Exam with data due to deletion request: {}", exam.uuid));
+
             return Collections.emptyList();
         }
+    }
+
+    // ****************************************************************************
+    // **** Scheduled Delete
+
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_ENDPOINT,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<ScheduledDelete> getScheduledDeletePage(
+            @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
+            @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
+            @RequestParam(name = Page.ATTR_SORT, required = false) final String sort,
+            @RequestParam(required = false) final MultiValueMap<String, String> allRequestParams,
+            final HttpServletRequest request) {
+
+        userService.checkIsAdmin();
+
+        final FilterMap filterMap = new FilterMap(allRequestParams, request.getQueryString());
+        return this.paginationService.getPage(
+                        pageNumber,
+                        pageSize,
+                        sort,
+                        ScheduledDeleteRecordDynamicSqlSupport.scheduledDeleteRecord.tableNameAtRuntime(),
+                        () -> scheduledDeleteDAO.allMatching(filterMap))
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_ENDPOINT + API.PARAM_MODEL_PATH_SEGMENT,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ScheduledDelete getScheduledDelete(@PathVariable final String modelId) {
+
+        userService.checkIsAdmin();
+
+        return scheduledDeleteDAO
+                .byModelId(modelId)
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_ENDPOINT,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ScheduledDelete createScheduledDelete(
+            @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, required = true) final Long dueTimeUTC,
+            @RequestParam(name = ScheduledDelete.ATTR_REFERENCE_TIME_ZONE, required = false) final String refTimeZone) {
+
+        userService.checkIsAdmin();
+
+        final DateTimeZone refTZ = refTimeZone != null ? DateTimeZone.forID(refTimeZone) : DateTimeZone.UTC;
+        return scheduledDeleteService
+                .createScheduledDelete(dueTimeUTC,refTZ)
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.MARK_READY_FOR_DELETE,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<EntityKey> markReadyForDelete(@RequestParam(name = EXAM.ATTR_UUID, required = true) final String examUUIDs) {
+
+        userService.checkIsAdmin();
+
+        String[] split = StringUtils.split(examUUIDs, Constants.COMMA);
+        if (split == null) {
+            return Collections.emptyList();
+        }
+
+        return scheduledDeleteService
+                .markExamsReadyForDeletion(Arrays.asList(split))
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.EXCLUDE_FROM_DELETE,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<EntityKey> excludeFromDelete(@RequestParam(name = EXAM.ATTR_UUID, required = true) final String examUUIDs) {
+
+        userService.checkIsAdmin();
+
+        String[] split = StringUtils.split(examUUIDs, Constants.COMMA);
+        if (split == null) {
+            return Collections.emptyList();
+        }
+
+        return scheduledDeleteService
+                .excludeExamsFromDeletion(Arrays.asList(split))
+                .getOrThrow();
+
+    }
+
+    // **** Scheduled Delete
+    // ****************************************************************************
+
+    @Override
+    public Collection<EntityKey> hardDelete(String modelId) {
+        throw new UnsupportedOperationException("Direct hard delete of Exam is not supported. Use scheduled delete instead");
+    }
+
+    @Override
+    public Collection<EntityKey> hardDeleteAll(List<String> ids, HttpServletResponse response) {
+        throw new UnsupportedOperationException("Direct hard delete of Exam is not supported. Use scheduled delete instead");
     }
 
     @Override

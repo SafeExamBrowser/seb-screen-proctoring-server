@@ -377,6 +377,20 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Collection<Group>> getGroupsForScheduledDeletion(Long deleteDueTime) {
+        return Result.tryCatch(() -> this.groupRecordMapper
+                    .selectByExample()
+                    .where(creationTime, SqlBuilder.isLessThanOrEqualTo(deleteDueTime))
+                    .build()
+                    .execute()
+                    .stream()
+                    .map(this::toDomainModel)
+                    .collect(Collectors.toList())
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean isActive(final String modelId) {
         if (StringUtils.isBlank(modelId)) {
             return false;

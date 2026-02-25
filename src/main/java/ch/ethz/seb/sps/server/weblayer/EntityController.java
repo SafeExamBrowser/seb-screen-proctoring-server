@@ -512,7 +512,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     }
 
     protected Result<M> validForCreate(final M entity) {
-        if (entity.getId() == null) {
+        if (entity.id() == null) {
             return this.beanValidationService.validateBean(entity);
         } else {
             return Result.ofError(

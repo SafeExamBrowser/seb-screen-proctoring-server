@@ -132,7 +132,7 @@ public final class UserMod implements UserAccount {
     }
 
     @Override
-    public Long getId() {
+    public Long id() {
         return null;
     }
 

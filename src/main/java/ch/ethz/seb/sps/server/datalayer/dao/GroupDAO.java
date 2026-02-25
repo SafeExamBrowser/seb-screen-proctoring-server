@@ -27,6 +27,8 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Collection<Group>> byGroupName(FilterMap filterMap);
 
+    Result<Collection<Group>> getGroupsForScheduledDeletion(Long deleteDueTime);
+
     Result<GroupViewData> getGroupWithExamData(Long groupId);
 
     Result<Collection<Long>> getGroupIdsWithExamData(

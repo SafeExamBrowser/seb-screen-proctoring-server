@@ -2,6 +2,7 @@ package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.util.Collection;
 
+import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.utils.Result;
@@ -15,8 +16,15 @@ public interface ExamDAO extends ActivatableEntityDAO<Exam, Exam> {
     boolean isExamRunning(Long examId);
 
     Result<Collection<Exam>> getExamsWithin(FilterMap filterMap, Collection<Long> prePredicated);
-    
+
+    Result<Collection<Exam>> getExamsForScheduledDeletion(Long deleteDueTime);
+
     Result<Collection<Long>> getAllForDeletion();
 
     boolean hasRunningLifeExams();
+
+    Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs);
+
+    Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs);
 }
+

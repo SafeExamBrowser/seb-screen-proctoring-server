@@ -202,7 +202,7 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
     }
 
     @Override
-    public Long getId() {
+    public Long id() {
         return this.id;
     }
 

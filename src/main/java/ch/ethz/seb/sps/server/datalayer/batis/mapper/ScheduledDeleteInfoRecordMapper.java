@@ -32,59 +32,59 @@ import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
 @Mapper
 public interface ScheduledDeleteInfoRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<ScheduledDeleteInfoRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
         @Arg(column="scheduled_delete_id", javaType=Long.class, jdbcType=JdbcType.BIGINT),
         @Arg(column="state", javaType=String.class, jdbcType=JdbcType.VARCHAR),
-        @Arg(column="exam_name", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="exam_uuid", javaType=String.class, jdbcType=JdbcType.VARCHAR),
+        @Arg(column="deletion_info", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="error_info", javaType=String.class, jdbcType=JdbcType.VARCHAR)
     })
     ScheduledDeleteInfoRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
         @Arg(column="scheduled_delete_id", javaType=Long.class, jdbcType=JdbcType.BIGINT),
         @Arg(column="state", javaType=String.class, jdbcType=JdbcType.VARCHAR),
-        @Arg(column="exam_name", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="exam_uuid", javaType=String.class, jdbcType=JdbcType.VARCHAR),
+        @Arg(column="deletion_info", javaType=String.class, jdbcType=JdbcType.VARCHAR),
         @Arg(column="error_info", javaType=String.class, jdbcType=JdbcType.VARCHAR)
     })
     List<ScheduledDeleteInfoRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(scheduledDeleteInfoRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, scheduledDeleteInfoRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, scheduledDeleteInfoRecord)
                 .where(id, isEqualTo(id_))
@@ -92,93 +92,93 @@ public interface ScheduledDeleteInfoRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.177+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default int insert(ScheduledDeleteInfoRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(scheduledDeleteInfoRecord)
                 .map(scheduledDeleteId).toProperty("scheduledDeleteId")
                 .map(state).toProperty("state")
-                .map(examName).toProperty("examName")
                 .map(examUuid).toProperty("examUuid")
+                .map(deletionInfo).toProperty("deletionInfo")
                 .map(errorInfo).toProperty("errorInfo")
                 .build()
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.177+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default int insertSelective(ScheduledDeleteInfoRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(scheduledDeleteInfoRecord)
                 .map(scheduledDeleteId).toPropertyWhenPresent("scheduledDeleteId", record::getScheduledDeleteId)
                 .map(state).toPropertyWhenPresent("state", record::getState)
-                .map(examName).toPropertyWhenPresent("examName", record::getExamName)
                 .map(examUuid).toPropertyWhenPresent("examUuid", record::getExamUuid)
+                .map(deletionInfo).toPropertyWhenPresent("deletionInfo", record::getDeletionInfo)
                 .map(errorInfo).toPropertyWhenPresent("errorInfo", record::getErrorInfo)
                 .build()
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.177+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<ScheduledDeleteInfoRecord>>> selectByExample() {
-        return SelectDSL.selectWithMapper(this::selectMany, id, scheduledDeleteId, state, examName, examUuid, errorInfo)
+        return SelectDSL.selectWithMapper(this::selectMany, id, scheduledDeleteId, state, examUuid, deletionInfo, errorInfo)
                 .from(scheduledDeleteInfoRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.177+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<ScheduledDeleteInfoRecord>>> selectDistinctByExample() {
-        return SelectDSL.selectDistinctWithMapper(this::selectMany, id, scheduledDeleteId, state, examName, examUuid, errorInfo)
+        return SelectDSL.selectDistinctWithMapper(this::selectMany, id, scheduledDeleteId, state, examUuid, deletionInfo, errorInfo)
                 .from(scheduledDeleteInfoRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.177+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default ScheduledDeleteInfoRecord selectByPrimaryKey(Long id_) {
-        return SelectDSL.selectWithMapper(this::selectOne, id, scheduledDeleteId, state, examName, examUuid, errorInfo)
+        return SelectDSL.selectWithMapper(this::selectOne, id, scheduledDeleteId, state, examUuid, deletionInfo, errorInfo)
                 .from(scheduledDeleteInfoRecord)
                 .where(id, isEqualTo(id_))
                 .build()
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.177+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(ScheduledDeleteInfoRecord record) {
         return UpdateDSL.updateWithMapper(this::update, scheduledDeleteInfoRecord)
                 .set(scheduledDeleteId).equalTo(record::getScheduledDeleteId)
                 .set(state).equalTo(record::getState)
-                .set(examName).equalTo(record::getExamName)
                 .set(examUuid).equalTo(record::getExamUuid)
+                .set(deletionInfo).equalTo(record::getDeletionInfo)
                 .set(errorInfo).equalTo(record::getErrorInfo);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.177+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(ScheduledDeleteInfoRecord record) {
         return UpdateDSL.updateWithMapper(this::update, scheduledDeleteInfoRecord)
                 .set(scheduledDeleteId).equalToWhenPresent(record::getScheduledDeleteId)
                 .set(state).equalToWhenPresent(record::getState)
-                .set(examName).equalToWhenPresent(record::getExamName)
                 .set(examUuid).equalToWhenPresent(record::getExamUuid)
+                .set(deletionInfo).equalToWhenPresent(record::getDeletionInfo)
                 .set(errorInfo).equalToWhenPresent(record::getErrorInfo);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.177+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default int updateByPrimaryKey(ScheduledDeleteInfoRecord record) {
         return UpdateDSL.updateWithMapper(this::update, scheduledDeleteInfoRecord)
                 .set(scheduledDeleteId).equalTo(record::getScheduledDeleteId)
                 .set(state).equalTo(record::getState)
-                .set(examName).equalTo(record::getExamName)
                 .set(examUuid).equalTo(record::getExamUuid)
+                .set(deletionInfo).equalTo(record::getDeletionInfo)
                 .set(errorInfo).equalTo(record::getErrorInfo)
                 .where(id, isEqualTo(record::getId))
                 .build()
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.177+01:00", comments="Source Table: scheduled_delete_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
     default int updateByPrimaryKeySelective(ScheduledDeleteInfoRecord record) {
         return UpdateDSL.updateWithMapper(this::update, scheduledDeleteInfoRecord)
                 .set(scheduledDeleteId).equalToWhenPresent(record::getScheduledDeleteId)
                 .set(state).equalToWhenPresent(record::getState)
-                .set(examName).equalToWhenPresent(record::getExamName)
                 .set(examUuid).equalToWhenPresent(record::getExamUuid)
+                .set(deletionInfo).equalToWhenPresent(record::getDeletionInfo)
                 .set(errorInfo).equalToWhenPresent(record::getErrorInfo)
                 .where(id, isEqualTo(record::getId))
                 .build()

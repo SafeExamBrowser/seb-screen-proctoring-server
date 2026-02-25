@@ -23,6 +23,7 @@ import org.apache.catalina.filters.RemoteIpFilter;
 import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -39,6 +40,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    @Value("${springdoc.api-docs.enabled:false}")
+    private boolean apiDocEnabled;
+    @Value("${springdoc.swagger-ui.enabled:false}")
+    private boolean swaggerEnabled;
+
     public static final String SWAGGER_AUTH_SEB_API = "SEBOAuth";
     public static final String SWAGGER_AUTH_ADMIN_API = "adminAuth";
     
@@ -46,7 +52,7 @@ public class WebConfig implements WebMvcConfigurer {
             API.HEALTH_ENDPOINT,
             API.HEALTH_ENDPOINT + "/",
             API.GUI_REDIRECT_ENDPOINT,
-            API.OAUTH_JWTTOKEN_ENDPOINT + "/**",
+            API.OAUTH_JWTTOKEN_ENDPOINT + "/**"
     };
 
     /** Used to get real remote IP address by using "X-Forwarded-For" and "X-Forwarded-Proto" header.
@@ -89,9 +95,16 @@ public class WebConfig implements WebMvcConfigurer {
     @Order(5)
     public SecurityFilterChain baseFilterChain(HttpSecurity http) throws Exception {
         http.securityMatcher("/**")
-                .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers(OPEN_ENDPOINTS).permitAll()
-                        .anyRequest().denyAll())
+                .authorizeHttpRequests((requests) -> {
+                    requests.requestMatchers(OPEN_ENDPOINTS).permitAll();
+                    if (apiDocEnabled) {
+                        requests.requestMatchers("/v3/api-docs/**").permitAll();
+                    }
+                    if (swaggerEnabled) {
+                        requests.requestMatchers("/swagger-ui/**").permitAll();
+                    }
+                    requests.anyRequest().denyAll();
+                })
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)

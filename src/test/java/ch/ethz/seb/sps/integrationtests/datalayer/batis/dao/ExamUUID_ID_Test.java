@@ -59,7 +59,7 @@ public class ExamUUID_ID_Test extends ServiceTest_FULL_RDBMS  {
         // when getting the exam with pk, we expect to get the former exam where the PK match 
         // This then tests that when using modelId, modelId is always first interpreted as uuid and if no
         // exam with that uuid exists, it will interpret the modelId as PK and try it that way.
-        Long PK = exam.getId();
+        Long PK = exam.id();
 
         Exam exam2 = new Exam(
                 null,

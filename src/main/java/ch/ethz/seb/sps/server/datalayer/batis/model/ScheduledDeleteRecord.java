@@ -3,51 +3,78 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import jakarta.annotation.Generated;
 
 public class ScheduledDeleteRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.173+01:00", comments="Source field: scheduled_delete.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.173+01:00", comments="Source field: scheduled_delete.state")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.state")
     private String state;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.173+01:00", comments="Source field: scheduled_delete.start_time")
-    private Long startTime;
-
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.173+01:00", comments="Source field: scheduled_delete.delete_due_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.delete_due_time")
     private Long deleteDueTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.173+01:00", comments="Source Table: scheduled_delete")
-    public ScheduledDeleteRecord(Long id, String state, Long startTime, Long deleteDueTime) {
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.schedule_time")
+    private Long scheduleTime;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.start_time")
+    private Long startTime;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.end_time")
+    private Long endTime;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.owner")
+    private String owner;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete")
+    public ScheduledDeleteRecord(Long id, String state, Long deleteDueTime, Long scheduleTime, Long startTime, Long endTime, String owner) {
         this.id = id;
         this.state = state;
-        this.startTime = startTime;
         this.deleteDueTime = deleteDueTime;
+        this.scheduleTime = scheduleTime;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.owner = owner;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.173+01:00", comments="Source field: scheduled_delete.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.173+01:00", comments="Source field: scheduled_delete.state")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.state")
     public String getState() {
         return state;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.173+01:00", comments="Source field: scheduled_delete.start_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.delete_due_time")
+    public Long getDeleteDueTime() {
+        return deleteDueTime;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.schedule_time")
+    public Long getScheduleTime() {
+        return scheduleTime;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.start_time")
     public Long getStartTime() {
         return startTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.173+01:00", comments="Source field: scheduled_delete.delete_due_time")
-    public Long getDeleteDueTime() {
-        return deleteDueTime;
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.end_time")
+    public Long getEndTime() {
+        return endTime;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.owner")
+    public String getOwner() {
+        return owner;
     }
 
     /**
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table scheduled_delete
      *
-     * @mbg.generated Thu Feb 19 13:37:36 CET 2026
+     * @mbg.generated Wed Feb 25 09:07:37 CET 2026
      */
     @Override
     public String toString() {
@@ -57,8 +84,11 @@ public class ScheduledDeleteRecord {
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
         sb.append(", state=").append(state);
-        sb.append(", startTime=").append(startTime);
         sb.append(", deleteDueTime=").append(deleteDueTime);
+        sb.append(", scheduleTime=").append(scheduleTime);
+        sb.append(", startTime=").append(startTime);
+        sb.append(", endTime=").append(endTime);
+        sb.append(", owner=").append(owner);
         sb.append("]");
         return sb.toString();
     }
@@ -67,7 +97,7 @@ public class ScheduledDeleteRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table scheduled_delete
      *
-     * @mbg.generated Thu Feb 19 13:37:36 CET 2026
+     * @mbg.generated Wed Feb 25 09:07:37 CET 2026
      */
     @Override
     public boolean equals(Object that) {
@@ -83,15 +113,18 @@ public class ScheduledDeleteRecord {
         ScheduledDeleteRecord other = (ScheduledDeleteRecord) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
             && (this.getState() == null ? other.getState() == null : this.getState().equals(other.getState()))
+            && (this.getDeleteDueTime() == null ? other.getDeleteDueTime() == null : this.getDeleteDueTime().equals(other.getDeleteDueTime()))
+            && (this.getScheduleTime() == null ? other.getScheduleTime() == null : this.getScheduleTime().equals(other.getScheduleTime()))
             && (this.getStartTime() == null ? other.getStartTime() == null : this.getStartTime().equals(other.getStartTime()))
-            && (this.getDeleteDueTime() == null ? other.getDeleteDueTime() == null : this.getDeleteDueTime().equals(other.getDeleteDueTime()));
+            && (this.getEndTime() == null ? other.getEndTime() == null : this.getEndTime().equals(other.getEndTime()))
+            && (this.getOwner() == null ? other.getOwner() == null : this.getOwner().equals(other.getOwner()));
     }
 
     /**
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table scheduled_delete
      *
-     * @mbg.generated Thu Feb 19 13:37:36 CET 2026
+     * @mbg.generated Wed Feb 25 09:07:37 CET 2026
      */
     @Override
     public int hashCode() {
@@ -99,8 +132,11 @@ public class ScheduledDeleteRecord {
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
         result = prime * result + ((getState() == null) ? 0 : getState().hashCode());
-        result = prime * result + ((getStartTime() == null) ? 0 : getStartTime().hashCode());
         result = prime * result + ((getDeleteDueTime() == null) ? 0 : getDeleteDueTime().hashCode());
+        result = prime * result + ((getScheduleTime() == null) ? 0 : getScheduleTime().hashCode());
+        result = prime * result + ((getStartTime() == null) ? 0 : getStartTime().hashCode());
+        result = prime * result + ((getEndTime() == null) ? 0 : getEndTime().hashCode());
+        result = prime * result + ((getOwner() == null) ? 0 : getOwner().hashCode());
         return result;
     }
 }

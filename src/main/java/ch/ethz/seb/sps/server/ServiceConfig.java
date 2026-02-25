@@ -87,7 +87,7 @@ public class ServiceConfig {
     public TaskScheduler systemScheduler() {
         final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 
-        scheduler.setPoolSize(4);
+        scheduler.setPoolSize(10);
         scheduler.setThreadNamePrefix("system-");
         scheduler.setThreadPriority(Thread.NORM_PRIORITY);
         scheduler.setDaemon(true);

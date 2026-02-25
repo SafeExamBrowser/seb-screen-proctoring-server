@@ -3,60 +3,60 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import jakarta.annotation.Generated;
 
 public class ScheduledDeleteInfoRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.scheduled_delete_id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.scheduled_delete_id")
     private Long scheduledDeleteId;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.state")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.state")
     private String state;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.exam_name")
-    private String examName;
-
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.exam_uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.exam_uuid")
     private String examUuid;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.error_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.deletion_info")
+    private String deletionInfo;
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.error_info")
     private String errorInfo;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source Table: scheduled_delete_info")
-    public ScheduledDeleteInfoRecord(Long id, Long scheduledDeleteId, String state, String examName, String examUuid, String errorInfo) {
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete_info")
+    public ScheduledDeleteInfoRecord(Long id, Long scheduledDeleteId, String state, String examUuid, String deletionInfo, String errorInfo) {
         this.id = id;
         this.scheduledDeleteId = scheduledDeleteId;
         this.state = state;
-        this.examName = examName;
         this.examUuid = examUuid;
+        this.deletionInfo = deletionInfo;
         this.errorInfo = errorInfo;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.scheduled_delete_id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.scheduled_delete_id")
     public Long getScheduledDeleteId() {
         return scheduledDeleteId;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.state")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.state")
     public String getState() {
         return state;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.exam_name")
-    public String getExamName() {
-        return examName;
-    }
-
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.exam_uuid")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.exam_uuid")
     public String getExamUuid() {
         return examUuid;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-19T13:37:36.175+01:00", comments="Source field: scheduled_delete_info.error_info")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.deletion_info")
+    public String getDeletionInfo() {
+        return deletionInfo;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete_info.error_info")
     public String getErrorInfo() {
         return errorInfo;
     }
@@ -65,7 +65,7 @@ public class ScheduledDeleteInfoRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table scheduled_delete_info
      *
-     * @mbg.generated Thu Feb 19 13:37:36 CET 2026
+     * @mbg.generated Wed Feb 25 09:07:37 CET 2026
      */
     @Override
     public String toString() {
@@ -76,8 +76,8 @@ public class ScheduledDeleteInfoRecord {
         sb.append(", id=").append(id);
         sb.append(", scheduledDeleteId=").append(scheduledDeleteId);
         sb.append(", state=").append(state);
-        sb.append(", examName=").append(examName);
         sb.append(", examUuid=").append(examUuid);
+        sb.append(", deletionInfo=").append(deletionInfo);
         sb.append(", errorInfo=").append(errorInfo);
         sb.append("]");
         return sb.toString();
@@ -87,7 +87,7 @@ public class ScheduledDeleteInfoRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table scheduled_delete_info
      *
-     * @mbg.generated Thu Feb 19 13:37:36 CET 2026
+     * @mbg.generated Wed Feb 25 09:07:37 CET 2026
      */
     @Override
     public boolean equals(Object that) {
@@ -104,8 +104,8 @@ public class ScheduledDeleteInfoRecord {
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
             && (this.getScheduledDeleteId() == null ? other.getScheduledDeleteId() == null : this.getScheduledDeleteId().equals(other.getScheduledDeleteId()))
             && (this.getState() == null ? other.getState() == null : this.getState().equals(other.getState()))
-            && (this.getExamName() == null ? other.getExamName() == null : this.getExamName().equals(other.getExamName()))
             && (this.getExamUuid() == null ? other.getExamUuid() == null : this.getExamUuid().equals(other.getExamUuid()))
+            && (this.getDeletionInfo() == null ? other.getDeletionInfo() == null : this.getDeletionInfo().equals(other.getDeletionInfo()))
             && (this.getErrorInfo() == null ? other.getErrorInfo() == null : this.getErrorInfo().equals(other.getErrorInfo()));
     }
 
@@ -113,7 +113,7 @@ public class ScheduledDeleteInfoRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table scheduled_delete_info
      *
-     * @mbg.generated Thu Feb 19 13:37:36 CET 2026
+     * @mbg.generated Wed Feb 25 09:07:37 CET 2026
      */
     @Override
     public int hashCode() {
@@ -122,8 +122,8 @@ public class ScheduledDeleteInfoRecord {
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
         result = prime * result + ((getScheduledDeleteId() == null) ? 0 : getScheduledDeleteId().hashCode());
         result = prime * result + ((getState() == null) ? 0 : getState().hashCode());
-        result = prime * result + ((getExamName() == null) ? 0 : getExamName().hashCode());
         result = prime * result + ((getExamUuid() == null) ? 0 : getExamUuid().hashCode());
+        result = prime * result + ((getDeletionInfo() == null) ? 0 : getDeletionInfo().hashCode());
         result = prime * result + ((getErrorInfo() == null) ? 0 : getErrorInfo().hashCode());
         return result;
     }

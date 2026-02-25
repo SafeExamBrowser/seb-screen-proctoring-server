@@ -20,7 +20,7 @@ public interface Entity extends ModelIdAware {
      *
      * @return the primary key of the entity record on persistent store if available. */
     @JsonIgnore
-    Long getId();
+    Long id();
 
     /** Get the name of the entity
      *

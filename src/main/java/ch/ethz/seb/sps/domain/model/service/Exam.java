@@ -170,7 +170,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
     }
 
     @Override
-    public Long getId() {
+    public Long id() {
         return this.id;
     }
 

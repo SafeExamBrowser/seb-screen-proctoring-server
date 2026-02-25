@@ -1,5 +1,6 @@
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.deletionTime;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.examRecord;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
@@ -216,6 +217,21 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     @Override
     @Transactional(readOnly = true)
+    public Result<Collection<Exam>> getExamsForScheduledDeletion(Long deleteDueTime) {
+        return Result.tryCatch(() -> this.examRecordMapper
+                    .selectByExample()
+                    .where(creationTime, isLessThanOrEqualTo(deleteDueTime))
+                    .and(deletionTime, isNotNull())
+                    .build()
+                    .execute()
+                    .stream()
+                    .map(this::toDomainModel)
+                    .collect(Collectors.toList())
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Result<Collection<Long>> getAllForDeletion() {
         return Result.tryCatch(() -> {
             long now = Utils.getMillisecondsNow();
@@ -362,6 +378,52 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     @Override
     @Transactional
+    public Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs) {
+        return Result.tryCatch(() -> {
+            if (examUUIDs == null || examUUIDs.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            final long now = Utils.getMillisecondsNow();
+            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
+                    .set(lastUpdateTime).equalTo(now)
+                    .set(deletionTime).equalTo(now)
+                    .where(uuid, SqlBuilder.isIn(examUUIDs))
+                    .build()
+                    .execute();
+
+            return examUUIDs
+                    .stream()
+                    .map(uuid -> new EntityKey(uuid, EntityType.EXAM))
+                    .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional
+    public Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs) {
+        return Result.tryCatch(() -> {
+            if (examUUIDs == null || examUUIDs.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            final long now = Utils.getMillisecondsNow();
+            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
+                    .set(lastUpdateTime).equalTo(now)
+                    .set(deletionTime).equalToNull()
+                    .where(uuid, SqlBuilder.isIn(examUUIDs))
+                    .build()
+                    .execute();
+
+            return examUUIDs
+                    .stream()
+                    .map(uuid -> new EntityKey(uuid, EntityType.EXAM))
+                    .collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    @Transactional
     public Result<Exam> createNew(final Exam data) {
         return Result.tryCatch(() -> {
 
@@ -485,7 +547,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                 throw new NoResourceFoundException(EntityType.EXAM, uuid);
             }
 
-            return execute.get(0);
+            return execute.getFirst();
         });
     }
 
@@ -502,7 +564,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                 throw new NoResourceFoundException(EntityType.EXAM, examUUID);
             }
 
-            return execute.get(0);
+            return execute.getFirst();
         });
     }
 
@@ -520,12 +582,6 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
     }
 
     private Exam toDomainModel(final ExamRecord record) {
-
-//        List<String> userIds = this.additionalAttributesDAO
-//                .getAdditionalAttribute(EntityType.EXAM, record.getId(), Exam.ATTR_USER_IDS)
-//                .map(AdditionalAttributeRecord::getValue)
-//                .map(ids -> Arrays.asList(StringUtils.split(ids, Constants.LIST_SEPARATOR)))
-//                .getOr(Collections.emptyList());
 
         final List<String> supporter = StringUtils.isNotBlank(record.getSupporter()) 
                 ? Arrays.asList(StringUtils.split(record.getSupporter(), Constants.LIST_SEPARATOR)) 
