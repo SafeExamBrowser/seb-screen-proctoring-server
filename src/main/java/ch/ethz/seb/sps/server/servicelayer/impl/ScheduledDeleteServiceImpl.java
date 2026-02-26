@@ -247,15 +247,25 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
         try {
 
             log.info("Start deleting exam: {}", info);
-            long now = Utils.getMillisecondsNow();
+
 
             scheduledDeleteDAO.startSingleDeletion(info.id());
+
+            // check again that Exam is not marked as exclude from deletion
+            final Exam exam = examDAO.byModelId(info.examUUID()).getOrThrow();
+            if (exam.deletionTime == null || exam.deletionTime < 0) {
+                // exam is now excluded from deletion so skip it and mark in error info
+                scheduledDeleteDAO.endSingleDeletion(info.id(), "Exam is excluded from deletion");
+                return;
+            }
+
+            long start = Utils.getMillisecondsNow();
             final Result<Collection<EntityKey>> delete = examDAO.delete(info.examUUID());
             final String error = delete.getError() != null ? delete.getError().getMessage() : null;
             scheduledDeleteDAO.endSingleDeletion(info.id(), error);
 
             log.info("Finished deleting exam. Took {} milliseconds. With error: {}",
-                    (Utils.getMillisecondsNow() - now),
+                    (Utils.getMillisecondsNow() - start),
                     error != null ? error : "none");
 
         } catch (Exception e) {
