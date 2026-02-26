@@ -161,8 +161,22 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
                 ));
             });
 
-            // create scheduled delete
             final ServerUser currentUser = userService.getCurrentUser();
+            if (deleteInfos.isEmpty()) {
+                // we have nothing to delete here for the given schedule. Return an empty model (no PK)
+                return new ScheduledDelete(
+                        null,
+                        ScheduledDelete.State.FINISHED,
+                        deleteDueTimestamp,
+                        scheduleTime,
+                        Utils.getMillisecondsNow(),
+                        Utils.getMillisecondsNow(),
+                        currentUser.uuid(),
+                        Collections.emptyList()
+                );
+            }
+
+            // create scheduled delete
             return scheduledDeleteDAO.createNew(new ScheduledDelete(
                     null,
                     ScheduledDelete.State.PENDING,
