@@ -7,6 +7,7 @@ import ch.ethz.seb.sps.domain.model.service.ScheduledDelete;
 import ch.ethz.seb.sps.domain.model.service.ScheduledDeleteInfo;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
 import ch.ethz.seb.sps.server.ServiceConfig;
+import ch.ethz.seb.sps.server.ServiceInfo;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.ScheduledDeleteDAO;
@@ -25,6 +26,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
@@ -40,6 +42,7 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
     private final SessionDAO sessionDAO;
     private final UserService userService;
     private final ScheduledDeleteDAO scheduledDeleteDAO;
+    private final ServiceInfo serviceInfo;
     private final TaskScheduler taskScheduler;
 
     public ScheduledDeleteServiceImpl(
@@ -48,6 +51,7 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
             final SessionDAO sessionDAO,
             final UserService userService,
             final ScheduledDeleteDAO scheduledDeleteDAO,
+            final ServiceInfo serviceInfo,
             @Qualifier(value = ServiceConfig.SYSTEM_SCHEDULER)  final TaskScheduler taskScheduler) {
 
         this.examDAO = examDAO;
@@ -55,6 +59,7 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
         this.sessionDAO = sessionDAO;
         this.userService = userService;
         this.scheduledDeleteDAO = scheduledDeleteDAO;
+        this.serviceInfo = serviceInfo;
         this.taskScheduler = taskScheduler;
 
     }
@@ -71,24 +76,30 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
         this.taskScheduler.scheduleAtFixedRate(
                 this::update,
                 Instant.now().plusMillis(Constants.HOUR_IN_MILLIS),
-                java.time.Duration.ofMillis(Constants.HOUR_IN_MILLIS));
+                Duration.ofMillis(Constants.HOUR_IN_MILLIS));
     }
 
     @Override
     public Result<ScheduledDelete> createScheduledDelete(
             final Long deleteDueTimestamp,
+            final Long scheduledTimestamp,
             final DateTimeZone referenceTimezone) {
 
         return Result.tryCatch(() -> {
 
             // prepare times
+            // use either given referenceTimezone or UTC
             final DateTimeZone refTimeZone = referenceTimezone != null ? referenceTimezone : DateTimeZone.UTC;
-            final DateTime scheduleDateTime = DateTime
-                    .now(refTimeZone)                   // get now in reference time zone
-                    .plusDays(1)                      // add one day and...
-                    .withTimeAtStartOfDay()             // go back to start of day still in reference time zone
-                    .toDateTime(DateTimeZone.UTC);      // now convert to UTC (only UTC goes to store)
-            final Long scheduleTime = scheduleDateTime.getMillis();
+            // use either given scheduledTimestamp or schedule to midnight reverencing to refTimeZone
+            Long scheduleTime = scheduledTimestamp;
+            if (scheduleTime == null) {
+                final DateTime scheduleDateTime = DateTime
+                        .now(refTimeZone)                   // get now in reference time zone
+                        .plusDays(1)                      // add one day and...
+                        .withTimeAtStartOfDay()             // go back to start of day still in reference time zone
+                        .toDateTime(DateTimeZone.UTC);      // now convert to UTC (only UTC goes to store)
+                scheduleTime = scheduleDateTime.getMillis();
+            }
 
             // deleteDueTimestamp is expected already in UTC
             final DateTime deleteDueDateTime = new DateTime(deleteDueTimestamp, refTimeZone);
@@ -96,8 +107,8 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
             log.info("Schedule delete for dueTime: {} -- UTC: {} at: {} -- UTC: {}",
                     Utils.formatDate(deleteDueDateTime.toDateTime(refTimeZone)),
                     Utils.formatDate(deleteDueDateTime),
-                    Utils.formatDate(scheduleDateTime.toDateTime(refTimeZone)),
-                    Utils.formatDate(scheduleDateTime));
+                    Utils.formatDate(new DateTime(scheduleTime,refTimeZone)),
+                    Utils.formatDate(new DateTime(scheduleTime,DateTimeZone.UTC)));
 
             // get involved Exams and Groups
             Collection<Exam> exams = examDAO
@@ -174,8 +185,12 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
         return examDAO.excludeExamsFromDeletion(examUUIDs);
     }
 
-
     private void update() {
+
+        // only master service should do scheduled deletion
+        if (!serviceInfo.isMaster()) {
+            return;
+        }
 
         log.info("Check for pending scheduled deletions to process...");
 
@@ -183,7 +198,10 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
         scheduledDeleteDAO
                 .getSchedulesReadyForProcessing()
                 .onError(error -> log.error("Failed to fetch pending scheduled deletes: {}", error.getMessage()))
-                .onSuccess(deletes -> deletes.forEach(this::processDelete));
+                .onSuccess(deletes -> {
+                    log.info("Found {} scheduled deletions for processing", deletes.size());
+                    deletes.forEach(this::processDelete);
+                });
     }
 
     private void processDelete(final ScheduledDelete delete) {
