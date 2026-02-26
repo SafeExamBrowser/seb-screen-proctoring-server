@@ -9,10 +9,8 @@ import ch.ethz.seb.sps.server.datalayer.dao.ScheduledDeleteDAO;
 import io.swagger.v3.core.util.Constants;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.server.servicelayer.*;
@@ -172,20 +170,29 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     }
 
     @RequestMapping(
-            path = API.SCHEDULED_DELETE_ENDPOINT,
+            path = API.SCHEDULED_DELETE_REQUEST_ENDPOINT,
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ScheduledDelete createScheduledDelete(
-            @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, required = true) final Long dueTimeUTC,
-            @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME, required = false) final Long scheduledTimestamp,
-            @RequestParam(name = ScheduledDelete.ATTR_REFERENCE_TIME_ZONE, required = false) final String refTimeZone) {
+    public ScheduledDelete requestScheduledDelete(
+            @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, required = true) final Long dueTimeUTC) {
 
         userService.checkIsAdmin();
-
-        final DateTimeZone refTZ = refTimeZone != null ? DateTimeZone.forID(refTimeZone) : DateTimeZone.UTC;
         return scheduledDeleteService
-                .createScheduledDelete(dueTimeUTC, scheduledTimestamp, refTZ)
+                .requestScheduledDelete(dueTimeUTC)
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_ENDPOINT,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ScheduledDelete createScheduledDelete(@RequestBody final ScheduledDelete scheduledDelete) {
+
+        userService.checkIsAdmin();
+        return scheduledDeleteService
+                .createScheduledDelete(scheduledDelete)
                 .getOrThrow();
     }
 

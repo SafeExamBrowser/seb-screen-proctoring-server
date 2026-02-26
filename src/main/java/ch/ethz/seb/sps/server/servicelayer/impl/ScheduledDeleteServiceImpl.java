@@ -17,8 +17,6 @@ import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -80,35 +78,31 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
     }
 
     @Override
-    public Result<ScheduledDelete> createScheduledDelete(
-            final Long deleteDueTimestamp,
-            final Long scheduledTimestamp,
-            final DateTimeZone referenceTimezone) {
+    public Result<ScheduledDelete> requestScheduledDelete(final Long deleteDueTimestamp) {
 
         return Result.tryCatch(() -> {
 
-            // prepare times
-            // use either given referenceTimezone or UTC
-            final DateTimeZone refTimeZone = referenceTimezone != null ? referenceTimezone : DateTimeZone.UTC;
-            // use either given scheduledTimestamp or schedule to midnight reverencing to refTimeZone
-            Long scheduleTime = scheduledTimestamp;
-            if (scheduleTime == null) {
-                final DateTime scheduleDateTime = DateTime
-                        .now(refTimeZone)                   // get now in reference time zone
-                        .plusDays(1)                      // add one day and...
-                        .withTimeAtStartOfDay()             // go back to start of day still in reference time zone
-                        .toDateTime(DateTimeZone.UTC);      // now convert to UTC (only UTC goes to store)
-                scheduleTime = scheduleDateTime.getMillis();
-            }
-
-            // deleteDueTimestamp is expected already in UTC
-            final DateTime deleteDueDateTime = new DateTime(deleteDueTimestamp, refTimeZone);
-
-            log.info("Schedule delete for dueTime: {} -- UTC: {} at: {} -- UTC: {}",
-                    Utils.formatDate(deleteDueDateTime.toDateTime(refTimeZone)),
-                    Utils.formatDate(deleteDueDateTime),
-                    Utils.formatDate(new DateTime(scheduleTime,refTimeZone)),
-                    Utils.formatDate(new DateTime(scheduleTime,DateTimeZone.UTC)));
+//            // prepare times...
+//            // use either given referenceTimezone or UTC
+//            final DateTimeZone refTimeZone = referenceTimezone != null ? referenceTimezone : DateTimeZone.UTC;
+//            // use either given scheduledTimestamp or schedule to midnight reverencing to refTimeZone
+//            Long scheduleTime = scheduledTimestamp;
+//            if (scheduleTime == null) {
+//                final DateTime scheduleDateTime = DateTime
+//                        .now(refTimeZone)                   // get now in reference time zone
+//                        .plusDays(1)                      // add one day and...
+//                        .withTimeAtStartOfDay()             // go back to start of day still in reference time zone
+//                        .toDateTime(DateTimeZone.UTC);      // now convert to UTC (only UTC goes to store)
+//                scheduleTime = scheduleDateTime.getMillis();
+//            }
+//
+//            // deleteDueTimestamp is expected already in UTC
+//            final DateTime deleteDueDateTime = new DateTime(deleteDueTimestamp, refTimeZone);
+//            log.info("Request scheduled delete for dueTime: {} -- UTC: {} at: {} -- UTC: {}",
+//                    Utils.formatDate(deleteDueDateTime.toDateTime(refTimeZone)),
+//                    Utils.formatDate(deleteDueDateTime),
+//                    Utils.formatDate(new DateTime(scheduleTime,refTimeZone)),
+//                    Utils.formatDate(new DateTime(scheduleTime,DateTimeZone.UTC)));
 
             // get involved Exams and Groups
             Collection<Exam> exams = examDAO
@@ -162,31 +156,22 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
             });
 
             final ServerUser currentUser = userService.getCurrentUser();
-            if (deleteInfos.isEmpty()) {
-                // we have nothing to delete here for the given schedule. Return an empty model (no PK)
-                return new ScheduledDelete(
-                        null,
-                        ScheduledDelete.State.FINISHED,
-                        deleteDueTimestamp,
-                        scheduleTime,
-                        Utils.getMillisecondsNow(),
-                        Utils.getMillisecondsNow(),
-                        currentUser.uuid(),
-                        Collections.emptyList()
-                );
-            }
-
-            // create scheduled delete
-            return scheduledDeleteDAO.createNew(new ScheduledDelete(
+            return new ScheduledDelete(
                     null,
-                    ScheduledDelete.State.PENDING,
+                    ScheduledDelete.State.FINISHED,
                     deleteDueTimestamp,
-                    scheduleTime,
                     null,
-                    null,
+                    Utils.getMillisecondsNow(),
+                    Utils.getMillisecondsNow(),
                     currentUser.uuid(),
-                    deleteInfos)).getOrThrow();
+                    deleteInfos
+            );
         });
+    }
+
+    @Override
+    public Result<ScheduledDelete> createScheduledDelete(final ScheduledDelete scheduledDelete) {
+        return scheduledDeleteDAO.createNew(scheduledDelete);
     }
 
     @Override

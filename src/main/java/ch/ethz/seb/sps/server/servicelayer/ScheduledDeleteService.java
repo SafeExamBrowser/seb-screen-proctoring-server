@@ -8,6 +8,7 @@ import org.joda.time.DateTimeZone;
 import org.springframework.context.event.EventListener;
 
 import java.util.Collection;
+import java.util.Set;
 
 
 public interface ScheduledDeleteService {
@@ -20,13 +21,10 @@ public interface ScheduledDeleteService {
      * The task will be scheduled for midnight.
      *
      * @param deleteDueTimestamp the due time stamp (UTC) for that all older exams get deleted (mandatory)
-     * @param scheduledTimestamp optional scheduled timestamp in milliseconds in UTC
-     * @param referenceTimezone a reference time zone to schedule the delete to midnight regarding this given time zone. UTC if null
      * @return the prepared schedule with report of all exams that are going to be deleted.*/
-    Result<ScheduledDelete> createScheduledDelete(
-            Long deleteDueTimestamp,
-            Long scheduledTimestamp,
-            DateTimeZone referenceTimezone);
+    Result<ScheduledDelete> requestScheduledDelete(Long deleteDueTimestamp);
+
+    Result<ScheduledDelete> createScheduledDelete(ScheduledDelete scheduledDelete);
 
     Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs);
 

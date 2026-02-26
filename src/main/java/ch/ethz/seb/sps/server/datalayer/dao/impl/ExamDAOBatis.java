@@ -217,7 +217,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Exam>> getExamsForScheduledDeletion(Long deleteDueTime) {
+    public Result<Collection<Exam>> getExamsForScheduledDeletion(final Long deleteDueTime) {
         return Result.tryCatch(() -> this.examRecordMapper
                     .selectByExample()
                     .where(creationTime, isLessThanOrEqualTo(deleteDueTime))

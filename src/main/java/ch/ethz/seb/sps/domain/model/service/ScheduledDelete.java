@@ -25,6 +25,7 @@ public record ScheduledDelete(
 
     public static final String ATTR_INFO = "info";
     public static final String ATTR_REFERENCE_TIME_ZONE = "ref-time-zone";
+    public static final String ATTR_EXCLUDE_FROM_DELETE = "exclude-exam-uuids";
 
     public enum State {
         PENDING,

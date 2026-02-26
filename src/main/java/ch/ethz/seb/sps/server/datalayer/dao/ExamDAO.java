@@ -1,6 +1,7 @@
 package ch.ethz.seb.sps.server.datalayer.dao;
 
 import java.util.Collection;
+import java.util.Set;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.FilterMap;
