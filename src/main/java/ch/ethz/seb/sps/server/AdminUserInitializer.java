@@ -100,7 +100,8 @@ class AdminUserInitializer {
                         null,
                         null,
                         null,
-                        new HashSet<>(Arrays.asList(API.UserRole.ADMIN.name()))))
+                        new HashSet<>(Arrays.asList(API.UserRole.ADMIN.name())),
+                                1L))
                         .getOrThrow();
             }
         } catch (final Exception e) {
@@ -170,7 +171,8 @@ class AdminUserInitializer {
                     null,
                     null,
                     null,
-                    new HashSet<>(List.of(API.UserRole.ADMIN.name()))))
+                    new HashSet<>(List.of(API.UserRole.ADMIN.name())),
+                            1L))
                     .getOrThrow();
 
             log.debug(

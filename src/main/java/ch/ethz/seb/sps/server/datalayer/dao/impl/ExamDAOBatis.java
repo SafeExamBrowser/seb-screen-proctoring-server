@@ -1,6 +1,6 @@
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.deletionTime;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.institutionId;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.examRecord;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
@@ -221,31 +221,12 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
         return Result.tryCatch(() -> this.examRecordMapper
                     .selectByExample()
                     .where(creationTime, isLessThanOrEqualTo(deleteDueTime))
-                    .and(deletionTime, isNotNull())
                     .build()
                     .execute()
                     .stream()
                     .map(this::toDomainModel)
                     .collect(Collectors.toList())
         );
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Result<Collection<Long>> getAllForDeletion() {
-        return Result.tryCatch(() -> {
-            long now = Utils.getMillisecondsNow();
-            return this.examRecordMapper
-                    .selectIdsByExample()
-                    .where(
-                            ExamRecordDynamicSqlSupport.deletionTime, 
-                            SqlBuilder.isNotNull())
-                    .and(
-                            ExamRecordDynamicSqlSupport.deletionTime,
-                            SqlBuilder.isLessThanOrEqualTo(now))
-                    .build()
-                    .execute();
-        });
     }
 
     @Override
@@ -376,51 +357,50 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                 });
     }
 
-    @Override
-    @Transactional
-    public Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs) {
-        return Result.tryCatch(() -> {
-            if (examUUIDs == null || examUUIDs.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            final long now = Utils.getMillisecondsNow();
-            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
-                    .set(lastUpdateTime).equalTo(now)
-                    .set(deletionTime).equalTo(now)
-                    .where(uuid, SqlBuilder.isIn(examUUIDs))
-                    .build()
-                    .execute();
-
-            return examUUIDs
-                    .stream()
-                    .map(uuid -> new EntityKey(uuid, EntityType.EXAM))
-                    .collect(Collectors.toList());
-        });
-    }
-
-    @Override
-    @Transactional
-    public Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs) {
-        return Result.tryCatch(() -> {
-            if (examUUIDs == null || examUUIDs.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            final long now = Utils.getMillisecondsNow();
-            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
-                    .set(lastUpdateTime).equalTo(now)
-                    .set(deletionTime).equalToNull()
-                    .where(uuid, SqlBuilder.isIn(examUUIDs))
-                    .build()
-                    .execute();
-
-            return examUUIDs
-                    .stream()
-                    .map(uuid -> new EntityKey(uuid, EntityType.EXAM))
-                    .collect(Collectors.toList());
-        });
-    }
+//    @Override
+//    @Transactional
+//    public Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs) {
+//        return Result.tryCatch(() -> {
+//            if (examUUIDs == null || examUUIDs.isEmpty()) {
+//                return Collections.emptyList();
+//            }
+//
+//            final long now = Utils.getMillisecondsNow();
+//            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
+//                    .set(lastUpdateTime).equalTo(now)
+//                    .where(uuid, SqlBuilder.isIn(examUUIDs))
+//                    .build()
+//                    .execute();
+//
+//            return examUUIDs
+//                    .stream()
+//                    .map(uuid -> new EntityKey(uuid, EntityType.EXAM))
+//                    .collect(Collectors.toList());
+//        });
+//    }
+//
+//    @Override
+//    @Transactional
+//    public Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs) {
+//        return Result.tryCatch(() -> {
+//            if (examUUIDs == null || examUUIDs.isEmpty()) {
+//                return Collections.emptyList();
+//            }
+//
+//            final long now = Utils.getMillisecondsNow();
+//            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
+//                    .set(lastUpdateTime).equalTo(now)
+//                    .set(deletionTime).equalToNull()
+//                    .where(uuid, SqlBuilder.isIn(examUUIDs))
+//                    .build()
+//                    .execute();
+//
+//            return examUUIDs
+//                    .stream()
+//                    .map(uuid -> new EntityKey(uuid, EntityType.EXAM))
+//                    .collect(Collectors.toList());
+//        });
+//    }
 
     @Override
     @Transactional
@@ -450,7 +430,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     null,
                     data.startTime != null ? data.startTime : millisecondsNow,
                     data.endTime,
-                    data.deletionTime);
+                    data.institutionId);
 
             this.examRecordMapper.insert(newRecord);
 
@@ -488,7 +468,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     .set(ExamRecordDynamicSqlSupport.startTime).equalTo(data.startTime)
                     .set(ExamRecordDynamicSqlSupport.endTime).equalTo(data.endTime)
                     .set(ExamRecordDynamicSqlSupport.lastUpdateTime).equalTo(millisecondsNow)
-                    .set(ExamRecordDynamicSqlSupport.deletionTime).equalTo(data.deletionTime)
+                    .set(ExamRecordDynamicSqlSupport.institutionId).equalTo(data.institutionId)
                     .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
                     .build()
                     .execute();
@@ -601,7 +581,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                 record.getTerminationTime(),
                 record.getStartTime(),
                 record.getEndTime(),
-                record.getDeletionTime(),
+                record.getInstitutionId(),
                 getEntityPrivileges(record.getId()));
     }
 

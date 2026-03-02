@@ -50,8 +50,6 @@ import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivileges, WithLifeCycle, Serializable {
 
-    private static final long serialVersionUID = 4517645738787224836L;
-
     public static final String FILTER_ATTR_SURNAME = "surname";
     public static final String FILTER_ATTR_USER_NAME = "username";
     public static final String FILTER_ATTR_EMAIL = "email";
@@ -118,6 +116,10 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
     @JsonProperty(USER.ATTR_TERMINATION_TIME)
     public final Long terminationTime;
 
+    @Schema(accessMode = AccessMode.READ_ONLY)
+    @JsonProperty(USER.ATTR_INSTITUTION_ID)
+    public final Long institutionId;
+
     @JsonIgnore
     public final Collection<EntityPrivilege> entityPrivileges;
 
@@ -134,7 +136,8 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
             @JsonProperty(USER.ATTR_ROLES) final Set<String> roles,
             @JsonProperty(USER.ATTR_CREATION_TIME) final Long creationTime,
             @JsonProperty(USER.ATTR_LAST_UPDATE_TIME) final Long lastUpdateTime,
-            @JsonProperty(USER.ATTR_TERMINATION_TIME) final Long terminationTime) {
+            @JsonProperty(USER.ATTR_TERMINATION_TIME) final Long terminationTime,
+            @JsonProperty(USER.ATTR_INSTITUTION_ID) final Long institutionId) {
 
         this.id = id;
         this.uuid = uuid;
@@ -149,6 +152,7 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
         this.entityPrivileges = null;
+        this.institutionId = institutionId;
     }
 
     public UserInfo(
@@ -164,7 +168,8 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
             final Long creationTime,
             final Long lastUpdateTime,
             final Long terminationTime,
-            final Collection<EntityPrivilege> entityPrivileges) {
+            final Collection<EntityPrivilege> entityPrivileges,
+            final Long institutionId) {
 
         this.id = id;
         this.uuid = uuid;
@@ -179,6 +184,7 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
         this.lastUpdateTime = lastUpdateTime;
         this.terminationTime = terminationTime;
         this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
+        this.institutionId = institutionId;
     }
 
     @Override
@@ -266,6 +272,11 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
     }
 
     @Override
+    public Long getInstitutionId() {
+        return institutionId;
+    }
+
+    @Override
     public Long getCreationTime() {
         return this.creationTime;
     }
@@ -335,6 +346,7 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
                 ", creationTime=" + this.creationTime +
                 ", lastUpdateTime=" + this.lastUpdateTime +
                 ", terminationTime=" + this.terminationTime +
+                ", institutionId=" + this.institutionId +
                 "]";
     }
 
@@ -356,7 +368,8 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
                 userInfo.creationTime,
                 userInfo.lastUpdateTime,
                 userInfo.terminationTime,
-                userInfo.entityPrivileges);
+                userInfo.entityPrivileges,
+                userInfo.institutionId);
     }
 
 }

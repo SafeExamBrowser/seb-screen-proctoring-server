@@ -256,7 +256,8 @@ public class UserDAOBatis implements UserDAO {
                     fromUserRoles(data.roles),
                     now,
                     now,
-                    null);
+                    null,
+                    data.institutionId);
 
             this.userRecordMapper.insert(recordToSave);
             final Long newUserPK = recordToSave.getId();
@@ -293,7 +294,8 @@ public class UserDAOBatis implements UserDAO {
                         fromUserRoles(userData.roles),
                         now,
                         now,
-                        null);
+                        null,
+                        userData.institutionId);
 
                 this.userRecordMapper.insert(recordToSave);
                 return this.userRecordMapper.selectByPrimaryKey(recordToSave.getId());
@@ -314,7 +316,8 @@ public class UserDAOBatis implements UserDAO {
                         fromUserRoles(userData.roles),
                         null,
                         Utils.getMillisecondsNow(),
-                        null);
+                        null,
+                        userData.institutionId);
 
                 this.userRecordMapper.updateByPrimaryKeySelective(newRecord);
                 return this.userRecordMapper.selectByPrimaryKey(record.getId());
@@ -346,7 +349,8 @@ public class UserDAOBatis implements UserDAO {
                             fromUserRoles(data.roles),
                             null,
                             Utils.getMillisecondsNow(),
-                            null);
+                            null,
+                            data.institutionId);
 
                     this.userRecordMapper.updateByPrimaryKeySelective(newRecord);
                     return this.userRecordMapper.selectByPrimaryKey(record.getId());
@@ -404,6 +408,7 @@ public class UserDAOBatis implements UserDAO {
                             null,
                             null,
                             Utils.getMillisecondsNow(),
+                            null,
                             null);
                     this.userRecordMapper.updateByPrimaryKeySelective(newRecord);
                     return this.userRecordMapper.selectByPrimaryKey(record.getId());
@@ -444,7 +449,7 @@ public class UserDAOBatis implements UserDAO {
                 throw new NoResourceFoundException(EntityType.USER, userUUID);
             }
 
-            return execute.get(0);
+            return execute.getFirst();
         });
     }
 
@@ -486,8 +491,8 @@ public class UserDAOBatis implements UserDAO {
                 record.getCreationTime(),
                 record.getLastUpdateTime(),
                 record.getTerminationTime(),
-                getEntityPrivileges(record.getId()));
-
+                getEntityPrivileges(record.getId()),
+                record.getInstitutionId());
     }
 
     private Collection<EntityPrivilege> getEntityPrivileges(final Long id) {

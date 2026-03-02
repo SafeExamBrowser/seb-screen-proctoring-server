@@ -3,28 +3,28 @@ package ch.ethz.seb.sps.server.datalayer.batis.model;
 import jakarta.annotation.Generated;
 
 public class ScheduledDeleteRecord {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.id")
     private Long id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.state")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.state")
     private String state;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.delete_due_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.delete_due_time")
     private Long deleteDueTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.schedule_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.schedule_time")
     private Long scheduleTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.start_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.start_time")
     private Long startTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.end_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.end_time")
     private Long endTime;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.owner")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.owner")
     private String owner;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source Table: scheduled_delete")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source Table: scheduled_delete")
     public ScheduledDeleteRecord(Long id, String state, Long deleteDueTime, Long scheduleTime, Long startTime, Long endTime, String owner) {
         this.id = id;
         this.state = state;
@@ -35,37 +35,37 @@ public class ScheduledDeleteRecord {
         this.owner = owner;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.id")
     public Long getId() {
         return id;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.state")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.state")
     public String getState() {
         return state;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.delete_due_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.delete_due_time")
     public Long getDeleteDueTime() {
         return deleteDueTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.schedule_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.schedule_time")
     public Long getScheduleTime() {
         return scheduleTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.start_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.start_time")
     public Long getStartTime() {
         return startTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.end_time")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.end_time")
     public Long getEndTime() {
         return endTime;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-02-25T09:07:37.661+01:00", comments="Source field: scheduled_delete.owner")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.827+01:00", comments="Source field: scheduled_delete.owner")
     public String getOwner() {
         return owner;
     }
@@ -74,7 +74,7 @@ public class ScheduledDeleteRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table scheduled_delete
      *
-     * @mbg.generated Wed Feb 25 09:07:37 CET 2026
+     * @mbg.generated Mon Mar 02 11:38:43 CET 2026
      */
     @Override
     public String toString() {
@@ -97,7 +97,7 @@ public class ScheduledDeleteRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table scheduled_delete
      *
-     * @mbg.generated Wed Feb 25 09:07:37 CET 2026
+     * @mbg.generated Mon Mar 02 11:38:43 CET 2026
      */
     @Override
     public boolean equals(Object that) {
@@ -124,7 +124,7 @@ public class ScheduledDeleteRecord {
      * This method was generated by MyBatis Generator.
      * This method corresponds to the database table scheduled_delete
      *
-     * @mbg.generated Wed Feb 25 09:07:37 CET 2026
+     * @mbg.generated Mon Mar 02 11:38:43 CET 2026
      */
     @Override
     public int hashCode() {

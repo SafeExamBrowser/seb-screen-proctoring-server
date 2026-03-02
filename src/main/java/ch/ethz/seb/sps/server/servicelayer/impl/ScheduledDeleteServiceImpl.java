@@ -174,15 +174,15 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
         return scheduledDeleteDAO.createNew(scheduledDelete);
     }
 
-    @Override
-    public Result<Collection<EntityKey>> markExamsReadyForDeletion(final Collection<String> examUUIDs) {
-        return examDAO.markExamsReadyForDeletion(examUUIDs);
-    }
-
-    @Override
-    public Result<Collection<EntityKey>> excludeExamsFromDeletion(final Collection<String> examUUIDs) {
-        return examDAO.excludeExamsFromDeletion(examUUIDs);
-    }
+//    @Override
+//    public Result<Collection<EntityKey>> markExamsReadyForDeletion(final Collection<String> examUUIDs) {
+//        return examDAO.markExamsReadyForDeletion(examUUIDs);
+//    }
+//
+//    @Override
+//    public Result<Collection<EntityKey>> excludeExamsFromDeletion(final Collection<String> examUUIDs) {
+//        return examDAO.excludeExamsFromDeletion(examUUIDs);
+//    }
 
     private void update() {
 
@@ -236,13 +236,13 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
 
             scheduledDeleteDAO.startSingleDeletion(info.id());
 
-            // check again that Exam is not marked as exclude from deletion
-            final Exam exam = examDAO.byModelId(info.examUUID()).getOrThrow();
-            if (exam.deletionTime == null || exam.deletionTime < 0) {
-                // exam is now excluded from deletion so skip it and mark in error info
-                scheduledDeleteDAO.endSingleDeletion(info.id(), "Exam is excluded from deletion");
-                return;
-            }
+//            // check again that Exam is not marked as exclude from deletion
+//            final Exam exam = examDAO.byModelId(info.examUUID()).getOrThrow();
+//            if (exam.deletionTime == null || exam.deletionTime < 0) {
+//                // exam is now excluded from deletion so skip it and mark in error info
+//                scheduledDeleteDAO.endSingleDeletion(info.id(), "Exam is excluded from deletion");
+//                return;
+//            }
 
             long start = Utils.getMillisecondsNow();
             final Result<Collection<EntityKey>> delete = examDAO.delete(info.examUUID());

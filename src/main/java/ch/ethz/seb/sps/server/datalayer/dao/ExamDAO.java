@@ -20,12 +20,10 @@ public interface ExamDAO extends ActivatableEntityDAO<Exam, Exam> {
 
     Result<Collection<Exam>> getExamsForScheduledDeletion(Long deleteDueTime);
 
-    Result<Collection<Long>> getAllForDeletion();
-
     boolean hasRunningLifeExams();
 
-    Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs);
-
-    Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs);
+//    Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs);
+//
+//    Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs);
 }
 

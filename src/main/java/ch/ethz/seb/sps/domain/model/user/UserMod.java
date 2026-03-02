@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -91,6 +92,10 @@ public final class UserMod implements UserAccount {
     @JsonProperty(PasswordChange.ATTR_NAME_CONFIRM_NEW_PASSWORD)
     private final CharSequence confirmNewPassword;
 
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonProperty(USER.ATTR_INSTITUTION_ID)
+    public final Long institutionId;
+
     @JsonCreator
     public UserMod(
             @JsonProperty(USER.ATTR_UUID) final String uuid,
@@ -102,7 +107,8 @@ public final class UserMod implements UserAccount {
             @JsonProperty(USER.ATTR_EMAIL) final String email,
             @JsonProperty(USER.ATTR_LANGUAGE) final Locale language,
             @JsonProperty(USER.ATTR_TIMEZONE) final DateTimeZone timeZone,
-            @JsonProperty(ATTR_USER_ROLES) final Set<String> roles) {
+            @JsonProperty(ATTR_USER_ROLES) final Set<String> roles,
+            @JsonProperty(USER.ATTR_INSTITUTION_ID) final Long institutionId) {
 
         this.uuid = uuid;
         this.newPassword = newPassword;
@@ -116,6 +122,7 @@ public final class UserMod implements UserAccount {
         this.roles = (roles != null)
                 ? Collections.unmodifiableSet(roles)
                 : Collections.emptySet();
+        this.institutionId = institutionId;
     }
 
     public UserMod(final String modelId, final POSTMapper postAttrMapper) {
@@ -129,6 +136,7 @@ public final class UserMod implements UserAccount {
         this.language = postAttrMapper.getLocale(USER.ATTR_LANGUAGE);
         this.timeZone = postAttrMapper.getDateTimeZone(USER.ATTR_TIMEZONE);
         this.roles = postAttrMapper.getStringSet(USER.ATTR_ROLES);
+        this.institutionId = postAttrMapper.getLong(USER.ATTR_INSTITUTION_ID);
     }
 
     @Override
@@ -216,6 +224,11 @@ public final class UserMod implements UserAccount {
                         .collect(Collectors.toList()));
     }
 
+    @Override
+    public Long getInstitutionId() {
+        return institutionId;
+    }
+
     @JsonIgnore
     @Override
     public EntityKey getEntityKey() {
@@ -237,13 +250,14 @@ public final class UserMod implements UserAccount {
                 ", roles=" + this.roles +
                 ", newPassword=" + this.newPassword +
                 ", confirmNewPassword=" + this.confirmNewPassword +
+                ", institutionId=" + this.institutionId +
                 "]";
     }
 
-    public static UserMod createNew(final Long institutionId) {
-        return new UserMod(
-                UUID.randomUUID().toString(),
-                null, null, null, null, null, null, null, null, null);
-    }
+//    public static UserMod createNew(final Long institutionId) {
+//        return new UserMod(
+//                UUID.randomUUID().toString(),
+//                null, null, null, null, null, null, null, null, null, institutionId);
+//    }
 
 }

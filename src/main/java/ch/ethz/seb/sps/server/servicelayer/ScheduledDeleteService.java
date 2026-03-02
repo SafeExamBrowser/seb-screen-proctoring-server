@@ -1,14 +1,9 @@
 package ch.ethz.seb.sps.server.servicelayer;
 
-import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.service.ScheduledDelete;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
 import ch.ethz.seb.sps.utils.Result;
-import org.joda.time.DateTimeZone;
 import org.springframework.context.event.EventListener;
-
-import java.util.Collection;
-import java.util.Set;
 
 
 public interface ScheduledDeleteService {
@@ -26,8 +21,8 @@ public interface ScheduledDeleteService {
 
     Result<ScheduledDelete> createScheduledDelete(ScheduledDelete scheduledDelete);
 
-    Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs);
-
-    Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs);
+//    Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs);
+//
+//    Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs);
 
 }

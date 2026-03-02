@@ -86,8 +86,8 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
     @JsonProperty(EXAM.ATTR_END_TIME)
     public final Long endTime;
 
-    @JsonProperty(EXAM.ATTR_DELETION_TIME)
-    public final Long deletionTime;
+    @JsonProperty(EXAM.ATTR_INSTITUTION_ID)
+    public final Long institutionId;
     
     @JsonIgnore
     public final Collection<EntityPrivilege> entityPrivileges;
@@ -107,7 +107,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             @JsonProperty(EXAM.ATTR_TERMINATION_TIME) final Long terminationTime,
             @JsonProperty(EXAM.ATTR_START_TIME) final Long startTime,
             @JsonProperty(EXAM.ATTR_END_TIME) final Long endTime,
-            @JsonProperty(EXAM.ATTR_DELETION_TIME) final Long deletionTime) {
+            @JsonProperty(EXAM.ATTR_INSTITUTION_ID) final Long institutionId) {
 
         this.id = id;
         this.uuid = uuid;
@@ -122,7 +122,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         this.terminationTime = terminationTime;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.deletionTime = deletionTime;
+        this.institutionId = institutionId;
         this.entityPrivileges = null;
     }
 
@@ -140,7 +140,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
             final Long terminationTime,
             final Long startTime,
             final Long endTime, 
-            final Long deletionTime,
+            final Long institutionId,
             final Collection<EntityPrivilege> entityPrivileges) {
 
         this.id = id;
@@ -156,7 +156,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         this.terminationTime = terminationTime;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.deletionTime = deletionTime;
+        this.institutionId = institutionId;
         this.entityPrivileges = Utils.immutableCollectionOf(entityPrivileges);
     }
 
@@ -237,8 +237,8 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
         return supporter;
     }
 
-    public Long getDeletionTime() {
-        return deletionTime;
+    public Long getInstitutionId() {
+        return institutionId;
     }
 
     @Override
@@ -279,7 +279,7 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
                 ", terminationTime=" + terminationTime +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
-                ", deletionTime=" + deletionTime +
+                ", institutionId=" + institutionId +
                 ", entityPrivileges=" + entityPrivileges +
                 '}';
     }

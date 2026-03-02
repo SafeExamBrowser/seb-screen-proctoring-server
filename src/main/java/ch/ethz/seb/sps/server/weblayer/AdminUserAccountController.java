@@ -237,7 +237,8 @@ public class AdminUserAccountController extends ActivatableEntityController<User
                 modifyData.timeZone,
                 modifyData.roles,
                 null, null, null,
-                existingEntity.entityPrivileges);
+                existingEntity.entityPrivileges,
+                existingEntity.institutionId);
     }
 
     @Override

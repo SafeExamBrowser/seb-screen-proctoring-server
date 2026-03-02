@@ -6,19 +6,15 @@ import ch.ethz.seb.sps.domain.model.Page;
 import ch.ethz.seb.sps.domain.model.service.ScheduledDelete;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScheduledDeleteRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.dao.ScheduledDeleteDAO;
-import io.swagger.v3.core.util.Constants;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.server.servicelayer.*;
 import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTimeZone;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,44 +192,44 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 .getOrThrow();
     }
 
-    @RequestMapping(
-            path = API.MARK_READY_FOR_DELETE,
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public Collection<EntityKey> markReadyForDelete(@RequestParam(name = EXAM.ATTR_UUID, required = true) final String examUUIDs) {
-
-        userService.checkIsAdmin();
-
-        String[] split = StringUtils.split(examUUIDs, Constants.COMMA);
-        if (split == null) {
-            return Collections.emptyList();
-        }
-
-        return scheduledDeleteService
-                .markExamsReadyForDeletion(Arrays.asList(split))
-                .getOrThrow();
-    }
-
-    @RequestMapping(
-            path = API.EXCLUDE_FROM_DELETE,
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public Collection<EntityKey> excludeFromDelete(@RequestParam(name = EXAM.ATTR_UUID, required = true) final String examUUIDs) {
-
-        userService.checkIsAdmin();
-
-        String[] split = StringUtils.split(examUUIDs, Constants.COMMA);
-        if (split == null) {
-            return Collections.emptyList();
-        }
-
-        return scheduledDeleteService
-                .excludeExamsFromDeletion(Arrays.asList(split))
-                .getOrThrow();
-
-    }
+//    @RequestMapping(
+//            path = API.MARK_READY_FOR_DELETE,
+//            method = RequestMethod.POST,
+//            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+//            produces = MediaType.APPLICATION_JSON_VALUE)
+//    public Collection<EntityKey> markReadyForDelete(@RequestParam(name = EXAM.ATTR_UUID, required = true) final String examUUIDs) {
+//
+//        userService.checkIsAdmin();
+//
+//        String[] split = StringUtils.split(examUUIDs, Constants.COMMA);
+//        if (split == null) {
+//            return Collections.emptyList();
+//        }
+//
+//        return scheduledDeleteService
+//                .markExamsReadyForDeletion(Arrays.asList(split))
+//                .getOrThrow();
+//    }
+//
+//    @RequestMapping(
+//            path = API.EXCLUDE_FROM_DELETE,
+//            method = RequestMethod.POST,
+//            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+//            produces = MediaType.APPLICATION_JSON_VALUE)
+//    public Collection<EntityKey> excludeFromDelete(@RequestParam(name = EXAM.ATTR_UUID, required = true) final String examUUIDs) {
+//
+//        userService.checkIsAdmin();
+//
+//        String[] split = StringUtils.split(examUUIDs, Constants.COMMA);
+//        if (split == null) {
+//            return Collections.emptyList();
+//        }
+//
+//        return scheduledDeleteService
+//                .excludeExamsFromDeletion(Arrays.asList(split))
+//                .getOrThrow();
+//
+//    }
 
     // **** Scheduled Delete
     // ****************************************************************************
@@ -302,7 +298,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 null,
                 postParams.getLong(EXAM.ATTR_START_TIME),
                 postParams.getLong(EXAM.ATTR_END_TIME),
-                postParams.getLong(EXAM.ATTR_DELETION_TIME));
+                postParams.getLong(EXAM.ATTR_INSTITUTION_ID));
     }
 
     @Override
@@ -351,7 +347,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 null,
                 modifyData.startTime,
                 modifyData.endTime,
-                modifyData.deletionTime);
+                modifyData.institutionId);
     }
 
     @Override
