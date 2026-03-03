@@ -161,7 +161,7 @@ public class ClientAccess implements Entity, OwnedEntity, WithNameDescription, W
     }
 
     @Override
-    public Long id() {
+    public Long getPK() {
         return this.id;
     }
 

@@ -377,10 +377,10 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<Group>> getGroupsForScheduledDeletion(Long deleteDueTime) {
+    public Result<Collection<Group>> byExamId(final Long examId) {
         return Result.tryCatch(() -> this.groupRecordMapper
                     .selectByExample()
-                    .where(creationTime, SqlBuilder.isLessThanOrEqualTo(deleteDueTime))
+                    .where(GroupRecordDynamicSqlSupport.examId, SqlBuilder.isEqualTo(examId))
                     .build()
                     .execute()
                     .stream()

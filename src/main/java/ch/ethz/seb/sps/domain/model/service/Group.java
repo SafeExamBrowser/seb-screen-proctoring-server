@@ -139,7 +139,7 @@ public class Group implements Entity, OwnedEntity, WithNameDescription, WithEnti
     }
 
     @Override
-    public Long id() {
+    public Long getPK() {
         return this.id;
     }
 

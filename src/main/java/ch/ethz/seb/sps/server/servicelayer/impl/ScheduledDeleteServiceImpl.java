@@ -1,6 +1,7 @@
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
+import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.ScheduledDelete;
@@ -17,6 +18,8 @@ import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -78,91 +81,29 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
     }
 
     @Override
-    public Result<ScheduledDelete> requestScheduledDelete(final Long deleteDueTimestamp) {
+    public Result<ScheduledDelete> requestScheduledDelete(
+            final Long deleteDueTimestampUTC,
+            final Long institutionId) {
 
         return Result.tryCatch(() -> {
-
-//            // prepare times...
-//            // use either given referenceTimezone or UTC
-//            final DateTimeZone refTimeZone = referenceTimezone != null ? referenceTimezone : DateTimeZone.UTC;
-//            // use either given scheduledTimestamp or schedule to midnight reverencing to refTimeZone
-//            Long scheduleTime = scheduledTimestamp;
-//            if (scheduleTime == null) {
-//                final DateTime scheduleDateTime = DateTime
-//                        .now(refTimeZone)                   // get now in reference time zone
-//                        .plusDays(1)                      // add one day and...
-//                        .withTimeAtStartOfDay()             // go back to start of day still in reference time zone
-//                        .toDateTime(DateTimeZone.UTC);      // now convert to UTC (only UTC goes to store)
-//                scheduleTime = scheduleDateTime.getMillis();
-//            }
-//
-//            // deleteDueTimestamp is expected already in UTC
-//            final DateTime deleteDueDateTime = new DateTime(deleteDueTimestamp, refTimeZone);
-//            log.info("Request scheduled delete for dueTime: {} -- UTC: {} at: {} -- UTC: {}",
-//                    Utils.formatDate(deleteDueDateTime.toDateTime(refTimeZone)),
-//                    Utils.formatDate(deleteDueDateTime),
-//                    Utils.formatDate(new DateTime(scheduleTime,refTimeZone)),
-//                    Utils.formatDate(new DateTime(scheduleTime,DateTimeZone.UTC)));
+            final ServerUser currentUser = userService.getCurrentUser();
 
             // get involved Exams and Groups
-            Collection<Exam> exams = examDAO
-                    .getExamsForScheduledDeletion(deleteDueTimestamp)
+            final Collection<Exam> exams = examDAO
+                    .getExamsForScheduledDeletion(deleteDueTimestampUTC)
                     .getOrThrow();
 
-            final List<ScheduledDeleteInfo> deleteInfos = new ArrayList<>();
-            final List<Group> noExamGroups = new ArrayList<>();
-            final Map<Long, Set<Group>> groupsWithExam = new HashMap<>();
-            groupDAO
-                    .getGroupsForScheduledDeletion(deleteDueTimestamp)
-                    .getOrThrow()
-                    .forEach(group -> {
-                            if (group.exam_id != null) {
-                                groupsWithExam.computeIfAbsent(group.exam_id , key -> new HashSet<>()).add(group);
-                            } else {
-                                noExamGroups.add(group);
-                            }
-                    });
+            // create info from exams
+            final List<ScheduledDeleteInfo> deleteInfos = getScheduledDeleteInfos(institutionId, exams);
 
-            // create info
-            exams.forEach(exam -> {
-                Map<String, String> deleteInfo = new HashMap<>();
-                deleteInfo.put("examName", exam.name);
-                deleteInfo.put("examType", exam.type);
-
-                Set<Group> groups = groupsWithExam.get(exam.id);
-                if (groups != null) {
-                    groups.forEach( group -> putGroupData(group, deleteInfo));
-                }
-                deleteInfos.add(new ScheduledDeleteInfo(
-                    null,
-                        null,
-                        ScheduledDeleteInfo.State.PENDING,
-                        exam.uuid,
-                        deleteInfo,
-                        null
-                ));
-            });
-            noExamGroups.forEach( group -> {
-                Map<String, String> deleteInfo = new HashMap<>();
-                putGroupData(group, deleteInfo);
-                deleteInfos.add(new ScheduledDeleteInfo(
-                        null,
-                        null,
-                        ScheduledDeleteInfo.State.PENDING,
-                        null,
-                        deleteInfo,
-                        null
-                ));
-            });
-
-            final ServerUser currentUser = userService.getCurrentUser();
+            // create requested ScheduledDelete
             return new ScheduledDelete(
                     null,
-                    ScheduledDelete.State.FINISHED,
-                    deleteDueTimestamp,
+                    ScheduledDelete.State.PENDING,
+                    deleteDueTimestampUTC,
                     null,
-                    Utils.getMillisecondsNow(),
-                    Utils.getMillisecondsNow(),
+                    null,
+                    null,
                     currentUser.uuid(),
                     deleteInfos
             );
@@ -171,18 +112,84 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
 
     @Override
     public Result<ScheduledDelete> createScheduledDelete(final ScheduledDelete scheduledDelete) {
-        return scheduledDeleteDAO.createNew(scheduledDelete);
+
+        return Result.tryCatch(() -> {
+            // check consistency
+            final Long dueTimeUTC = scheduledDelete.deleteDueTime();
+            final Long scheduleTimeUTC = scheduledDelete.scheduleTime();
+            final long now = Utils.getMillisecondsNow();
+
+            if (dueTimeUTC == null) {
+                throw new IllegalArgumentException("dueTimeUTC must be provided");
+            }
+            if (scheduleTimeUTC == null) {
+                throw new IllegalArgumentException("dueTimeUTC must be provided");
+            }
+            if (dueTimeUTC >= now) {
+                throw new IllegalArgumentException("dueTimeUTC must be in the past");
+            }
+            if (scheduleTimeUTC <= now) {
+                throw new IllegalArgumentException("dueTimeUTC must be in the past");
+            }
+
+            String ownerUUID = scheduledDelete.ownerUUID();
+            if (StringUtils.isBlank(ownerUUID) || !userService.existsByUUID(ownerUUID)) {
+                ownerUUID = userService.getCurrentUserUUIDOrNull();
+                if (ownerUUID == null) {
+                    ownerUUID = "[NOT_FOUND]";
+                }
+            }
+
+            final Collection<ScheduledDeleteInfo> info = scheduledDelete.info();
+            if (scheduledDelete.info() == null || info.isEmpty()) {
+                throw new IllegalArgumentException("There is nothing to delete, Deletion info is expected!");
+            }
+
+            // create valid and full ScheduledDeleteInfo for each exam
+            List<Exam> exams = info
+                    .stream()
+                    .map(i -> examDAO
+                            .byModelId(i.examUUID())
+                            .onError(error -> log.error("Failed to get Exam for given UUID: {}", i))
+                            .getOr(null))
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            final List<ScheduledDeleteInfo> scheduledDeleteInfos = getScheduledDeleteInfos(null, exams);
+            final ScheduledDelete fullScheduledDelete = new ScheduledDelete(
+                    null,
+                    ScheduledDelete.State.PENDING,
+                    dueTimeUTC,
+                    scheduleTimeUTC,
+                    null, null,
+                    ownerUUID,
+                    scheduledDeleteInfos
+            );
+
+            final ScheduledDelete result = scheduledDeleteDAO
+                    .createNew(fullScheduledDelete)
+                    .getOrThrow();
+
+            log.info("Created full scheduled delete: {}", result);
+
+            return result;
+        });
     }
 
-//    @Override
-//    public Result<Collection<EntityKey>> markExamsReadyForDeletion(final Collection<String> examUUIDs) {
-//        return examDAO.markExamsReadyForDeletion(examUUIDs);
-//    }
-//
-//    @Override
-//    public Result<Collection<EntityKey>> excludeExamsFromDeletion(final Collection<String> examUUIDs) {
-//        return examDAO.excludeExamsFromDeletion(examUUIDs);
-//    }
+    @Override
+    public Result<EntityKey> deleteScheduledDelete(final String modelId) {
+        return scheduledDeleteDAO.byModelId(modelId)
+                .map(scheduledDelete -> {
+                    if (scheduledDelete.state() == ScheduledDelete.State.RUNNING) {
+                        throw new IllegalArgumentException("Running ScheduledDelete Task cannot be deleted since it is in progress");
+                    }
+
+                    return scheduledDeleteDAO
+                            .delete(modelId)
+                            .map(keys -> new EntityKey(modelId, EntityType.SCHEDULED_DELETE))
+                            .getOrThrow();
+                });
+    }
 
     private void update() {
 
@@ -208,7 +215,7 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
 
             log.info("**************************************");
             log.info("**** Start ScheduledDelete: {}", delete);
-            scheduledDeleteDAO.startProcessing(delete.id());
+            scheduledDeleteDAO.startProcessing(delete.getPK());
 
             delete.info().forEach(single -> {
                 if (single.examUUID() == null) {
@@ -218,7 +225,7 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
                 }
             });
 
-            scheduledDeleteDAO.endProcessing(delete.id());
+            scheduledDeleteDAO.endProcessing(delete.getPK());
 
             log.info("**** End ScheduledDelete");
             log.info("**************************************");
@@ -291,5 +298,41 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
         sessionDAO
                 .allSessionCount(group.id)
                 .onSuccess( count -> data.put("group_" + group.id + "_sessionCount", String.valueOf(count)));
+    }
+
+    @NotNull
+    private List<ScheduledDeleteInfo> getScheduledDeleteInfos(
+            final Long institutionId,
+            final Collection<Exam> exams) {
+
+        return exams
+                .stream()
+                .map(exam -> {
+
+                    // check institutionId if available and skip if not equals
+                    if (institutionId != null && exam.institutionId != null && !Objects.equals(institutionId, exam.institutionId)) {
+                        return null;
+                    }
+
+                    Map<String, String> deleteInfo = new HashMap<>();
+                    deleteInfo.put("examName", exam.name);
+                    deleteInfo.put("examType", exam.type);
+
+                    Collection<Group> groups = groupDAO.byExamId(exam.id).getOr(Collections.emptyList());
+                    if (groups != null) {
+                        groups.forEach(group -> putGroupData(group, deleteInfo));
+                    }
+
+                    return new ScheduledDeleteInfo(
+                            null,
+                            null,
+                            ScheduledDeleteInfo.State.PENDING,
+                            exam.uuid,
+                            deleteInfo,
+                            null
+                    );
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 }

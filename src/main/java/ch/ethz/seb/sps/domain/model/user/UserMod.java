@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -140,7 +139,7 @@ public final class UserMod implements UserAccount {
     }
 
     @Override
-    public Long id() {
+    public Long getPK() {
         return null;
     }
 
@@ -253,11 +252,4 @@ public final class UserMod implements UserAccount {
                 ", institutionId=" + this.institutionId +
                 "]";
     }
-
-//    public static UserMod createNew(final Long institutionId) {
-//        return new UserMod(
-//                UUID.randomUUID().toString(),
-//                null, null, null, null, null, null, null, null, null, institutionId);
-//    }
-
 }

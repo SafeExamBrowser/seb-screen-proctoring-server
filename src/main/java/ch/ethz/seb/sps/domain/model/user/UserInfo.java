@@ -208,7 +208,7 @@ public final class UserInfo implements UserAccount, OwnedEntity, WithEntityPrivi
     }
 
     @Override
-    public Long id() {
+    public Long getPK() {
         return this.id;
     }
 

@@ -239,7 +239,13 @@ public class UserServiceImpl implements UserService {
         return this.userDAO.synchronizeUserAccount(userMod)
                 .map(this::synchronizeUserPrivileges);
     }
-    
+
+    @Override
+    public boolean existsByUUID(String userUUID) {
+        final Result<Long> userIdByUUID = userDAO.getUserIdByUUID(userUUID);
+        return !userIdByUUID.hasError();
+    }
+
     private UserInfo synchronizeUserPrivileges(final UserInfo userInfo) {
         try {
 

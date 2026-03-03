@@ -6,12 +6,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ScheduledDeleteInfo(
-        @Schema(accessMode = Schema.AccessMode.READ_ONLY) @JsonProperty(Domain.SCHEDULED_DELETE_INFO.ATTR_ID) Long id,
+        @JsonProperty(Domain.SCHEDULED_DELETE_INFO.ATTR_ID) Long id,
         @JsonProperty(Domain.SCHEDULED_DELETE_INFO.ATTR_SCHEDULED_DELETE_ID) Long scheduledDeleteId,
         @JsonProperty(Domain.SCHEDULED_DELETE_INFO.ATTR_STATE) State state,
         @JsonProperty(Domain.SCHEDULED_DELETE_INFO.ATTR_EXAM_UUID) String examUUID,
@@ -61,7 +62,7 @@ public record ScheduledDeleteInfo(
                 ", scheduledDeleteId=" + scheduledDeleteId +
                 ", state=" + state +
                 ", examUUID='" + examUUID + '\'' +
-                ", deletionInfo='" + deletionInfo + '\'' +
+                ", deletionInfo='" + new LinkedHashMap<>(deletionInfo) + '\'' +
                 ", errorInfo='" + errorInfo + '\'' +
                 '}';
     }

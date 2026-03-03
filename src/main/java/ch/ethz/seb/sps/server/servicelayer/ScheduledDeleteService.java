@@ -1,5 +1,6 @@
 package ch.ethz.seb.sps.server.servicelayer;
 
+import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.service.ScheduledDelete;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
 import ch.ethz.seb.sps.utils.Result;
@@ -15,14 +16,13 @@ public interface ScheduledDeleteService {
      * and are not marked as exclude from deletion (deletion_time < 0)
      * The task will be scheduled for midnight.
      *
-     * @param deleteDueTimestamp the due time stamp (UTC) for that all older exams get deleted (mandatory)
+     * @param deleteDueTimestampUTC the due time stamp (UTC) for that all older exams get deleted (mandatory)
      * @return the prepared schedule with report of all exams that are going to be deleted.*/
-    Result<ScheduledDelete> requestScheduledDelete(Long deleteDueTimestamp);
+    Result<ScheduledDelete> requestScheduledDelete(Long deleteDueTimestampUTC, Long institutionId);
 
     Result<ScheduledDelete> createScheduledDelete(ScheduledDelete scheduledDelete);
 
-//    Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs);
-//
-//    Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs);
+    Result<EntityKey> deleteScheduledDelete(String modelId);
 
 }
+

@@ -160,6 +160,8 @@ public interface UserService {
 
     Result<UserInfo> synchronizeUserAccount(UserMod userMod);
 
+    boolean existsByUUID(String userUUID);
+
     Result<UserPrivileges> getUserPrivileges(String userUUID);
 
     Result<Exam> applyExamPrivileges(Exam exam);
@@ -168,4 +170,6 @@ public interface UserService {
 
     /** Checks if the current user has administrator privileges. Throws APIErrorException.ofPermissionDenied if not */
     void checkIsAdmin();
+
+
 }

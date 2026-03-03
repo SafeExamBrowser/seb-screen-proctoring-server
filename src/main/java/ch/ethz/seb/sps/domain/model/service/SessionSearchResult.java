@@ -131,7 +131,7 @@ public class SessionSearchResult implements Entity {
     }
 
     @Override
-    public Long id() {
+    public Long getPK() {
         return null;
     }
 

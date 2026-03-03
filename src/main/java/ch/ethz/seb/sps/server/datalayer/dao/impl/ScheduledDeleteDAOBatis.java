@@ -145,7 +145,7 @@ public class ScheduledDeleteDAOBatis implements ScheduledDeleteDAO {
             // first create the ScheduledDelete entry
             ScheduledDeleteRecord scheduledDeleteRecord = new ScheduledDeleteRecord(
                     null,
-                    data.state().toString(),
+                    ScheduledDelete.State.PENDING.name(),
                     data.deleteDueTime(),
                     data.scheduleTime(),
                     null,

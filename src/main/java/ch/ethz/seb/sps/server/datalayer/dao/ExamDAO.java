@@ -22,8 +22,5 @@ public interface ExamDAO extends ActivatableEntityDAO<Exam, Exam> {
 
     boolean hasRunningLifeExams();
 
-//    Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs);
-//
-//    Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs);
 }
 

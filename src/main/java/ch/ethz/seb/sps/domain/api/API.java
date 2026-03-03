@@ -128,8 +128,6 @@ public final class API {
     public static final String REQUEST_DELETE_ENDPOINT = "/request";
     public static final String SCHEDULED_DELETE_ENDPOINT = "/scheduled-delete";
     public static final String SCHEDULED_DELETE_REQUEST_ENDPOINT = SCHEDULED_DELETE_ENDPOINT + "/request";
-    public static final String MARK_READY_FOR_DELETE = "/mark-ready-delete";
-    public static final String EXCLUDE_FROM_DELETE = "/exclude-delete";
 
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 

@@ -7,25 +7,21 @@ import ch.ethz.seb.sps.utils.Utils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Collection;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ScheduledDelete(
-        @Schema(accessMode = Schema.AccessMode.READ_ONLY) @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_ID) Long id,
-        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_STATE) State state,
-        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME) Long deleteDueTime,
-        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME) Long scheduleTime,
-        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_START_TIME) Long startTime,
-        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_END_TIME) Long endTime,
-        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_OWNER) String ownerUUID,
-        @JsonProperty(ATTR_INFO) Collection<ScheduledDeleteInfo> info) implements Entity {
+public record ScheduledDelete(@JsonProperty(Domain.SCHEDULED_DELETE.ATTR_ID) Long id,
+                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_STATE) State state,
+                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME) Long deleteDueTime,
+                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME) Long scheduleTime,
+                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_START_TIME) Long startTime,
+                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_END_TIME) Long endTime,
+                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_OWNER) String ownerUUID,
+                              @JsonProperty(ATTR_INFO) Collection<ScheduledDeleteInfo> info) implements Entity {
 
     public static final String ATTR_INFO = "info";
-    public static final String ATTR_REFERENCE_TIME_ZONE = "ref-time-zone";
-    public static final String ATTR_EXCLUDE_FROM_DELETE = "exclude-exam-uuids";
 
     public enum State {
         PENDING,
@@ -34,30 +30,17 @@ public record ScheduledDelete(
     }
 
     @JsonCreator
-    public ScheduledDelete(
-            @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_ID) final Long id,
-            @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_STATE) final State state,
-            @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME) final Long deleteDueTime,
-            @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME) final Long scheduleTime,
-            @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_START_TIME) final Long startTime,
-            @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_END_TIME) final Long endTime,
-            @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_OWNER) final String ownerUUID,
-            @JsonProperty(ATTR_INFO) final Collection<ScheduledDeleteInfo> info) {
-
-        this.id = id;
-        this.state = state;
-        this.deleteDueTime = deleteDueTime;
-        this.scheduleTime = scheduleTime;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.ownerUUID = ownerUUID;
-        this.info = info;
-    }
+    public ScheduledDelete {}
 
 
     @Override
     public String getModelId() {
         return String.valueOf(id);
+    }
+
+    @Override
+    public Long getPK() {
+        return id;
     }
 
     @Override

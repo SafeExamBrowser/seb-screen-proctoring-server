@@ -167,22 +167,22 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
 
     @RequestMapping(
             path = API.SCHEDULED_DELETE_REQUEST_ENDPOINT,
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ScheduledDelete requestScheduledDelete(
-            @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, required = true) final Long dueTimeUTC) {
+            @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, required = true) final Long dueTimeUTC,
+            @RequestParam(name = EXAM.ATTR_INSTITUTION_ID, required = false) final Long institutionId) {
 
         userService.checkIsAdmin();
         return scheduledDeleteService
-                .requestScheduledDelete(dueTimeUTC)
+                .requestScheduledDelete(dueTimeUTC, institutionId)
                 .getOrThrow();
     }
 
     @RequestMapping(
             path = API.SCHEDULED_DELETE_ENDPOINT,
             method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
+            //consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ScheduledDelete createScheduledDelete(@RequestBody final ScheduledDelete scheduledDelete) {
 
@@ -192,44 +192,17 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 .getOrThrow();
     }
 
-//    @RequestMapping(
-//            path = API.MARK_READY_FOR_DELETE,
-//            method = RequestMethod.POST,
-//            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-//            produces = MediaType.APPLICATION_JSON_VALUE)
-//    public Collection<EntityKey> markReadyForDelete(@RequestParam(name = EXAM.ATTR_UUID, required = true) final String examUUIDs) {
-//
-//        userService.checkIsAdmin();
-//
-//        String[] split = StringUtils.split(examUUIDs, Constants.COMMA);
-//        if (split == null) {
-//            return Collections.emptyList();
-//        }
-//
-//        return scheduledDeleteService
-//                .markExamsReadyForDeletion(Arrays.asList(split))
-//                .getOrThrow();
-//    }
-//
-//    @RequestMapping(
-//            path = API.EXCLUDE_FROM_DELETE,
-//            method = RequestMethod.POST,
-//            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-//            produces = MediaType.APPLICATION_JSON_VALUE)
-//    public Collection<EntityKey> excludeFromDelete(@RequestParam(name = EXAM.ATTR_UUID, required = true) final String examUUIDs) {
-//
-//        userService.checkIsAdmin();
-//
-//        String[] split = StringUtils.split(examUUIDs, Constants.COMMA);
-//        if (split == null) {
-//            return Collections.emptyList();
-//        }
-//
-//        return scheduledDeleteService
-//                .excludeExamsFromDeletion(Arrays.asList(split))
-//                .getOrThrow();
-//
-//    }
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_ENDPOINT + API.PARAM_MODEL_PATH_SEGMENT,
+            method = RequestMethod.DELETE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public EntityKey deleteScheduled(@PathVariable final String modelId) {
+
+        userService.checkIsAdmin();
+        return scheduledDeleteService
+                .deleteScheduledDelete(modelId)
+                .getOrThrow();
+    }
 
     // **** Scheduled Delete
     // ****************************************************************************

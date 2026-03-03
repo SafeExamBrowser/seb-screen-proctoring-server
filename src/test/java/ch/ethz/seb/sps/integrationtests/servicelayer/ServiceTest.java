@@ -1,7 +1,8 @@
-package ch.ethz.seb.sps.integrationtests.proctoring;
+package ch.ethz.seb.sps.integrationtests.servicelayer;
 
 import ch.ethz.seb.sps.domain.api.JSONMapper;
 import ch.ethz.seb.sps.integrationtests.RestAPITestHelper;
+import ch.ethz.seb.sps.server.ScreenProctoringServer;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,6 @@ import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import ch.ethz.seb.sps.server.ScreenProctoringServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -36,8 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@Sql(scripts = { "classpath:schema-test.sql", "classpath:proctoring-test-data.sql" })
-public abstract class ServiceTest_PROCTORING {
+@Sql(scripts = { "classpath:schema-test.sql", "classpath:service-test-data.sql" })
+public abstract class ServiceTest {
 
     @Value("${sps.api.admin.gui.clientId}")
     protected String clientId;
