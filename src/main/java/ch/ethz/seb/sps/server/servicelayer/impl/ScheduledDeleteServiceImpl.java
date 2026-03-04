@@ -115,6 +115,7 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
     public Result<ScheduledDelete> createScheduledDelete(final ScheduledDelete scheduledDelete) {
 
         return Result.tryCatch(() -> {
+
             // check consistency
             final Long dueTimeUTC = scheduledDelete.deleteDueTime();
             final Long scheduleTimeUTC = scheduledDelete.scheduleTime();
@@ -309,7 +310,7 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
 
                     Map<String, String> deleteInfo = new HashMap<>();
                     deleteInfo.put(Domain.EXAM.ATTR_NAME, exam.name);
-                    deleteInfo.put(Domain.EXAM.ATTR_TYPE, exam.type);
+                    deleteInfo.put(Domain.EXAM.ATTR_START_TIME, String.valueOf(exam.startTime));
                     if (exam.institutionId != null) {
                         deleteInfo.put(Domain.EXAM.ATTR_INSTITUTION_ID, String.valueOf(exam.institutionId));
                     }

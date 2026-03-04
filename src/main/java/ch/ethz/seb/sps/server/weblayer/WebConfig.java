@@ -40,20 +40,22 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${springdoc.api-docs.enabled:false}")
-    private boolean apiDocEnabled;
-    @Value("${springdoc.swagger-ui.enabled:false}")
-    private boolean swaggerEnabled;
-
     public static final String SWAGGER_AUTH_SEB_API = "SEBOAuth";
     public static final String SWAGGER_AUTH_ADMIN_API = "adminAuth";
-    
+    public static final String V_3_API_DOCS_ENDPOINT = "/v3/api-docs/**";
+    public static final String SWAGGER_UI_ENDPOINT = "/swagger-ui/**";
+
     private static String[] OPEN_ENDPOINTS = new String[] {
             API.HEALTH_ENDPOINT,
             API.HEALTH_ENDPOINT + "/",
             API.GUI_REDIRECT_ENDPOINT,
             API.OAUTH_JWTTOKEN_ENDPOINT + "/**"
     };
+
+    @Value("${springdoc.api-docs.enabled:false}")
+    private boolean apiDocEnabled;
+    @Value("${springdoc.swagger-ui.enabled:false}")
+    private boolean swaggerEnabled;
 
     /** Used to get real remote IP address by using "X-Forwarded-For" and "X-Forwarded-Proto" header.
      * https://tomcat.apache.org/tomcat-7.0-doc/api/org/apache/catalina/filters/RemoteIpFilter.html
@@ -98,10 +100,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .authorizeHttpRequests((requests) -> {
                     requests.requestMatchers(OPEN_ENDPOINTS).permitAll();
                     if (apiDocEnabled) {
-                        requests.requestMatchers("/v3/api-docs/**").permitAll();
+                        requests.requestMatchers(V_3_API_DOCS_ENDPOINT).permitAll();
                     }
                     if (swaggerEnabled) {
-                        requests.requestMatchers("/swagger-ui/**").permitAll();
+                        requests.requestMatchers(SWAGGER_UI_ENDPOINT).permitAll();
                     }
                     requests.anyRequest().denyAll();
                 })

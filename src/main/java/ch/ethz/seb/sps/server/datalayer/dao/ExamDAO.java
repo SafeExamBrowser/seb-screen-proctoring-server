@@ -18,7 +18,11 @@ public interface ExamDAO extends ActivatableEntityDAO<Exam, Exam> {
 
     Result<Collection<Exam>> getExamsWithin(FilterMap filterMap, Collection<Long> prePredicated);
 
-    Result<Collection<Exam>> getExamsForScheduledDeletion(Long deleteDueTime);
+    /** Gets all exams that startTime is older than a given deleteDueTime in UTC
+     *
+     * @param deleteDueTimeUTC the given due time
+     * @return Gets all exams that startTime is older than a given deleteDueTime */
+    Result<Collection<Exam>> getExamsForScheduledDeletion(Long deleteDueTimeUTC);
 
     boolean hasRunningLifeExams();
 
