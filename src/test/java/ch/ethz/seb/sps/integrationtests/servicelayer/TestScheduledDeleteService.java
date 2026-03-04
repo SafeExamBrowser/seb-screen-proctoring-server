@@ -52,9 +52,9 @@ public class TestScheduledDeleteService extends ServiceTest {
         assertNotNull(scheduledDelete);
         assertEquals(
                 "ScheduledDelete{id=null, state=PENDING, deleteDueTime=1767222000000, scheduleTime=null, startTime=null, endTime=null, ownerUUID='super-admin', " +
-                        "info=[ScheduledDeleteInfo{id=null, scheduledDeleteId=null, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', deletionInfo='{group_1_name=test_group, examName=test exam 01, examType=, group_1_uuid=3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c, group_1_sessionCount=2, group_2_name=exam_group, group_2_sessionCount=1, group_2_uuid=1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c}', errorInfo='null'}, " +
-                        "ScheduledDeleteInfo{id=null, scheduledDeleteId=null, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e5', deletionInfo='{examName=test exam 02, examType=}', errorInfo='null'}, " +
-                        "ScheduledDeleteInfo{id=null, scheduledDeleteId=null, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e6', deletionInfo='{examName=test exam 03, examType=}', errorInfo='null'}]}",
+                        "info=[ScheduledDeleteInfo{id=null, scheduledDeleteId=null, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', deletionInfo='{institutionId=1, group_1_name=test_group, name=test exam 01, group_1_uuid=3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c, group_1_sessionCount=2, type=, group_2_name=exam_group, group_2_sessionCount=1, supporter=06628f1f-8b2e-4bfa-8dd6-79842e7c0249,66c9c9d5-953a-44e2-a4d1-2348f7a7c489, group_2_uuid=1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c}', errorInfo='null'}, " +
+                        "ScheduledDeleteInfo{id=null, scheduledDeleteId=null, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e5', deletionInfo='{institutionId=1, name=test exam 02, type=, supporter=super-admin,66c9c9d5-953a-44e2-a4d1-2348f7a7c489}', errorInfo='null'}, " +
+                        "ScheduledDeleteInfo{id=null, scheduledDeleteId=null, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e6', deletionInfo='{institutionId=1, name=test exam 03, type=}', errorInfo='null'}]}",
                 scheduledDelete.toString());
 
     }
@@ -91,8 +91,8 @@ public class TestScheduledDeleteService extends ServiceTest {
         assertNotNull(created);
         assertEquals(
                 "ScheduledDelete{id=1, state=PENDING, deleteDueTime=1767222000000, scheduleTime=2524604400000, startTime=null, endTime=null, ownerUUID='super-admin', " +
-                        "info=[ScheduledDeleteInfo{id=1, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', deletionInfo='{group_1_name=test_group, examName=test exam 01, examType=, group_1_uuid=3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c, group_1_sessionCount=2, group_2_name=exam_group, group_2_sessionCount=1, group_2_uuid=1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c}', errorInfo='null'}, " +
-                        "ScheduledDeleteInfo{id=2, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e5', deletionInfo='{examName=test exam 02, examType=}', errorInfo='null'}]}",
+                        "info=[ScheduledDeleteInfo{id=1, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', deletionInfo='{institutionId=1, group_1_name=test_group, name=test exam 01, group_1_uuid=3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c, group_1_sessionCount=2, type=, group_2_name=exam_group, group_2_sessionCount=1, supporter=06628f1f-8b2e-4bfa-8dd6-79842e7c0249,66c9c9d5-953a-44e2-a4d1-2348f7a7c489, group_2_uuid=1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c}', errorInfo='null'}, " +
+                        "ScheduledDeleteInfo{id=2, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e5', deletionInfo='{institutionId=1, name=test exam 02, type=, supporter=super-admin,66c9c9d5-953a-44e2-a4d1-2348f7a7c489}', errorInfo='null'}]}",
                 created.toString());
 
 
@@ -106,8 +106,8 @@ public class TestScheduledDeleteService extends ServiceTest {
         assertNotNull(single);
         assertEquals(
                 "ScheduledDelete{id=1, state=PENDING, deleteDueTime=1767222000000, scheduleTime=2524604400000, startTime=null, endTime=null, ownerUUID='super-admin', " +
-                        "info=[ScheduledDeleteInfo{id=1, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', deletionInfo='{group_1_name=test_group, examName=test exam 01, examType=, group_1_uuid=3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c, group_1_sessionCount=2, group_2_name=exam_group, group_2_sessionCount=1, group_2_uuid=1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c}', errorInfo='null'}, " +
-                        "ScheduledDeleteInfo{id=2, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e5', deletionInfo='{examName=test exam 02, examType=}', errorInfo='null'}]}",
+                        "info=[ScheduledDeleteInfo{id=1, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', deletionInfo='{institutionId=1, group_1_name=test_group, name=test exam 01, group_1_uuid=3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c, group_1_sessionCount=2, type=, group_2_name=exam_group, group_2_sessionCount=1, supporter=06628f1f-8b2e-4bfa-8dd6-79842e7c0249,66c9c9d5-953a-44e2-a4d1-2348f7a7c489, group_2_uuid=1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c}', errorInfo='null'}, " +
+                        "ScheduledDeleteInfo{id=2, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e5', deletionInfo='{institutionId=1, name=test exam 02, type=, supporter=super-admin,66c9c9d5-953a-44e2-a4d1-2348f7a7c489}', errorInfo='null'}]}",
                 single.toString());
 
         // get list
@@ -120,9 +120,9 @@ public class TestScheduledDeleteService extends ServiceTest {
         assertNotNull(page);
         assertEquals(
                 "Page [numberOfPages=1, pageNumber=1, pageSize=10, sort=null, content=[" +
-                "ScheduledDelete{id=1, state=PENDING, deleteDueTime=1767222000000, scheduleTime=2524604400000, startTime=null, endTime=null, ownerUUID='super-admin', " +
-                        "info=[ScheduledDeleteInfo{id=1, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', deletionInfo='{group_1_name=test_group, examName=test exam 01, examType=, group_1_uuid=3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c, group_1_sessionCount=2, group_2_name=exam_group, group_2_sessionCount=1, group_2_uuid=1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c}', errorInfo='null'}, " +
-                        "ScheduledDeleteInfo{id=2, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e5', deletionInfo='{examName=test exam 02, examType=}', errorInfo='null'}]}" +
+                        "ScheduledDelete{id=1, state=PENDING, deleteDueTime=1767222000000, scheduleTime=2524604400000, startTime=null, endTime=null, ownerUUID='super-admin', " +
+                        "info=[ScheduledDeleteInfo{id=1, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', deletionInfo='{institutionId=1, group_1_name=test_group, name=test exam 01, group_1_uuid=3cfb99c0-34a5-4ffd-a11c-6d9790b3f24c, group_1_sessionCount=2, type=, group_2_name=exam_group, group_2_sessionCount=1, supporter=06628f1f-8b2e-4bfa-8dd6-79842e7c0249,66c9c9d5-953a-44e2-a4d1-2348f7a7c489, group_2_uuid=1cfb88c0-34a5-4ffd-a11c-6d9790b3f24c}', errorInfo='null'}, " +
+                        "ScheduledDeleteInfo{id=2, scheduledDeleteId=1, state=PENDING, examUUID='a33d1f74-d5f2-47a3-8993-dc4d813bd4e5', deletionInfo='{institutionId=1, name=test exam 02, type=, supporter=super-admin,66c9c9d5-953a-44e2-a4d1-2348f7a7c489}', errorInfo='null'}]}" +
                         "]]",
 
                 page.toString());

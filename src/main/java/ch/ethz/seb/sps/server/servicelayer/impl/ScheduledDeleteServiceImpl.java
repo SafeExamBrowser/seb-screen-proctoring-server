@@ -1,5 +1,6 @@
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
+import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.service.Exam;
@@ -243,14 +244,6 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
 
             scheduledDeleteDAO.startSingleDeletion(info.id());
 
-//            // check again that Exam is not marked as exclude from deletion
-//            final Exam exam = examDAO.byModelId(info.examUUID()).getOrThrow();
-//            if (exam.deletionTime == null || exam.deletionTime < 0) {
-//                // exam is now excluded from deletion so skip it and mark in error info
-//                scheduledDeleteDAO.endSingleDeletion(info.id(), "Exam is excluded from deletion");
-//                return;
-//            }
-
             long start = Utils.getMillisecondsNow();
             final Result<Collection<EntityKey>> delete = examDAO.delete(info.examUUID());
             final String error = delete.getError() != null ? delete.getError().getMessage() : null;
@@ -315,8 +308,14 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
                     }
 
                     Map<String, String> deleteInfo = new HashMap<>();
-                    deleteInfo.put("examName", exam.name);
-                    deleteInfo.put("examType", exam.type);
+                    deleteInfo.put(Domain.EXAM.ATTR_NAME, exam.name);
+                    deleteInfo.put(Domain.EXAM.ATTR_TYPE, exam.type);
+                    if (exam.institutionId != null) {
+                        deleteInfo.put(Domain.EXAM.ATTR_INSTITUTION_ID, String.valueOf(exam.institutionId));
+                    }
+                    if (!exam.supporter.isEmpty()) {
+                        deleteInfo.put(Domain.EXAM.ATTR_SUPPORTER, StringUtils.join(exam.supporter, Constants.LIST_SEPARATOR));
+                    }
 
                     Collection<Group> groups = groupDAO.byExamId(exam.id).getOr(Collections.emptyList());
                     if (groups != null) {
