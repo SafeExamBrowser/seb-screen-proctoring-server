@@ -12,6 +12,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,6 +128,9 @@ public class TestScheduledDeleteService extends ServiceTest {
 
                 page.toString());
 
+        // request another scheduled delete should be prevented since there exists one already
+        checkRequestScheduledDelete(HttpStatus.BAD_REQUEST);
+
         // delete
         EntityKey deleted = super.getRestAPITestHelper()
                 .withAccessToken(getSebAdminAccess())
@@ -152,5 +156,22 @@ public class TestScheduledDeleteService extends ServiceTest {
                 "Page [numberOfPages=0, pageNumber=1, pageSize=10, sort=null, content=[" +
                         "]]",
                 emptyPage.toString());
+
+        // now requests should be possible again
+        checkRequestScheduledDelete(HttpStatus.OK);
+    }
+
+    private void checkRequestScheduledDelete(final HttpStatus status) throws Exception {
+        final long dueTime = 1767222000000L;
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put(Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, String.valueOf(dueTime));
+        attributes.put("institutionId", String.valueOf(1L));
+        ScheduledDelete scheduledDelete2 = super.getRestAPITestHelper()
+                .withAccessToken(getSebAdminAccess())
+                .withPath("/exam" + API.SCHEDULED_DELETE_REQUEST_ENDPOINT)
+                .withMethod(HttpMethod.GET)
+                .withAttributes(attributes)
+                .withExpectedStatus(status)
+                .getAsObject(new TypeReference<ScheduledDelete>(){});
     }
 }

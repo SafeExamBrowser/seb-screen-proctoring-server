@@ -1,6 +1,7 @@
 package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.domain.model.service.Exam;
@@ -17,6 +18,7 @@ import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.ScheduledDeleteService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
+import ch.ethz.seb.sps.utils.Nullable;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -87,6 +89,10 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
             final Long institutionId) {
 
         return Result.tryCatch(() -> {
+
+            // first check if there is already a pending delete.
+            checkPendingExistsAlready();
+
             final ServerUser currentUser = userService.getCurrentUser();
 
             // get involved Exams and Groups
@@ -115,6 +121,9 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
     public Result<ScheduledDelete> createScheduledDelete(final ScheduledDelete scheduledDelete) {
 
         return Result.tryCatch(() -> {
+
+            // first check if there is already a pending delete.
+            checkPendingExistsAlready();
 
             // check consistency
             final Long dueTimeUTC = scheduledDelete.deleteDueTime();
@@ -204,11 +213,35 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
 
         // get all pending schedules that are ready for processing and process one after another
         scheduledDeleteDAO
-                .getSchedulesReadyForProcessing()
+                .getDeleteReadyForProcessing()
                 .onError(error -> log.error("Failed to fetch pending scheduled deletes: {}", error.getMessage()))
-                .onSuccess(deletes -> {
-                    log.info("Found {} scheduled deletions for processing", deletes.size());
-                    deletes.forEach(this::processDelete);
+                .onSuccess(delete -> {
+                    try {
+
+                        if (delete.isNull()) {
+                            return;
+                        }
+
+                        final ScheduledDelete element = delete.getElement();
+                        final long scheduleTime = element.scheduleTime();
+                        final long now = Utils.getMillisecondsNow();
+
+                        if (log.isDebugEnabled()) {
+                            log.debug("Found pending ScheduledDelete with schedule time: {} now is: {}", scheduleTime, now);
+                        }
+
+                        if (scheduleTime <= now) {
+                            log.info("Found scheduled deletion for processing: {}", element);
+                            this.processDelete(element);
+                        } else {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Skip scheduled delete since schedule time is still older");
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        log.error("Failed to verify pending ScheduledDelete: {}", e.getMessage());
+                    }
                 });
     }
 
@@ -334,5 +367,18 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
                 })
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    private void checkPendingExistsAlready() {
+        Nullable<ScheduledDelete> pending = scheduledDeleteDAO
+                .getDeleteReadyForProcessing()
+                .getOrThrow();
+
+        if (!pending.isNull()) {
+            throw APIErrorException.ofIllegalState(
+                    "ScheduledDelete",
+                    "There is already a pending ScheduledDelete. Only one is allowed",
+                    pending.element.getModelId());
+        }
     }
 }

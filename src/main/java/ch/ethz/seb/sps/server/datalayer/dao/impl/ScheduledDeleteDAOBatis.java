@@ -12,6 +12,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.model.ScheduledDeleteInfoRecord;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScheduledDeleteRecord;
 import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScheduledDeleteDAO;
+import ch.ethz.seb.sps.utils.Nullable;
 import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -119,21 +120,30 @@ public class ScheduledDeleteDAOBatis implements ScheduledDeleteDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public Result<Collection<ScheduledDelete>> getSchedulesReadyForProcessing() {
+    public Result<Nullable<ScheduledDelete>> getDeleteReadyForProcessing() {
         return Result.tryCatch(() -> {
-            return this.scheduledDeleteRecordMapper
+
+            final List<ScheduledDelete> allPending = this.scheduledDeleteRecordMapper
                     .selectByExample()
                     .where(
                             ScheduledDeleteRecordDynamicSqlSupport.state,
-                            SqlBuilder.isEqualTo(ScheduledDelete.State.PENDING.name()))
-                    .and(
-                            ScheduledDeleteRecordDynamicSqlSupport.deleteDueTime,
-                            SqlBuilder.isLessThanOrEqualTo(Utils.getMillisecondsNow()))
+                            isEqualTo(ScheduledDelete.State.PENDING.name()))
                     .build()
                     .execute()
                     .stream()
                     .map(this::toDomainModel)
-                    .collect(Collectors.toList());
+                    .toList();
+
+            // NOTE: there should only be one pending schedule or none
+            if (allPending.isEmpty()) {
+                return Nullable.ofNull();
+            }
+
+            if (allPending.size() > 1) {
+                log.warn("There are more pending ScheduledDelete as expected maximum of one: {}", + allPending.size());
+            }
+
+            return new Nullable<>(allPending.getFirst());
         });
     }
 
