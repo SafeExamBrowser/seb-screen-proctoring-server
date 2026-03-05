@@ -457,6 +457,14 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
+    public Result<Collection<EntityKey>> delete(final String modelId) {
+        return Result.tryCatch(() -> {
+            // TODO
+            return Collections.singletonList(new EntityKey(modelId, EntityType.SESSION));
+        });
+    }
+
+    @Override
     @Transactional
     public Result<Collection<EntityKey>> delete(final Set<EntityKey> all) {
         return Result.tryCatch(() -> extractListOfPKs(all))
