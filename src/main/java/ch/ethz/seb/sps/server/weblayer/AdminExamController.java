@@ -182,7 +182,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     @RequestMapping(
             path = API.SCHEDULED_DELETE_ENDPOINT,
             method = RequestMethod.POST,
-            //consumes = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ScheduledDelete createScheduledDelete(@RequestBody final ScheduledDelete scheduledDelete) {
 
