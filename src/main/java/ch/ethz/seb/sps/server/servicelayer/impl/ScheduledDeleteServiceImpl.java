@@ -131,16 +131,28 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
             final long now = Utils.getMillisecondsNow();
 
             if (dueTimeUTC == null) {
-                throw new IllegalArgumentException("dueTimeUTC must be provided");
+                throw APIErrorException.ofIllegalArgument(
+                        "ScheduledDelete.create",
+                        "dueTimeUTC must be provided",
+                        Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME);
             }
             if (scheduleTimeUTC == null) {
-                throw new IllegalArgumentException("dueTimeUTC must be provided");
+                throw APIErrorException.ofIllegalArgument(
+                        "ScheduledDelete.create",
+                        "scheduleTimeUTC must be provided",
+                        Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME);
             }
             if (dueTimeUTC >= now) {
-                throw new IllegalArgumentException("dueTimeUTC must be in the past");
+                throw APIErrorException.ofIllegalArgument(
+                        "ScheduledDelete.create",
+                        "dueTimeUTC must be in the past",
+                        Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME);
             }
             if (scheduleTimeUTC <= now) {
-                throw new IllegalArgumentException("dueTimeUTC must be in the past");
+                throw APIErrorException.ofIllegalArgument(
+                        "ScheduledDelete.create",
+                        "scheduleTimeUTC must be in the past",
+                        Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME);
             }
 
             String ownerUUID = scheduledDelete.ownerUUID();
@@ -153,7 +165,10 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
 
             final Collection<ScheduledDeleteInfo> info = scheduledDelete.info();
             if (scheduledDelete.info() == null || info.isEmpty()) {
-                throw new IllegalArgumentException("There is nothing to delete, Deletion info is expected!");
+                throw APIErrorException.ofIllegalState(
+                        "ScheduledDelete.create",
+                        "There is nothing to delete, Deletion info is expected!",
+                        "");
             }
 
             // create valid and full ScheduledDeleteInfo for each exam
@@ -192,7 +207,10 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
         return scheduledDeleteDAO.byModelId(modelId)
                 .map(scheduledDelete -> {
                     if (scheduledDelete.state() == ScheduledDelete.State.RUNNING) {
-                        throw new IllegalArgumentException("Running ScheduledDelete Task cannot be deleted since it is in progress");
+                        throw APIErrorException.ofIllegalState(
+                                "ScheduledDelete.delete",
+                                "Running ScheduledDelete Task cannot be deleted since it is in progress",
+                                modelId);
                     }
 
                     return scheduledDeleteDAO
