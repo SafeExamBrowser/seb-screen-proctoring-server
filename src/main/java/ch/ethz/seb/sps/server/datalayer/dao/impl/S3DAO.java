@@ -44,6 +44,7 @@ import java.util.List;
 public class S3DAO {
 
     private static final Logger log = LoggerFactory.getLogger(S3DAO.class);
+    public static final Logger INIT_LOGGER = LoggerFactory.getLogger("SERVICE_INIT");
 
     private final Environment environment;
 
@@ -149,14 +150,14 @@ public class S3DAO {
     private void printAllBucketsInService(){
         try{
             List<Bucket> bucketList = this.minioClient.listBuckets();
-            log.info("**************S3 Buckets**************");
+            INIT_LOGGER.info("**************S3 Buckets**************");
             for (Bucket bucket : bucketList) {
-                log.info("Bucket: " + bucket.creationDate() + ", " + bucket.name());
+                INIT_LOGGER.info("Bucket: " + bucket.creationDate() + ", " + bucket.name());
             }
-            log.info("**************************************");
+            INIT_LOGGER.info("**************************************");
 
         }catch(Exception e){
-            log.error("Error printing buckets in S3 service {}", e.getMessage());
+            INIT_LOGGER.error(" ---> Error printing buckets in S3 service {}", e.getMessage());
         }
 
     }
