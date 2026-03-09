@@ -18,6 +18,7 @@ import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.LifecycleConfiguration;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -43,6 +44,7 @@ import java.util.List;
 public class S3DAO {
 
     private static final Logger log = LoggerFactory.getLogger(S3DAO.class);
+    public static final Logger INIT_LOGGER = LoggerFactory.getLogger("SERVICE_INIT");
 
     private final Environment environment;
 
@@ -148,14 +150,14 @@ public class S3DAO {
     private void printAllBucketsInService(){
         try{
             List<Bucket> bucketList = this.minioClient.listBuckets();
-            log.info("**************S3 Buckets**************");
+            INIT_LOGGER.info("**************S3 Buckets**************");
             for (Bucket bucket : bucketList) {
-                log.info("Bucket: " + bucket.creationDate() + ", " + bucket.name());
+                INIT_LOGGER.info("Bucket: " + bucket.creationDate() + ", " + bucket.name());
             }
-            log.info("**************************************");
+            INIT_LOGGER.info("**************************************");
 
         }catch(Exception e){
-            log.error("Error printing buckets in S3 service {}", e.getMessage());
+            INIT_LOGGER.error(" ---> Error printing buckets in S3 service {}", e.getMessage());
         }
 
     }
@@ -193,28 +195,35 @@ public class S3DAO {
     }
 
     private OkHttpClient createOkHttpClientWithCert() throws Exception {
-        String pemCert = this.environment.getRequiredProperty("sps.s3.tls.cert");
 
-        // Convert PEM string to X509Certificate
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(pemCert.getBytes()));
+        final String pemCert = this.environment.getProperty("sps.s3.tls.cert");
 
-        // Create a KeyStore and load the certificate
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keyStore.load(null, null);
-        keyStore.setCertificateEntry("custom-cert", cert);
+        if (StringUtils.isNotBlank(pemCert)) {
 
-        // Initialize TrustManager with the KeyStore
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init(keyStore);
+            // Convert PEM string to X509Certificate
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(pemCert.getBytes()));
 
-        // Set up SSLContext using the TrustManager
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, tmf.getTrustManagers(), new java.security.SecureRandom());
+            // Create a KeyStore and load the certificate
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keyStore.load(null, null);
+            keyStore.setCertificateEntry("custom-cert", cert);
 
-        // Return the OkHttpClient with SSLContext configured
-        return new OkHttpClient.Builder()
-                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) tmf.getTrustManagers()[0])
-                .build();
+            // Initialize TrustManager with the KeyStore
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(keyStore);
+
+            // Set up SSLContext using the TrustManager
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, tmf.getTrustManagers(), new java.security.SecureRandom());
+
+            // Return the OkHttpClient with SSLContext configured
+            return new OkHttpClient.Builder()
+                    .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) tmf.getTrustManagers()[0])
+                    .build();
+        } else {
+            log.info("There is no certificate detected for S3 binding. Try without...");
+            return new OkHttpClient.Builder().build();
+        }
     }
 }
