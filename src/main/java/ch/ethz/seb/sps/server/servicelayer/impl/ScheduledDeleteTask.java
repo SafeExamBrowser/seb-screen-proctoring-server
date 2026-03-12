@@ -28,6 +28,8 @@ public class ScheduledDeleteTask {
     private static final Logger log = LoggerFactory.getLogger(ScheduledDeleteTask.class);
     public static final Logger INIT_LOGGER = LoggerFactory.getLogger("SERVICE_INIT");
 
+    private static final long TASK_INTERVAL = Constants.HOUR_IN_MILLIS / 2;
+
     private final ExamDAO examDAO;
     private final GroupDAO groupDAO;
     private final SessionDAO sessionDAO;
@@ -63,8 +65,8 @@ public class ScheduledDeleteTask {
         // triggered every hour...
         this.taskScheduler.scheduleAtFixedRate(
                 this::update,
-                Instant.now().plusMillis(Constants.HOUR_IN_MILLIS),
-                Duration.ofMillis(Constants.HOUR_IN_MILLIS));
+                Instant.now().plusMillis(TASK_INTERVAL),
+                Duration.ofMillis(TASK_INTERVAL));
     }
 
     private void update() {
@@ -74,7 +76,9 @@ public class ScheduledDeleteTask {
             return;
         }
 
-        log.info("Check for pending scheduled deletions to process...");
+        if (log.isDebugEnabled()) {
+            log.info("Check for pending scheduled deletions to process...");
+        }
 
         // get all pending schedules that are ready for processing and process one after another
         scheduledDeleteDAO
@@ -96,7 +100,7 @@ public class ScheduledDeleteTask {
                         }
 
                         if (scheduleTime <= now) {
-                            log.info("Found scheduled deletion for processing: {}", element);
+                            log.info("Found scheduled deletion {} for processing: {} now is: {}", element.id(), element.scheduleTime(), Utils.getMillisecondsNow());
                             this.processDelete(element);
                         } else {
                             if (log.isDebugEnabled()) {
@@ -149,27 +153,26 @@ public class ScheduledDeleteTask {
                 groups.forEach(this::deleteGroup);
 
                 // then delete the exam
-                // TODO this is for testing, remove it and reapply real delete
-                log.info("********** DEBUG ScheduledDelete --> delete Exam: {}", info.examUUID());
-                //examDAO.delete(info.examUUID()).getOrThrow();
+                log.info("**** -> delete Exam: {}", info.examUUID());
+                examDAO.delete(info.examUUID()).getOrThrow();
 
                 // mark as FINISHED no error
                 scheduledDeleteDAO.endSingleDeletion(info.id(), null);
 
             } catch (Exception ee) {
-                log.error("Failed to delete Exam: {}, cause: {}", info, ee.getMessage());
+                log.error("**** ---> Failed to delete Exam: {}, cause: {}", info, ee.getMessage());
                 // mark as FINISHED with error
                 scheduledDeleteDAO.endSingleDeletion(info.id(), ee.getMessage());
             }
 
-            log.info("Finished deleting exam. Took {} milliseconds", (Utils.getMillisecondsNow() - start));
+            log.info("**** ---> finished deleting exam. Took {} milliseconds", (Utils.getMillisecondsNow() - start));
 
         } catch (Exception e) {
-            log.error("Failed to process exam delete for: {} cause: {}", info, e.getMessage());
+            log.error("**** ---> Failed to process exam delete for: {} cause: {}", info, e.getMessage());
         }
     }
 
-    private void deleteGroup(final Group group) {
+    private void deleteGroup(final Group group)  {
 
         // first delete all sessions of the group
         Collection<String> sessionsIdsOfGroup = sessionDAO
@@ -177,13 +180,11 @@ public class ScheduledDeleteTask {
                 .getOrThrow();
 
         // delete sessions one by one
-        // TODO this is for testing, remove it and reapply real delete
         log.info("********** DEBUG ScheduledDelete --> delete Sessions: {} of group: {}", sessionsIdsOfGroup, group);
-        //sessionsIdsOfGroup.forEach(sessionDAO::delete);
+        sessionsIdsOfGroup.forEach(sessionDAO::delete);
 
         // finally delete the group
-        // TODO this is for testing, remove it and reapply real delete
         log.info("********** DEBUG ScheduledDelete --> delete Group: {}", group);
-        //groupDAO.delete(group.getModelId()).getOrThrow();
+        groupDAO.delete(group.getModelId()).getOrThrow();
     }
 }
