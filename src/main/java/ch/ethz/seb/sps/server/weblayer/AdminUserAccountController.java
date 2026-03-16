@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.mybatis.dynamic.sql.SqlTable;
@@ -19,6 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +65,7 @@ public class AdminUserAccountController extends ActivatableEntityController<User
     private final PasswordEncoder userPasswordEncoder;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
     private final EntityService entityService;
+    private final OAuth2AuthorizationService oAuth2AuthorizationService;
 
     public AdminUserAccountController(
             final UserDAO userDAO,
@@ -70,13 +75,15 @@ public class AdminUserAccountController extends ActivatableEntityController<User
             final PaginationService paginationService,
             final BeanValidationService beanValidationService,
             final EntityService entityService,
-            final PasswordEncoder userPasswordEncoder) {
+            final PasswordEncoder userPasswordEncoder,
+            final OAuth2AuthorizationService oAuth2AuthorizationService) {
 
         super(userService, userDAO, auditLogDAO, paginationService, beanValidationService);
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.userDAO = userDAO;
         this.entityService = entityService;
         this.userPasswordEncoder = userPasswordEncoder;
+        this.oAuth2AuthorizationService = oAuth2AuthorizationService;
     }
 
     @RequestMapping(path = API.CURRENT_USER_PATH_SEGMENT, method = RequestMethod.GET)
@@ -92,7 +99,17 @@ public class AdminUserAccountController extends ActivatableEntityController<User
     }
 
     @RequestMapping(path = API.LOGOUT_PATH_SEGMENT, method = RequestMethod.POST)
-    public void logLogout() {
+    public void logLogout(final HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null) {
+                String tokenValue = authHeader.replace("Bearer", "").trim();
+                OAuth2Authorization byToken = oAuth2AuthorizationService.findByToken(tokenValue, OAuth2TokenType.ACCESS_TOKEN);
+                oAuth2AuthorizationService.remove(byToken);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to revoke access token: {}", e.getMessage());
+        }
         this.auditLogDAO.logLogout(this.userService.getCurrentUser().getUserInfo());
     }
 

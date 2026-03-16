@@ -118,8 +118,8 @@ public final class API {
     public static final String CURRENT_USER_PATH_SEGMENT = "/me";
     public static final String CURRENT_USER_ENDPOINT = API.USER_ACCOUNT_ENDPOINT + CURRENT_USER_PATH_SEGMENT;
     public static final String SELF_PATH_SEGMENT = "/self";
-    public static final String LOGIN_PATH_SEGMENT = "/loglogin";
-    public static final String LOGOUT_PATH_SEGMENT = "/loglogout";
+    public static final String LOGIN_PATH_SEGMENT = "/login";
+    public static final String LOGOUT_PATH_SEGMENT = "/logout";
     public static final String PASSWORD_PATH_SEGMENT = "/password";
     public static final String USER_PRIVILEGES_ENDPOINT = "privileges";
     public static final String USERSYNC_SEBSERVER_ENDPOINT = "/usersync/sebserver";
