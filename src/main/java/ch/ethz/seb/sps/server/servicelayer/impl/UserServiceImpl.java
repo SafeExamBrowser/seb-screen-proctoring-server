@@ -236,7 +236,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<UserInfo> synchronizeUserAccount(final UserMod userMod) {
-        return this.userDAO.synchronizeUserAccount(userMod)
+        return this.userDAO
+                .synchronizeUserAccount(userMod)
                 .map(this::synchronizeUserPrivileges);
     }
 
@@ -253,13 +254,6 @@ public class UserServiceImpl implements UserService {
                     .getOrThrow();
             
             boolean isAdmin = userInfo.roles.contains(UserRole.ADMIN.name());
-            // TODO
-//            entityPrivilegeDAO.updatePrivileges(
-//                    privileges.entityPrivileges
-//                            .stream()
-//                            .map(EntityPrivilege::getId)
-//                            .collect(Collectors.toList()), 
-//                    isAdmin ? PrivilegeType.WRITE : PrivilegeType.READ);
             privileges.entityPrivileges.forEach( p -> {
                 this.entityPrivilegeDAO.updatePrivilege(
                         p.id,

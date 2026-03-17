@@ -12,7 +12,6 @@ import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.domain.model.EntityType;
@@ -75,8 +74,8 @@ public class AdminProctorController {
     private final PaginationService paginationService;
     private final GroupingService groupingService;
     private final UserService userService;
-    
-    private AtomicInteger criticalRequestBucket = new AtomicInteger(2);
+
+    //private final AtomicInteger criticalRequestBucket = new AtomicInteger(2);
 
     public AdminProctorController(
             final GroupDAO groupDAO,
@@ -223,8 +222,8 @@ public class AdminProctorController {
         final FilterMap filterMap = new FilterMap(filterCriteria, request.getQueryString());
         return this.proctoringService
                 .getSessionsByGroup(groupUUID, pageNumber, pageSize, sortBy, sortOrder, filterMap)
-                .onError(e -> { criticalRequestBucket.incrementAndGet(); })
-                .onSuccess(r -> { criticalRequestBucket.incrementAndGet(); })
+//                .onError(e -> { criticalRequestBucket.incrementAndGet(); })
+//                .onSuccess(r -> { criticalRequestBucket.incrementAndGet(); })
                 .getOrThrow();
     }
 
@@ -281,8 +280,8 @@ public class AdminProctorController {
 
         return this.proctoringService
                 .getRecordedImageDataAt(sessionUUID, ts)
-                .onError(e -> { criticalRequestBucket.incrementAndGet(); })
-                .onSuccess(r -> { criticalRequestBucket.incrementAndGet(); })
+//                .onError(e -> { criticalRequestBucket.incrementAndGet(); })
+//                .onSuccess(r -> { criticalRequestBucket.incrementAndGet(); })
                 .getOrThrow();
     }
 
@@ -833,7 +832,7 @@ public class AdminProctorController {
             path = API.APPLICATION_SEARCH_EXAMS_ENDPOINT,
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Exam> getExamsStarted(
+    public Collection<Exam> getExamsStarted(
             @RequestParam(name = API.PARAM_FROM_TIME, required = false) final Long fromTime,
             @RequestParam(name = API.PARAM_TO_TIME, required = false) final Long toTime,
             final HttpServletRequest request){
@@ -849,9 +848,7 @@ public class AdminProctorController {
         
         return this.examDAO
                 .getExamsWithin(filterMap, granted)
-                .getOrThrow()
-                .stream()
-                .toList();
+                .getOrThrow();
     }
 
 
