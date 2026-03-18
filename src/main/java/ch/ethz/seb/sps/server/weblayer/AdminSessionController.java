@@ -9,7 +9,9 @@
 package ch.ethz.seb.sps.server.weblayer;
 
 import ch.ethz.seb.sps.domain.model.service.Group;
+import ch.ethz.seb.sps.domain.model.service.SessionDeletionInfo;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
+import ch.ethz.seb.sps.server.servicelayer.ScheduledDeleteService;
 import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringCacheService;
 import ch.ethz.seb.sps.utils.Result;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,10 +19,7 @@ import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.API;
@@ -36,6 +35,8 @@ import ch.ethz.seb.sps.server.servicelayer.BeanValidationService;
 import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 
+import java.util.Collection;
+
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.ADMIN_SESSION_ENDPOINT)
 public class AdminSessionController extends ActivatableEntityController<Session, Session> {
@@ -46,6 +47,7 @@ public class AdminSessionController extends ActivatableEntityController<Session,
     private final ExamDAO examDAO;
     private final SessionDAO sessionDAO;
     private final ProctoringCacheService proctoringCacheService;
+    private final ScheduledDeleteService scheduledDeleteService;
 
     public AdminSessionController(
             final GroupDAO groupDAO,
@@ -55,13 +57,15 @@ public class AdminSessionController extends ActivatableEntityController<Session,
             final PaginationService paginationService,
             final BeanValidationService beanValidationService,
             final ExamDAO examDAO,
-            final ProctoringCacheService proctoringCacheService) {
+            final ProctoringCacheService proctoringCacheService,
+            final ScheduledDeleteService scheduledDeleteService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.groupDAO = groupDAO;
         this.examDAO = examDAO;
         this.sessionDAO = entityDAO;
         this.proctoringCacheService = proctoringCacheService;
+        this.scheduledDeleteService = scheduledDeleteService;
     }
 
     @RequestMapping(
@@ -81,6 +85,20 @@ public class AdminSessionController extends ActivatableEntityController<Session,
                     log.error("Failed to get SEB Session encryption key: ", error);
                     response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
                 });
+    }
+
+    @RequestMapping(
+            path = API.SESSION_REQUEST_DELETION,
+            method = RequestMethod.GET)
+    public Collection<SessionDeletionInfo> getSessionDeletionInfo(
+            @RequestParam(name = SessionDeletionInfo.ATT_SEARCH_NAME, required = true) final String searchName,
+            @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, required = false) final Long deleteDueTimeUTC) {
+
+        checkReadPrivilege();
+
+        return scheduledDeleteService
+                .getSessionDeletionReport(searchName, deleteDueTimeUTC)
+                .getOrThrow();
     }
 
     @Override

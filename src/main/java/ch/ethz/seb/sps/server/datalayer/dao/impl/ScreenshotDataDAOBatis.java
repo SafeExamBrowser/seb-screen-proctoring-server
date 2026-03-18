@@ -13,13 +13,7 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 import static org.mybatis.dynamic.sql.SqlBuilder.isLikeWhenPresent;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -208,6 +202,9 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
             final Long fromTime = filterMap.getLong(API.PARAM_FROM_TIME);
             final Long toTime = filterMap.getLong(API.PARAM_TO_TIME);
 
+            // TODO try to do this in two stages without join
+            // This should be possible since this is used always with sessionUUID not null (check this)
+            // Then first query for the session if no session (to use the data from). Query for all data in this session
             QueryExpressionDSL<MyBatis3SelectModelAdapter<List<ScreenshotDataRecord>>>.QueryExpressionWhereBuilder queryBuilder =
                     this.screenshotDataRecordMapper
                             .selectByExample()
@@ -417,8 +414,12 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     public Result<Collection<String>> getDistinctMetadataAppForExam(final List<Long> groupIds) {
         return Result.tryCatch(() -> {
 
-            QueryExpressionDSL<MyBatis3SelectModelAdapter<List<String>>>.QueryExpressionWhereBuilder queryBuilder =
-                    this.searchApplicationMapper
+            if (groupIds == null || groupIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            // TODO try without join
+            return this.searchApplicationMapper
                             .selectDistinctMetadataAppForExam()
                             .join(
                                     SessionRecordDynamicSqlSupport.sessionRecord
@@ -429,11 +430,12 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             .where(
                                     SessionRecordDynamicSqlSupport.groupId,
                                     isIn(groupIds)
-                            );
-
-            return queryBuilder
+                            )
                     .build()
-                    .execute();
+                    .execute()
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .toList();
         });
     }
 
@@ -547,7 +549,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     @Override
     @Transactional(readOnly = true)
     public Result<List<Long>> getTimestampListForApplicationSearch(
-            final String sessionUuid, 
+            final String sessionUUID,
             final String metadataApplication, 
             final String metadataWindowTitle) {
         
@@ -565,7 +567,7 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
                             .selectTimestampListForApplicationSearch()
                             .where(
                                     ScreenshotDataRecordDynamicSqlSupport.sessionUuid,
-                                    SqlBuilder.isEqualTo(sessionUuid)
+                                    SqlBuilder.isEqualTo(sessionUUID)
                             )
                             .and(
                                     ScreenshotDataRecordDynamicSqlSupport.metaData,
@@ -583,9 +585,28 @@ public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Long getNumberOfEntriesForSession(final String sessionUUID) {
+        try {
+
+            return screenshotDataRecordMapper
+                    .countByExample()
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .build()
+                    .execute();
+
+        } catch (Exception e) {
+            log.error("Failed to getNumberOfEntriesForSession: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
     public Result<ScreenshotDataRecord> recordByPK(Long pk) {
         return Result.tryCatch(() ->  this.screenshotDataRecordMapper.selectByPrimaryKey(pk));
     }
+
+
 
     private ScreenshotDataRecord getLatestScreenshotDataRec(final String sessionUUID) {
         return SelectDSL

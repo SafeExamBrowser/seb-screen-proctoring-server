@@ -4,15 +4,9 @@ import ch.ethz.seb.sps.domain.Domain;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.EntityType;
-import ch.ethz.seb.sps.domain.model.service.Exam;
-import ch.ethz.seb.sps.domain.model.service.Group;
-import ch.ethz.seb.sps.domain.model.service.ScheduledDelete;
-import ch.ethz.seb.sps.domain.model.service.ScheduledDeleteInfo;
+import ch.ethz.seb.sps.domain.model.service.*;
 import ch.ethz.seb.sps.domain.model.user.ServerUser;
-import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.GroupDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.ScheduledDeleteDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
+import ch.ethz.seb.sps.server.datalayer.dao.*;
 import ch.ethz.seb.sps.server.servicelayer.ScheduledDeleteService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 import ch.ethz.seb.sps.utils.Constants;
@@ -40,20 +34,22 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
     private final SessionDAO sessionDAO;
     private final UserService userService;
     private final ScheduledDeleteDAO scheduledDeleteDAO;
+    private final ScreenshotDataDAO screenshotDataDAO;
 
     public ScheduledDeleteServiceImpl(
             final ExamDAO examDAO,
             final GroupDAO groupDAO,
             final SessionDAO sessionDAO,
             final UserService userService,
-            final ScheduledDeleteDAO scheduledDeleteDAO) {
+            final ScheduledDeleteDAO scheduledDeleteDAO,
+            final ScreenshotDataDAO screenshotDataDAO) {
 
         this.examDAO = examDAO;
         this.groupDAO = groupDAO;
         this.sessionDAO = sessionDAO;
         this.userService = userService;
         this.scheduledDeleteDAO = scheduledDeleteDAO;
-
+        this.screenshotDataDAO = screenshotDataDAO;
     }
 
     @Override
@@ -191,6 +187,38 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
                             .map(keys -> new EntityKey(modelId, EntityType.SCHEDULED_DELETE))
                             .getOrThrow();
                 });
+    }
+
+    @Override
+    public Result<Collection<SessionDeletionInfo>> getSessionDeletionReport(
+            final String searchName,
+            final Long deleteDueTimestampUTC) {
+
+        return sessionDAO
+                .getAllSessionWithNameLike(searchName)
+                .map(all -> all.stream().map(session -> {
+
+                        // filter all out that are younger than given deleteDueTimestampUTC
+                        if (deleteDueTimestampUTC != null && session.creationTime > deleteDueTimestampUTC) {
+                            return null;
+                        }
+
+                        final Group group = groupDAO.byPK(session.groupId).getOr(null);
+                        final Exam exam = group != null ? examDAO.byPK(group.id).getOr(null) : null;
+                        final Long numScreenshots = screenshotDataDAO.getNumberOfEntriesForSession(session.uuid);
+
+                        return new SessionDeletionInfo(
+                            searchName,
+                            session,
+                            group != null ? group.name : null,
+                            exam != null ? exam.name : null,
+                            exam != null ? exam.uuid : null,
+                            exam != null ? exam.institutionId : null,
+                            numScreenshots);
+
+                }).filter(Objects::nonNull)
+                        .toList());
+
     }
 
     @NotNull

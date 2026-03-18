@@ -142,6 +142,7 @@ public final class API {
     public static final String SESSION_HEADER_SEB_OS = "seb_os_name";
     public static final String SESSION_HEADER_SEB_VERSION = "seb_version";
     public static final String SESSION_HEADER_ENCRYPT_KEY = "seb_session_encrypt_key";
+    public static final String SESSION_REQUEST_DELETION = "/request-deletion";
 
     public static final String SPS_SERVER_HEALTH = "sps_server_health";
 

@@ -895,14 +895,12 @@ public class AdminProctorController {
             path = API.APPLICATION_SEARCH_METADATA_APP_ENDPOINT,
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<String> getDistinctMetadataAppForExam(
+    public Collection<String> getDistinctMetadataAppForExam(
             @RequestParam(name = API.PARAM_GROUP_IDS, required = false) final String groupIds){
         
         return this.screenshotDataDAO
                 .getDistinctMetadataAppForExam(getIdListFromParameter(groupIds))
-                .getOrThrow()
-                .stream()
-                .toList();
+                .getOrThrow();
     }
     
     @Operation(

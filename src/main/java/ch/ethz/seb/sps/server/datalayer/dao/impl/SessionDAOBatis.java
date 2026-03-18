@@ -429,7 +429,7 @@ public class SessionDAOBatis implements SessionDAO {
                 if (groupPKs == null || groupPKs.isEmpty()) {
                     throw new BadRequestException("create new session", "no group with modelId: " + groupId + " found");
                 }
-                groupPK = groupPKs.get(0);
+                groupPK = groupPKs.getFirst();
             }
 
             final long now = Utils.getMillisecondsNow();
@@ -649,12 +649,30 @@ public class SessionDAOBatis implements SessionDAO {
             }
             
             return sessionRecordMapper.selectByExample()
-                    .where(ExamRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNotNull())
-                    .and( ExamRecordDynamicSqlSupport.uuid, SqlBuilder.isIn(sessionUUIDs))
+                    .where(SessionRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNotNull())
+                    .and( SessionRecordDynamicSqlSupport.uuid, SqlBuilder.isIn(sessionUUIDs))
                     .build()
                     .execute()
                     .stream()
                     .map(SessionRecord::getUuid)
+                    .toList();
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Result<Collection<Session>> getAllSessionWithNameLike(final String searchName) {
+        return Result.tryCatch(() -> {
+            if (StringUtils.isBlank(searchName)) {
+                return Collections.emptyList();
+            }
+
+            return sessionRecordMapper.selectByExample()
+                    .where(clientName, SqlBuilder.isLike(Utils.toSQLWildcard(searchName)))
+                    .build()
+                    .execute()
+                    .stream()
+                    .map(this::toDomainModel)
                     .toList();
         });
     }
@@ -673,8 +691,8 @@ public class SessionDAOBatis implements SessionDAO {
 
         return this.sessionRecordMapper
                 .countByExample()
-                .where(ExamRecordDynamicSqlSupport.id, isEqualTo(pk))
-                .and(ExamRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
+                .where(SessionRecordDynamicSqlSupport.id, isEqualTo(pk))
+                .and(SessionRecordDynamicSqlSupport.terminationTime, SqlBuilder.isNull())
                 .build()
                 .execute() > 0;
     }
@@ -780,7 +798,7 @@ public class SessionDAOBatis implements SessionDAO {
                 throw new NoResourceFoundException(EntityType.SESSION, uuid);
             }
 
-            return execute.get(0);
+            return execute.getFirst();
         });
     }
 
@@ -797,7 +815,7 @@ public class SessionDAOBatis implements SessionDAO {
                 throw new NoResourceFoundException(EntityType.SESSION, uuid);
             }
 
-            return execute.get(0);
+            return execute.getFirst();
         });
     }
 

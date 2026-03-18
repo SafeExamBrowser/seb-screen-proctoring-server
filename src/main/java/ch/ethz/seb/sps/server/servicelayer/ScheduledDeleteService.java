@@ -2,7 +2,10 @@ package ch.ethz.seb.sps.server.servicelayer;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.service.ScheduledDelete;
+import ch.ethz.seb.sps.domain.model.service.SessionDeletionInfo;
 import ch.ethz.seb.sps.utils.Result;
+
+import java.util.Collection;
 
 
 public interface ScheduledDeleteService {
@@ -18,6 +21,8 @@ public interface ScheduledDeleteService {
     Result<ScheduledDelete> createScheduledDelete(ScheduledDelete scheduledDelete);
 
     Result<EntityKey> deleteScheduledDelete(String modelId);
+
+    Result<Collection<SessionDeletionInfo>> getSessionDeletionReport(String searchName, Long deleteDueTimestampUTC);
 
 }
 

@@ -12,14 +12,15 @@ import java.util.Collection;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ScheduledDelete(@JsonProperty(Domain.SCHEDULED_DELETE.ATTR_ID) Long id,
-                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_STATE) State state,
-                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME) Long deleteDueTime,
-                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME) Long scheduleTime,
-                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_START_TIME) Long startTime,
-                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_END_TIME) Long endTime,
-                              @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_OWNER) String ownerUUID,
-                              @JsonProperty(ATTR_INFO) Collection<ScheduledDeleteInfo> info) implements Entity {
+public record ScheduledDelete(
+        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_ID) Long id,
+        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_STATE) State state,
+        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME) Long deleteDueTime,
+        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME) Long scheduleTime,
+        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_START_TIME) Long startTime,
+        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_END_TIME) Long endTime,
+        @JsonProperty(Domain.SCHEDULED_DELETE.ATTR_OWNER) String ownerUUID,
+        @JsonProperty(ATTR_INFO) Collection<ScheduledDeleteInfo> info) implements Entity {
 
     public static final String ATTR_INFO = "info";
 

@@ -142,4 +142,6 @@ public interface SessionDAO extends ActivatableEntityDAO<Session, Session> {
      * @param sessionUUIDs the session UUIDs
      * @return a list of session UUIDs of all closed sessions include in the given set*/
     Result<List<String>> getAllClosedSessionsIn(Set<String> sessionUUIDs);
+
+    Result<Collection<Session>> getAllSessionWithNameLike(String searchName);
 }
