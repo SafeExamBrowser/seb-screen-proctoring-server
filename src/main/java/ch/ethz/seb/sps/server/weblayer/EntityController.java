@@ -327,36 +327,6 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
                 .getOrThrow();
     }
 
-//    // ****************
-//    // * PATCH (save)
-//    // ****************
-//
-//    @Operation(
-//            summary = "Modifies an already existing entity object of the specific type.",
-//            description = "This expects " + MediaType.APPLICATION_FORM_URLENCODED_VALUE +
-//                    " format for the request data and verifies consistencies " +
-//                    "within the definition of the specific entity object type. " +
-//                    "Missing (NULL) parameter that are not mandatory will be ignored and the original value will not be affected",
-//            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-//                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }))
-//    @RequestMapping(
-//            path = API.PARAM_MODEL_PATH_SEGMENT,
-//            method = RequestMethod.PUT,
-//            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-//            produces = MediaType.APPLICATION_JSON_VALUE)
-//    public T savePatch(
-//            @PathVariable final String modelId,
-//            @RequestParam final MultiValueMap<String, String> formParameter) {
-//
-//        return this.entityOf(modelId, modifyData)
-//                .flatMap(this::checkModifyAccess)
-//                .flatMap(this::validForSave)
-//                .flatMap(this.entityDAO::save)
-//                .flatMap(this::logModify)
-//                .flatMap(this::notifySaved)
-//                .getOrThrow();
-//    }
-
     // ************************
     // * DELETE (hard-delete)
     // ************************
@@ -599,7 +569,7 @@ public abstract class EntityController<T extends Entity, M extends Entity> {
     }
 
     /** Get the EntityType of the GrantEntity that is used for grant checks of the concrete Entity.
-     *
+     * <p>
      * NOTE: override this if the EntityType of the GrantEntity is not the same as the Entity itself.
      * For example, the Exam is the GrantEntity of a Indicator
      *
