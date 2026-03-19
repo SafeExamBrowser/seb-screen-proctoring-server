@@ -95,9 +95,25 @@ public class AdminSessionController extends ActivatableEntityController<Session,
             @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, required = false) final Long deleteDueTimeUTC) {
 
         checkReadPrivilege();
+        userService.checkIsAdmin();
 
         return scheduledDeleteService
                 .getSessionDeletionReport(searchName, deleteDueTimeUTC)
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.SESSION_REQUEST_DELETION,
+            method = RequestMethod.POST)
+    public Collection<SessionDeletionInfo> deleteSessions(
+            @RequestParam(name = SessionDeletionInfo.ATT_SEARCH_NAME, required = true) final String searchName,
+            @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, required = false) final Long deleteDueTimeUTC) {
+
+        checkWritePrivilege();
+        userService.checkIsAdmin();
+
+        return scheduledDeleteService
+                .deleteSessions(searchName, deleteDueTimeUTC)
                 .getOrThrow();
     }
 

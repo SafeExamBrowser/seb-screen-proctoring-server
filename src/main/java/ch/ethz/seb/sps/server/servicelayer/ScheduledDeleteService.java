@@ -24,5 +24,6 @@ public interface ScheduledDeleteService {
 
     Result<Collection<SessionDeletionInfo>> getSessionDeletionReport(String searchName, Long deleteDueTimestampUTC);
 
+    Result<Collection<SessionDeletionInfo>> deleteSessions(String searchName, Long deleteDueTimeUTC);
 }
 

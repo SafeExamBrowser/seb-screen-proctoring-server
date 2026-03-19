@@ -209,16 +209,44 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
 
                         return new SessionDeletionInfo(
                             searchName,
-                            session,
+                            new SessionInfo(
+                                    session.uuid,
+                                    session.clientName,
+                                    session.clientIP,
+                                    session.clientMachineName,
+                                    session.clientOSName,
+                                    session.clientVersion,
+                                    session.creationTime,
+                                    session.terminationTime),
                             group != null ? group.name : null,
                             exam != null ? exam.name : null,
                             exam != null ? exam.uuid : null,
                             exam != null ? exam.institutionId : null,
-                            numScreenshots);
+                            numScreenshots,
+                            null);
 
                 }).filter(Objects::nonNull)
                         .toList());
 
+    }
+
+    @Override
+    public Result<Collection<SessionDeletionInfo>> deleteSessions(
+            final String searchName,
+            final Long deleteDueTimeUTC) {
+
+        return getSessionDeletionReport(searchName, deleteDueTimeUTC)
+                .map(all -> {
+                    return all.stream().map(one -> {
+                        try {
+                            sessionDAO.delete(one.sessionInfo().uuid()).getOrThrow();
+                            return one;
+                        } catch (Exception e) {
+                            log.error("Failed to delete session: {} cause: {}", one, e.getMessage());
+                            return one.withError(e);
+                        }
+                    }).toList();
+                });
     }
 
     @NotNull

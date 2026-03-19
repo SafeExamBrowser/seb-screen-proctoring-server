@@ -37,6 +37,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import static ch.ethz.seb.sps.server.ServiceInit.INIT_LOGGER;
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
@@ -100,10 +102,16 @@ public class WebConfig implements WebMvcConfigurer {
                 .authorizeHttpRequests((requests) -> {
                     requests.requestMatchers(OPEN_ENDPOINTS).permitAll();
                     if (apiDocEnabled) {
+                        INIT_LOGGER.info("**** API DOCS V3 ENABLED!");
                         requests.requestMatchers(V_3_API_DOCS_ENDPOINT).permitAll();
+                    } else {
+                        INIT_LOGGER.info("xxxx API DOCS V3 NOT ENABLED!");
                     }
                     if (swaggerEnabled) {
+                        INIT_LOGGER.info("**** SWAGGER UI ENABLED!");
                         requests.requestMatchers(SWAGGER_UI_ENDPOINT).permitAll();
+                    } else {
+                        INIT_LOGGER.info("xxxx SWAGGER UI NOT ENABLED!");
                     }
                     requests.anyRequest().denyAll();
                 })
