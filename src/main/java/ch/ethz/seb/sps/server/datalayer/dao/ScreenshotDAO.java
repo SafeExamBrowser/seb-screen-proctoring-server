@@ -29,4 +29,11 @@ public interface ScreenshotDAO {
      * @return Result refer to the list of image PK that has been deleted or to an error when happened */
     Result<List<Long>> deleteAllForSession(String sessionUUID, List<Long> screenShotPKs);
 
+    /** Deletes all images for a specified session. First overrides the image to secure delete the image after
+     *
+     * @param sessionUUID The session UUID
+     * @param screenShotPKs List of all image PKs to delete.
+     * @return Result refer to the list of image PK that has been deleted or to an error when happened */
+    Result<List<Long>> secureDeleteAllForSession(String sessionUUID, List<Long> screenShotPKs);
+
 }

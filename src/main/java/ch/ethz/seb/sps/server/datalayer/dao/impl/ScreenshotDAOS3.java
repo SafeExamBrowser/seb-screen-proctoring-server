@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3_RDBMS')")
@@ -48,6 +49,19 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
         return Result.tryCatch(() -> {
             this.s3DAO.deleteItemBatch(createItemListForDeletion(sessionId, screenShotPKs));
             return screenShotPKs;
+        });
+    }
+
+    @Override
+    public Result<List<Long>> secureDeleteAllForSession(String sessionUUID, List<Long> screenShotPKs) {
+        return Result.tryCatch(() -> {
+            return screenShotPKs
+                    .stream()
+                    .map(pk -> s3DAO.secureDeleteItem(sessionUUID, pk)
+                            .onError(error -> log.error("Failed to secure delete image for session: {} cause: {}", sessionUUID, error.getMessage()))
+                            .getOr(null))
+                    .filter(Objects::nonNull)
+                    .toList();
         });
     }
 

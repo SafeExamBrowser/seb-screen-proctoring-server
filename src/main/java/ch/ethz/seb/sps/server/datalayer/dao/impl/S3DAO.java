@@ -3,16 +3,7 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
-import io.minio.BucketExistsArgs;
-import io.minio.GetBucketLifecycleArgs;
-import io.minio.GetObjectArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.ObjectWriteResponse;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectsArgs;
-import io.minio.SnowballObject;
-import io.minio.UploadSnowballObjectsArgs;
+import io.minio.*;
 import io.minio.messages.Bucket;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
@@ -35,6 +26,7 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -52,6 +44,8 @@ public class S3DAO {
 
     private String BUCKET_NAME;
 
+    private byte[] NULL_BYTE_ARRAY;
+
     public S3DAO(final Environment environment) {
         this.environment = environment;
     }
@@ -68,6 +62,9 @@ public class S3DAO {
             createBucket();
 //            getBucketLifecycle();
         }
+
+        NULL_BYTE_ARRAY = new byte[10000];
+        Arrays.fill(NULL_BYTE_ARRAY, (byte) 0);
     }
 
     public Result<InputStream> getItem(final String sessionUUID, final Long pk) {
@@ -90,6 +87,29 @@ public class S3DAO {
                                 .stream(screenshotInputStream, screenshotInputStream.available(), -1)
                                 .build())
         );
+    }
+
+    public Result<Long> secureDeleteItem(final String sessionUUID, final Long pk) {
+        return Result.tryCatch(() -> {
+            // fist override the image
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(NULL_BYTE_ARRAY);
+            this.minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .object(sessionUUID + Constants.UNDERLINE + pk)
+                            .stream(byteArrayInputStream, byteArrayInputStream.available(), -1)
+                            .build());
+
+            // then delete it
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(BUCKET_NAME)
+                            .object(sessionUUID + Constants.UNDERLINE + pk)
+                            .build()
+            );
+
+            return pk;
+        });
     }
 
     public Result<ObjectWriteResponse> uploadItemBatch(final List<SnowballObject> batchItems){

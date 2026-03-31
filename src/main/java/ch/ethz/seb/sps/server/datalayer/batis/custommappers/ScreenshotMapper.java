@@ -13,6 +13,7 @@ import java.io.InputStream;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface ScreenshotMapper {
@@ -23,7 +24,10 @@ public interface ScreenshotMapper {
     @Insert("INSERT INTO screenshot (id, image) VALUES(#{id}, #{image})")
     void insert(BlobContent blobContent);
 
-    public static class BlobContent {
+    @Update("UPDATE screenshot SET image = #{image} WHERE id = #{id}")
+    void update(BlobContent blobContent);
+
+    class BlobContent {
 
         private Long id;
         private InputStream image;

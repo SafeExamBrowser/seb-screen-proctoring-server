@@ -51,6 +51,8 @@ import ch.ethz.seb.sps.utils.Utils;
 @Service
 public class SessionDAOBatis implements SessionDAO {
 
+    private static final String OVERWRITE = "0000000000000000000000000000000000000000000";
+
     private final SearchSessionMapper searchSessionMapper;
     private final SessionRecordMapper sessionRecordMapper;
     private final GroupRecordMapper groupRecordMapper;
@@ -459,7 +461,6 @@ public class SessionDAOBatis implements SessionDAO {
     @Override
     public Result<Collection<EntityKey>> delete(final String modelId) {
         return Result.tryCatch(() -> {
-            // TODO
             return Collections.singletonList(new EntityKey(modelId, EntityType.SESSION));
         });
     }
@@ -483,6 +484,55 @@ public class SessionDAOBatis implements SessionDAO {
                 .build()
                 .execute())
                 .map(this::delete);
+    }
+
+    @Override
+    @Transactional
+    public Result<EntityKey> secureDeleteSession(final String sessionUUID) {
+        return Result.tryCatch(() -> {
+
+            final Long sessionPK = pkByUUID(sessionUUID).getOrThrow();
+
+            // get all screenshot record ids for the session
+            final List<Long> screenShotPKs = this.screenshotDataRecordMapper
+                    .selectIdsByExample()
+                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionUUID))
+                    .build()
+                    .execute();
+
+            if (screenShotPKs == null || screenShotPKs.isEmpty()) {
+                log.info("No session data found for deletion for session: {}", sessionUUID);
+                return new EntityKey(sessionUUID, EntityType.SESSION);
+            }
+
+            // delete all screenshot meta data
+            this.screenshotDataRecordMapper
+                    .deleteByExample()
+                    .where(ScreenshotDataRecordDynamicSqlSupport.id, isIn(screenShotPKs))
+                    .build()
+                    .execute();
+
+            // secure delete all images
+            this.screenshotDAO
+                    .secureDeleteAllForSession(sessionUUID, screenShotPKs)
+                    .getOrThrow();
+
+            // overwrite the session row before deletion
+            UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
+                    .set(clientName).equalTo(OVERWRITE)
+                    .set(clientIp).equalTo("0.0.0.0")
+                    .set(clientMachineName).equalTo(OVERWRITE)
+                    .set(clientOsName).equalTo(OVERWRITE)
+                    .set(clientVersion).equalTo(OVERWRITE)
+                    .set(lastUpdateTime).equalTo(0L)
+                    .where(id, isEqualTo(sessionPK))
+                    .build()
+                    .execute();
+
+            sessionRecordMapper.deleteByPrimaryKey(sessionPK);
+
+            return new EntityKey(sessionUUID, EntityType.SESSION);
+        });
     }
 
     private Collection<EntityKey> delete(final List<Long> pks) {

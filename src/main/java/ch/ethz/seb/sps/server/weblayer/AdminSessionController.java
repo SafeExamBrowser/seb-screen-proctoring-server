@@ -8,17 +8,23 @@
 
 package ch.ethz.seb.sps.server.weblayer;
 
+import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.domain.model.service.SessionDeletionInfo;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import ch.ethz.seb.sps.server.servicelayer.ScheduledDeleteService;
 import ch.ethz.seb.sps.server.servicelayer.impl.ProctoringCacheService;
 import ch.ethz.seb.sps.utils.Result;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
 import jakarta.servlet.http.HttpServletResponse;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import ch.ethz.seb.sps.domain.Domain;
@@ -36,6 +42,7 @@ import ch.ethz.seb.sps.server.servicelayer.PaginationService;
 import ch.ethz.seb.sps.server.servicelayer.UserService;
 
 import java.util.Collection;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("${sps.api.admin.endpoint.v1}" + API.ADMIN_SESSION_ENDPOINT)
@@ -156,6 +163,34 @@ public class AdminSessionController extends ActivatableEntityController<Session,
                 postParams.getString(Domain.SESSION.ATTR_CLIENT_VERSION),
                 postParams.getEnum(Domain.SESSION.ATTR_IMAGE_FORMAT, ImageFormat.class),
                 null, null, null);
+    }
+
+    @Operation(
+            summary = "Securely deletes a single entity (and all its dependencies) by its modelId.",
+            description = "To check or report what dependent object also would be deleted for a certain entity object, "
+                    +
+                    "please use the dependency endpoint to get a report of all dependend entity objects.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+            parameters = {
+                    @Parameter(
+                            name = API.PARAM_MODEL_ID,
+                            description = "The model identifier of the entity object to get.",
+                            in = ParameterIn.PATH)
+            })
+    @RequestMapping(
+            path = API.PARAM_MODEL_PATH_SEGMENT + API.SESSION_SECURE_DELETE_ENDPOINT,
+            method = RequestMethod.DELETE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<EntityKey> secureDelete(@PathVariable final String modelId) {
+
+        return this.entityDAO.byModelId(modelId)
+                .flatMap(this::checkWriteAccess)
+                .flatMap(this::validForDelete)
+                .flatMap(this::logDelete)
+                .flatMap(entity -> this.sessionDAO.secureDeleteSession(modelId))
+                .flatMap(key -> notifyDeleted(Collections.singleton(key)))
+                .getOrThrow();
     }
 
     @Override
