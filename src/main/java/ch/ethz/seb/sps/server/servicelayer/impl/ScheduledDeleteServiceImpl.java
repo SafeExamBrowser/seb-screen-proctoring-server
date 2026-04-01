@@ -230,25 +230,6 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
 
     }
 
-    @Override
-    public Result<Collection<SessionDeletionInfo>> deleteSessions(
-            final String searchName,
-            final Long deleteDueTimeUTC) {
-
-        return getSessionDeletionReport(searchName, deleteDueTimeUTC)
-                .map(all -> {
-                    return all.stream().map(one -> {
-                        try {
-                            sessionDAO.delete(one.sessionInfo().uuid()).getOrThrow();
-                            return one;
-                        } catch (Exception e) {
-                            log.error("Failed to delete session: {} cause: {}", one, e.getMessage());
-                            return one.withError(e);
-                        }
-                    }).toList();
-                });
-    }
-
     @NotNull
     private List<ScheduledDeleteInfo> getScheduledDeleteInfos(
             final Long institutionId,
