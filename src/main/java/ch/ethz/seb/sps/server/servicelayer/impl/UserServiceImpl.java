@@ -60,18 +60,21 @@ public class UserServiceImpl implements UserService {
     private final UserDAO userDAO;
     private final EntityPrivilegeDAO entityPrivilegeDAO;
     private final EntityService entityService;
+    private final ProctoringCacheService proctoringCacheService;
 
     public UserServiceImpl(
             final UserDAO userDAO,
             final EntityPrivilegeDAO entityPrivilegeDAO,
             final EntityService entityService,
             final AdditionalAttributesDAO additionalAttributesDAO,
-            final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies) {
+            final Collection<ExtractUserFromAuthenticationStrategy> extractStrategies,
+            final ProctoringCacheService proctoringCacheService) {
 
         this.userDAO = userDAO;
         this.extractStrategies = extractStrategies;
         this.entityPrivilegeDAO = entityPrivilegeDAO;
         this.entityService = entityService;
+        this.proctoringCacheService = proctoringCacheService;
 
         // admin privileges
         this.rolePrivileges.put(
@@ -237,7 +240,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<UserInfo> synchronizeUserAccount(final UserMod userMod) {
         return this.userDAO.synchronizeUserAccount(userMod)
-                .map(this::synchronizeUserPrivileges);
+                .map(this::synchronizeUserPrivileges)
+                .map(user -> {
+                    proctoringCacheService.evictServerUserByName(userMod.username);
+                    return user;
+                });
     }
     
     private UserInfo synchronizeUserPrivileges(final UserInfo userInfo) {
