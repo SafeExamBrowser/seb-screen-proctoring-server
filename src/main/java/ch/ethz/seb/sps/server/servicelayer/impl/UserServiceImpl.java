@@ -378,18 +378,15 @@ public class UserServiceImpl implements UserService {
     @Component
     public static class DefaultUserExtractStrategy implements ExtractUserFromAuthenticationStrategy {
         
-        final UserDAO userDAO;
+        final ProctoringCacheService cacheService;
 
-        DefaultUserExtractStrategy(UserDAO userDAO) {
-            this.userDAO = userDAO;
+        DefaultUserExtractStrategy(final ProctoringCacheService cacheService) {
+            this.cacheService = cacheService;
         }
 
         @Override
         public ServerUser extract(final Principal principal) {
-            String name = principal.getName();
-            return userDAO.byUsername(name)
-                    .onError(error -> log.warn("Failed to find user for token authentication: {}", name))
-                    .getOr(null);
+            return cacheService.serverUserByName(principal.getName());
         }
     }
 

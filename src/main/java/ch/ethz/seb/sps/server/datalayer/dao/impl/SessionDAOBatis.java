@@ -554,6 +554,7 @@ public class SessionDAOBatis implements SessionDAO {
                 .build()
                 .execute();
 
+
         // then all screenshots
         this.screenshotDAO
                 .deleteAllForSession(sessionRecord.getUuid(), screenShotPKs)
@@ -734,17 +735,15 @@ public class SessionDAOBatis implements SessionDAO {
                     .build()
                     .execute();
 
-            if (sessionIds == null  || sessionIds.isEmpty()) {
-                return false;
-            }
+            return sessionIds != null && !sessionIds.isEmpty();
 
-            Long dataNum = this.screenshotDataRecordMapper
-                    .countByExample()
-                    .where(ScreenshotDataRecordDynamicSqlSupport.id, isIn(sessionIds))
-                    .build()
-                    .execute();
-
-            return dataNum != null && dataNum.intValue() != 0;
+//            Long dataNum = this.screenshotDataRecordMapper
+//                    .countByExample()
+//                    .where(ScreenshotDataRecordDynamicSqlSupport.id, isIn(sessionIds))
+//                    .build()
+//                    .execute();
+//
+//            return dataNum != null && dataNum.intValue() != 0;
         });
     }
 

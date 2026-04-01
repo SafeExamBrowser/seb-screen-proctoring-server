@@ -10,6 +10,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 
 import java.nio.CharBuffer;
 import java.security.SecureRandom;
+import java.util.UUID;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -93,9 +94,7 @@ public class ClientCredentialServiceImpl implements ClientCredentialService {
                     .toCharArray();
 
     public static CharSequence generateClientId() {
-        return RandomStringUtils.random(
-                8, 0, possibleCharacters.length - 1, false, false,
-                possibleCharacters, new SecureRandom());
+        return UUID.randomUUID().toString();
     }
 
     public static CharSequence generateClientSecret() {

@@ -11,6 +11,7 @@ package ch.ethz.seb.sps.server.servicelayer.impl;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheReco
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataLiveCacheRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataLiveCacheDAO;
 import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.servicelayer.LiveProctoringCacheService;
@@ -41,7 +43,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Lazy
@@ -115,10 +116,12 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
     }
 
     @Override
-    public Long getLatestSSDataId(final String sessionUUID, final boolean createSlot) {
-        if (!cache.containsKey(sessionUUID) && createSlot) {
+    public Long getLatestSSDataId(final String sessionUUID) {
+        if (!cache.containsKey(sessionUUID)) {
 
+            // check if session still active
             if (!this.sessionDAO.isActive(sessionUUID)) {
+
                 return null;
             }
             
@@ -129,9 +132,14 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
             synchronized (this.cache) {
                 screenshotDataLiveCacheDAO
                         .createCacheEntry(sessionUUID)
-                        .onError(error -> log.error("Failed to create slot for session: {}", sessionUUID));
-
-                cache.put(sessionUUID, -1L);
+                        .onError(error -> {
+                            if (error instanceof NoResourceFoundException) {
+                                log.info("No first/last image yet for session: {}", sessionUUID);
+                            } else {
+                                log.error("Failed to create slot for session: {}: error: {}", sessionUUID, error.getMessage());
+                            }
+                        })
+                        .onSuccess(rec -> cache.put(sessionUUID, rec.getIdLatestSsd()));
             }
         }
         
@@ -140,32 +148,9 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
     @Override
     public void updateCacheStore(final Collection<ScreenshotQueueData> batch) {
-        try {
-            
-            if (log.isDebugEnabled()) {
-                log.debug("Update store cache with batch of: {}", batch.size());
-            }
-            
-            // then batch update
-            this.transactionTemplate.executeWithoutResult(status -> {
-                batch.forEach(data -> {
-                    if (data.record.getId() != null) {
-                        UpdateDSL.updateWithMapper(
-                                        screenshotDataLiveCacheRecordMapper::update,
-                                        ScreenshotDataLiveCacheRecordDynamicSqlSupport.screenshotDataLiveCacheRecord)
-                                .set(ScreenshotDataLiveCacheRecordDynamicSqlSupport.idLatestSsd).equalTo(data.record.getId())
-                                .where(ScreenshotDataLiveCacheRecordDynamicSqlSupport.sessionUuid, isEqualTo(data.record.getSessionUuid()))
-                                .build()
-                                .execute();
-                    }
-                });
-                this.sqlSessionTemplate.flushStatements();
-
-            });
-
-        } catch (final TransactionException te) {
-            log.error("Failed to batch update screenshot data live cache store. Transaction has failed. Cause: {}", te.getMessage());
-        }
+        taskScheduler.schedule(
+                () -> updateCacheStoreTask(batch),
+                Instant.now());
     }
 
     @Override
@@ -204,18 +189,13 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
 
             Set<String> cacheKeys = new HashSet<>(cache.keySet());
-            cacheKeys.forEach(key -> {
-                if (!openSession.contains(key)) {
-                    
-                    if (log.isDebugEnabled()) {
-                        log.debug("Clear entry from local cache for session: {}", key);
-                    }
-                    
-                    cache.remove(key);
+            cacheKeys.removeAll(openSession);
+            if (!cacheKeys.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Clear entries from local cache for sessions: {}", cacheKeys);
                 }
-            });
-            
-            
+                cache.keySet().removeAll(cacheKeys);
+            }
         } catch (Exception e) {
             log.error("Failed to cleanup cache: ", e);
         }
@@ -237,6 +217,34 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
         } catch (Exception e) {
             log.error("Failed to update cache: ", e);
+        }
+    }
+
+    private void updateCacheStoreTask(final Collection<ScreenshotQueueData> batch) {
+        try {
+
+            if (log.isDebugEnabled()) {
+                log.debug("Update store cache with batch of: {}", batch.size());
+            }
+
+            // then batch update (way faster with transaction, see SEBSERV-856 and SEBSP-218)
+            this.transactionTemplate.executeWithoutResult(status -> {
+                batch.forEach(data -> {
+                    if (data.record.getId() != null) {
+                        UpdateDSL.updateWithMapper(
+                                        screenshotDataLiveCacheRecordMapper::update,
+                                        ScreenshotDataLiveCacheRecordDynamicSqlSupport.screenshotDataLiveCacheRecord)
+                                .set(ScreenshotDataLiveCacheRecordDynamicSqlSupport.idLatestSsd).equalTo(data.record.getId())
+                                .where(ScreenshotDataLiveCacheRecordDynamicSqlSupport.sessionUuid, isEqualTo(data.record.getSessionUuid()))
+                                .build()
+                                .execute();
+                    }
+                });
+                this.sqlSessionTemplate.flushStatements();
+            });
+
+        } catch (final Exception te) {
+            log.error("Failed to batch update screenshot data live cache store. Transaction has failed. Cause: {}", te.getMessage());
         }
     }
 }

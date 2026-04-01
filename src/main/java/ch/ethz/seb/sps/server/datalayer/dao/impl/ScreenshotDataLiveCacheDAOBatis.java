@@ -11,9 +11,12 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 import java.util.Collection;
 import java.util.List;
 
+import ch.ethz.seb.sps.domain.model.EntityType;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataLiveCacheRecordMapper;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.model.ScreenshotDataLiveCacheRecord;
+import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDataLiveCacheDAO;
 import ch.ethz.seb.sps.utils.Result;
 import org.mybatis.dynamic.sql.SqlBuilder;
@@ -22,31 +25,42 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotDataRecordDynamicSqlSupport.sessionUuid;
+
 @Service
 public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheDAO {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenshotDataLiveCacheDAOBatis.class);
 
     private final ScreenshotDataLiveCacheRecordMapper screenshotDataLiveCacheRecordMapper;
+    private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
 
-    public ScreenshotDataLiveCacheDAOBatis(ScreenshotDataLiveCacheRecordMapper screenshotDataLiveCacheRecordMapper) {
+    public ScreenshotDataLiveCacheDAOBatis(
+            final ScreenshotDataLiveCacheRecordMapper screenshotDataLiveCacheRecordMapper,
+            final ScreenshotDataRecordMapper screenshotDataRecordMapper) {
+
         this.screenshotDataLiveCacheRecordMapper = screenshotDataLiveCacheRecordMapper;
+        this.screenshotDataRecordMapper = screenshotDataRecordMapper;
     }
 
     @Override
     @Transactional
     public Result<ScreenshotDataLiveCacheRecord> createCacheEntry(String sessionUUID) {
         return Result
-            .tryCatch(() ->  screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(createSlot(sessionUUID, null)))
-            .onError(TransactionHandler::rollback);
-    }
-
-    @Override
-    @Transactional
-    public Result<ScreenshotDataLiveCacheRecord> createCacheEntry(String sessionUUID, Long value) {
-        return Result
-            .tryCatch(() ->  screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(createSlot(sessionUUID, value)))
-            .onError(TransactionHandler::rollback);
+            .tryCatch(() -> {
+                Long slotId = createSlot(sessionUUID);
+                if (slotId == null) {
+                    throw new RuntimeException("Failed to get or create live cache slot for session: " + sessionUUID);
+                } else if (slotId == -1L) {
+                    throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+                }
+                return screenshotDataLiveCacheRecordMapper.selectByPrimaryKey(slotId);
+            })
+            .onError(error -> {
+                if (!(error instanceof NoResourceFoundException)) {
+                    TransactionHandler.rollback(error);
+                }
+            });
     }
 
     @Override
@@ -96,13 +110,74 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
         });
     }
 
-    private synchronized Long createSlot(String sessionUUID, Long value) {
-        final ScreenshotDataLiveCacheRecord rec = new ScreenshotDataLiveCacheRecord(
-                null,
-                sessionUUID,
-                value != null && value >= 0 ? value : null );
+    private synchronized Long createSlot(String sessionUUID) {
+        List<ScreenshotDataLiveCacheRecord> existing = screenshotDataLiveCacheRecordMapper
+                .selectByExample()
+                .where(
+                        ScreenshotDataLiveCacheRecordDynamicSqlSupport.sessionUuid,
+                        SqlBuilder.isEqualTo(sessionUUID))
+                .build()
+                .execute();
 
-        screenshotDataLiveCacheRecordMapper.insert(rec);
-        return rec.getId();
+        if (existing != null && !existing.isEmpty()) {
+            // we have already an entry, we can use that
+            if (existing.size() > 1) {
+                log.warn("Expected one cache entry for session: {} but found: {}", sessionUUID, existing.size());
+            }
+
+            ScreenshotDataLiveCacheRecord rec = existing.get(0);
+            if (rec.getIdLatestSsd() != null) {
+                return rec.getId();
+            } else {
+                // get value, update with value and return PK
+                Long lastScreenshotEntryId = getLastScreenshotEntryId(sessionUUID);
+                if (lastScreenshotEntryId != null) {
+                    screenshotDataLiveCacheRecordMapper.updateByPrimaryKey(new ScreenshotDataLiveCacheRecord(
+                            rec.getId(),
+                            rec.getSessionUuid(),
+                            lastScreenshotEntryId
+                    ));
+                    return rec.getId();
+                } else {
+                    return null;
+                }
+            }
+        } else {
+            // get value create slot with value and return PK
+            Long lastScreenshotEntryId = getLastScreenshotEntryId(sessionUUID);
+            if (lastScreenshotEntryId != null) {
+                ScreenshotDataLiveCacheRecord rec = new ScreenshotDataLiveCacheRecord(
+                        null,
+                        sessionUUID,
+                        lastScreenshotEntryId
+                );
+                screenshotDataLiveCacheRecordMapper.insert(rec);
+                return rec.getId();
+            } else {
+                // there seems not to exist a first/last image for the session yet
+                return -1L;
+            }
+        }
+    }
+
+    private Long getLastScreenshotEntryId(String sessionUUID) {
+        try {
+
+            List<Long> all = screenshotDataRecordMapper
+                    .selectIdsByExample()
+                    .where(sessionUuid, SqlBuilder.isEqualTo(sessionUUID))
+                    .build()
+                    .execute();
+
+            if (all != null && !all.isEmpty()) {
+                return all.get(all.size() - 1);
+            }
+
+            log.info("No screenshot entry found for session: {}", sessionUUID);
+            return null;
+        } catch (Exception e) {
+            log.error("Failed to get last screenshot entry for session: {} error: {}", sessionUUID, e.getMessage());
+            return null;
+        }
     }
 }
