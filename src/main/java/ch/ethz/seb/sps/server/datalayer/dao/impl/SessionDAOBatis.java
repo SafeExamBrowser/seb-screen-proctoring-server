@@ -513,6 +513,9 @@ public class SessionDAOBatis implements SessionDAO {
                     .execute();
 
             // secure delete all images
+            if (log.isDebugEnabled()) {
+                log.debug("Secure delete all Screenshots for session {}, screenshots: {}", sessionUUID, screenShotPKs);
+            }
             this.screenshotDAO
                     .secureDeleteAllForSession(sessionUUID, screenShotPKs)
                     .getOrThrow();
@@ -531,6 +534,7 @@ public class SessionDAOBatis implements SessionDAO {
 
             sessionRecordMapper.deleteByPrimaryKey(sessionPK);
 
+            log.info("Successfully and securely delete user session data: {}", sessionUUID);
             return new EntityKey(sessionUUID, EntityType.SESSION);
         });
     }

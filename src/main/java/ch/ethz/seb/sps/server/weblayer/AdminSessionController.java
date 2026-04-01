@@ -169,6 +169,8 @@ public class AdminSessionController extends ActivatableEntityController<Session,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<EntityKey> secureDelete(@PathVariable final String modelId) {
 
+        log.info("Got secure session deletion request for session:  {}", modelId);
+
         return this.entityDAO.byModelId(modelId)
                 .flatMap(this::checkWriteAccess)
                 .flatMap(this::validForDelete)
