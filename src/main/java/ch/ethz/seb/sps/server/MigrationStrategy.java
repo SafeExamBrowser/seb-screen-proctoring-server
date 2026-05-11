@@ -75,12 +75,13 @@ public class MigrationStrategy implements FlywayMigrationStrategy {
                         info.current().getVersion(),
                         info.current().getDescription());
 
-                // TODO add this also for SEB Server
                 final ValidateResult validateWithResult = this.flyway.validateWithResult();
                 if (!validateWithResult.validationSuccessful) {
                     ServiceInit.INIT_LOGGER.warn("----> ");
                     ServiceInit.INIT_LOGGER.warn("----> VALIDATION OF DB MIGRATION SCHEMA FAILED:  \n\n" +
                             validateWithResult.getAllErrorMessages() + "\n\n");
+
+                    tryRepair();
                 }
             }
 
@@ -111,10 +112,8 @@ public class MigrationStrategy implements FlywayMigrationStrategy {
 
             ServiceInit.INIT_LOGGER.info("----> Migration validation checksum mismatch error detected: ");
             ServiceInit.INIT_LOGGER.info("----> {}", validateWithResult.getAllErrorMessages());
-            ServiceInit.INIT_LOGGER.info("----> Try to run repair task...");
 
-            this.flyway.repair();
-
+            tryRepair();
         }
 
         this.flyway.migrate();
@@ -126,6 +125,17 @@ public class MigrationStrategy implements FlywayMigrationStrategy {
 
         ServiceInit.INIT_LOGGER.info("----> **** End Migration **************************************");
         ServiceInit.INIT_LOGGER.info("----> *********************************************************");
+    }
+
+    private void tryRepair() {
+        try {
+            ServiceInit.INIT_LOGGER.info("----> Try to run repair migration task...");
+            this.flyway.repair();
+            ServiceInit.INIT_LOGGER.info("----> Successfully repaired migration task!");
+        } catch (Exception e) {
+            ServiceInit.INIT_LOGGER.error("----> Failed to repair Migration due to: {}", e.getMessage());
+            ServiceInit.INIT_LOGGER.info("----> Ignore it and go on, try again next time");
+        }
     }
 
 }
