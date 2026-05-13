@@ -102,7 +102,7 @@ jobs:
         echo $TAG_NAME
         echo ${{ env.TAG_NAME }}
     - name: Set up QEMU
-      uses: ocker/setup-qemu-action@v4.0.0
+      uses: docker/setup-qemu-action@v4.0.0
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4.0.0
     - name: Login to DockerHub
@@ -139,7 +139,7 @@ jobs:
           echo $TAG_NAME
           echo ${{ env.TAG_NAME }}
       - name: Set up QEMU
-        uses: ocker/setup-qemu-action@v4.0.0
+        uses: docker/setup-qemu-action@v4.0.0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.0.0
       - name: Login to DockerHub
