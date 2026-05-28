@@ -43,6 +43,8 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Collection<Long>> allIdsForExamsIds(Collection<Long> examPKs);
 
+    Result<Collection<String>> markGroupsForUpdate(Long examId);
+
     boolean needsUpdate(String groupUUID, Long lastUpdateTime);
 
     Result<Collection<String>> activeGroupUUIDs();

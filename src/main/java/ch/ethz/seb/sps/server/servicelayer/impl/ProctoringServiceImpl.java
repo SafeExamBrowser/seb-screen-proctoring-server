@@ -276,15 +276,30 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     @Override
-    public Result<Exam> updateCacheForExam(Exam exam) {
+    public Result<Exam> updateCacheForExam(final Exam exam) {
         return Result.tryCatch(() -> {
+
+// Fix SEBSERV-934 by mark involved exams as out of date on DB
             this.groupDAO
-                    .allIdsForExamsIds(Collections.singletonList(exam.id))
-                    .getOrThrow()
-                    .stream()
-                    .map(gid -> groupDAO.byPK(gid).getOr(null))
-                    .filter(Objects::nonNull)
-                    .forEach(group -> this.clearGroupCache(group.uuid, false));
+                    .markGroupsForUpdate(exam.id)
+                    .onError(error -> log.error("Failed to update all groups for exam: {} cause: {}",
+                            exam,
+                            error.getMessage()))
+                    .onSuccess(groupUUIDs -> groupUUIDs
+                            .forEach(groupUUID -> this.clearGroupCache(groupUUID, false)));
+
+// NOTE: This lacks update for parallel services on K8 Setups since the local cache is restored
+//       with the new Group and privileges but not on parallel version. The above fix marks the
+//       involved groups on the DB as out-dated and the parallel services will restore the cache
+//       within the next session update cycle (default 15s)
+
+//            this.groupDAO
+//                    .allIdsForExamsIds(Collections.singletonList(exam.id))
+//                    .getOrThrow()
+//                    .stream()
+//                    .map(gid -> groupDAO.byPK(gid).getOr(null))
+//                    .filter(Objects::nonNull)
+//                    .forEach(group -> this.clearGroupCache(group.uuid, false));
 
             return exam;
         });
