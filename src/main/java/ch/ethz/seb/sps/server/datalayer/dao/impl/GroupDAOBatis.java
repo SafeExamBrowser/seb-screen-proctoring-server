@@ -11,12 +11,7 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchApplicationMapper;
@@ -541,6 +536,33 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
     }
 
     @Override
+    @Transactional
+    public Result<Collection<String>> markGroupsForUpdate(final Long examId) {
+        return Result.tryCatch(() -> {
+
+            final Map<Long, String> mapping = groupRecordMapper
+                    .selectByExample()
+                    .where(GroupRecordDynamicSqlSupport.examId, isEqualTo(examId))
+                    .build()
+                    .execute()
+                    .stream().collect(Collectors.toMap(GroupRecord::getId, GroupRecord::getUuid));
+
+            if (!mapping.isEmpty()) {
+                // update all (mark for update in DB for other services
+                final long now = Utils.getMillisecondsNow();
+                UpdateDSL.updateWithMapper(groupRecordMapper::update, groupRecord)
+                        .set(lastUpdateTime).equalTo(now)
+                        .where(id, isIn(mapping.keySet()))
+                        .build()
+                        .execute();
+            }
+
+            return mapping.values();
+        });
+    }
+
+
+    @Override
     @Transactional(readOnly = true)
     public boolean needsUpdate(final String groupUUID, final Long lastUpdateTime) {
         try {
@@ -723,22 +745,5 @@ public class GroupDAOBatis implements GroupDAO, OwnedEntityDAO {
             return Collections.emptyList();
         }
     }
-
-//    private void checkUniqueName(final Group group) {
-//
-//        final Long otherWithSameName = this.groupRecordMapper
-//                .countByExample()
-//                .where(GroupRecordDynamicSqlSupport.name, isEqualTo(group.name))
-//                .and(GroupRecordDynamicSqlSupport.id, isNotEqualToWhenPresent(group.id))
-//                .build()
-//                .execute();
-//
-//        if (otherWithSameName != null && otherWithSameName > 0) {
-//            throw new DuplicateEntityException(
-//                    EntityType.SEB_GROUP,
-//                    Domain.CLIENT_ACCESS.ATTR_NAME,
-//                    "clientaccess:name:name.notunique");
-//        }
-//    }
 
 }
