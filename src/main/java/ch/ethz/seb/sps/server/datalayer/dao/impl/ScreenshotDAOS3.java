@@ -11,7 +11,7 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
-import io.minio.messages.DeleteObject;
+import io.minio.messages.DeleteRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -65,11 +65,11 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
         });
     }
 
-    private List<DeleteObject> createItemListForDeletion(final String sessionId, final List<Long> screenShotPKs){
-        List<DeleteObject> objects = new LinkedList<>();
+    private List<DeleteRequest.Object> createItemListForDeletion(final String sessionId, final List<Long> screenShotPKs){
+        List<DeleteRequest.Object> objects = new LinkedList<>();
 
         for (Long screenShotPK : screenShotPKs) {
-            objects.add(new DeleteObject(sessionId + Constants.UNDERLINE + screenShotPK));
+            objects.add(new DeleteRequest.Object(sessionId + Constants.UNDERLINE + screenShotPK));
         }
 
         return objects;

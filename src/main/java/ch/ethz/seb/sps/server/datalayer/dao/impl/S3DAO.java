@@ -4,10 +4,13 @@ import ch.ethz.seb.sps.server.ServiceInitEvent;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import io.minio.*;
-import io.minio.messages.Bucket;
-import io.minio.messages.DeleteError;
-import io.minio.messages.DeleteObject;
+//import io.minio.messages.Bucket;
+//import io.minio.messages.DeleteError;
+//import io.minio.messages.DeleteObject;
+import io.minio.messages.DeleteRequest;
+import io.minio.messages.DeleteResult;
 import io.minio.messages.LifecycleConfiguration;
+import io.minio.messages.ListAllMyBucketsResult;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -84,7 +87,7 @@ public class S3DAO {
                         PutObjectArgs.builder()
                                 .bucket(BUCKET_NAME)
                                 .object(sessionUUID + Constants.UNDERLINE + pk)
-                                .stream(screenshotInputStream, screenshotInputStream.available(), -1)
+                                .stream(screenshotInputStream, (long) screenshotInputStream.available(), -1L)
                                 .build())
         );
     }
@@ -97,7 +100,7 @@ public class S3DAO {
                     PutObjectArgs.builder()
                             .bucket(BUCKET_NAME)
                             .object(sessionUUID + Constants.UNDERLINE + pk)
-                            .stream(byteArrayInputStream, byteArrayInputStream.available(), -1)
+                            .stream(byteArrayInputStream, (long) byteArrayInputStream.available(), -1L)
                             .build());
 
             // then delete it
@@ -123,17 +126,16 @@ public class S3DAO {
         );
     }
 
-    public void deleteItemBatch(final List<DeleteObject> batchItems) throws Exception{
-        Iterable<io.minio.Result<DeleteError>> results =
-                minioClient.removeObjects(
-                        RemoveObjectsArgs
-                                .builder()
-                                .bucket(BUCKET_NAME)
-                                .objects(batchItems)
-                                .build());
+    public void deleteItemBatch(final List<DeleteRequest.Object> batchItems) throws Exception{
+        Iterable<io.minio.Result<DeleteResult.Error>> results = minioClient.removeObjects(
+                RemoveObjectsArgs
+                        .builder()
+                        .bucket(BUCKET_NAME)
+                        .objects(batchItems)
+                        .build());
 
-        for (io.minio.Result<DeleteError> result : results) {
-            DeleteError error = result.get();
+        for (io.minio.Result<DeleteResult.Error> result : results) {
+            DeleteResult.Error error = result.get();
             log.info("Error in deleting object {}, {}", error.objectName(), error.message());
         }
     }
@@ -169,9 +171,9 @@ public class S3DAO {
 
     private void printAllBucketsInService(){
         try{
-            List<Bucket> bucketList = this.minioClient.listBuckets();
+            List<ListAllMyBucketsResult.Bucket> bucketList = this.minioClient.listBuckets();
             INIT_LOGGER.info("**************S3 Buckets**************");
-            for (Bucket bucket : bucketList) {
+            for (ListAllMyBucketsResult.Bucket bucket : bucketList) {
                 INIT_LOGGER.info("Bucket: " + bucket.creationDate() + ", " + bucket.name());
             }
             INIT_LOGGER.info("**************************************");
