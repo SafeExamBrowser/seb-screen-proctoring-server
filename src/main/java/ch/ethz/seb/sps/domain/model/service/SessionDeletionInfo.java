@@ -16,10 +16,38 @@ public record SessionDeletionInfo(
         @JsonProperty("error") String error
 ) {
 
+    public enum ErrorType {
+        UNDEFINED,
+        SERVER_ERROR,
+        DATABASE_CONSTRAINT_ERROR,
+        DATA_INCONSISTENCY_ERROR,
+        EXCLUDED_FROM_DELETION
+    };
+
     public static final String ATT_SEARCH_NAME = "searchName";
 
     @JsonCreator
     public SessionDeletionInfo {}
+
+    @JsonProperty("errorType")
+    public ErrorType getErrorType() {
+        if (error == null) {
+            return null;
+        }
+
+        if (error.contains("SQL")) {
+            return ErrorType.DATABASE_CONSTRAINT_ERROR;
+        }
+
+        if (error.contains("APIErrorException")) {
+            if (error.contains("INTEGRITY_VIOLATION") || error.contains("FIELD_VALIDATION")) {
+                return ErrorType.DATA_INCONSISTENCY_ERROR;
+            }
+            return ErrorType.SERVER_ERROR;
+        }
+
+        return ErrorType.UNDEFINED;
+    }
 
     public SessionDeletionInfo withError(final Exception e) {
         if (e == null) {
