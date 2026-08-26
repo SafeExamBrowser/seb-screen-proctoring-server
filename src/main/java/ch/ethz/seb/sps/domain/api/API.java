@@ -21,6 +21,7 @@ public final class API {
 
     public enum UserRole {
         ADMIN,
+        INST_ADMIN,
         PROCTOR,
         TEACHER
     }

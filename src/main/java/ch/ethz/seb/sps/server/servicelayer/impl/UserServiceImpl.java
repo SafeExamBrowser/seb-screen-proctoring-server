@@ -239,7 +239,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<UserInfo> synchronizeUserAccount(final UserMod userMod) {
-        return this.userDAO.synchronizeUserAccount(userMod)
+        return this.userDAO
+                .synchronizeUserAccount(userMod)
                 .map(this::synchronizeUserPrivileges)
                 .map(user -> {
                     proctoringCacheService.evictServerUserByName(userMod.username);
