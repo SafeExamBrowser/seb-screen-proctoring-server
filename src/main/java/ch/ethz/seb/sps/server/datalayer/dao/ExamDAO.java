@@ -26,5 +26,9 @@ public interface ExamDAO extends ActivatableEntityDAO<Exam, Exam> {
 
     boolean hasRunningLifeExams();
 
+    /** Get all Exam ids of all Exams that has the given institution id.
+     * @param instId institution id if null an {@link IllegalArgumentException is thrown}
+     * @return list of all Exams within the given institution */
+    Collection<Long> getAllExamIdsOfInstitution(Long instId);
 }
 

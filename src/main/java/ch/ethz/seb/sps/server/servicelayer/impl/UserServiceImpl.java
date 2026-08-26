@@ -89,6 +89,9 @@ public class UserServiceImpl implements UserService {
                         new Privilege(EntityType.SCREENSHOT_DATA, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.AUDIT_LOG, API.PRIVILEGES_WRITE)));
 
+
+        // INST_ADMIN will have read access to Exams within same institution granted on lower level (since 3.0)
+        this.rolePrivileges.put(UserRole.INST_ADMIN, Collections.emptyList());
         // proctor and teacher only has dedicated entity privileges
         this.rolePrivileges.put(UserRole.PROCTOR, Collections.emptyList());
         this.rolePrivileges.put(UserRole.TEACHER, Collections.emptyList());
@@ -373,6 +376,18 @@ public class UserServiceImpl implements UserService {
         if (!currentUser.getUserRoles().contains(UserRole.ADMIN)) {
             throw APIErrorException.ofPermissionDenied(null, PrivilegeType.WRITE, currentUser.getUserInfo());
         }
+    }
+
+    @Override
+    public boolean hasRole(final UserRole userRole) {
+        if (userRole == null) {
+            return false;
+        }
+        ServerUser currentUser = getCurrentUser();
+        if (currentUser != null) {
+            return currentUser.getUserRoles().contains(userRole);
+        }
+        return false;
     }
 
 

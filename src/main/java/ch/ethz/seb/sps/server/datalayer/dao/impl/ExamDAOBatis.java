@@ -1,7 +1,7 @@
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
-import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.institutionId;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.examRecord;
+import static ch.ethz.seb.sps.server.datalayer.batis.mapper.ExamRecordDynamicSqlSupport.institutionId;
 import static ch.ethz.seb.sps.server.datalayer.batis.mapper.GroupRecordDynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.*;
 
@@ -252,6 +252,19 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
             // If we are not sure if at least one life running exam exists, we assume it does.
             return true;
         }
+    }
+
+    @Override
+    public Collection<Long> getAllExamIdsOfInstitution(final Long instId) {
+        if (instId == null) {
+            throw new IllegalArgumentException("institution id cannot be null");
+        }
+
+        return this.examRecordMapper
+                .selectIdsByExample()
+                .where(institutionId, isEqualTo(instId))
+                .build()
+                .execute();
     }
 
     @Override

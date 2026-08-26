@@ -11,6 +11,7 @@ package ch.ethz.seb.sps.server.servicelayer;
 import java.security.Principal;
 import java.util.Set;
 
+import ch.ethz.seb.sps.domain.api.API;
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
 import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.Entity;
@@ -171,5 +172,9 @@ public interface UserService {
     /** Checks if the current user has administrator privileges. Throws APIErrorException.ofPermissionDenied if not */
     void checkIsAdmin();
 
-
+    /** Indicates if current logged in user has the given User Role
+     *
+     * @param userRole The User Role to check
+     * @return true if the current logged in User has the given User Role */
+    boolean hasRole(API.UserRole userRole);
 }
