@@ -129,7 +129,6 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
                         Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME);
             }
             if (dueTimeUTC >= endOfDay) {
-                log.warn("********************** dueTimeUTC: {} endOfDay: {}", dueTimeUTC, endOfDay);
                 throw APIErrorException.ofIllegalArgument(
                         "ScheduledDelete.create",
                         "dueTimeUTC must be in the past",
@@ -183,7 +182,8 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
                     .createNew(fullScheduledDelete)
                     .getOrThrow();
 
-            log.info("Created full scheduled delete: {}", result);
+            log.info("Created full scheduled delete: {}", result.getName());
+            result.info().forEach(i -> log.info(" ----> exam: {} info: {}", i.examUUID(), i.deletionInfo()));
 
             return result;
         });
