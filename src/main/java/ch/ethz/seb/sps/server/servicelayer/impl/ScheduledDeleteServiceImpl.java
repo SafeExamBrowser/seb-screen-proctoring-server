@@ -112,6 +112,7 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
                         Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME);
             }
             if (dueTimeUTC >= now) {
+                log.debug("********************** dueTimeUTC: {} now: {}", dueTimeUTC, now);
                 throw APIErrorException.ofIllegalArgument(
                         "ScheduledDelete.create",
                         "dueTimeUTC must be in the past",
