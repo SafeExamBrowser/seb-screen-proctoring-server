@@ -15,6 +15,8 @@ import ch.ethz.seb.sps.utils.Result;
 import ch.ethz.seb.sps.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -86,6 +88,18 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
         });
     }
 
+    public static Long calcTimeAtEndOfDay(
+            final Long referenceTimeStampUTC,
+            final DateTimeZone referenceTimezone) {
+
+        return new DateTime(referenceTimeStampUTC, DateTimeZone.UTC)
+                .toDateTime(referenceTimezone)           // shift to reference time zone
+                .plusDays(1)                           // add one day and...
+                .withTimeAtStartOfDay()                   // go back to start of day still in reference time zone
+                .toDateTime(DateTimeZone.UTC)             // now convert back to UTC
+                .getMillis();
+    }
+
     @Override
     public Result<ScheduledDelete> createScheduledDelete(final ScheduledDelete scheduledDelete) {
 
@@ -98,6 +112,9 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
             final Long dueTimeUTC = scheduledDelete.deleteDueTime();
             final Long scheduleTimeUTC = scheduledDelete.scheduleTime();
             final long now = Utils.getMillisecondsNow();
+            final long endOfDay = new DateTime(now, DateTimeZone.UTC)
+                    .plusDays(1)
+                    .getMillis();
 
             if (dueTimeUTC == null) {
                 throw APIErrorException.ofIllegalArgument(
@@ -111,8 +128,8 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
                         "scheduleTimeUTC must be provided",
                         Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME);
             }
-            if (dueTimeUTC >= now) {
-                log.warn("********************** dueTimeUTC: {} now: {}", dueTimeUTC, now);
+            if (dueTimeUTC >= endOfDay) {
+                log.warn("********************** dueTimeUTC: {} endOfDay: {}", dueTimeUTC, endOfDay);
                 throw APIErrorException.ofIllegalArgument(
                         "ScheduledDelete.create",
                         "dueTimeUTC must be in the past",
@@ -121,7 +138,7 @@ public class ScheduledDeleteServiceImpl implements ScheduledDeleteService {
             if (scheduleTimeUTC <= now) {
                 throw APIErrorException.ofIllegalArgument(
                         "ScheduledDelete.create",
-                        "scheduleTimeUTC must be in the past",
+                        "scheduleTimeUTC must be in the future",
                         Domain.SCHEDULED_DELETE.ATTR_SCHEDULE_TIME);
             }
 
