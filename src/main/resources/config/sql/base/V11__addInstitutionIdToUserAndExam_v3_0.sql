@@ -11,5 +11,5 @@ ADD COLUMN IF NOT EXISTS `institution_id` BIGINT NULL
 -- -----------------------------------------------------
 
 ALTER TABLE `exam`
-CHANGE `deletion_time` `institution_id` BIGINT NULL
+CHANGE COLUMN IF EXISTS `deletion_time` `institution_id` BIGINT NULL
 ;
