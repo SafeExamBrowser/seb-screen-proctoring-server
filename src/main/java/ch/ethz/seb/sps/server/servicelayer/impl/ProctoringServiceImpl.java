@@ -98,7 +98,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     public void checkMonitoringSessionAccess(final String sessionUUID) {
         final Session session = this.proctoringCacheService.getSession(sessionUUID);
         if (session == null) {
-            throw APIErrorException.notFound(EntityType.SESSION, sessionUUID, "Session doesn't exist or is not active");
+            return;
         }
 
         // TODO get group for session and check group access
@@ -110,8 +110,8 @@ public class ProctoringServiceImpl implements ProctoringService {
 
             Session session = this.proctoringCacheService.getSession(sessionUUID);
             if (session == null) {
-                log.warn("Failed to get Session for: {}", sessionUUID);
-                throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+                log.warn("Failed to get Session for: {}, resource not found", sessionUUID);
+                throw new NoResourceFoundException(EntityType.SESSION, sessionUUID);
             }
 
             boolean sessionActive = session.isActive();
@@ -134,7 +134,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                 }
             }
 
-            // in this case we do have a timestamp, we can use the cache
+            // in this case we do have a timestamp or the session is not active, we can use the cache
             SessionScreenshotCacheData sessionScreenshotData = this.proctoringCacheService
                     .getSessionScreenshotData(sessionUUID);
 
@@ -501,9 +501,20 @@ public class ProctoringServiceImpl implements ProctoringService {
             SessionScreenshotCacheData sessionScreenshotData = this.proctoringCacheService
                     .getSessionScreenshotData(sessionUUID);
             final ScreenshotDataRecord at = sessionScreenshotData.getAt(timestamp);
+            final Long atId = at.getId();
+
+            if (atId == null || atId == -1L) {
+                // we don't have an image for the session yet: SEBSERV-1008
+                // so we return and finally will close the output as for an empty image
+                // alternatively we can send an empty image marker here
+                if (log.isDebugEnabled()) {
+                    log.debug("No image yet for session: {}", sessionUUID);
+                }
+                return;
+            }
 
             screenshotIn = this.screenshotDAO
-                    .getImage(at.getId(), sessionUUID)
+                    .getImage(atId, sessionUUID)
                     .getOrThrow();
 
             IOUtils.copy(screenshotIn, out);
@@ -587,11 +598,9 @@ public class ProctoringServiceImpl implements ProctoringService {
     }
 
     private long lastUpdateTimeScreenshotViewData = 0;
-    private ScreenshotViewData createScreenshotViewData(final String sessionUUID, final ScreenshotDataRecord data) {
-
-        if (data == null) {
-            return null;
-        }
+    private ScreenshotViewData createScreenshotViewData(
+            final String sessionUUID,
+            final ScreenshotDataRecord data) {
 
         try {
             
@@ -617,7 +626,11 @@ public class ProctoringServiceImpl implements ProctoringService {
             final ScreenshotDataRecord data,
             final Session session) {
 
-        final String imageLink = this.serviceInfo.getScreenshotRequestURI() + "/" + data.getSessionUuid();
+        if (data == null) {
+            return null;
+        }
+
+        final String imageLink = this.serviceInfo.getScreenshotRequestURI() + Constants.SLASH + data.getSessionUuid();
         final Map<String, String> metaData = extractedMetaData(data);
 
         return new ScreenshotViewData(
@@ -674,14 +687,25 @@ public class ProctoringServiceImpl implements ProctoringService {
             final String sessionUUID,
             final SessionScreenshotCacheData data) {
 
-        Long pk = liveProctoringCacheService.getLatestSSDataId(sessionUUID);
-        ScreenshotDataRecord lastCacheEntry = data.data[data.data.length - 1];
+        final Long pk = liveProctoringCacheService.getLatestSSDataId(sessionUUID);
+        // if we don't have a pk here, the session ist not live or has no live cache entry
         if (pk != null) {
+
+            // if the session cache is empty, just refresh it
+            if (data.data.length == 0) {
+                proctoringCacheService.evictSessionScreenshotData(sessionUUID);
+                return this.proctoringCacheService.getSessionScreenshotData(sessionUUID);
+            }
+
+            // if the timestamp is newer also refresh it
+            final ScreenshotDataRecord lastCacheEntry = data.data[data.data.length - 1];
             if (lastCacheEntry.getTimestamp() < timestamp && !Objects.equals(pk, lastCacheEntry.getId())) {
                 proctoringCacheService.evictSessionScreenshotData(sessionUUID);
                 return this.proctoringCacheService.getSessionScreenshotData(sessionUUID);
             }
         }
+
+        // just return the actual cache
         return data;
     }
 
@@ -691,19 +715,25 @@ public class ProctoringServiceImpl implements ProctoringService {
     //    and throw a NoResourceFoundException
     // 3. if the session is now inactive we try to get the last image from the recorded session cache
     //    if this does also not work we throw a NoResourceFoundException
-    private ScreenshotViewData handleNoLiveCacheDataAvailable(String sessionUUID) {
+    private ScreenshotViewData handleNoLiveCacheDataAvailable(final String sessionUUID) {
 
         if (log.isDebugEnabled()) {
-            log.warn("Failed to get live screenshot id for session: {}", sessionUUID);
+            log.debug("Failed to get live screenshot id for session: {}", sessionUUID);
         }
 
         // update the cache so that we are sure to get and put the actual session data
         proctoringCacheService.evictSession(sessionUUID);
-        Session session = this.proctoringCacheService.getSession(sessionUUID);
+        final Session session = this.proctoringCacheService.getSession(sessionUUID);
 
         if (session.isActive()) {
             // it seems there is not a first or last image for this session (SEB client didn't send an image yet)
-            throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+            //throw new NoResourceFoundException(EntityType.SCREENSHOT_DATA, sessionUUID);
+            return createViewData(
+                    new ScreenshotDataRecord(
+                            -1L, sessionUUID, null, 0, null
+                    ),
+                    session
+            );
         } else {
             // session was not up to date and is now closed. provide last image if possible
             try {

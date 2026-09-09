@@ -42,7 +42,16 @@ public class SessionScreenshotCacheData {
      *
       * @param timestamp the timestamp for the given point in time of the screenshot to get
      * @return  ScreenshotDataRecord data found for given time. */
-    public ScreenshotDataRecord getAt(Long timestamp) {
+    public ScreenshotDataRecord getAt(final Long timestamp) {
+
+        if (data.length == 0) {
+            // there is no image in the session yet (SEBSERV-1008)
+            // return empty image ScreenshotDataRecord marker (has id -1L)
+            return new ScreenshotDataRecord(
+                    -1L, sessionUUID, timestamp, 0, null
+            );
+        }
+
         if (timestamp == null) {
             return data[0];
         }
