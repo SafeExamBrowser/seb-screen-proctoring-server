@@ -79,4 +79,15 @@ public record ScheduledDelete(
                 ", info=" + info +
                 '}';
     }
+
+    public String toShortString() {
+        return "ScheduledDelete{" +
+                ", state=" + state +
+                ", deleteDueTime=" + deleteDueTime +
+                ", scheduleTime=" + scheduleTime +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", ownerUUID='" + ownerUUID + '\'' +
+                '}';
+    }
 }

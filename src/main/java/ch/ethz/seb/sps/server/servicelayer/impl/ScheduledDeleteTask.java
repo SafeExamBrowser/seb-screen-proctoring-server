@@ -118,7 +118,7 @@ public class ScheduledDeleteTask {
         try {
 
             log.info("**************************************");
-            log.info("**** Start ScheduledDelete: {}", delete);
+            log.info("**** Start ScheduledDelete: {}", delete.toShortString());
 
             // mark as RUNNING
             scheduledDeleteDAO.startProcessing(delete.getPK());
