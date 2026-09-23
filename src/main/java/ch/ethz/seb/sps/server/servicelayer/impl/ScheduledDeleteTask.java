@@ -180,11 +180,16 @@ public class ScheduledDeleteTask {
                 .getOrThrow();
 
         // delete sessions one by one
-        log.info("********** DEBUG ScheduledDelete --> delete Sessions: {} of group: {}", sessionsIdsOfGroup, group);
+        if (log.isDebugEnabled()) {
+            log.debug("********** DEBUG ScheduledDelete --> delete Sessions: {} of group: {}", sessionsIdsOfGroup, group);
+        }
+
         sessionsIdsOfGroup.forEach(sessionDAO::delete);
 
         // finally delete the group
-        log.info("********** DEBUG ScheduledDelete --> delete Group: {}", group);
+        if (log.isDebugEnabled()) {
+            log.debug("********** DEBUG ScheduledDelete --> delete Group: {}", group);
+        }
         groupDAO.delete(group.getModelId()).getOrThrow();
     }
 }
