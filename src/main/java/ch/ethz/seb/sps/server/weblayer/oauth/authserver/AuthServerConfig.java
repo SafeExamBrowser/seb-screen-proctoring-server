@@ -47,6 +47,7 @@ import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -70,9 +71,7 @@ public class AuthServerConfig {
     private WebServiceUserDetails webServiceUserDetails;
     @Autowired
     private UserDAO userDAO;
-    @Value("${sps.http.redirect}")
-    private String unauthorizedRedirect;
-    
+
     
     @Bean
     @Order(1)
@@ -81,7 +80,7 @@ public class AuthServerConfig {
             AuthenticationManager authenticationManager,
             OAuth2AuthorizationService authorizationService) throws Exception {
         
-       OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
         OAuth2PasswordGrantAuthenticationProvider oAuth2PasswordGrantAuthenticationProvider =
                 new OAuth2PasswordGrantAuthenticationProvider(authenticationManager, authorizationService);
@@ -107,7 +106,7 @@ public class AuthServerConfig {
                 // authorization endpoint
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint(unauthorizedRedirect),
+                                new BasicAuthenticationEntryPoint(),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 );

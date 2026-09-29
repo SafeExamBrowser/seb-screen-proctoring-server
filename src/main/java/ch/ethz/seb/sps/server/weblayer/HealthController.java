@@ -47,9 +47,4 @@ public class HealthController {
 
     }
 
-    @RequestMapping(path = API.GUI_REDIRECT_ENDPOINT, method = RequestMethod.GET)
-    public String guiRedirectURL() {
-        return this.serviceInfo.getGuiRedirectURL();
-    }
-
 }

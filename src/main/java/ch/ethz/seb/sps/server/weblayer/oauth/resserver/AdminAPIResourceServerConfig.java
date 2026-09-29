@@ -46,8 +46,6 @@ public class AdminAPIResourceServerConfig {
     private String errorPath;
     @Value("${sps.api.admin.endpoint}")
     private String adminAPIEndpoint;
-    @Value("${sps.http.redirect}")
-    private String unauthorizedRedirect;
 
     @Bean
     @Order(3)
