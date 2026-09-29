@@ -39,6 +39,8 @@ public class RegisteredSEBServerClient {
             @Value("${sps.api.admin.accessTokenValiditySeconds:3600}") final Integer accessTokenValiditySeconds,
             @Value("${sps.api.admin.refreshTokenValiditySeconds:-1}") final Integer refreshTokenValiditySeconds) {
 
+        System.out.println("********** RegisteredSEBServerClient clientId: " + clientId + " clientSecret: " + clientSecret);
+
         Duration refreshTokenValDuration = (refreshTokenValiditySeconds == null || refreshTokenValiditySeconds.longValue() < 0)
                 ? Duration.of(1, YEARS)
                 : Duration.of(refreshTokenValiditySeconds, SECONDS);
