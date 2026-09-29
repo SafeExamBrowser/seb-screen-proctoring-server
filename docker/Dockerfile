@@ -24,6 +24,6 @@ CMD exec java \
         -Dcom.sun.management.jmxremote.ssl=false \
         -Dcom.sun.management.jmxremote.authenticate=false \
         -jar "seb-sps.jar" \
-        --spring.config.location=classpath:/config/,file:/sebsps/config/spring/; \
+        --spring.config.location=classpath:/config/,optional:file:/sebsps/config/spring/; \
 
 EXPOSE $SERVER_PORT $JMX_PORT
