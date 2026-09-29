@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -143,10 +144,6 @@ class AdminUserInitializer {
             final String sebServerAPIAccountPassword =
                     this.environment.getProperty("sps.init.sebserveraccount.password", (String) null);
 
-            if (sebServerAPIAccountName == null || sebServerAPIAccountPassword == null) {
-                log.warn("Missing ENV settings to createSEB Server API account. Skip creation");
-            }
-
             log.debug("Create initial SEB Server API account is switched on. Check database if exists...");
             final Result<ServerUser> byUsername = this.userDAO.byUsername(sebServerAPIAccountName);
             if (byUsername.hasValue()) {
@@ -160,6 +157,15 @@ class AdminUserInitializer {
             ServiceInit.INIT_LOGGER.info("----> Create Initial SEB Server API Account with name: {}",
                     sebServerAPIAccountName);
             ServiceInit.INIT_LOGGER.info("---->");
+
+            if (StringUtils.isBlank(sebServerAPIAccountName)) {
+                log.error("------> Initial SEB Server API Account Name is not set in: sps.init.sebserveraccount.username");
+                throw new IllegalArgumentException("Initial SEB Server API Account Name is not set in: sps.init.sebserveraccount.username");
+            }
+            if (StringUtils.isBlank(sebServerAPIAccountPassword)) {
+                log.error("------> Initial SEB Server API Account Name is not set in: sps.init.sebserveraccount.password");
+                throw new IllegalArgumentException("Initial SEB Server API Account Name is not set in: sps.init.sebserveraccount.password");
+            }
 
             this.userDAO.createNew(new UserMod(
                     sebServerAPIAccountName,

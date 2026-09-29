@@ -48,8 +48,6 @@ public class RegisteredClientRepositoryImpl implements RegisteredClientRepositor
             return null;
         }
 
-        System.out.println("********** clientId: " + clientId);
-
         // check if it is valid GUI client
         if (clientId.equals(this.registeredGuiClient.getClientId())) {
             return this.registeredGuiClient.client;

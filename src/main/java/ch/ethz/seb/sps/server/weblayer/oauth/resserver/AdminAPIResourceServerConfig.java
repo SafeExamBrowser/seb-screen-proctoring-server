@@ -42,8 +42,6 @@ public class AdminAPIResourceServerConfig {
     
     @Autowired
     private JwtDecoder jwtDecoder;
-    @Value("${server.error.path}")
-    private String errorPath;
     @Value("${sps.api.admin.endpoint}")
     private String adminAPIEndpoint;
 
