@@ -42,7 +42,6 @@ public class ServiceInfo {
     private static final String WEB_SERVICE_HTTP_PORT = "sps.webservice.http.external.port";
     private static final String WEB_SERVICE_HTTP_SUB_PATH = "sps.webservice.http.sub.path";
     private static final String WEB_SERVICE_CONTEXT_PATH = "server.servlet.context-path";
-    private static final String GUI_REDIRECT_URL = "sps.gui.redirect.url";
 
     public static final String VERSION_KEY = "seb.sps.version";
     public static final String STORE_ADAPTER_KEY = "sps.data.store.adapter";
@@ -73,14 +72,11 @@ public class ServiceInfo {
     private final String webserviceUUID;
     private boolean isMaster = false;
 
-    private final boolean isSEBServerBundle;
-
     private final String httpScheme; // external
     private final String webserverName; // external
     private final String webserverPort; // external
     private final String subPath; //external
     private final String externalServiceURI;
-    private final String guiRedirectURL;
     private final String screenshotRequestURI;
 
     public ServiceInfo(
@@ -127,7 +123,6 @@ public class ServiceInfo {
             log.warn("NOTE: External server name, property : 'sps.webservice.http.external.servername' "
                     + "is set to localhost. This is only for local development setups.");
         }
-        this.guiRedirectURL = environment.getRequiredProperty(GUI_REDIRECT_URL);
 
         final UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
                 .scheme(this.httpScheme)
@@ -163,9 +158,6 @@ public class ServiceInfo {
                 Long.class,
                 5000L);
 
-        this.isSEBServerBundle = BooleanUtils.toBoolean(environment.getProperty(
-                "sps.webservice.sebserver.bundle",
-                Constants.TRUE_STRING));
     }
 
     public boolean isMaster() {
@@ -192,10 +184,6 @@ public class ServiceInfo {
 
     public boolean isDistributed() {
         return this.isDistributed;
-    }
-
-    public boolean isSEBServerBundle() {
-        return this.isSEBServerBundle;
     }
 
     public long getDistributedUpdateInterval() {
@@ -248,10 +236,6 @@ public class ServiceInfo {
 
     public String getExternalServiceURI() {
         return this.externalServiceURI;
-    }
-
-    public String getGuiRedirectURL() {
-        return this.guiRedirectURL;
     }
 
     public void setMaster(final boolean isMaster) {
