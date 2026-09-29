@@ -370,51 +370,6 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                 });
     }
 
-//    @Override
-//    @Transactional
-//    public Result<Collection<EntityKey>> markExamsReadyForDeletion(Collection<String> examUUIDs) {
-//        return Result.tryCatch(() -> {
-//            if (examUUIDs == null || examUUIDs.isEmpty()) {
-//                return Collections.emptyList();
-//            }
-//
-//            final long now = Utils.getMillisecondsNow();
-//            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
-//                    .set(lastUpdateTime).equalTo(now)
-//                    .where(uuid, SqlBuilder.isIn(examUUIDs))
-//                    .build()
-//                    .execute();
-//
-//            return examUUIDs
-//                    .stream()
-//                    .map(uuid -> new EntityKey(uuid, EntityType.EXAM))
-//                    .collect(Collectors.toList());
-//        });
-//    }
-//
-//    @Override
-//    @Transactional
-//    public Result<Collection<EntityKey>> excludeExamsFromDeletion(Collection<String> examUUIDs) {
-//        return Result.tryCatch(() -> {
-//            if (examUUIDs == null || examUUIDs.isEmpty()) {
-//                return Collections.emptyList();
-//            }
-//
-//            final long now = Utils.getMillisecondsNow();
-//            UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
-//                    .set(lastUpdateTime).equalTo(now)
-//                    .set(deletionTime).equalToNull()
-//                    .where(uuid, SqlBuilder.isIn(examUUIDs))
-//                    .build()
-//                    .execute();
-//
-//            return examUUIDs
-//                    .stream()
-//                    .map(uuid -> new EntityKey(uuid, EntityType.EXAM))
-//                    .collect(Collectors.toList());
-//        });
-//    }
-
     @Override
     @Transactional
     public Result<Exam> createNew(final Exam data) {
@@ -458,6 +413,8 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
     public Result<Exam> save(final Exam data) {
         return Result.tryCatch(() -> {
 
+            log.info("Update Exam from Exam Data: {}", data.toShortString());
+
             final long millisecondsNow = Utils.getMillisecondsNow();
 
             Long pk = data.id;
@@ -478,7 +435,7 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
                     .set(ExamRecordDynamicSqlSupport.url).equalTo(data.url)
                     .set(ExamRecordDynamicSqlSupport.type).equalTo(data.type)
                     .set(ExamRecordDynamicSqlSupport.supporter).equalToWhenPresent(supporter)
-                    .set(ExamRecordDynamicSqlSupport.startTime).equalTo(data.startTime)
+                    .set(ExamRecordDynamicSqlSupport.startTime).equalToWhenPresent(data.startTime)
                     .set(ExamRecordDynamicSqlSupport.endTime).equalTo(data.endTime)
                     .set(ExamRecordDynamicSqlSupport.lastUpdateTime).equalTo(millisecondsNow)
                     .set(ExamRecordDynamicSqlSupport.institutionId).equalTo(data.institutionId)

@@ -284,6 +284,22 @@ public class Exam implements Entity, OwnedEntity, WithNameDescription, WithEntit
                 '}';
     }
 
+    public String toShortString() {
+        return "Exam{" +
+                "id=" + id +
+                ", uuid='" + uuid + '\'' +
+                ", name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", type='" + type + '\'' +
+                ", owner='" + owner + '\'' +
+                ", supporter=" + supporter +
+                ", terminationTime=" + terminationTime +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", institutionId=" + institutionId +
+                '}';
+    }
+
     public static final Function<Collection<Exam>, List<Exam>> examSort(final String sort) {
 
         final String sortBy = PageSortOrder.decode(sort);
