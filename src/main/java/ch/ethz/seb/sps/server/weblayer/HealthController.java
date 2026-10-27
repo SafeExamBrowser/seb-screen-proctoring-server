@@ -24,14 +24,11 @@ import ch.ethz.seb.sps.server.servicelayer.SessionServiceHealthControl;
 public class HealthController {
 
     private final SessionServiceHealthControl sessionServiceHealthControl;
-    private final ServiceInfo serviceInfo;
 
     public HealthController(
-            final SessionServiceHealthControl sessionServiceHealthControl,
-            final ServiceInfo serviceInfo) {
+            final SessionServiceHealthControl sessionServiceHealthControl) {
 
         this.sessionServiceHealthControl = sessionServiceHealthControl;
-        this.serviceInfo = serviceInfo;
     }
 
     @RequestMapping(
