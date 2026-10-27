@@ -172,6 +172,7 @@ public final class API {
     public static final String SCREENSHOT_DATA_ENDPOINT = "/screenshot-data";
     public static final String SCREENSHOT_TIMESTAMPS_ENDPOINT = "/screenshot-timestamps";
     public static final String SEARCH_ENDPOINT = "/search";
+    public static final String UPDATE_INSTITUTION_ENDPOINT = "/update-institution";
 
     public static final String LOG_ENDPOINT = "/log";
 

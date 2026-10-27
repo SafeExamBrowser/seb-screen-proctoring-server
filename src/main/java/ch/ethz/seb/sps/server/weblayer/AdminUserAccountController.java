@@ -161,10 +161,11 @@ public class AdminUserAccountController extends ActivatableEntityController<User
 
         checkAdminRole();
 
-        log.info("User synchronization request received for user: {}", userMod.uuid);
+        log.debug("User synchronization request received for user: {}", userMod.uuid);
 
         return this.userService
                 .synchronizeUserAccount(userMod)
+                .onError(error -> log.error("Failed to synchronize user: {} cause: {}", userMod, error.getMessage()))
                 .getOrThrow();
     }
 

@@ -8,11 +8,15 @@ import static org.mybatis.dynamic.sql.SqlBuilder.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.domain.api.APIError;
+import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.server.datalayer.dao.*;
 import ch.ethz.seb.sps.utils.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +37,8 @@ import ch.ethz.seb.sps.utils.Utils;
 
 @Service
 public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
+
+    Logger log = LoggerFactory.getLogger(ExamDAOBatis.class);
 
     private final ExamRecordMapper examRecordMapper;
     private final AdditionalAttributesDAO additionalAttributesDAO;
@@ -447,6 +453,71 @@ public class ExamDAOBatis implements ExamDAO, OwnedEntityDAO {
         })
                 .map(this::toDomainModel)
                 .onError(TransactionHandler::rollback);
+    }
+
+    @Override
+    @Transactional
+    public boolean updateInstitution(
+            final String examUUID,
+            final Long institutionId,
+            final Collection<String> supporter) {
+        try {
+
+            if (StringUtils.isBlank(examUUID)) {
+                throw new APIErrorException(new APIError(
+                        APIError.APIErrorType.BAD_REQUEST,
+                        "updateInstitution",
+                        "Missing UUID for update Exam"));
+            }
+
+            final ExamRecord examRec = recordByUUID(examUUID).getOrThrow();
+            final String joined_supporter = !supporter.isEmpty()
+                    ? StringUtils.join(supporter, Constants.LIST_SEPARATOR)
+                    : null;
+
+            final boolean instChange = institutionId != null && !Objects.equals(examRec.getInstitutionId(), institutionId);
+            final boolean supporterChange = !Objects.equals(examRec.getSupporter(), joined_supporter);
+
+            if (instChange) {
+                log.info("Update: change Institution for Exam: {} : {} : {} --> from: {} to: {}",
+                        examRec.getId(),
+                        examRec.getUuid(),
+                        examRec.getName(),
+                        examRec.getInstitutionId(),
+                        institutionId);
+            }
+            if (supporterChange) {
+                log.info("Update: change Supporter for Exam: {} : {} : {} --> from: {} to: {}",
+                        examRec.getId(),
+                        examRec.getUuid(),
+                        examRec.getName(),
+                        examRec.getSupporter(),
+                        supporter);
+            }
+
+            if (instChange || supporterChange) {
+                UpdateDSL.updateWithMapper(this.examRecordMapper::update, examRecord)
+                        .set(ExamRecordDynamicSqlSupport.supporter).equalToWhenPresent(joined_supporter)
+                        .set(ExamRecordDynamicSqlSupport.institutionId).equalTo(institutionId)
+                        .where(ExamRecordDynamicSqlSupport.id, isEqualTo(examRec.getId()))
+                        .build()
+                        .execute();
+
+                return true;
+            } else {
+                log.debug("Update: no institution or supporter update form for Exam: {} : {} : {}",
+                        examRec.getId(),
+                        examRec.getUuid(),
+                        examRec.getName());
+
+                return false;
+            }
+
+        } catch (final Exception e) {
+            log.error("Failed to update institution and supporter on Exam: {} cause: {}", examUUID, e.getMessage());
+            TransactionHandler.rollback(e);
+            return false;
+        }
     }
 
     @Override

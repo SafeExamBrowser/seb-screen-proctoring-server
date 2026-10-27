@@ -15,6 +15,7 @@ import ch.ethz.seb.sps.server.servicelayer.*;
 import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.BooleanUtils;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     private final ProctoringService proctoringService;
     private final ScheduledDeleteDAO scheduledDeleteDAO;
     private final ScheduledDeleteService scheduledDeleteService;
+    private final ExamDAO examDAO;
 
     public AdminExamController(
             final UserService userService,
@@ -65,6 +67,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
         this.proctoringService = proctoringService;
         this.scheduledDeleteDAO = scheduledDeleteDAO;
         this.scheduledDeleteService = scheduledDeleteService;
+        this.examDAO = entityDAO;
 
     }
 
@@ -92,6 +95,45 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             final HttpServletRequest request) {
 
         return super.create(formParameter, request);
+    }
+
+    @Operation(
+            summary = "This is like save but only updates Exam supervisor and institution",
+            description = "Note, all writable data from existing entity gets overridden with the requested data" +
+                    " and is then validated for save then. Make sure the request contains all writable " +
+                    "data of the entity otherwise the old ones are reset to null. \n" +
+                    "This expects " + MediaType.APPLICATION_JSON_VALUE +
+                    " format for the request data and verifies consistencies " +
+                    "within the definition of the specific entity object type. " +
+                    "Missing (NULL) parameter that are not mandatory will be ignored and the original value will not be affected",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE) }))
+    @RequestMapping(
+            path = API.PARAM_MODEL_PATH_SEGMENT + API.UPDATE_INSTITUTION_ENDPOINT,
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Exam updateInstitutionAndSupervisor(
+            @PathVariable final String modelId,
+            @RequestBody final Exam modifyData) {
+
+        log.debug("Received update institution call with Exam data: {}", modifyData);
+
+        return this.entityDAO.byModelId(modelId)
+                .map(this::checkModifyAccess)
+                .map(exam -> this.examDAO.updateInstitution(
+                        modelId,
+                        modifyData.institutionId,
+                        modifyData.supporter))
+                .map(updated -> {
+                    final Exam exam = entityDAO.byModelId(modelId).getOrThrow();
+                    if (BooleanUtils.isTrue(updated)) {
+                        this.notifySaved(exam);
+                    }
+                    return exam;
+                })
+                .map(this::notifySaved)
+                .getOrThrow();
     }
 
     @Operation(
