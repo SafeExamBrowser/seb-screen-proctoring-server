@@ -21,8 +21,6 @@ WORKDIR /sebsps
 CMD exec java \
         -Xms${JAVA_HEAP_MIN} \
         -Xmx${JAVA_HEAP_MAX} \
-        -Dcom.sun.net.ssl.checkRevocation=true \
-        -Dcom.sun.security.enableCRLDP=true \
         -jar "seb-sps.jar" \
         --spring.config.location=classpath:/config/,optional:file:/sebsps/config/spring/; \
 
