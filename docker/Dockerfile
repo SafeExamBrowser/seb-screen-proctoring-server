@@ -1,4 +1,9 @@
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jre
+
+# Temporary: remove eMudhra G3 trust until the JDK vendor ships a fix
+RUN rm /etc/ssl/certs/emSign_ECC_Root_CA_-_C3.pem
+RUN rm /etc/ssl/certs/emSign_Root_CA_-_C1.pem
+RUN rm /etc/ssl/certs/emSign_Root_CA_-_G1.pem
 
 ENV SERVER_PORT="8090"
 ENV JMX_PORT="9091"
@@ -16,13 +21,8 @@ WORKDIR /sebsps
 CMD exec java \
         -Xms${JAVA_HEAP_MIN} \
         -Xmx${JAVA_HEAP_MAX} \
-        -Dcom.sun.management.jmxremote \
-        -Dcom.sun.management.jmxremote.port=${JMX_PORT} \
-        -Dcom.sun.management.jmxremote.rmi.port=${JMX_PORT} \
-        -Djava.rmi.server.hostname=localhost \
-        -Dcom.sun.management.jmxremote.local.only=false \
-        -Dcom.sun.management.jmxremote.ssl=false \
-        -Dcom.sun.management.jmxremote.authenticate=false \
+        -Dcom.sun.net.ssl.checkRevocation=true \
+        -Dcom.sun.security.enableCRLDP=true \
         -jar "seb-sps.jar" \
         --spring.config.location=classpath:/config/,optional:file:/sebsps/config/spring/; \
 
