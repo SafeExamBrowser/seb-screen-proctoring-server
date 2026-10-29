@@ -8,11 +8,10 @@ SEB Server Screen Proctoring Webservice (sps-webservice) is a subproject of the 
 a new webservice component running beside the seb-server service to provide screen proctoring features
 for SEB Server.
 
-Together with the SEB Server Screen Proctoring Guiservice (sps-guiservice), this service, that fully integrates to SEB Server, allows to configure and apply screen proctoring for exams with the `Safe Exam Browser (SEB) <https://safeexambrowser.org>`_.
-
 The Image below shows the two screen proctoring components, sps-webservice and sps-guiservice, together with SEB Server and SEB Client and how they interact with each-other. This shows also how a fully bundled of SEB Server setup since version 2.0, would look like.
 
-.. image:: https://raw.githubusercontent.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png
+.. image:: https://github.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png
+    :align: center
     :target: https://github.com/SafeExamBrowser/seb-screen-proctoring-server/tree/dev-1.0/docu/Screen_Proctoring_Architecture.png
     
 
@@ -22,16 +21,14 @@ SEB - SEB Server Compatibility
 The table below shows available and upcoming SEB client versions that has SEB Server integration support and are compatible with particular
 SEB Server versions. There is an entry for each platform with a beta or testing release date and an official release date.
 
-**SPS webservice version 1.2 is fully compatible with SEB Server version 2.2**
-
-SEB Client Compatibility:
+**SEB Server and Screen Procotring Version 3.0.x**
 
 .. csv-table::
-    :header: "Platform / OS", "Release Version"
-    
-    "SEB Client for iOS", "3.5"
-    "SEB Client for Mac", "3.6"
-    "SEB Client for Windows", "3.10"
+   :header: "Platform / OS", "Release Version"
+
+   "SEB Client for iOS", "3.7.1.1"
+   "SEB Client for Mac", "3.7.1.1"
+   "SEB Client for Windows", "3.10.3"
 
 Install SEB Server
 ------------------
@@ -40,6 +37,12 @@ For a complete guide to install SEB Server please go to `SEB Server Installation
 
 Getting started with SEB Server
 -------------------------------
+
+**NOTE**
+
+    The following is the SEB Server User Guide for the SEB Server version 2.x. Since there is no actual User Guide for version 3.0 yet
+    you can use this as a reference. We will provide you with an actual SEB Server User Guide for version 3.x as soon as possible.
+
 
 For a complete SEB Server user guide please go to `SEB Server User Guide <https://seb-server.readthedocs.io/en/latest/#>`_
 
