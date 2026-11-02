@@ -10,6 +10,7 @@ import ch.ethz.seb.sps.domain.model.service.ScreenshotViewData;
 import ch.ethz.seb.sps.domain.model.service.ScreenshotsInGroupData;
 import ch.ethz.seb.sps.domain.model.service.SessionSearchResult;
 import ch.ethz.seb.sps.domain.model.service.TimelineViewData;
+import ch.ethz.seb.sps.integrationtests.RestAPITestHelper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -228,7 +229,7 @@ public class ProctoringServiceTest extends ServiceTest_PROCTORING {
 
 
     private <T> T createMockApiCall(String endpoint, HttpMethod httpMethod, TypeReference<T> typeReference, Map<String, String> attributes) throws Exception {
-        return new RestAPITestHelper()
+        return super.getRestAPITestHelper()
                 .withAccessToken(getSebAdminAccess())
                 .withPath("/proctoring" + endpoint)
                 .withMethod(httpMethod)

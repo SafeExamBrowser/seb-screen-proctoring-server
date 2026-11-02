@@ -57,7 +57,7 @@ public class PasswordChange implements Entity {
     }
 
     @Override
-    public Long getId() {
+    public Long getPK() {
         return null;
     }
 

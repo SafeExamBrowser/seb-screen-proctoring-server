@@ -121,12 +121,11 @@ public class LiveProctoringCacheServiceImpl implements LiveProctoringCacheServic
 
             // check if session still active
             if (!this.sessionDAO.isActive(sessionUUID)) {
-
                 return null;
             }
             
             if (log.isDebugEnabled()) {
-                log.debug("Create ad-hoc cache slot for active session: {}", sessionUUID);
+                log.debug("Check ad-hoc cache slot for active session: {}", sessionUUID);
             }
             
             synchronized (this.cache) {

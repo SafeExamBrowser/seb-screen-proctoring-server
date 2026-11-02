@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -31,10 +33,16 @@ public class GroupServiceImpl implements GroupService {
     private static final Logger log = LoggerFactory.getLogger(GroupServiceImpl.class);
 
     private final UserService userService;
+    private final ExamDAO examDAO;
     private final GroupDAO groupDAO;
 
-    public GroupServiceImpl(final UserService userService, final GroupDAO groupDAO) {
+    public GroupServiceImpl(
+            final UserService userService,
+            final ExamDAO examDAO,
+            final GroupDAO groupDAO) {
+
         this.userService = userService;
+        this.examDAO = examDAO;
         this.groupDAO = groupDAO;
     }
 
@@ -52,11 +60,29 @@ public class GroupServiceImpl implements GroupService {
                 .getOrThrow();
 
         // list of exam id's with users entity read privileges
-        final Set<Long> examGrants = this.userService
-                .getIdsWithReadEntityPrivilege(EntityType.EXAM)
-                .getOrThrow();
+        final Set<Long> examGrants = new HashSet<>();
+        if (userService.hasRole(API.UserRole.INST_ADMIN)) {
+            // in this case the user has access to all Exams within the same institution
+            try {
+                final Long instId = userService.getCurrentUser().getUserInfo().institutionId;
+                examGrants.addAll(
+                        this.examDAO.getAllExamIdsOfInstitution(instId)
+                );
+            } catch (Exception e) {
+                log.error("Failed to get institution of logged in user: {}", e.getMessage());
+                examGrants.addAll(
+                        this.userService
+                        .getIdsWithReadEntityPrivilege(EntityType.EXAM)
+                        .getOr(Collections.emptySet())
+                );
+            }
+        } else {
+            examGrants.addAll(this.userService
+                    .getIdsWithReadEntityPrivilege(EntityType.EXAM)
+                    .getOr(Collections.emptySet()));
+        }
 
-        final Set<Long> privileged = new HashSet<>((examGrants == null || examGrants.isEmpty())
+        final Set<Long> privileged = new HashSet<>((examGrants.isEmpty())
                 ? directGrants
                 : this.groupDAO
                         .allIdsForExamsIds(examGrants)

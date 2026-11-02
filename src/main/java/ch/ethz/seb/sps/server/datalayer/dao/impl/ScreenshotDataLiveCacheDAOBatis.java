@@ -102,11 +102,10 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
     @Transactional(readOnly = true)
     public Result<Collection<ScreenshotDataLiveCacheRecord>> getAll() {
         return Result.tryCatch(() -> {
-            final List<ScreenshotDataLiveCacheRecord> execute = screenshotDataLiveCacheRecordMapper
+            return screenshotDataLiveCacheRecordMapper
                     .selectByExample()
                     .build()
                     .execute();
-            return execute;
         });
     }
 
@@ -125,7 +124,7 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
                 log.warn("Expected one cache entry for session: {} but found: {}", sessionUUID, existing.size());
             }
 
-            ScreenshotDataLiveCacheRecord rec = existing.get(0);
+            final ScreenshotDataLiveCacheRecord rec = existing.getFirst();
             if (rec.getIdLatestSsd() != null) {
                 return rec.getId();
             } else {
@@ -151,6 +150,11 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
                         sessionUUID,
                         lastScreenshotEntryId
                 );
+
+                if (log.isDebugEnabled()) {
+                    log.debug("Create DB cache slot for active session: {}", sessionUUID);
+                }
+
                 screenshotDataLiveCacheRecordMapper.insert(rec);
                 return rec.getId();
             } else {
@@ -170,10 +174,12 @@ public class ScreenshotDataLiveCacheDAOBatis implements ScreenshotDataLiveCacheD
                     .execute();
 
             if (all != null && !all.isEmpty()) {
-                return all.get(all.size() - 1);
+                return all.getLast();
             }
 
-            log.info("No screenshot entry found for session: {}", sessionUUID);
+            if (log.isDebugEnabled()) {
+                log.debug("No screenshot entry found for session: {}", sessionUUID);
+            }
             return null;
         } catch (Exception e) {
             log.error("Failed to get last screenshot entry for session: {} error: {}", sessionUUID, e.getMessage());

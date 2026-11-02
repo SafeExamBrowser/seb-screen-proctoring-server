@@ -10,8 +10,11 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
 import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +41,17 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
     private final ScreenshotMapper screenshotMapper;
     private final ScreenshotRecordMapper screenshotRecordMapper;
 
+    private byte[] NULL_BYTE_ARRAY;
+
     public ScreenshotDAOBatis(
             final ScreenshotMapper screenshotMapper,
             final ScreenshotRecordMapper screenshotRecordMapper) {
 
         this.screenshotMapper = screenshotMapper;
         this.screenshotRecordMapper = screenshotRecordMapper;
+
+        NULL_BYTE_ARRAY = new byte[10000];
+        Arrays.fill(NULL_BYTE_ARRAY, (byte) 0);
     }
 
     @EventListener(ServiceInitEvent.class)
@@ -100,6 +108,31 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
             return screenShotPKs;
 
         }).onError(TransactionHandler::rollback);
+    }
+
+    @Override
+    @Transactional
+    public Result<List<Long>> secureDeleteAllForSession(String sessionUUID, List<Long> screenShotPKs) {
+        return Result.tryCatch(() -> {
+            return screenShotPKs
+                    .stream()
+                    .map(pk -> {
+
+                        // first overwrite the image
+                        try {
+                            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(NULL_BYTE_ARRAY);
+                            final BlobContent blobContent = new BlobContent(pk, byteArrayInputStream);
+                            this.screenshotMapper.update(blobContent);
+                        } catch (Exception e) {
+                            log.warn("Failed to overwrite Image for session: {} cause: {}", sessionUUID, e.getMessage());
+                        }
+
+                        this.screenshotRecordMapper.deleteByPrimaryKey(pk);
+                        return pk;
+                    })
+                    .filter(Objects::nonNull)
+                    .toList();
+        });
     }
 
 }

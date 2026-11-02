@@ -59,4 +59,6 @@ public interface UserAccount extends Entity {
 
     Set<UserRole> getUserRoles();
 
+    Long getInstitutionId();
+
 }

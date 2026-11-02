@@ -10,12 +10,15 @@ package ch.ethz.seb.sps.server.weblayer;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.server.servicelayer.*;
+import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.servlet.http.HttpServletRequest;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,7 +128,6 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<EntityKey> requestDelete(@PathVariable(name = API.PARAM_MODEL_ID) final String groupUUID) {
-        // TODO this should never block here do this in background with balk action
         if (!this.sessionService.hasAnySessionDataForGroup(groupUUID)) {
             return super.hardDelete(groupUUID);
         } else {
@@ -133,6 +135,16 @@ public class AdminGroupController extends ActivatableEntityController<Group, Gro
             super.deactivate(groupUUID);
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public Collection<EntityKey> hardDelete(String modelId) {
+        throw new UnsupportedOperationException("Direct hard delete of Group is not supported. Use scheduled delete instead");
+    }
+
+    @Override
+    public Collection<EntityKey> hardDeleteAll(List<String> ids, HttpServletResponse response) {
+        throw new UnsupportedOperationException("Direct hard delete of Group is not supported. Use scheduled delete instead");
     }
 
     @Override

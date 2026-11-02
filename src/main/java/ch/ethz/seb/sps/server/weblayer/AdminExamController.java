@@ -1,14 +1,21 @@
 package ch.ethz.seb.sps.server.weblayer;
 
+import ch.ethz.seb.sps.domain.Domain;
+import ch.ethz.seb.sps.domain.model.FilterMap;
+import ch.ethz.seb.sps.domain.model.Page;
+import ch.ethz.seb.sps.domain.model.service.ScheduledDelete;
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScheduledDeleteRecordDynamicSqlSupport;
+import ch.ethz.seb.sps.server.datalayer.dao.ScheduledDeleteDAO;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 import ch.ethz.seb.sps.domain.model.EntityKey;
 import ch.ethz.seb.sps.server.servicelayer.*;
 import ch.ethz.seb.sps.utils.Result;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.BooleanUtils;
 import org.mybatis.dynamic.sql.SqlTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +45,9 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     private final GroupDAO groupDAO;
     private final SessionService sessionService;
     private final ProctoringService proctoringService;
+    private final ScheduledDeleteDAO scheduledDeleteDAO;
+    private final ScheduledDeleteService scheduledDeleteService;
+    private final ExamDAO examDAO;
 
     public AdminExamController(
             final UserService userService,
@@ -47,12 +57,18 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             final BeanValidationService beanValidationService,
             final GroupDAO groupDAO,
             final SessionService sessionService,
-            final ProctoringService proctoringService) {
+            final ProctoringService proctoringService,
+            final ScheduledDeleteDAO scheduledDeleteDAO,
+            final ScheduledDeleteService scheduledDeleteService) {
 
         super(userService, entityDAO, auditLogDAO, paginationService, beanValidationService);
         this.groupDAO = groupDAO;
         this.sessionService = sessionService;
         this.proctoringService = proctoringService;
+        this.scheduledDeleteDAO = scheduledDeleteDAO;
+        this.scheduledDeleteService = scheduledDeleteService;
+        this.examDAO = entityDAO;
+
     }
 
     @Operation(
@@ -82,6 +98,45 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
     }
 
     @Operation(
+            summary = "This is like save but only updates Exam supervisor and institution",
+            description = "Note, all writable data from existing entity gets overridden with the requested data" +
+                    " and is then validated for save then. Make sure the request contains all writable " +
+                    "data of the entity otherwise the old ones are reset to null. \n" +
+                    "This expects " + MediaType.APPLICATION_JSON_VALUE +
+                    " format for the request data and verifies consistencies " +
+                    "within the definition of the specific entity object type. " +
+                    "Missing (NULL) parameter that are not mandatory will be ignored and the original value will not be affected",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE) }))
+    @RequestMapping(
+            path = API.PARAM_MODEL_PATH_SEGMENT + API.UPDATE_INSTITUTION_ENDPOINT,
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Exam updateInstitutionAndSupervisor(
+            @PathVariable final String modelId,
+            @RequestBody final Exam modifyData) {
+
+        log.debug("Received update institution call with Exam data: {}", modifyData);
+
+        return this.entityDAO.byModelId(modelId)
+                .map(this::checkModifyAccess)
+                .map(exam -> this.examDAO.updateInstitution(
+                        modelId,
+                        modifyData.institutionId,
+                        modifyData.supporter))
+                .map(updated -> {
+                    final Exam exam = entityDAO.byModelId(modelId).getOrThrow();
+                    if (BooleanUtils.isTrue(updated)) {
+                        this.notifySaved(exam);
+                    }
+                    return exam;
+                })
+                .map(this::notifySaved)
+                .getOrThrow();
+    }
+
+    @Operation(
             summary = "Deletes a single entity (and all its dependencies) by its modelId.",
             description = "To check or report what dependent object also would be deleted for a certain entity object, "
                     +
@@ -99,15 +154,109 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
             method = RequestMethod.DELETE,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-
     public Collection<EntityKey> requestDelete(@PathVariable final String modelId) {
-        // TODO this should never block here do this in background with balk action
         if (!this.sessionService.hasAnySessionDataForExam(modelId)) {
             return super.hardDelete(modelId);
         } else {
             log.info("Exam will not be deleted because it already has screenshot data assigned to it. Exam: {}", modelId);
+
+            setActiveSingle(modelId, false)
+                    .onError(error -> log.error("Failed to close exam on deletion request: {}", error.getMessage()))
+                    .onSuccess(exam -> log.info("Closed Exam with data due to deletion request: {}", exam.uuid));
+
             return Collections.emptyList();
         }
+    }
+
+    // ****************************************************************************
+    // **** Scheduled Delete
+
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_ENDPOINT,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<ScheduledDelete> getScheduledDeletePage(
+            @RequestParam(name = Page.ATTR_PAGE_NUMBER, required = false) final Integer pageNumber,
+            @RequestParam(name = Page.ATTR_PAGE_SIZE, required = false) final Integer pageSize,
+            @RequestParam(name = Page.ATTR_SORT, required = false) final String sort,
+            @RequestParam(required = false) final MultiValueMap<String, String> allRequestParams,
+            final HttpServletRequest request) {
+
+        userService.checkIsAdmin();
+
+        final FilterMap filterMap = new FilterMap(allRequestParams, request.getQueryString());
+        return this.paginationService.getPage(
+                        pageNumber,
+                        pageSize,
+                        sort,
+                        ScheduledDeleteRecordDynamicSqlSupport.scheduledDeleteRecord.tableNameAtRuntime(),
+                        () -> scheduledDeleteDAO.allMatching(filterMap))
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_ENDPOINT + API.PARAM_MODEL_PATH_SEGMENT,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ScheduledDelete getScheduledDelete(@PathVariable final String modelId) {
+
+        userService.checkIsAdmin();
+
+        return scheduledDeleteDAO
+                .byModelId(modelId)
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_REQUEST_ENDPOINT,
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ScheduledDelete requestScheduledDelete(
+            @RequestParam(name = Domain.SCHEDULED_DELETE.ATTR_DELETE_DUE_TIME, required = true) final Long dueTimeUTC,
+            @RequestParam(name = EXAM.ATTR_INSTITUTION_ID, required = false) final Long institutionId) {
+
+        userService.checkIsAdmin();
+        return scheduledDeleteService
+                .requestScheduledDelete(dueTimeUTC, institutionId)
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_ENDPOINT,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ScheduledDelete createScheduledDelete(@RequestBody final ScheduledDelete scheduledDelete) {
+
+        userService.checkIsAdmin();
+        return scheduledDeleteService
+                .createScheduledDelete(scheduledDelete)
+                .getOrThrow();
+    }
+
+    @RequestMapping(
+            path = API.SCHEDULED_DELETE_ENDPOINT + API.PARAM_MODEL_PATH_SEGMENT,
+            method = RequestMethod.DELETE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public EntityKey deleteScheduled(@PathVariable final String modelId) {
+
+        userService.checkIsAdmin();
+        return scheduledDeleteService
+                .deleteScheduledDelete(modelId)
+                .getOrThrow();
+    }
+
+    // **** Scheduled Delete
+    // ****************************************************************************
+
+    @Override
+    public Collection<EntityKey> hardDelete(String modelId) {
+        throw new UnsupportedOperationException("Direct hard delete of Exam is not supported. Use scheduled delete instead");
+    }
+
+    @Override
+    public Collection<EntityKey> hardDeleteAll(List<String> ids, HttpServletResponse response) {
+        throw new UnsupportedOperationException("Direct hard delete of Exam is not supported. Use scheduled delete instead");
     }
 
     @Override
@@ -164,7 +313,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 null,
                 postParams.getLong(EXAM.ATTR_START_TIME),
                 postParams.getLong(EXAM.ATTR_END_TIME),
-                postParams.getLong(EXAM.ATTR_DELETION_TIME));
+                postParams.getLong(EXAM.ATTR_INSTITUTION_ID));
     }
 
     @Override
@@ -213,7 +362,7 @@ public class AdminExamController extends ActivatableEntityController<Exam, Exam>
                 null,
                 modifyData.startTime,
                 modifyData.endTime,
-                modifyData.deletionTime);
+                modifyData.institutionId);
     }
 
     @Override

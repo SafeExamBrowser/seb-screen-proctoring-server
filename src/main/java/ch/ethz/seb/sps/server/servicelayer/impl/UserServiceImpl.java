@@ -89,6 +89,9 @@ public class UserServiceImpl implements UserService {
                         new Privilege(EntityType.SCREENSHOT_DATA, API.PRIVILEGES_WRITE),
                         new Privilege(EntityType.AUDIT_LOG, API.PRIVILEGES_WRITE)));
 
+
+        // INST_ADMIN will have read access to Exams within same institution granted on lower level (since 3.0)
+        this.rolePrivileges.put(UserRole.INST_ADMIN, Collections.emptyList());
         // proctor and teacher only has dedicated entity privileges
         this.rolePrivileges.put(UserRole.PROCTOR, Collections.emptyList());
         this.rolePrivileges.put(UserRole.TEACHER, Collections.emptyList());
@@ -239,14 +242,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<UserInfo> synchronizeUserAccount(final UserMod userMod) {
-        return this.userDAO.synchronizeUserAccount(userMod)
+        return this.userDAO
+                .synchronizeUserAccount(userMod)
                 .map(this::synchronizeUserPrivileges)
                 .map(user -> {
                     proctoringCacheService.evictServerUserByName(userMod.username);
                     return user;
                 });
     }
-    
+
+    @Override
+    public boolean existsByUUID(String userUUID) {
+        final Result<Long> userIdByUUID = userDAO.getUserIdByUUID(userUUID);
+        return !userIdByUUID.hasError();
+    }
+
     private UserInfo synchronizeUserPrivileges(final UserInfo userInfo) {
         try {
 
@@ -254,13 +264,6 @@ public class UserServiceImpl implements UserService {
                     .getOrThrow();
             
             boolean isAdmin = userInfo.roles.contains(UserRole.ADMIN.name());
-            // TODO
-//            entityPrivilegeDAO.updatePrivileges(
-//                    privileges.entityPrivileges
-//                            .stream()
-//                            .map(EntityPrivilege::getId)
-//                            .collect(Collectors.toList()), 
-//                    isAdmin ? PrivilegeType.WRITE : PrivilegeType.READ);
             privileges.entityPrivileges.forEach( p -> {
                 this.entityPrivilegeDAO.updatePrivilege(
                         p.id,
@@ -373,6 +376,18 @@ public class UserServiceImpl implements UserService {
         if (!currentUser.getUserRoles().contains(UserRole.ADMIN)) {
             throw APIErrorException.ofPermissionDenied(null, PrivilegeType.WRITE, currentUser.getUserInfo());
         }
+    }
+
+    @Override
+    public boolean hasRole(final UserRole userRole) {
+        if (userRole == null) {
+            return false;
+        }
+        ServerUser currentUser = getCurrentUser();
+        if (currentUser != null) {
+            return currentUser.getUserRoles().contains(userRole);
+        }
+        return false;
     }
 
 

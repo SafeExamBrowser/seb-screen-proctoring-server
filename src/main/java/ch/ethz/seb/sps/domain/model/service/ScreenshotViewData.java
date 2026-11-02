@@ -138,7 +138,7 @@ public final class ScreenshotViewData {
         this.startTime = startTime;
         this.timestamp = timestamp;
         this.endTime = endTime;
-        this.active = this.timestamp >= this.endTime;
+        this.active = this.timestamp == null || this.timestamp >= this.endTime;
         this.uuid = uuid;
         this.clientName = clientName;
         this.clientIP = clientIP;

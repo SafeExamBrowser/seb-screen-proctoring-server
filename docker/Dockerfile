@@ -1,4 +1,7 @@
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
+
+# remove all eMudhra trusts until the JDK vendor ships a fix
+RUN keytool -delete -noprompt -trustcacerts -cacerts -alias "cn_emsign_root_ca__g1,o_emudhra_technologies_limited,ou_emsign_pki,c_in [jdk]" -storepass changeit
 
 ENV SERVER_PORT="8090"
 ENV JMX_PORT="9091"
@@ -16,14 +19,7 @@ WORKDIR /sebsps
 CMD exec java \
         -Xms${JAVA_HEAP_MIN} \
         -Xmx${JAVA_HEAP_MAX} \
-        -Dcom.sun.management.jmxremote \
-        -Dcom.sun.management.jmxremote.port=${JMX_PORT} \
-        -Dcom.sun.management.jmxremote.rmi.port=${JMX_PORT} \
-        -Djava.rmi.server.hostname=localhost \
-        -Dcom.sun.management.jmxremote.local.only=false \
-        -Dcom.sun.management.jmxremote.ssl=false \
-        -Dcom.sun.management.jmxremote.authenticate=false \
         -jar "seb-sps.jar" \
-        --spring.config.location=file:/sebsps/config/spring/,classpath:/config/; \
+        --spring.config.location=classpath:/config/,optional:file:/sebsps/config/spring/; \
 
 EXPOSE $SERVER_PORT $JMX_PORT

@@ -36,11 +36,9 @@ public class RegisteredGuiClient {
             @Value("${sps.api.admin.gui.clientId}") final String clientId,
             @Value("${sps.api.admin.gui.clientSecret}") final String clientSecret,
             @Value("${sps.api.admin.accessTokenValiditySeconds:3600}") final Integer accessTokenValiditySeconds,
-            @Value("${sps.api.admin.refreshTokenValiditySeconds:-1}") final Integer refreshTokenValiditySeconds) {
+            @Value("${sps.api.admin.refreshTokenValiditySeconds:86400}") final Integer refreshTokenValiditySeconds) {
 
-            Duration refreshTokenValDuration = (refreshTokenValiditySeconds == null || refreshTokenValiditySeconds.longValue() < 0)
-                    ? Duration.of(1, YEARS)
-                    : Duration.of(refreshTokenValiditySeconds, SECONDS);
+            final Duration refreshTokenValDuration = Duration.of(refreshTokenValiditySeconds, SECONDS);
 
             client = RegisteredClient
                     .withId(clientId)

@@ -1,5 +1,5 @@
 INSERT IGNORE INTO `user` VALUES
-    (1, 'super-admin', 'super-admin', 'surname', 'super-admin', '$2a$08$c2GKYEYoUVXH1Yb8GXVXVu66ltPvbZgLMcVSXRH.LgZNF/YeaYB8m', 'super-admin@nomail.nomail', 'en', 'UTC', 'ADMIN', 0, 0, null)
+    (1, 'super-admin', 'super-admin', 'surname', 'super-admin', '$2a$08$c2GKYEYoUVXH1Yb8GXVXVu66ltPvbZgLMcVSXRH.LgZNF/YeaYB8m', 'super-admin@nomail.nomail', 'en', 'UTC', 'ADMIN', 0, 0, null, 1)
 ;
 
 INSERT IGNORE INTO `client_access` VALUES
@@ -7,7 +7,7 @@ INSERT IGNORE INTO `client_access` VALUES
 ;
 
 INSERT IGNORE INTO `exam` VALUES
-    (1, 'a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', 'test exam 01', '', '', '', 'super-admin', '', 1709890124393, 1709890124393, NULL, 1709890124393, 1709890124397, null)
+    (1, 'a33d1f74-d5f2-47a3-8993-dc4d813bd4e4', 'test exam 01', '', '', '', 'super-admin', '', 1709890124393, 1709890124393, NULL, 1709890124393, 1709890124397, 1)
 ;
 
 INSERT IGNORE INTO `seb_group` VALUES

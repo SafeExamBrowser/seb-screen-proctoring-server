@@ -21,6 +21,7 @@ public final class API {
 
     public enum UserRole {
         ADMIN,
+        INST_ADMIN,
         PROCTOR,
         TEACHER
     }
@@ -118,14 +119,16 @@ public final class API {
     public static final String CURRENT_USER_PATH_SEGMENT = "/me";
     public static final String CURRENT_USER_ENDPOINT = API.USER_ACCOUNT_ENDPOINT + CURRENT_USER_PATH_SEGMENT;
     public static final String SELF_PATH_SEGMENT = "/self";
-    public static final String LOGIN_PATH_SEGMENT = "/loglogin";
-    public static final String LOGOUT_PATH_SEGMENT = "/loglogout";
+    public static final String LOGIN_PATH_SEGMENT = "/login";
+    public static final String LOGOUT_PATH_SEGMENT = "/logout";
     public static final String PASSWORD_PATH_SEGMENT = "/password";
     public static final String USER_PRIVILEGES_ENDPOINT = "privileges";
     public static final String USERSYNC_SEBSERVER_ENDPOINT = "/usersync/sebserver";
     public static final String ENTITY_PRIVILEGE_ENDPOINT = "/entityprivilege";
     public static final String REGISTER_ENDPOINT = "/register";
     public static final String REQUEST_DELETE_ENDPOINT = "/request";
+    public static final String SCHEDULED_DELETE_ENDPOINT = "/scheduled-delete";
+    public static final String SCHEDULED_DELETE_REQUEST_ENDPOINT = SCHEDULED_DELETE_ENDPOINT + "/request";
 
     public static final String CLIENT_ACCESS_ENDPOINT = "/clientaccess";
 
@@ -140,6 +143,8 @@ public final class API {
     public static final String SESSION_HEADER_SEB_OS = "seb_os_name";
     public static final String SESSION_HEADER_SEB_VERSION = "seb_version";
     public static final String SESSION_HEADER_ENCRYPT_KEY = "seb_session_encrypt_key";
+    public static final String SESSION_REQUEST_DELETION = "/request-deletion";
+    public static final String SESSION_SECURE_DELETE_ENDPOINT = "/secure";
 
     public static final String SPS_SERVER_HEALTH = "sps_server_health";
 
@@ -167,6 +172,7 @@ public final class API {
     public static final String SCREENSHOT_DATA_ENDPOINT = "/screenshot-data";
     public static final String SCREENSHOT_TIMESTAMPS_ENDPOINT = "/screenshot-timestamps";
     public static final String SEARCH_ENDPOINT = "/search";
+    public static final String UPDATE_INSTITUTION_ENDPOINT = "/update-institution";
 
     public static final String LOG_ENDPOINT = "/log";
 

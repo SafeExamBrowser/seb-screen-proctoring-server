@@ -233,7 +233,12 @@ public class OAuth2PasswordGrantAuthenticationProvider implements Authentication
             log.debug("got usernamePasswordAuthenticationToken={}", usernamePasswordAuthenticationToken);
         }
 
-        return authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        try {
+            return authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        } catch (AuthenticationException e) {
+            log.warn("AuthenticationException: {}", e.getMessage());
+            throw e;
+        }
     }
 
     private OAuth2ClientAuthenticationToken getAuthenticatedClientElseThrowInvalidClient(Authentication authentication) {

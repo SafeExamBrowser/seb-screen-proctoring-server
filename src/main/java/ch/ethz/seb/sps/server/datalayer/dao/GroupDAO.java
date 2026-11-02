@@ -27,6 +27,8 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
 
     Result<Collection<Group>> byGroupName(FilterMap filterMap);
 
+    Result<Collection<Group>> byExamId(Long examId);
+
     Result<GroupViewData> getGroupWithExamData(Long groupId);
 
     Result<Collection<Long>> getGroupIdsWithExamData(
@@ -42,6 +44,8 @@ public interface GroupDAO extends ActivatableEntityDAO<Group, Group> {
     Result<Collection<EntityKey>> deleteAllForExams(List<Long> examPKs);
 
     Result<Collection<Long>> allIdsForExamsIds(Collection<Long> examPKs);
+
+    Result<Collection<String>> markGroupsForUpdate(Long examId);
 
     boolean needsUpdate(String groupUUID, Long lastUpdateTime);
 

@@ -126,6 +126,23 @@ public class APIErrorException extends RuntimeException {
                 null));
     }
 
+    public static Exception ofIllegalArgument(
+            final String request,
+            final String message,
+            final String argument) {
+
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("argument", argument);
+        attributes.put("parameter", argument);
+
+        return new APIErrorException(new APIError(
+                APIErrorType.BAD_REQUEST,
+                request,
+                message,
+                attributes,
+                null));
+    }
+
     public static APIErrorException ofFieldValidation(
             final String request,
             final String fieldName,
@@ -167,5 +184,6 @@ public class APIErrorException extends RuntimeException {
                 null,
                 null));
     }
+
 
 }

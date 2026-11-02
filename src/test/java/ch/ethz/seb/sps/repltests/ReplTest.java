@@ -11,21 +11,8 @@ package ch.ethz.seb.sps.repltests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
-import ch.ethz.seb.sps.utils.Utils;
-import org.apache.commons.codec.binary.Hex;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,7 +27,6 @@ import ch.ethz.seb.sps.domain.model.service.Exam;
 import ch.ethz.seb.sps.domain.model.user.EntityPrivilege;
 import ch.ethz.seb.sps.domain.model.user.UserPrivileges;
 import io.swagger.v3.core.util.Constants;
-import org.springframework.security.crypto.keygen.KeyGenerators;
 
 public class ReplTest {
 
@@ -142,7 +128,7 @@ public class ReplTest {
 
         final Exam exam = jsonMapper.readValue(json, Exam.class);
         assertEquals(
-                "Exam{id=null, uuid='null', name='Demo Quiz 10 (MOCKUP)', description='Starts in a minute and ends after five minutes', url='http://lms.address.alias/api/', type='BYOD', owner='null', supporter=[], creationTime=null, lastUpdateTime=null, terminationTime=null, startTime=1695884353000, endTime=1695884653000, deletionTime=null, entityPrivileges=null}",
+                "Exam{id=null, uuid='null', name='Demo Quiz 10 (MOCKUP)', description='Starts in a minute and ends after five minutes', url='http://lms.address.alias/api/', type='BYOD', owner='null', supporter=[], creationTime=null, lastUpdateTime=null, terminationTime=null, startTime=1695884353000, endTime=1695884653000, institutionId=null, entityPrivileges=null}",
                 exam.toString());
     }
 

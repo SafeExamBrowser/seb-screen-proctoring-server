@@ -131,7 +131,6 @@ public class ProctoringCacheService {
     public Session getSession(final String sessionUUID) {
         return this.sessionDAO
                 .byModelId(sessionUUID)
-                .onError(error -> log.error("Failed to load session by model id: {}", sessionUUID, error))
                 .getOr(null);
     }
 

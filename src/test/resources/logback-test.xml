@@ -10,8 +10,8 @@
         <appender-ref ref="STDOUT" />
     </root>
     
-    <Logger name="ch.ethz.seb" level="DEBUG" additivity="true" />
-    <Logger name="ch.ethz.seb.sps.generator" level="TRACE" additivity="true" />
-    <Logger name="org.mybatis.generator" level="TRACE" additivity="true" />
+    <Logger name="ch.ethz.seb" level="INFO" additivity="true" />
+    <Logger name="ch.ethz.seb.sps.generator" level="INFO" additivity="true" />
+    <Logger name="org.mybatis.generator" level="INFO" additivity="true" />
     
 </configuration>

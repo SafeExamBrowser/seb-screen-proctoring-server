@@ -54,4 +54,6 @@ public interface ScreenshotDataDAO extends EntityDAO<ScreenshotData, ScreenshotD
     Result<List<Long>> getTimestampListForApplicationSearch(String sessionUuid, String metadataApplication, String metadataWindowTitle);
 
     Result<ScreenshotDataRecord> recordByPK(Long latestSSDataId);
+
+    Long getNumberOfEntriesForSession(String sessionUUID);
 }

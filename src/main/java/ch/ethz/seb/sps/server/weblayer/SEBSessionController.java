@@ -320,9 +320,12 @@ public class SEBSessionController {
                         final int overallLoadIndicator = this.sessionServiceHealthControl.getOverallLoadIndicator();
                         response.setHeader(API.SPS_SERVER_HEALTH, String.valueOf(overallLoadIndicator));
 
+                    } catch (IllegalStateException ise) {
+                        log.error("Failed to store screenshot: {}", ise.getMessage());
+                        trySendErrorStatusBack(response);
                     } catch (final Exception e) {
                         log.error("Failed to store screenshot: ", e);
-                        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                        trySendErrorStatusBack(response);
                     }
                 },
                 this.uploadExecutor);
@@ -330,8 +333,7 @@ public class SEBSessionController {
 
     @RequestMapping(
             path = API.PARAM_MODEL_PATH_SEGMENT + API.SCREENSHOT_UPLOAD_ENDPOINT,
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            method = RequestMethod.GET)
     public void getEncryptionKeyForSessionUUID(
             @PathVariable(name = API.PARAM_MODEL_ID) final String sessionUUID,
             @RequestHeader(name = API.SESSION_HEADER_UUID) final String uploadSessionUUID,
@@ -348,6 +350,14 @@ public class SEBSessionController {
 
         response.setHeader(API.SESSION_HEADER_ENCRYPT_KEY, encryptionKey);
         response.setStatus(HttpStatus.OK.value());
+    }
+
+    private static void trySendErrorStatusBack(HttpServletResponse response) {
+        try {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        } catch (Exception ee) {
+            log.warn("Failed to send HTTP error status back...");
+        }
     }
 
 }

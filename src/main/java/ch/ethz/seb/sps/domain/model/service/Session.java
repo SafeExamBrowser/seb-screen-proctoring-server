@@ -168,7 +168,7 @@ public class Session implements Entity, WithLifeCycle {
     }
 
     @Override
-    public Long getId() {
+    public Long getPK() {
         return this.id;
     }
 

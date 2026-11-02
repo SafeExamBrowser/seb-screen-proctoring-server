@@ -36,9 +36,7 @@ import org.springframework.util.Assert;
 public class OAuth2ClientCredentialsGrantProvider implements AuthenticationProvider  {
 
     private static final Logger logger = LoggerFactory.getLogger(OAuth2ClientCredentialsGrantProvider.class);
-    private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
-    
-    
+
     private final OAuth2AuthorizationService authorizationService;
     private OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
     private Consumer<OAuth2ClientCredentialsAuthenticationContext> authenticationValidator = new OAuth2ClientCredentialsAuthenticationValidator();
@@ -68,7 +66,7 @@ public class OAuth2ClientCredentialsGrantProvider implements AuthenticationProvi
         } else {
             OAuth2ClientCredentialsAuthenticationContext authenticationContext = OAuth2ClientCredentialsAuthenticationContext.with(clientCredentialsAuthentication).registeredClient(registeredClient).build();
             this.authenticationValidator.accept(authenticationContext);
-            Set<String> authorizedScopes = new LinkedHashSet(clientCredentialsAuthentication.getScopes());
+            Set<String> authorizedScopes = new LinkedHashSet<>(clientCredentialsAuthentication.getScopes());
             authorizedScopes.add(API.SEB_API_SCOPE_NAME);
             if (logger.isTraceEnabled()) {
                 logger.trace("Validated token request parameters");

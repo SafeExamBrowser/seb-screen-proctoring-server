@@ -84,7 +84,7 @@ public class SEBClientAccessServiceImpl implements SEBClientAccessService {
 
         } catch (final Exception e) {
             
-            log.info("SEB Client secret fallback with secret: {}", encodedSecret);
+            log.info("SEB Client secret fallback with secret");
             
             if (clientPasswordEncoder.upgradeEncoding(Utils.toString(encodedSecret))) {
                 builder.clientSecret(clientPasswordEncoder.encode(Utils.toString(encodedSecret)));

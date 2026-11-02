@@ -23,6 +23,7 @@ import org.apache.catalina.filters.RemoteIpFilter;
 import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -36,21 +37,27 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import static ch.ethz.seb.sps.server.ServiceInit.INIT_LOGGER;
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
     public static final String SWAGGER_AUTH_SEB_API = "SEBOAuth";
     public static final String SWAGGER_AUTH_ADMIN_API = "adminAuth";
-    
+    public static final String V_3_API_DOCS_ENDPOINT = "/v3/api-docs/**";
+    public static final String SWAGGER_UI_ENDPOINT = "/swagger-ui/**";
+
     private static String[] OPEN_ENDPOINTS = new String[] {
             API.HEALTH_ENDPOINT,
             API.HEALTH_ENDPOINT + "/",
             API.GUI_REDIRECT_ENDPOINT,
-            API.OAUTH_JWTTOKEN_ENDPOINT + "/**",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/api-docs/**"
+            API.OAUTH_JWTTOKEN_ENDPOINT + "/**"
     };
+
+    @Value("${springdoc.api-docs.enabled:false}")
+    private boolean apiDocEnabled;
+    @Value("${springdoc.swagger-ui.enabled:false}")
+    private boolean swaggerEnabled;
 
     /** Used to get real remote IP address by using "X-Forwarded-For" and "X-Forwarded-Proto" header.
      * https://tomcat.apache.org/tomcat-7.0-doc/api/org/apache/catalina/filters/RemoteIpFilter.html
@@ -92,9 +99,22 @@ public class WebConfig implements WebMvcConfigurer {
     @Order(5)
     public SecurityFilterChain baseFilterChain(HttpSecurity http) throws Exception {
         http.securityMatcher("/**")
-                .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers(OPEN_ENDPOINTS).permitAll()
-                        .anyRequest().denyAll())
+                .authorizeHttpRequests((requests) -> {
+                    requests.requestMatchers(OPEN_ENDPOINTS).permitAll();
+                    if (apiDocEnabled) {
+                        INIT_LOGGER.info("**** API DOCS V3 ENABLED!");
+                        requests.requestMatchers(V_3_API_DOCS_ENDPOINT).permitAll();
+                    } else {
+                        INIT_LOGGER.info("xxxx API DOCS V3 NOT ENABLED!");
+                    }
+                    if (swaggerEnabled) {
+                        INIT_LOGGER.info("**** SWAGGER UI ENABLED!");
+                        requests.requestMatchers(SWAGGER_UI_ENDPOINT).permitAll();
+                    } else {
+                        INIT_LOGGER.info("xxxx SWAGGER UI NOT ENABLED!");
+                    }
+                    requests.anyRequest().denyAll();
+                })
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)

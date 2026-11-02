@@ -11,7 +11,7 @@ package ch.ethz.seb.sps.server.datalayer.dao.impl;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
-import io.minio.messages.DeleteObject;
+import io.minio.messages.DeleteRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @ConditionalOnExpression("'${sps.data.store.adapter}'.equals('S3_RDBMS')")
@@ -51,11 +52,24 @@ public class ScreenshotDAOS3 implements ScreenshotDAO {
         });
     }
 
-    private List<DeleteObject> createItemListForDeletion(final String sessionId, final List<Long> screenShotPKs){
-        List<DeleteObject> objects = new LinkedList<>();
+    @Override
+    public Result<List<Long>> secureDeleteAllForSession(String sessionUUID, List<Long> screenShotPKs) {
+        return Result.tryCatch(() -> {
+            return screenShotPKs
+                    .stream()
+                    .map(pk -> s3DAO.secureDeleteItem(sessionUUID, pk)
+                            .onError(error -> log.error("Failed to secure delete image for session: {} cause: {}", sessionUUID, error.getMessage()))
+                            .getOr(null))
+                    .filter(Objects::nonNull)
+                    .toList();
+        });
+    }
+
+    private List<DeleteRequest.Object> createItemListForDeletion(final String sessionId, final List<Long> screenShotPKs){
+        List<DeleteRequest.Object> objects = new LinkedList<>();
 
         for (Long screenShotPK : screenShotPKs) {
-            objects.add(new DeleteObject(sessionId + Constants.UNDERLINE + screenShotPK));
+            objects.add(new DeleteRequest.Object(sessionId + Constants.UNDERLINE + screenShotPK));
         }
 
         return objects;
