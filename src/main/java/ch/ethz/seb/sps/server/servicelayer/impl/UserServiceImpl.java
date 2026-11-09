@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import ch.ethz.seb.sps.domain.api.APIErrorException;
 import ch.ethz.seb.sps.domain.model.service.Exam;
+import ch.ethz.seb.sps.domain.model.service.Group;
 import ch.ethz.seb.sps.server.datalayer.dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,12 +170,17 @@ public class UserServiceImpl implements UserService {
             return true;
         }
 
-        // then check owner grant if owned entity
+        // check Institutional grant if user has InstAdmin rights
+        if (this.checkInstAdminGrant(user, entity)) {
+            return true;
+        }
+
+        // check owner grant if owned entity
         if (this.hasOwnerPrivilege(user, entity)) {
             return true;
         }
 
-        // then check entity based privileges
+        // check entity based privileges
         if (entity instanceof WithEntityPrivileges) {
             switch (privilegeType) {
                 case READ:
@@ -184,6 +190,29 @@ public class UserServiceImpl implements UserService {
                 case WRITE:
                     return WithEntityPrivileges.hasWriteAccess((WithEntityPrivileges) entity, user.uuid);
             }
+        }
+
+        return false;
+    }
+
+    private boolean checkInstAdminGrant(final UserInfo user, final Entity entity) {
+        if(!user.roles.contains(UserRole.INST_ADMIN.name())) {
+            return false;
+        }
+
+        try {
+            if (entity.entityType() == EntityType.EXAM) {
+                return Objects.equals(((Exam) entity).institutionId, user.institutionId);
+            } else if (entity.entityType() == EntityType.SEB_GROUP) {
+                final Group group = (Group) entity;
+                final Exam examForProctoring = proctoringCacheService.getExamForProctoring(String.valueOf(group.exam_id));
+                if (examForProctoring != null) {
+                    return Objects.equals(examForProctoring.institutionId, user.institutionId);
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to check institutional admin privilege on entity: {} cause: {}", entity, e.getMessage());
         }
 
         return false;
