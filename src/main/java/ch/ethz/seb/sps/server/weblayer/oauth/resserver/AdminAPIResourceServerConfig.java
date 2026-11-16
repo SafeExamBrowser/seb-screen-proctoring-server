@@ -29,6 +29,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -44,6 +47,8 @@ public class AdminAPIResourceServerConfig {
     private JwtDecoder jwtDecoder;
     @Value("${sps.api.admin.endpoint}")
     private String adminAPIEndpoint;
+    @Autowired
+    private OAuth2AuthorizationService oAuth2AuthorizationService;
 
     @Bean
     @Order(3)
@@ -61,7 +66,7 @@ public class AdminAPIResourceServerConfig {
         ;
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new AdminAPIJwtGrantedAuthoritiesConverter());
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new AdminAPIJwtGrantedAuthoritiesConverter(oAuth2AuthorizationService));
         http
                 .oauth2ResourceServer(resServer -> resServer
                         .authenticationEntryPoint(new WebConfig.UnauthorizedRequestHandler("AdminAPIResourceServerConfig"))
@@ -73,11 +78,23 @@ public class AdminAPIResourceServerConfig {
     
     
     private static class AdminAPIJwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
-        
+
+        private final OAuth2AuthorizationService oAuth2AuthorizationService;
         private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        
+
+        private AdminAPIJwtGrantedAuthoritiesConverter(final OAuth2AuthorizationService oAuth2AuthorizationService) {
+            this.oAuth2AuthorizationService = oAuth2AuthorizationService;
+        }
+
         @Override
         public Collection<GrantedAuthority> convert(@NotNull final Jwt source) {
+
+            // check token still available on store
+            final OAuth2Authorization validAuth = oAuth2AuthorizationService.findByToken(source.getTokenValue(), OAuth2TokenType.ACCESS_TOKEN);
+            if (validAuth == null) {
+                throw new InvalidBearerTokenException("Invalid Bearer Token");
+            }
+
             final List<String> scopes;
             try {
                 scopes = source.getClaim("scope");

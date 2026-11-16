@@ -8,9 +8,6 @@
 
 package ch.ethz.seb.sps.server.weblayer.oauth.authserver;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.time.temporal.ChronoUnit.YEARS;
-
 import java.time.Duration;
 import java.util.Collections;
 
@@ -26,6 +23,8 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.stereotype.Component;
 
+import static java.time.temporal.ChronoUnit.*;
+
 @Lazy
 @Component
 public class RegisteredSEBServerClient {
@@ -40,7 +39,7 @@ public class RegisteredSEBServerClient {
             @Value("${sps.api.admin.refreshTokenValiditySeconds:-1}") final Integer refreshTokenValiditySeconds) {
 
         Duration refreshTokenValDuration = (refreshTokenValiditySeconds == null || refreshTokenValiditySeconds.longValue() < 0)
-                ? Duration.of(1, YEARS)
+                ? Duration.of(1, DAYS)
                 : Duration.of(refreshTokenValiditySeconds, SECONDS);
 
         client = RegisteredClient
