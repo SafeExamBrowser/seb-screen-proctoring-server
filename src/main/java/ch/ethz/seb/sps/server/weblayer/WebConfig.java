@@ -11,6 +11,7 @@ package ch.ethz.seb.sps.server.weblayer;
 import java.io.IOException;
 
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.utils.Utils;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.OAuthFlow;
@@ -144,7 +145,10 @@ public class WebConfig implements WebMvcConfigurer {
                 final HttpServletResponse response,
                 final AuthenticationException authenticationException) throws IOException {
 
-            log.warn("{}: Unauthorized Request on: {}", name, request.getRequestURI());
+            log.info("{}: Unauthorized Request on: {}   from: {}",
+                    name,
+                    request.getRequestURI(),
+                    Utils.getClientIpAddress(request));
             
             try {
                 String bearerTokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
