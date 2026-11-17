@@ -64,7 +64,10 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
                 attributes,
                 null);
 
-        log.error("Error intercepted at API response error handler: {}", apiError, ex);
+        log.error("Error intercepted at API response error handler: {} cause: {}", apiError, ex.getMessage());
+        if (log.isDebugEnabled()) {
+            log.debug("--> full error: ", ex);
+        }
 
         return new ResponseEntity<>(apiError, headers, statusCode);
     }
@@ -153,6 +156,14 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
         log.warn("Error intercepted at API response error handler: {}", apiError);
 
         return new ResponseEntity<>(apiError, null, apiError.errorType.httpStatus);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleNoResourceFoundException(org.springframework.web.servlet.resource.NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        if (log.isDebugEnabled()) {
+            log.debug("No Http Resource found for: {}", ex.getMessage());
+        }
+        return new ResponseEntity<>(null, null, ex.getStatusCode());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
