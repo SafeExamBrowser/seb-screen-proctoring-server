@@ -19,7 +19,7 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 @OpenAPIDefinition
 public class ScreenProctoringServer {
 
-    public static void main(final String[] args) {
+    static void main(final String[] args) {
         org.apache.ibatis.logging.LogFactory.useSlf4jLogging();
         SpringApplication.run(ScreenProctoringServer.class, args);
     }
