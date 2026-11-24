@@ -19,11 +19,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeChangeEvent;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.SelectDSL;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,13 +48,16 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
 
     private final EntityPrivilegeRecordMapper entityPrivilegeRecordMapper;
     private final EntityPrivilegeIdMapper entityPrivilegeIdMapper;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public EntityPrivilegeDAOBatis(
             final EntityPrivilegeRecordMapper entityPrivilegeRecordMapper,
-            final EntityPrivilegeIdMapper entityPrivilegeIdMapper) {
+            final EntityPrivilegeIdMapper entityPrivilegeIdMapper,
+            final ApplicationEventPublisher applicationEventPublisher) {
 
         this.entityPrivilegeRecordMapper = entityPrivilegeRecordMapper;
         this.entityPrivilegeIdMapper = entityPrivilegeIdMapper;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
@@ -137,6 +142,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                     privilegeType.flag);
 
             this.entityPrivilegeRecordMapper.insert(entityPrivilegeRecord);
+            applicationEventPublisher.publishEvent(new EntityPrivilegeChangeEvent(entityType, entityId));
 
             return entityPrivilegeRecord;
         })
@@ -171,6 +177,7 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                     .build()
                     .execute();
 
+            applicationEventPublisher.publishEvent(new EntityPrivilegeChangeEvent(entityType, entityId));
             return new EntityKey(ids.get(0), EntityType.ENTITY_PRIVILEGE);
 
         });
@@ -198,6 +205,8 @@ public class EntityPrivilegeDAOBatis implements EntityPrivilegeDAO {
                     .where(EntityPrivilegeRecordDynamicSqlSupport.id, isIn(ids))
                     .build()
                     .execute();
+
+            applicationEventPublisher.publishEvent(new EntityPrivilegeChangeEvent(entityType, entityId));
 
             return ids.stream()
                     .map(id -> new EntityKey(id, EntityType.ENTITY_PRIVILEGE))

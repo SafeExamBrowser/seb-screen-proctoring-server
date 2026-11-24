@@ -280,8 +280,6 @@ public class AdminProctorController {
 
         return this.proctoringService
                 .getRecordedImageDataAt(sessionUUID, ts)
-//                .onError(e -> { criticalRequestBucket.incrementAndGet(); })
-//                .onSuccess(r -> { criticalRequestBucket.incrementAndGet(); })
                 .getOrThrow();
     }
 

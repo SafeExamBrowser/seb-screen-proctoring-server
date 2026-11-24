@@ -98,10 +98,11 @@ public class ProctoringServiceImpl implements ProctoringService {
     public void checkMonitoringSessionAccess(final String sessionUUID) {
         final Session session = this.proctoringCacheService.getSession(sessionUUID);
         if (session == null) {
-            return;
+            throw APIErrorException.notFound(EntityType.SESSION, sessionUUID, "Session doesn't exist");
         }
 
-        // TODO get group for session and check group access
+        final Group group = this.proctoringCacheService.getGroup(session.getGroupId());
+        this.userService.check(PrivilegeType.READ, group);
     }
 
     @Override
@@ -279,7 +280,7 @@ public class ProctoringServiceImpl implements ProctoringService {
     public Result<Exam> updateCacheForExam(final Exam exam) {
         return Result.tryCatch(() -> {
 
-// Fix SEBSERV-934 by mark involved exams as out of date on DB
+            // Fix SEBSERV-934 by mark involved groups of the exam as out of date on DB
             this.groupDAO
                     .markGroupsForUpdate(exam.id)
                     .onError(error -> log.error("Failed to update all groups for exam: {} cause: {}",
@@ -287,19 +288,6 @@ public class ProctoringServiceImpl implements ProctoringService {
                             error.getMessage()))
                     .onSuccess(groupUUIDs -> groupUUIDs
                             .forEach(groupUUID -> this.clearGroupCache(groupUUID, false)));
-
-// NOTE: This lacks update for parallel services on K8 Setups since the local cache is restored
-//       with the new Group and privileges but not on parallel version. The above fix marks the
-//       involved groups on the DB as out-dated and the parallel services will restore the cache
-//       within the next session update cycle (default 15s)
-
-//            this.groupDAO
-//                    .allIdsForExamsIds(Collections.singletonList(exam.id))
-//                    .getOrThrow()
-//                    .stream()
-//                    .map(gid -> groupDAO.byPK(gid).getOr(null))
-//                    .filter(Objects::nonNull)
-//                    .forEach(group -> this.clearGroupCache(group.uuid, false));
 
             return exam;
         });
@@ -434,7 +422,7 @@ public class ProctoringServiceImpl implements ProctoringService {
                     .allSessionUUIDsByGroupId(groupDAO.modelIdToPK(groupUUID))
                     .onSuccess( all -> all.forEach(this.proctoringCacheService::evictSession));
         }
-        this.proctoringCacheService.evictGroup(groupUUID);
+        this.proctoringCacheService.evictActiveGroup(groupUUID);
     }
 
     @Override
@@ -649,18 +637,19 @@ public class ProctoringServiceImpl implements ProctoringService {
                 metaData);
     }
 
-    private void updateSessionCache(String groupUUID) {
+    private void updateSessionCache(final String groupUUID) {
         if (!this.isDistributedSetup) {
             return;
         }
 
-        Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
+        final Group activeGroup = this.proctoringCacheService.getActiveGroup(groupUUID);
         if (activeGroup == null) {
             return;
         }
 
         if (this.groupDAO.needsUpdate(groupUUID, activeGroup.lastUpdateTime)) {
             this.clearGroupCache(groupUUID, true);
+            proctoringCacheService.evictGroup(activeGroup.id);
         } else {
 
             Map<String, Long> updateTimes = this.proctoringCacheService

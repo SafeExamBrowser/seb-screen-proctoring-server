@@ -34,6 +34,9 @@ public class ProctoringCacheService {
     /** Active group caches */
     public static final String ACTIVE_GROUP_CACHE = "ACTIVE_GROUP_CACHE";
 
+    /** Group cache for access checks. This also contains inactive groups */
+    public static final String ACCESS_GROUP_CACHE = "ACCESS_GROUP_CACHE";
+
     /** Active session token cache. Tokens per active group */
     public static final String SESSION_TOKENS_CACHE = "SESSION_TOKENS_CACHE";
 
@@ -92,11 +95,35 @@ public class ProctoringCacheService {
     @CacheEvict(
             cacheNames = { ACTIVE_GROUP_CACHE, SESSION_TOKENS_CACHE, TOTAL_SESSION_COUNT },
             key = "#groupUUID")
-    public void evictGroup(final String groupUUID) {
+    public void evictActiveGroup(final String groupUUID) {
         if (log.isTraceEnabled()) {
             log.trace("Eviction of running group from cache: {}", groupUUID);
         }
     }
+
+    @Cacheable(
+            cacheNames = ACCESS_GROUP_CACHE,
+            key = "#groupPK",
+            unless = "#result == null")
+    public Group getGroup(final Long groupPK) {
+        final Result<Group> groupResult = this.groupDAO.byPK(groupPK);
+        if (groupResult.hasError()) {
+            log.error("Failed to load group: {}", groupPK, groupResult.getError());
+            return null;
+        } else {
+            return groupResult.get();
+        }
+    }
+
+    @CacheEvict(
+            cacheNames = { ACCESS_GROUP_CACHE },
+            key = "#groupPK")
+    public void evictGroup(final Long groupPK) {
+        if (log.isTraceEnabled()) {
+            log.trace("Eviction of group for access checks from cache: {}", groupPK);
+        }
+    }
+
 
     @Cacheable(
             cacheNames = SESSION_TOKENS_CACHE,

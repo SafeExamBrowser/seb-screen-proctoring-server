@@ -14,10 +14,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ch.ethz.seb.sps.domain.api.API;
+import ch.ethz.seb.sps.server.datalayer.dao.EntityPrivilegeChangeEvent;
 import ch.ethz.seb.sps.server.datalayer.dao.ExamDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import ch.ethz.seb.sps.domain.api.API.PrivilegeType;
@@ -35,15 +37,35 @@ public class GroupServiceImpl implements GroupService {
     private final UserService userService;
     private final ExamDAO examDAO;
     private final GroupDAO groupDAO;
+    private final ProctoringCacheService proctoringCacheService;
 
     public GroupServiceImpl(
             final UserService userService,
             final ExamDAO examDAO,
-            final GroupDAO groupDAO) {
+            final GroupDAO groupDAO,
+            final ProctoringCacheService proctoringCacheService) {
 
         this.userService = userService;
         this.examDAO = examDAO;
         this.groupDAO = groupDAO;
+        this.proctoringCacheService = proctoringCacheService;
+    }
+
+    @EventListener(EntityPrivilegeChangeEvent.class)
+    public void notifyEntityPrivilegeChange(final EntityPrivilegeChangeEvent event) {
+        try {
+            if (event.entityType == EntityType.EXAM) {
+
+                groupDAO.getGroupIdsForExam(event.entityId)
+                        .getOrThrow()
+                        .forEach(proctoringCacheService::evictGroup);
+
+            } else if (event.entityType == EntityType.SEB_GROUP) {
+                proctoringCacheService.evictGroup(event.entityId);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to update cache entity: {} {} cause: {}", event.entityType, event.entityId, e.getMessage());
+        }
     }
 
     @Override
@@ -51,8 +73,6 @@ public class GroupServiceImpl implements GroupService {
         if (this.userService.hasGrant(PrivilegeType.READ, EntityType.SEB_GROUP)) {
             return Collections.emptyList();
         }
-
-        // TODO check if current user only has READ_ONLY_ACTIVE privilege. If so filter also termination date == null
 
         // list of group id's with users entity read privileges
         final Set<Long> directGrants = this.userService
