@@ -99,7 +99,7 @@ public class ClientCredentialServiceImpl implements ClientCredentialService {
 
     public static CharSequence generateClientSecret() {
         return RandomStringUtils.random(
-                16, 0, possibleCharacters.length - 1, false, false,
+                24, 0, possibleCharacters.length - 1, false, false,
                 possibleCharacters, new SecureRandom());
     }
 
