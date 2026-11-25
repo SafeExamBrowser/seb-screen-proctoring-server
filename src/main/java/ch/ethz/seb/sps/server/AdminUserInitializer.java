@@ -8,7 +8,6 @@
 
 package ch.ethz.seb.sps.server;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -17,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.seb.sps.domain.api.API;
@@ -33,98 +31,23 @@ class AdminUserInitializer {
     private static final Logger log = LoggerFactory.getLogger(AdminUserInitializer.class);
 
     private final UserDAO userDAO;
-    private final PasswordEncoder passwordEncoder;
-    private final boolean initializeAdmin;
-    private final String adminName;
-
     private final boolean initializeSEBServerAPIAccount;
     private final Environment environment;
 
     public AdminUserInitializer(
             final UserDAO userDAO,
             final Environment environment,
-            final PasswordEncoder passwordEncoder,
-            @Value("${sebserver.init.adminaccount.gen-on-init:false}") final boolean initializeAdmin,
-            @Value("${sebserver.init.adminaccount.username:seb-server-admin}") final String adminName,
             @Value("${sps.init.sebserveraccount.generate:true}") final boolean initializeSEBServerAPIAccount) {
 
         this.userDAO = userDAO;
         this.environment = environment;
-        this.passwordEncoder = passwordEncoder;
-        this.initializeAdmin = initializeAdmin;
-        this.adminName = adminName;
         this.initializeSEBServerAPIAccount = initializeSEBServerAPIAccount;
     }
 
     void initAccounts() {
-        if (this.initializeAdmin) {
-            initAdminAccount();
-        }
         if (this.initializeSEBServerAPIAccount) {
             initializeSEBServerAPIAccount();
         }
-    }
-
-    private void initAdminAccount() {
-
-        try {
-
-            log.debug("Create initial admin account is switched on. Check database if exists...");
-            final Result<ServerUser> byUsername = this.userDAO.byUsername(this.adminName);
-            if (byUsername.hasValue()) {
-
-                log.debug("Initial admin account already exists. Check if the password must be reset...");
-
-                final ServerUser sebServerUser = byUsername.get();
-                final String password = sebServerUser.getPassword();
-                if (this.passwordEncoder.matches("admin", password)) {
-
-                    log.debug("Setting new generated password for already existing admin account");
-                    final CharSequence generateAdminPassword = this.generateAdminPassword();
-                    if (generateAdminPassword != null) {
-                        this.userDAO.changePassword(
-                                sebServerUser.getUserInfo().getModelId(),
-                                generateAdminPassword);
-                        this.writeAdminCredentials(this.adminName, generateAdminPassword);
-                    }
-                }
-            } else {
-                final CharSequence generateAdminPassword = this.generateAdminPassword();
-
-                this.userDAO.createNew(new UserMod(
-                        this.adminName,
-                        this.adminName,
-                        this.adminName,
-                        this.adminName,
-                        generateAdminPassword,
-                        generateAdminPassword,
-                        null,
-                        null,
-                        null,
-                        new HashSet<>(Arrays.asList(API.UserRole.ADMIN.name())),
-                                1L))
-                        .getOrThrow();
-            }
-        } catch (final Exception e) {
-            ServiceInit.INIT_LOGGER.error("---->");
-            ServiceInit.INIT_LOGGER.error("----> SEB Server initial admin-account creation failed: ", e);
-            ServiceInit.INIT_LOGGER.error("---->");
-        }
-    }
-
-    private void writeAdminCredentials(final String name, final CharSequence pwd) {
-        ServiceInit.INIT_LOGGER.info("---->");
-        ServiceInit.INIT_LOGGER.info(
-                "----> ******************************************************************************************"
-                        + "*****************************************************************************");
-        ServiceInit.INIT_LOGGER.info("----> SEB Server initial admin-account; name: {}, pwd: {}", name, pwd);
-        ServiceInit.INIT_LOGGER.info("---->");
-        ServiceInit.INIT_LOGGER.info(
-                "----> !!!! NOTE: Do not forget to login and reset the generated admin password immediately !!!!");
-        ServiceInit.INIT_LOGGER.info(
-                "----> ******************************************************************************************"
-                        + "*****************************************************************************");
-        ServiceInit.INIT_LOGGER.info("---->");
     }
 
     private CharSequence generateAdminPassword() {
@@ -143,6 +66,16 @@ class AdminUserInitializer {
                     this.environment.getProperty("sps.init.sebserveraccount.username", (String) null);
             final String sebServerAPIAccountPassword =
                     this.environment.getProperty("sps.init.sebserveraccount.password", (String) null);
+
+            if (StringUtils.isBlank(sebServerAPIAccountName)) {
+                log.error("No initial SEB Server API account defined");
+                throw new IllegalArgumentException("No initial SEB Server API account defined");
+            }
+
+            if (StringUtils.isBlank(sebServerAPIAccountPassword)) {
+                log.error("No initial SEB Server API account password defined");
+                throw new IllegalArgumentException("No initial SEB Server API account password defined");
+            }
 
             log.debug("Create initial SEB Server API account is switched on. Check database if exists...");
             final Result<ServerUser> byUsername = this.userDAO.byUsername(sebServerAPIAccountName);
