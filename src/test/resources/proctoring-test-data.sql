@@ -16,37 +16,37 @@ INSERT IGNORE INTO `seb_group` VALUES
 ;
 
 INSERT IGNORE INTO `session` VALUES
-    (1, 1, '9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL);
+    (1, 1, '9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (2, 1, '1cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL);
+    (2, 1, '1cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (2, 1, 'a9ecf98e-4fe9-45d8-b513-ec30d82ae22f', 0, 'Meela Greenleaf', '30.254.51.215', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL);
+    (2, 1, 'a9ecf98e-4fe9-45d8-b513-ec30d82ae22f', 0, 'Meela Greenleaf', '30.254.51.215', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (3, 1, '4461dec0-5579-4fef-a86f-0ec7b252c779', 0, 'Owen Torres', '11.66.101.212', 'localhost', 'windows', '0.1-httpBot', 1721743474041, 1721743654070, null, NULL);
+    (3, 1, '4461dec0-5579-4fef-a86f-0ec7b252c779', 0, 'Owen Torres', '11.66.101.212', 'localhost', 'windows', '0.1-httpBot', 1721743474041, 1721743654070, null, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (4, 1, 'a21f4778-2d8a-49be-8ee2-7750682ca424', 0, 'Bethel Jenks', '83.85.253.32', 'localhost', 'windows', '0.1-httpBot', 1721743473036, 1721743653055, 1721743653055, NULL);
+    (4, 1, 'a21f4778-2d8a-49be-8ee2-7750682ca424', 0, 'Bethel Jenks', '83.85.253.32', 'localhost', 'windows', '0.1-httpBot', 1721743473036, 1721743653055, 1721743653055, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (5, 1, 'c8ebdedc-1105-4ecb-bd04-c20ba2e221a5', 0, 'Makenley Zell', '245.144.246.95', 'localhost', 'windows', '0.1-httpBot', 1721743472020, 1721743652045, 1721743652045, NULL);
+    (5, 1, 'c8ebdedc-1105-4ecb-bd04-c20ba2e221a5', 0, 'Makenley Zell', '245.144.246.95', 'localhost', 'windows', '0.1-httpBot', 1721743472020, 1721743652045, 1721743652045, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (6, 2, 'cbb6ace2-4840-41c1-8b45-0752e1fb1ecd', 0, 'Arnulfo Durfee', '99.120.90.178', 'localhost', 'windows', '0.1-httpBot', 1721743467980, 1721743647997, 1721743647997, NULL);
+    (6, 2, 'cbb6ace2-4840-41c1-8b45-0752e1fb1ecd', 0, 'Arnulfo Durfee', '99.120.90.178', 'localhost', 'windows', '0.1-httpBot', 1721743467980, 1721743647997, 1721743647997, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (7, 2, 'e0fd98d7-7617-4fa9-8ef3-e46c00f8b6d3', 0, 'Omega Bixby', '84.231.12.75', 'localhost', 'windows', '0.1-httpBot', 1720707637322, 1720707637322, NULL, NULL);
+    (7, 2, 'e0fd98d7-7617-4fa9-8ef3-e46c00f8b6d3', 0, 'Omega Bixby', '84.231.12.75', 'localhost', 'windows', '0.1-httpBot', 1720707637322, 1720707637322, NULL, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (8, 2, '7022e48e-955f-4ff5-8db0-c9db166af31a', 0, 'Bristol Estes', '253.160.4.128', 'localhost', 'windows', '0.1-httpBot', 1720707636306, 1720707636306, NULL, NULL);
+    (8, 2, '7022e48e-955f-4ff5-8db0-c9db166af31a', 0, 'Bristol Estes', '253.160.4.128', 'localhost', 'windows', '0.1-httpBot', 1720707636306, 1720707636306, NULL, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (9, 2, '620b8ad2-da0d-48bf-be0d-55962f9bc8f4', 0, 'Janely Mcmichael', '94.100.140.181', 'localhost', 'windows', '0.1-httpBot', 1720707635298, 1720707635298, NULL, NULL);
+    (9, 2, '620b8ad2-da0d-48bf-be0d-55962f9bc8f4', 0, 'Janely Mcmichael', '94.100.140.181', 'localhost', 'windows', '0.1-httpBot', 1720707635298, 1720707635298, NULL, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (10, 2, '830c4164-8167-4952-ab6c-2a72b585465b', 0, 'Charissa Dice', '58.80.14.86', 'localhost', 'windows', '0.1-httpBot', 1720707634348, 1720707634348, NULL, NULL);
+    (10, 2, '830c4164-8167-4952-ab6c-2a72b585465b', 0, 'Charissa Dice', '58.80.14.86', 'localhost', 'windows', '0.1-httpBot', 1720707634348, 1720707634348, NULL, NULL, NULL);
 
 
 

@@ -159,6 +159,7 @@ CREATE TABLE IF NOT EXISTS `session` (
   `last_update_time` BIGINT NOT NULL,
   `termination_time` BIGINT NULL,
   `encryption_key` VARCHAR(255) NULL,
+  `store_encryption_key` VARCHAR(255) NULL,
   PRIMARY KEY (`id`),
   INDEX `group_ref_idx` (`group_id` ASC),
   UNIQUE INDEX `id_session` (`id` ASC),

@@ -397,6 +397,7 @@ public class SessionDAOBatis implements SessionDAO {
                     now, 
                     now, 
                     null,
+                    generateEncryptedSecret().toString(),
                     generateEncryptedSecret().toString());
 
             this.sessionRecordMapper.insert(record);
@@ -448,6 +449,7 @@ public class SessionDAOBatis implements SessionDAO {
                     now, 
                     now, 
                     null,
+                    generateEncryptedSecret().toString(),
                     generateEncryptedSecret().toString());
 
             this.sessionRecordMapper.insert(record);

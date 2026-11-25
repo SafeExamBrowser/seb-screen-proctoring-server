@@ -32,20 +32,20 @@ import org.mybatis.dynamic.sql.util.SqlProviderAdapter;
 
 @Mapper
 public interface SessionRecordMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.816+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1173873+01:00", comments="Source Table: session")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     long count(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.816+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1173873+01:00", comments="Source Table: session")
     @DeleteProvider(type=SqlProviderAdapter.class, method="delete")
     int delete(DeleteStatementProvider deleteStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.816+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     @InsertProvider(type=SqlProviderAdapter.class, method="insert")
     @Options(useGeneratedKeys=true,keyProperty="record.id")
     int insert(InsertStatementProvider<SessionRecord> insertStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.817+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -60,11 +60,12 @@ public interface SessionRecordMapper {
         @Arg(column="creation_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
         @Arg(column="last_update_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
         @Arg(column="termination_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
-        @Arg(column="encryption_key", javaType=String.class, jdbcType=JdbcType.VARCHAR)
+        @Arg(column="encryption_key", javaType=String.class, jdbcType=JdbcType.VARCHAR),
+        @Arg(column="store_encryption_key", javaType=String.class, jdbcType=JdbcType.VARCHAR)
     })
     SessionRecord selectOne(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.817+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
     @ConstructorArgs({
         @Arg(column="id", javaType=Long.class, jdbcType=JdbcType.BIGINT, id=true),
@@ -79,26 +80,27 @@ public interface SessionRecordMapper {
         @Arg(column="creation_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
         @Arg(column="last_update_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
         @Arg(column="termination_time", javaType=Long.class, jdbcType=JdbcType.BIGINT),
-        @Arg(column="encryption_key", javaType=String.class, jdbcType=JdbcType.VARCHAR)
+        @Arg(column="encryption_key", javaType=String.class, jdbcType=JdbcType.VARCHAR),
+        @Arg(column="store_encryption_key", javaType=String.class, jdbcType=JdbcType.VARCHAR)
     })
     List<SessionRecord> selectMany(SelectStatementProvider selectStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.817+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     @UpdateProvider(type=SqlProviderAdapter.class, method="update")
     int update(UpdateStatementProvider updateStatement);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.817+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<Long>> countByExample() {
         return SelectDSL.selectWithMapper(this::count, SqlBuilder.count())
                 .from(sessionRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.817+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default DeleteDSL<MyBatis3DeleteModelAdapter<Integer>> deleteByExample() {
         return DeleteDSL.deleteFromWithMapper(this::delete, sessionRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.817+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default int deleteByPrimaryKey(Long id_) {
         return DeleteDSL.deleteFromWithMapper(this::delete, sessionRecord)
                 .where(id, isEqualTo(id_))
@@ -106,7 +108,7 @@ public interface SessionRecordMapper {
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.817+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default int insert(SessionRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(sessionRecord)
@@ -122,11 +124,12 @@ public interface SessionRecordMapper {
                 .map(lastUpdateTime).toProperty("lastUpdateTime")
                 .map(terminationTime).toProperty("terminationTime")
                 .map(encryptionKey).toProperty("encryptionKey")
+                .map(storeEncryptionKey).toProperty("storeEncryptionKey")
                 .build()
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.817+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default int insertSelective(SessionRecord record) {
         return insert(SqlBuilder.insert(record)
                 .into(sessionRecord)
@@ -142,32 +145,33 @@ public interface SessionRecordMapper {
                 .map(lastUpdateTime).toPropertyWhenPresent("lastUpdateTime", record::getLastUpdateTime)
                 .map(terminationTime).toPropertyWhenPresent("terminationTime", record::getTerminationTime)
                 .map(encryptionKey).toPropertyWhenPresent("encryptionKey", record::getEncryptionKey)
+                .map(storeEncryptionKey).toPropertyWhenPresent("storeEncryptionKey", record::getStoreEncryptionKey)
                 .build()
                 .render(RenderingStrategy.MYBATIS3));
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.818+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<SessionRecord>>> selectByExample() {
-        return SelectDSL.selectWithMapper(this::selectMany, id, groupId, uuid, imageFormat, clientName, clientIp, clientMachineName, clientOsName, clientVersion, creationTime, lastUpdateTime, terminationTime, encryptionKey)
+        return SelectDSL.selectWithMapper(this::selectMany, id, groupId, uuid, imageFormat, clientName, clientIp, clientMachineName, clientOsName, clientVersion, creationTime, lastUpdateTime, terminationTime, encryptionKey, storeEncryptionKey)
                 .from(sessionRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.818+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default QueryExpressionDSL<MyBatis3SelectModelAdapter<List<SessionRecord>>> selectDistinctByExample() {
-        return SelectDSL.selectDistinctWithMapper(this::selectMany, id, groupId, uuid, imageFormat, clientName, clientIp, clientMachineName, clientOsName, clientVersion, creationTime, lastUpdateTime, terminationTime, encryptionKey)
+        return SelectDSL.selectDistinctWithMapper(this::selectMany, id, groupId, uuid, imageFormat, clientName, clientIp, clientMachineName, clientOsName, clientVersion, creationTime, lastUpdateTime, terminationTime, encryptionKey, storeEncryptionKey)
                 .from(sessionRecord);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.818+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default SessionRecord selectByPrimaryKey(Long id_) {
-        return SelectDSL.selectWithMapper(this::selectOne, id, groupId, uuid, imageFormat, clientName, clientIp, clientMachineName, clientOsName, clientVersion, creationTime, lastUpdateTime, terminationTime, encryptionKey)
+        return SelectDSL.selectWithMapper(this::selectOne, id, groupId, uuid, imageFormat, clientName, clientIp, clientMachineName, clientOsName, clientVersion, creationTime, lastUpdateTime, terminationTime, encryptionKey, storeEncryptionKey)
                 .from(sessionRecord)
                 .where(id, isEqualTo(id_))
                 .build()
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.818+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExample(SessionRecord record) {
         return UpdateDSL.updateWithMapper(this::update, sessionRecord)
                 .set(groupId).equalTo(record::getGroupId)
@@ -181,10 +185,11 @@ public interface SessionRecordMapper {
                 .set(creationTime).equalTo(record::getCreationTime)
                 .set(lastUpdateTime).equalTo(record::getLastUpdateTime)
                 .set(terminationTime).equalTo(record::getTerminationTime)
-                .set(encryptionKey).equalTo(record::getEncryptionKey);
+                .set(encryptionKey).equalTo(record::getEncryptionKey)
+                .set(storeEncryptionKey).equalTo(record::getStoreEncryptionKey);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.818+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default UpdateDSL<MyBatis3UpdateModelAdapter<Integer>> updateByExampleSelective(SessionRecord record) {
         return UpdateDSL.updateWithMapper(this::update, sessionRecord)
                 .set(groupId).equalToWhenPresent(record::getGroupId)
@@ -198,10 +203,11 @@ public interface SessionRecordMapper {
                 .set(creationTime).equalToWhenPresent(record::getCreationTime)
                 .set(lastUpdateTime).equalToWhenPresent(record::getLastUpdateTime)
                 .set(terminationTime).equalToWhenPresent(record::getTerminationTime)
-                .set(encryptionKey).equalToWhenPresent(record::getEncryptionKey);
+                .set(encryptionKey).equalToWhenPresent(record::getEncryptionKey)
+                .set(storeEncryptionKey).equalToWhenPresent(record::getStoreEncryptionKey);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.818+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default int updateByPrimaryKey(SessionRecord record) {
         return UpdateDSL.updateWithMapper(this::update, sessionRecord)
                 .set(groupId).equalTo(record::getGroupId)
@@ -216,12 +222,13 @@ public interface SessionRecordMapper {
                 .set(lastUpdateTime).equalTo(record::getLastUpdateTime)
                 .set(terminationTime).equalTo(record::getTerminationTime)
                 .set(encryptionKey).equalTo(record::getEncryptionKey)
+                .set(storeEncryptionKey).equalTo(record::getStoreEncryptionKey)
                 .where(id, isEqualTo(record::getId))
                 .build()
                 .execute();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-03-02T11:38:43.818+01:00", comments="Source Table: session")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-11-25T14:07:02.1183888+01:00", comments="Source Table: session")
     default int updateByPrimaryKeySelective(SessionRecord record) {
         return UpdateDSL.updateWithMapper(this::update, sessionRecord)
                 .set(groupId).equalToWhenPresent(record::getGroupId)
@@ -236,6 +243,7 @@ public interface SessionRecordMapper {
                 .set(lastUpdateTime).equalToWhenPresent(record::getLastUpdateTime)
                 .set(terminationTime).equalToWhenPresent(record::getTerminationTime)
                 .set(encryptionKey).equalToWhenPresent(record::getEncryptionKey)
+                .set(storeEncryptionKey).equalToWhenPresent(record::getStoreEncryptionKey)
                 .where(id, isEqualTo(record::getId))
                 .build()
                 .execute();

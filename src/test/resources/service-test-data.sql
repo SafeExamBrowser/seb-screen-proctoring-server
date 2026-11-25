@@ -19,10 +19,10 @@ INSERT IGNORE INTO `seb_group` VALUES
 ;
 
 INSERT IGNORE INTO `session` VALUES
-    (1, 1, '9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL);
+    (1, 1, '9cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (2, 1, '1cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL);
+    (2, 1, '1cfb99c0-34a5-4ffd-a11c-4d9790b3f24c', 0, 'Scottie Degroot', '111.111.111.111', 'localhost', 'windows', '0.1-httpBot', 1721743476058, 1721743656171, null, NULL, NULL);
 
 INSERT IGNORE INTO `session` VALUES
-    (6, 2, 'cbb6ace2-4840-41c1-8b45-0752e1fb1ecd', 0, 'Arnulfo Durfee', '99.120.90.178', 'localhost', 'windows', '0.1-httpBot', 1721743467980, 1721743647997, 1721743647997, NULL);
+    (6, 2, 'cbb6ace2-4840-41c1-8b45-0752e1fb1ecd', 0, 'Arnulfo Durfee', '99.120.90.178', 'localhost', 'windows', '0.1-httpBot', 1721743467980, 1721743647997, 1721743647997, NULL, NULL);
