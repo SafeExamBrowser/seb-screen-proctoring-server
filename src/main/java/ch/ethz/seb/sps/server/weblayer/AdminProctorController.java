@@ -75,8 +75,6 @@ public class AdminProctorController {
     private final GroupingService groupingService;
     private final UserService userService;
 
-    //private final AtomicInteger criticalRequestBucket = new AtomicInteger(2);
-
     public AdminProctorController(
             final GroupDAO groupDAO,
             final ScreenshotDataDAO screenshotDataDAO,
