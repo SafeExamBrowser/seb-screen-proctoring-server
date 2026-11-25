@@ -19,6 +19,7 @@ WORKDIR /sebsps
 CMD exec java \
         -Xms${JAVA_HEAP_MIN} \
         -Xmx${JAVA_HEAP_MAX} \
+        -XX:-UseBASE64Intrinsics \
         -jar "seb-sps.jar" \
         --spring.config.location=classpath:/config/,optional:file:/sebsps/config/spring/; \
 
