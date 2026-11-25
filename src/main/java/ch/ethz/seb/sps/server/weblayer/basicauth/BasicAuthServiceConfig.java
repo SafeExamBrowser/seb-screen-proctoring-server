@@ -50,7 +50,7 @@ public class BasicAuthServiceConfig implements ErrorController {
                 .httpBasic(c -> c.authenticationEntryPoint(new WebConfig.UnauthorizedRequestHandler("Basic Auth")))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-                .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
+                .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny));
         
         AuthenticationManagerBuilder authenticationManagerBuilder =
                 http.getSharedObject(AuthenticationManagerBuilder.class);

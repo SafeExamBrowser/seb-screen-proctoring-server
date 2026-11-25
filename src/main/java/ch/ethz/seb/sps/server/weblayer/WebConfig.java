@@ -119,7 +119,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-                .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny))
                 .exceptionHandling( c -> c.authenticationEntryPoint(new UnauthorizedRequestHandler("root")));
         
         return http.build();
