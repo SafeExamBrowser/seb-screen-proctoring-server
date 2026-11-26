@@ -26,6 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTimeZone;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +58,8 @@ import ch.ethz.seb.sps.utils.Utils;
 
 @Service
 public class UserDAOBatis implements UserDAO {
+
+    private static final Logger log = LoggerFactory.getLogger(UserDAOBatis.class);
 
     private final UserRecordMapper userRecordMapper;
     private final PasswordEncoder userPasswordEncoder;

@@ -35,7 +35,7 @@ import ch.ethz.seb.sps.utils.Result;
 @DependsOn("batisConfig")
 public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
 
-    Logger log = LoggerFactory.getLogger(EntityDAO.class);
+    Logger entityDAOLog = LoggerFactory.getLogger(EntityDAO.class);
 
     default Long isPK(final String modelId) {
         try {
@@ -56,7 +56,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
         try {
             return Long.parseLong(modelId);
         } catch (final Exception e) {
-            log.warn("Failed to convert modelId to PK: {} cause: {}", modelId, e.getMessage());
+            entityDAOLog.warn("Failed to convert modelId to PK: {} cause: {}", modelId, e.getMessage());
             return null;
         }
     }
@@ -261,7 +261,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
                     .map(key -> modelIdToPK(key.modelId))
                     .collect(Collectors.toSet());
         } catch (final Exception e) {
-            log.error("unexpected error while trying to extract PK's from EntityKey's : ", e);
+            entityDAOLog.error("unexpected error while trying to extract PK's from EntityKey's : ", e);
             return Collections.emptySet();
         }
     }
@@ -274,7 +274,7 @@ public interface EntityDAO<T extends Entity, M extends ModelIdAware> {
         EntityType entityType = entityType();
         allPks. forEach( entityPK -> entityPrivilegeDAO
                 .deleteAllPrivileges(entityType, entityPK)
-                .onError(error -> log.warn(
+                .onError(error -> entityDAOLog.warn(
                         "Failed to delete all entity privileges for entity: {} with id: {} error: {}", 
                         entityType, 
                         entityPK, 

@@ -46,6 +46,8 @@ public class ProctoringCacheService {
     /** Active session cache. */
     public static final String ACTIVE_SESSION_CACHE = "ACTIVE_SESSION_CACHE";
 
+    public static final String SESSION_KEY_CACHE = "SESSION_KEY_CACHE";
+
     /** Total session count cache. */
     public static final String TOTAL_SESSION_COUNT = "TOTAL_SESSION_COUNT_CACHE";
 
@@ -168,6 +170,15 @@ public class ProctoringCacheService {
         if (log.isTraceEnabled()) {
             log.trace("Eviction of session from cache, sessionUUID: {}", sessionUUID);
         }
+    }
+
+    @Cacheable(
+            cacheNames = SESSION_KEY_CACHE,
+            key = "#sessionUUID",
+            unless = "#result == null")
+    public String getSessionEncryptKey(final String sessionUUID) {
+       // TODO
+        return null;
     }
 
     @Cacheable(

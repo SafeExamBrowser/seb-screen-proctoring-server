@@ -145,5 +145,5 @@ public interface SessionDAO extends ActivatableEntityDAO<Session, Session> {
 
     Result<Collection<Session>> getAllSessionWithNameLike(String searchName);
 
-    Result<EntityKey> secureDeleteSession(String sessionUUID);
+    Result<EntityKey> deleteSession(String sessionUUID);
 }

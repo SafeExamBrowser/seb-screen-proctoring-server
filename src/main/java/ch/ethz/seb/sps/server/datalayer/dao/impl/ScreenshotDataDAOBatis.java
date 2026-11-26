@@ -26,6 +26,8 @@ import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
 import org.mybatis.dynamic.sql.select.QueryExpressionDSL;
 import org.mybatis.dynamic.sql.select.SelectDSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,8 @@ import ch.ethz.seb.sps.utils.Result;
 
 @Service
 public class ScreenshotDataDAOBatis implements ScreenshotDataDAO {
+
+    private static final Logger log = LoggerFactory.getLogger(ScreenshotDataDAOBatis.class);
 
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
     private final ScreenshotDataMapper screenshotDataMapper;

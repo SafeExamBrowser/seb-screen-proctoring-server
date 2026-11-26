@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.mybatis.dynamic.sql.SqlBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +50,8 @@ import ch.ethz.seb.sps.utils.Utils;
 @Lazy
 @Component
 public class AuditLogDAOBatis implements AuditLogDAO {
+
+    private static final Logger log = LoggerFactory.getLogger(AuditLogDAOBatis.class);
 
     private final AuditLogRecordMapper auditLogRecordMapper;
     private final JSONMapper jsonMapper;

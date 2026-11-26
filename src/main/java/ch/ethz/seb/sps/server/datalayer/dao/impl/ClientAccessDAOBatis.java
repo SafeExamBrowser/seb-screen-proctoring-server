@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +49,8 @@ import ch.ethz.seb.sps.utils.Utils;
 
 @Service
 public class ClientAccessDAOBatis implements ClientAccessDAO, OwnedEntityDAO {
+
+    private static final Logger log = LoggerFactory.getLogger(ClientAccessDAOBatis.class);
 
     private final ClientAccessRecordMapper clientAccessRecordMapper;
     private final ClientCredentialService clientCredentialService;

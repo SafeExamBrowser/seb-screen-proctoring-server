@@ -8,14 +8,14 @@
 
 package ch.ethz.seb.sps.server.datalayer.dao.impl;
 
-import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordDynamicSqlSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -27,10 +27,11 @@ import ch.ethz.seb.sps.server.ServiceInit;
 import ch.ethz.seb.sps.server.ServiceInitEvent;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.ScreenshotMapper.BlobContent;
-import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordDynamicSqlSupport;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.ScreenshotRecordMapper;
 import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
 import ch.ethz.seb.sps.utils.Result;
+
+import static org.mybatis.dynamic.sql.SqlBuilder.isIn;
 
 @Service
 @ConditionalOnExpression("'${sps.data.store.adapter}'.equals('FULL_RDBMS')")
@@ -41,7 +42,7 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
     private final ScreenshotMapper screenshotMapper;
     private final ScreenshotRecordMapper screenshotRecordMapper;
 
-    private byte[] NULL_BYTE_ARRAY;
+    private final byte[] NULL_BYTE_ARRAY;
 
     public ScreenshotDAOBatis(
             final ScreenshotMapper screenshotMapper,
@@ -94,44 +95,63 @@ public class ScreenshotDAOBatis implements ScreenshotDAO {
     @Override
     @Transactional
     public Result<List<Long>> deleteAllForSession(
-            final String sessionId,
-            final List<Long> screenShotPKs) {
+            final String sessionUUID,
+            final List<Long> screenShotPKs,
+            final boolean wipe) {
 
         return Result.tryCatch(() -> {
 
-            this.screenshotRecordMapper
-                    .deleteByExample()
-                    .where(ScreenshotRecordDynamicSqlSupport.id, isIn(screenShotPKs))
-                    .build()
-                    .execute();
+            if (screenShotPKs == null || screenShotPKs.isEmpty()) {
+                return screenShotPKs;
+            }
 
-            return screenShotPKs;
+            if (wipe) {
 
-        }).onError(TransactionHandler::rollback);
-    }
+                // one by one --> overwrite and then delete
+                final List<Long> deleted = screenShotPKs
+                        .stream()
+                        .map(pk -> {
 
-    @Override
-    @Transactional
-    public Result<List<Long>> secureDeleteAllForSession(String sessionUUID, List<Long> screenShotPKs) {
-        return Result.tryCatch(() -> {
-            return screenShotPKs
-                    .stream()
-                    .map(pk -> {
+                            try {
+                                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(NULL_BYTE_ARRAY);
+                                final BlobContent blobContent = new BlobContent(pk, byteArrayInputStream);
+                                this.screenshotMapper.update(blobContent);
+                            } catch (Exception e) {
+                                log.warn("Failed to overwrite Image for session: {} cause: {}", sessionUUID, e.getMessage());
+                            }
 
-                        // first overwrite the image
-                        try {
-                            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(NULL_BYTE_ARRAY);
-                            final BlobContent blobContent = new BlobContent(pk, byteArrayInputStream);
-                            this.screenshotMapper.update(blobContent);
-                        } catch (Exception e) {
-                            log.warn("Failed to overwrite Image for session: {} cause: {}", sessionUUID, e.getMessage());
-                        }
+                            int i = this.screenshotRecordMapper.deleteByPrimaryKey(pk);
+                            if (i <= 0) {
+                                return null;
+                            }
 
-                        this.screenshotRecordMapper.deleteByPrimaryKey(pk);
-                        return pk;
-                    })
-                    .filter(Objects::nonNull)
-                    .toList();
+                            return pk;
+
+                        })
+                        .filter(Objects::nonNull)
+                        .toList();
+
+                if (deleted.size() < screenShotPKs.size() - 10) {
+                    throw new RuntimeException("Batch screenshot deletion reports more then 10 errors. Skip entire session deletion");
+                }
+
+                return deleted;
+
+            } else {
+
+                // assume they are encrypted anyway so just delete it
+                Integer execute = this.screenshotRecordMapper
+                        .deleteByExample()
+                        .where(ScreenshotRecordDynamicSqlSupport.id, isIn(new ArrayList<>(screenShotPKs)))
+                        .build()
+                        .execute();
+
+                if (execute == null || execute < screenShotPKs.size() - 10) {
+                    throw new RuntimeException("Batch screenshot deletion reports more then 10 errors. Skip entire session deletion");
+                }
+
+                return screenShotPKs;
+            }
         });
     }
 

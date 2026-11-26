@@ -21,12 +21,17 @@ import java.util.stream.Collectors;
 
 import ch.ethz.seb.sps.server.datalayer.batis.custommappers.SearchSessionMapper;
 import ch.ethz.seb.sps.server.datalayer.batis.mapper.*;
+import ch.ethz.seb.sps.server.datalayer.dao.*;
 import ch.ethz.seb.sps.utils.Cryptor;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.SqlBuilder;
 import org.mybatis.dynamic.sql.select.MyBatis3SelectModelAdapter;
 import org.mybatis.dynamic.sql.select.QueryExpressionDSL;
 import org.mybatis.dynamic.sql.update.UpdateDSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,10 +44,6 @@ import ch.ethz.seb.sps.domain.model.FilterMap;
 import ch.ethz.seb.sps.domain.model.service.Session;
 import ch.ethz.seb.sps.domain.model.service.Session.ImageFormat;
 import ch.ethz.seb.sps.server.datalayer.batis.model.SessionRecord;
-import ch.ethz.seb.sps.server.datalayer.dao.DuplicateEntityException;
-import ch.ethz.seb.sps.server.datalayer.dao.NoResourceFoundException;
-import ch.ethz.seb.sps.server.datalayer.dao.ScreenshotDAO;
-import ch.ethz.seb.sps.server.datalayer.dao.SessionDAO;
 import ch.ethz.seb.sps.server.weblayer.BadRequestException;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
@@ -50,6 +51,8 @@ import ch.ethz.seb.sps.utils.Utils;
 
 @Service
 public class SessionDAOBatis implements SessionDAO {
+
+    private static final Logger log = LoggerFactory.getLogger(SessionDAOBatis.class);
 
     private static final String OVERWRITE = "0000000000000000000000000000000000000000000";
 
@@ -59,6 +62,7 @@ public class SessionDAOBatis implements SessionDAO {
     private final ScreenshotDataRecordMapper screenshotDataRecordMapper;
     private final ScreenshotDAO screenshotDAO;
     private final Cryptor cryptor;
+    private final boolean encryptScreenshots;
 
     public SessionDAOBatis(
             final SearchSessionMapper searchSessionMapper,
@@ -66,7 +70,8 @@ public class SessionDAOBatis implements SessionDAO {
             final GroupRecordMapper groupRecordMapper,
             final ScreenshotDataRecordMapper screenshotDataRecordMapper,
             final ScreenshotDAO screenshotDAO, 
-            final Cryptor cryptor) {
+            final Cryptor cryptor,
+            @Value("${sps.webservice.encrypt.screenshots:true}") final Boolean encryptScreenshots) {
 
         this.searchSessionMapper = searchSessionMapper;
         this.sessionRecordMapper = sessionRecordMapper;
@@ -74,6 +79,7 @@ public class SessionDAOBatis implements SessionDAO {
         this.screenshotDataRecordMapper = screenshotDataRecordMapper;
         this.screenshotDAO = screenshotDAO;
         this.cryptor = cryptor;
+        this.encryptScreenshots = BooleanUtils.toBoolean(encryptScreenshots);
     }
 
     @Override
@@ -397,8 +403,8 @@ public class SessionDAOBatis implements SessionDAO {
                     now, 
                     now, 
                     null,
-                    generateEncryptedSecret().toString(),
-                    generateEncryptedSecret().toString());
+                    generateEncryptedSecret(),
+                    encryptScreenshots ? generateEncryptedSecret() : null);
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -449,8 +455,8 @@ public class SessionDAOBatis implements SessionDAO {
                     now, 
                     now, 
                     null,
-                    generateEncryptedSecret().toString(),
-                    generateEncryptedSecret().toString());
+                    generateEncryptedSecret(),
+                    encryptScreenshots ? generateEncryptedSecret() : null);
 
             this.sessionRecordMapper.insert(record);
             return record.getId();
@@ -461,17 +467,10 @@ public class SessionDAOBatis implements SessionDAO {
     }
 
     @Override
-    public Result<Collection<EntityKey>> delete(final String modelId) {
-        return Result.tryCatch(() -> {
-            return Collections.singletonList(new EntityKey(modelId, EntityType.SESSION));
-        });
-    }
-
-    @Override
     @Transactional
     public Result<Collection<EntityKey>> delete(final Set<EntityKey> all) {
         return Result.tryCatch(() -> extractListOfPKs(all))
-                .map(this::delete);
+                .map(this::deleteAll);
     }
 
     @Override
@@ -485,63 +484,28 @@ public class SessionDAOBatis implements SessionDAO {
                 .where(SessionRecordDynamicSqlSupport.groupId, isIn(groupPKs))
                 .build()
                 .execute())
-                .map(this::delete);
+                .map(this::deleteAll);
     }
 
     @Override
     @Transactional
-    public Result<EntityKey> secureDeleteSession(final String sessionUUID) {
-        return Result.tryCatch(() -> {
+    public Result<EntityKey> deleteSession(final String sessionUUID) {
+        return recordByUUID(sessionUUID)
+                .map( session -> {
 
-            final Long sessionPK = pkByUUID(sessionUUID).getOrThrow();
+                        final EntityKey entityKey = deleteOneSession(
+                                sessionUUID,
+                                session.getStoreEncryptionKey() == null);
 
-            // get all screenshot record ids for the session
-            final List<Long> screenShotPKs = this.screenshotDataRecordMapper
-                    .selectIdsByExample()
-                    .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionUUID))
-                    .build()
-                    .execute();
+                        if (entityKey == null) {
+                            throw new RuntimeException("Failed to secure delete session: "+ sessionUUID);
+                        }
 
-            if (screenShotPKs == null || screenShotPKs.isEmpty()) {
-                log.info("No session data found for deletion for session: {}", sessionUUID);
-                return new EntityKey(sessionUUID, EntityType.SESSION);
-            }
-
-            // delete all screenshot meta data
-            this.screenshotDataRecordMapper
-                    .deleteByExample()
-                    .where(ScreenshotDataRecordDynamicSqlSupport.id, isIn(screenShotPKs))
-                    .build()
-                    .execute();
-
-            // secure delete all images
-            if (log.isDebugEnabled()) {
-                log.debug("Secure delete all Screenshots for session {}, screenshots: {}", sessionUUID, screenShotPKs);
-            }
-            this.screenshotDAO
-                    .secureDeleteAllForSession(sessionUUID, screenShotPKs)
-                    .getOrThrow();
-
-            // overwrite the session row before deletion
-            UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
-                    .set(clientName).equalTo(OVERWRITE)
-                    .set(clientIp).equalTo("0.0.0.0")
-                    .set(clientMachineName).equalTo(OVERWRITE)
-                    .set(clientOsName).equalTo(OVERWRITE)
-                    .set(clientVersion).equalTo(OVERWRITE)
-                    .set(lastUpdateTime).equalTo(0L)
-                    .where(id, isEqualTo(sessionPK))
-                    .build()
-                    .execute();
-
-            sessionRecordMapper.deleteByPrimaryKey(sessionPK);
-
-            log.info("Successfully and securely delete user session data: {}", sessionUUID);
-            return new EntityKey(sessionUUID, EntityType.SESSION);
-        });
+                        return entityKey;
+                });
     }
 
-    private Collection<EntityKey> delete(final List<Long> pks) {
+    private Collection<EntityKey> deleteAll(final List<Long> pks) {
         if (pks == null || pks.isEmpty()) {
             return Collections.emptyList();
         }
@@ -552,18 +516,91 @@ public class SessionDAOBatis implements SessionDAO {
                 .build()
                 .execute();
 
-        // delete session data for each session
-        sessions.forEach(this::deleteSessionScreenshots);
+        final List<EntityKey> result = new ArrayList<>();
 
-        this.sessionRecordMapper
-                .deleteByExample()
-                .where(SessionRecordDynamicSqlSupport.id, isIn(pks))
+        // delete session data for each session
+        sessions.forEach(session -> {
+            try {
+
+                final EntityKey entityKey = this.deleteOneSession(
+                        session.getUuid(),
+                        session.getStoreEncryptionKey() == null);
+
+                if (entityKey != null) {
+                    result.add(entityKey);
+                }
+
+            } catch (Exception e) {
+                log.error("Failed to delete session: {} cause: {}", session.getUuid(), e.getMessage());
+            }
+        });
+
+        return result;
+    }
+
+    private EntityKey deleteOneSession(
+            final String sessionUUID,
+            final boolean wipe) {
+
+        final Long sessionPK = pkByUUID(sessionUUID).getOrThrow();
+
+        // get all screenshot record ids for the session
+        final List<Long> screenShotPKs = this.screenshotDataRecordMapper
+                .selectIdsByExample()
+                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionUUID))
                 .build()
                 .execute();
 
-        return sessions.stream()
-                .map(rec -> new EntityKey(rec.getId(), EntityType.SESSION))
-                .collect(Collectors.toList());
+        if (screenShotPKs == null || screenShotPKs.isEmpty()) {
+            log.info("No session data found for deletion for session: {}", sessionUUID);
+            return null;
+        }
+
+        // delete all screenshot meta data
+        Integer execute = this.screenshotDataRecordMapper
+                .deleteByExample()
+                .where(ScreenshotDataRecordDynamicSqlSupport.id, isIn(screenShotPKs))
+                .build()
+                .execute();
+
+        if (execute == null || execute != screenShotPKs.size()) {
+            log.warn(
+                    "Screenshot deletion size mismatch for session: {} pk size: {} execution size: {}",
+                    sessionUUID, screenShotPKs.size(), execute);
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Delete all Screenshots for session {}, screenshots: {}", sessionUUID, screenShotPKs.size());
+        }
+
+        this.screenshotDAO
+                .deleteAllForSession(sessionUUID, screenShotPKs, wipe)
+                .getOrThrow();
+
+        // overwrite the session row before deletion
+        try {
+            UpdateDSL.updateWithMapper(this.sessionRecordMapper::update, sessionRecord)
+                    .set(clientName).equalTo(OVERWRITE)
+                    .set(clientIp).equalTo("0.0.0.0")
+                    .set(clientMachineName).equalTo(OVERWRITE)
+                    .set(clientOsName).equalTo(OVERWRITE)
+                    .set(clientVersion).equalTo(OVERWRITE)
+                    .set(lastUpdateTime).equalTo(0L)
+                    .set(terminationTime).equalTo(0L)
+                    .set(creationTime).equalTo(0L)
+                    .set(encryptionKey).equalTo(OVERWRITE)
+                    .set(storeEncryptionKey).equalTo(OVERWRITE)
+                    .where(id, isEqualTo(sessionPK))
+                    .build()
+                    .execute();
+        } catch (Exception e) {
+            log.warn("Failed to overwrite session data for session: {} cause: {}", sessionUUID, e.getMessage());
+        }
+
+        sessionRecordMapper.deleteByPrimaryKey(sessionPK);
+
+        log.info("Successfully and securely delete user session data: {}", sessionUUID);
+        return new EntityKey(sessionUUID, EntityType.SESSION);
     }
 
     @Override
@@ -595,34 +632,6 @@ public class SessionDAOBatis implements SessionDAO {
                     .map(pk -> new EntityKey(pk, EntityType.SESSION))
                     .collect(Collectors.toList());
         });
-    }
-
-    private void deleteSessionScreenshots(final SessionRecord sessionRecord) {
-
-        // get all screenshot record ids for the session
-        final List<Long> screenShotPKs = this.screenshotDataRecordMapper
-                .selectIdsByExample()
-                .where(ScreenshotDataRecordDynamicSqlSupport.sessionUuid, isEqualTo(sessionRecord.getUuid()))
-                .build()
-                .execute();
-
-        if (screenShotPKs == null || screenShotPKs.isEmpty()) {
-            log.info("No session data found for deletion for session: {}", sessionRecord.getUuid());
-            return;
-        }
-
-        // delete all screenshot data
-        this.screenshotDataRecordMapper
-                .deleteByExample()
-                .where(ScreenshotDataRecordDynamicSqlSupport.id, isIn(screenShotPKs))
-                .build()
-                .execute();
-
-
-        // then all screenshots
-        this.screenshotDAO
-                .deleteAllForSession(sessionRecord.getUuid(), screenShotPKs)
-                .onError(error -> log.error("Failed to delete Screenshots: {}", screenShotPKs, error ));
     }
 
     @Override
@@ -907,10 +916,11 @@ public class SessionDAOBatis implements SessionDAO {
         }
     }
 
-    private CharSequence generateEncryptedSecret() {
+    private String generateEncryptedSecret() {
         final String secret = UUID.randomUUID().toString().replace("-", StringUtils.EMPTY);
         return this.cryptor
                 .encrypt(secret)
-                .getOrThrow();
+                .getOrThrow()
+                .toString();
     }
 }

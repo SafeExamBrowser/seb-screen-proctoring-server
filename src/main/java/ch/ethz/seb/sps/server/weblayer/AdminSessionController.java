@@ -150,35 +150,35 @@ public class AdminSessionController extends ActivatableEntityController<Session,
                 null, null, null);
     }
 
-    @Operation(
-            summary = "Securely deletes a single entity (and all its dependencies) by its modelId.",
-            description = "To check or report what dependent object also would be deleted for a certain entity object, "
-                    +
-                    "please use the dependency endpoint to get a report of all dependend entity objects.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
-            parameters = {
-                    @Parameter(
-                            name = API.PARAM_MODEL_ID,
-                            description = "The model identifier of the entity object to get.",
-                            in = ParameterIn.PATH)
-            })
-    @RequestMapping(
-            path = API.PARAM_MODEL_PATH_SEGMENT + API.SESSION_SECURE_DELETE_ENDPOINT,
-            method = RequestMethod.DELETE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public Collection<EntityKey> secureDelete(@PathVariable final String modelId) {
-
-        log.info("Got secure session deletion request for session:  {}", modelId);
-
-        return this.entityDAO.byModelId(modelId)
-                .flatMap(this::checkWriteAccess)
-                .flatMap(this::validForDelete)
-                .flatMap(this::logDelete)
-                .flatMap(entity -> this.sessionDAO.secureDeleteSession(modelId))
-                .flatMap(key -> notifyDeleted(Collections.singleton(key)))
-                .getOrThrow();
-    }
+//    @Operation(
+//            summary = "Securely deletes a single entity (and all its dependencies) by its modelId.",
+//            description = "To check or report what dependent object also would be deleted for a certain entity object, "
+//                    +
+//                    "please use the dependency endpoint to get a report of all dependend entity objects.",
+//            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+//                    content = { @Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE) }),
+//            parameters = {
+//                    @Parameter(
+//                            name = API.PARAM_MODEL_ID,
+//                            description = "The model identifier of the entity object to get.",
+//                            in = ParameterIn.PATH)
+//            })
+//    @RequestMapping(
+//            path = API.PARAM_MODEL_PATH_SEGMENT + API.SESSION_SECURE_DELETE_ENDPOINT,
+//            method = RequestMethod.DELETE,
+//            produces = MediaType.APPLICATION_JSON_VALUE)
+//    public Collection<EntityKey> secureDelete(@PathVariable final String modelId) {
+//
+//        log.info("Got secure session deletion request for session:  {}", modelId);
+//
+//        return this.entityDAO.byModelId(modelId)
+//                .flatMap(this::checkWriteAccess)
+//                .flatMap(this::validForDelete)
+//                .flatMap(this::logDelete)
+//                .flatMap(entity -> this.sessionDAO.deleteSession(modelId))
+//                .flatMap(key -> notifyDeleted(Collections.singleton(key)))
+//                .getOrThrow();
+//    }
 
     @Override
     protected Result<Session> notifyCreated(Session entity) {

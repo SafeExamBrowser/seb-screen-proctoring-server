@@ -4,9 +4,6 @@ import ch.ethz.seb.sps.server.ServiceInitEvent;
 import ch.ethz.seb.sps.utils.Constants;
 import ch.ethz.seb.sps.utils.Result;
 import io.minio.*;
-//import io.minio.messages.Bucket;
-//import io.minio.messages.DeleteError;
-//import io.minio.messages.DeleteObject;
 import io.minio.messages.DeleteRequest;
 import io.minio.messages.DeleteResult;
 import io.minio.messages.LifecycleConfiguration;
@@ -29,7 +26,6 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -47,8 +43,6 @@ public class S3DAO {
 
     private String BUCKET_NAME;
 
-    private byte[] NULL_BYTE_ARRAY;
-
     public S3DAO(final Environment environment) {
         this.environment = environment;
     }
@@ -65,9 +59,6 @@ public class S3DAO {
             createBucket();
 //            getBucketLifecycle();
         }
-
-        NULL_BYTE_ARRAY = new byte[10000];
-        Arrays.fill(NULL_BYTE_ARRAY, (byte) 0);
     }
 
     public Result<InputStream> getItem(final String sessionUUID, final Long pk) {
@@ -81,7 +72,11 @@ public class S3DAO {
         );
     }
 
-    public Result<ObjectWriteResponse> uploadItem(final ByteArrayInputStream screenshotInputStream, final String sessionUUID, final Long pk){
+    public Result<ObjectWriteResponse> uploadItem(
+            final ByteArrayInputStream screenshotInputStream,
+            final String sessionUUID,
+            final Long pk){
+
         return Result.tryCatch(() ->
                 this.minioClient.putObject(
                         PutObjectArgs.builder()
@@ -90,29 +85,6 @@ public class S3DAO {
                                 .stream(screenshotInputStream, (long) screenshotInputStream.available(), -1L)
                                 .build())
         );
-    }
-
-    public Result<Long> secureDeleteItem(final String sessionUUID, final Long pk) {
-        return Result.tryCatch(() -> {
-            // fist override the image
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(NULL_BYTE_ARRAY);
-            this.minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(BUCKET_NAME)
-                            .object(sessionUUID + Constants.UNDERLINE + pk)
-                            .stream(byteArrayInputStream, (long) byteArrayInputStream.available(), -1L)
-                            .build());
-
-            // then delete it
-            minioClient.removeObject(
-                    RemoveObjectArgs.builder()
-                            .bucket(BUCKET_NAME)
-                            .object(sessionUUID + Constants.UNDERLINE + pk)
-                            .build()
-            );
-
-            return pk;
-        });
     }
 
     public Result<ObjectWriteResponse> uploadItemBatch(final List<SnowballObject> batchItems){
@@ -127,16 +99,25 @@ public class S3DAO {
     }
 
     public void deleteItemBatch(final List<DeleteRequest.Object> batchItems) throws Exception{
-        Iterable<io.minio.Result<DeleteResult.Error>> results = minioClient.removeObjects(
+
+        final Iterable<io.minio.Result<DeleteResult.Error>> results = minioClient.removeObjects(
                 RemoveObjectsArgs
                         .builder()
                         .bucket(BUCKET_NAME)
                         .objects(batchItems)
                         .build());
 
+        // log errors
+        int errorCount = 0;
         for (io.minio.Result<DeleteResult.Error> result : results) {
             DeleteResult.Error error = result.get();
-            log.info("Error in deleting object {}, {}", error.objectName(), error.message());
+            log.warn("Error in deleting object {}, {}", error.objectName(), error.message());
+            errorCount++;
+        }
+
+        // if there are more than 10 errors, skip the deletion of the session entirely
+        if (errorCount > 10) {
+            throw new RuntimeException("Batch screenshot deletion reports more then 10 errors. Skip entire session deletion");
         }
     }
 
